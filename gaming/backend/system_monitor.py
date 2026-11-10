@@ -42,7 +42,13 @@ class SystemMonitor(QObject):
             sensors = psutil.sensors_temperatures(fahrenheit=False)
         except (OSError, RuntimeError, NotImplementedError):
             return -1.0
-        for entries in sensors.values():
+        cpu_sensor_hints = ("coretemp", "k10temp", "zenpower", "cpu", "package id", "tctl", "tdie")
+        for chip_name, entries in sensors.items():
+            labels = " ".join(
+                [chip_name] + [str(getattr(entry, "label", "")) for entry in entries]
+            ).casefold()
+            if not any(hint in labels for hint in cpu_sensor_hints):
+                continue
             for entry in entries:
                 current = getattr(entry, "current", None)
                 if current is not None and current > 0:
