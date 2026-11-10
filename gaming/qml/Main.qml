@@ -126,6 +126,10 @@ ApplicationWindow {
                     }
                     Item { Layout.fillWidth: true }
                     Button {
+                        text: "RETOUR DESKTOP"
+                        onClicked: leos.returnToDesktop()
+                    }
+                    Button {
                         text: "FERMER"
                         onClicked: quickPanel.visible = false
                     }
