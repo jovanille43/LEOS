@@ -5,11 +5,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.controller import GamingController
+from PySide6.QtCore import QUrl  # noqa: E402
+from PySide6.QtGui import QGuiApplication  # noqa: E402
+from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
+
+from backend.controller import GamingController  # noqa: E402
 
 
 def main() -> int:
@@ -18,6 +22,8 @@ def main() -> int:
     app.setOrganizationName("LEOS")
 
     controller = GamingController()
+    controller.desktopRequested.connect(app.quit)
+
     engine = QQmlApplicationEngine()
     context = engine.rootContext()
     context.setContextProperty("leos", controller)
