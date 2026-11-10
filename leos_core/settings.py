@@ -1,4 +1,4 @@
-"""Small, safe JSON settings store shared by LEOS components."""
+"""Small, safe JSON settings store shared by LEOS applications."""
 
 from __future__ import annotations
 
@@ -10,10 +10,20 @@ from typing import Any
 
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
+    "theme": "leos-original",
+    "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
     "gaming_overlay_enabled": True,
+    "onboarding_complete": False,
     "transition_app_policy": "ask",
+}
+
+ALLOWED_VALUES = {
+    "last_mode": {"desktop", "gaming"},
+    "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
+    "transition_app_policy": {"ask", "keep", "close"},
 }
 
 
@@ -21,9 +31,7 @@ class SettingsStore:
     """Stores user preferences in XDG_CONFIG_HOME without editing system files."""
 
     def __init__(self, path: Path | None = None) -> None:
-        config_home = Path(
-            os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
-        )
+        config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
         self.path = path or config_home / "leos" / "settings.json"
         self._values = DEFAULTS.copy()
         self.load()
@@ -40,13 +48,12 @@ class SettingsStore:
 
         for key, default in DEFAULTS.items():
             value = loaded.get(key, default)
-            if isinstance(value, type(default)):
-                self._values[key] = value
-
-        if self._values["last_mode"] not in {"desktop", "gaming"}:
-            self._values["last_mode"] = DEFAULTS["last_mode"]
-        if self._values["transition_app_policy"] not in {"ask", "keep", "close"}:
-            self._values["transition_app_policy"] = "ask"
+            if not isinstance(value, type(default)):
+                continue
+            allowed = ALLOWED_VALUES.get(key)
+            if allowed is not None and value not in allowed:
+                continue
+            self._values[key] = value
 
     def get(self, key: str, default: Any = None) -> Any:
         return self._values.get(key, default)
@@ -54,13 +61,11 @@ class SettingsStore:
     def set(self, key: str, value: Any) -> None:
         if key not in DEFAULTS:
             raise KeyError(f"Unknown LEOS setting: {key}")
-        expected = type(DEFAULTS[key])
-        if not isinstance(value, expected):
-            raise TypeError(f"{key} must be {expected.__name__}")
-        if key == "last_mode" and value not in {"desktop", "gaming"}:
-            raise ValueError("last_mode must be 'desktop' or 'gaming'")
-        if key == "transition_app_policy" and value not in {"ask", "keep", "close"}:
-            raise ValueError("transition_app_policy must be ask, keep or close")
+        if not isinstance(value, type(DEFAULTS[key])):
+            raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
+        allowed = ALLOWED_VALUES.get(key)
+        if allowed is not None and value not in allowed:
+            raise ValueError(f"Invalid value for {key}: {value}")
         self._values[key] = value
         self.save()
 
