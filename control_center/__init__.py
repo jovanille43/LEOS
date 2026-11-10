@@ -1,0 +1,1 @@
+"""LEOS Control Center application."""
