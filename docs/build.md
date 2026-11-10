@@ -6,9 +6,13 @@ La recette BlueBuild décrit une image basée sur Bazzite KDE Desktop. Le workfl
 
 ## Base retenue
 
-La recette utilise `ghcr.io/ublue-os/bazzite:stable`, c'est-à-dire la variante Desktop KDE de Bazzite. Elle correspond à notre choix : KDE reste le bureau, tandis que Gaming Mode est une application LEOS plein écran au-dessus de KDE. Nous ne sélectionnons pas l'image `bazzite-deck`, qui apporte sa propre session Steam Gaming Mode.
+La recette utilise `ghcr.io/ublue-os/bazzite:stable`, c'est-à-dire la variante Desktop KDE de Bazzite. Elle correspond à notre choix : KDE reste le bureau, tandis que Gaming Mode est une application LEOS plein écran au-dessus de KDE. Nous ne sélectionnons pas l'image `bazzite-deck`, qui apporte sa propre session Steam Gaming Mode. La documentation Bazzite distingue bien les images Desktop sans Steam Gaming Mode des images Deck conçues pour démarrer dans cette session.
 
 La variante Bazzite standard vise les GPU AMD/Intel ; les images NVIDIA sont séparées en variantes dédiées. Une variante NVIDIA LEOS devra donc être préparée et validée séparément avant de prétendre à une compatibilité NVIDIA complète.
+
+## Contenu prévu de l'image
+
+La recette ajoute les paquets Fedora `python3-pyside6` et `python3-psutil`, puis copie les dossiers applicatifs Gaming, launcher, core et branding dans `/usr/share/leos`. Elle installe également l'entrée du sélecteur de modes et l'autostart de session KDE. Les noms de paquets sont publiés dans Fedora ; leur présence et leur compatibilité doivent tout de même être confirmées avec la version exacte de Bazzite utilisée pour le build.
 
 ## Signature de l'image
 
@@ -31,6 +35,8 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 - Déclencher le workflow manuellement seulement après ces contrôles.
 
 La documentation BlueBuild recommande de valider/générer la recette avec son CLI avant de construire l'image. La compilation et surtout le premier démarrage doivent ensuite être testés sur une machine de test, jamais directement sur le seul poste de travail principal.
+
+Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
 ## Construction ISO
 
