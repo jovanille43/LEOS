@@ -40,7 +40,7 @@ class SystemMonitor(QObject):
             return -1.0
         try:
             sensors = psutil.sensors_temperatures(fahrenheit=False)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, NotImplementedError):
             return -1.0
         for entries in sensors.values():
             for entry in entries:
