@@ -22,6 +22,10 @@ modules:
     dest: /usr/share/leos/
 
   - type: copy
+    src: control_center
+    dest: /usr/share/leos/
+
+  - type: copy
     src: leos_core
     dest: /usr/share/leos/
 
@@ -31,6 +35,10 @@ modules:
 
   - type: copy
     src: desktop/applications/leos-mode-selector.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-control-center.desktop
     dest: /usr/share/applications/
 
   - type: copy
