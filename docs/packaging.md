@@ -6,9 +6,11 @@ Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image
 
 - `/usr/share/leos/gaming` : application et backend Gaming.
 - `/usr/share/leos/launcher` : sélecteur de mode et démarrage de session.
+- `/usr/share/leos/control_center` : Centre de contrôle LEOS.
 - `/usr/share/leos/leos_core` : préférences partagées.
 - `/usr/share/leos/branding` : ressources visuelles officielles.
 - `/usr/share/applications/leos-mode-selector.desktop` : entrée du sélecteur.
+- `/usr/share/applications/leos-control-center.desktop` : entrée du Centre de contrôle.
 - `/usr/etc/xdg/autostart/leos-session.desktop` : restauration du dernier mode après connexion.
 
 ## Dépendances système prévues
