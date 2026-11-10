@@ -1,0 +1,8 @@
+# LEOS — initial BlueBuild recipe
+# Base: Bazzite KDE Desktop
+name: leos
+description: LEOS, a Bazzite-based Linux distribution with custom Desktop and Gaming modes.
+base-image: ghcr.io/ublue-os/bazzite
+image-version: stable
+
+modules: []
