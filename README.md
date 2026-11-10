@@ -36,6 +36,15 @@ Les références visuelles fournies pour le projet doivent être respectées. L'
 
 LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
 
+### Premiers composants présents dans le dépôt
+- Backend Gaming PySide6 : détection initiale des jeux Steam via les manifestes locaux et ajout manuel de jeux.
+- Tableau technique : premières mesures CPU/RAM et température CPU lorsque les capteurs sont exposés ; GPU et FPS restent à intégrer.
+- Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
+- Sélecteur de modes Desktop/Gaming et point d'entrée de session préparés.
+- Vérifications automatiques du code Python via GitHub Actions.
+
+Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
+
 ## Gaming Mode
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
@@ -106,7 +115,7 @@ LEOS/
 - [ ] Configurer la clé de signature dans les secrets GitHub.
 - [ ] Construire et tester la première image LEOS.
 
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.**
+**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est ajouté ; ses résultats devront être consultés sur GitHub Actions.
 
 ---
 
