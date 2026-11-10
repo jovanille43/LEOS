@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS — Choisir un mode
+Comment=Passer entre LEOS Desktop et LEOS Gaming
+Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select
+Icon=system-run
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true
