@@ -127,7 +127,7 @@ ApplicationWindow {
                     Item { Layout.fillWidth: true }
                     Button {
                         text: "RETOUR DESKTOP"
-                        onClicked: leos.returnToDesktop()
+                        onClicked: returnDialog.open()
                     }
                     Button {
                         text: "FERMER"
@@ -343,6 +343,40 @@ ApplicationWindow {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: returnDialog
+        title: "Retourner à Desktop Mode ?"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 430
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
+            Label {
+                text: "Gaming va se fermer et le bureau KDE réapparaître. Les applications déjà ouvertes resteront en arrière-plan ; aucune ne sera fermée automatiquement."
+                color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                text: "CONFIRMER LE RETOUR AU DESKTOP"
+                Layout.fillWidth: true
+                onClicked: {
+                    returnDialog.close()
+                    leos.returnToDesktop()
+                }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                contentItem: Label {
+                    text: parent.text
+                    color: "white"
+                    font.weight: Font.Bold
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
