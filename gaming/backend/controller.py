@@ -4,17 +4,20 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal, Slot
 
+from leos_core.settings import SettingsStore
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
 
 
 class GamingController(QObject):
     messageChanged = Signal(str)
+    desktopRequested = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
+        self.settings = SettingsStore()
         self._message = ""
 
     @Slot(str, str, str, result=bool)
@@ -38,3 +41,8 @@ class GamingController(QObject):
         self._message = "" if launched else "Impossible d'ouvrir ce jeu avec sa configuration actuelle."
         self.messageChanged.emit(self._message)
         return launched
+
+    @Slot()
+    def returnToDesktop(self) -> None:
+        self.settings.set("last_mode", "desktop")
+        self.desktopRequested.emit()
