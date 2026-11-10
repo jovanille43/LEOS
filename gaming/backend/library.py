@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot
+from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
@@ -33,9 +33,7 @@ class GameLibraryModel(QAbstractListModel):
         self._games: list[dict[str, Any]] = []
         self.refresh()
 
-    def roleNames(self) -> dict[int, QByteArray]:  # type: ignore[name-defined]
-        from PySide6.QtCore import QByteArray
-
+    def roleNames(self) -> dict[int, QByteArray]:
         return {
             self.TitleRole: QByteArray(b"title"),
             self.PlatformRole: QByteArray(b"platform"),
