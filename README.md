@@ -1,26 +1,27 @@
 # LEOS 🦁
 
-**LEOS** est un projet de distribution Linux personnalisée, construite à partir de **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
+**LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État du projet :** phase de conception et de structuration. Les fonctionnalités décrites ci-dessous sont des objectifs, pas des fonctionnalités déjà intégrées.
+> **État du projet :** conception et structuration. Les fonctionnalités décrites sont des objectifs de développement, pas des fonctions déjà intégrées.
 
 ## Vision
 
-LEOS proposera deux environnements complémentaires :
+LEOS propose deux expériences au sein d'une seule installation :
 
-- **Desktop Mode** — un bureau Linux soigné, personnalisable et adapté à l'utilisation quotidienne. Son identité visuelle utilise l'emblème LEOS avec le lion seul.
-- **Gaming Mode** — une interface plein écran pensée pour la manette, organisée autour d'une bibliothèque de jeux et d'outils gaming. Son emblème représente le lion avec une manette.
+- **Desktop Mode** — bureau KDE personnalisé, avec l'emblème LEOS représentant le lion seul.
+- **Gaming Mode** — application LEOS plein écran au-dessus de KDE, pensée pour la manette, avec l'emblème du lion tenant une manette.
 
-L'utilisateur pourra passer d'un mode à l'autre à tout moment, avec un bouton ou un raccourci clavier. LEOS demandera quoi faire des applications ouvertes avant la transition.
+Les deux modes partagent le même système, les mêmes fichiers, applications, pilotes et services. Le passage d'un mode à l'autre se fait sans redémarrage. Avant une transition, LEOS demande quoi faire des applications ouvertes.
 
 ## Identité visuelle
 
 L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta, une typographie dédiée et un fond noir.
 
-- Desktop : emblème du lion seul.
-- Gaming : emblème du lion avec la manette.
+- Desktop : emblème officiel du lion seul.
+- Gaming : emblème officiel du lion avec manette.
+- Les animations et sons LEOS seront configurables et désactivables.
 
-Les animations et sons de transition seront personnalisables et pourront être désactivés.
+Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
 
 ## Base technique
 
@@ -28,71 +29,84 @@ Les animations et sons de transition seront personnalisables et pourront être d
 | --- | --- |
 | Système de base | Bazzite KDE Desktop |
 | Construction de l'image | BlueBuild |
-| Dépôt de développement | GitHub |
+| Interface Gaming | Qt 6 / QML avec logique applicative PySide6 |
+| Interface Desktop | KDE Plasma personnalisé |
+| Dépôt | GitHub |
 | Distribution visée | Image LEOS dédiée, puis ISO installable |
 
-LEOS cherchera à conserver les fonctionnalités natives de Bazzite et de KDE plutôt que de recréer les outils Linux existants. Les composants spécifiques à LEOS viendront compléter cette base.
+LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
 
-## Fonctionnalités envisagées
+## Gaming Mode
 
-### Desktop Mode
-- Bureau KDE personnalisé selon l'identité LEOS.
-- Dock personnalisable et dispositions prédéfinies.
-- Centre de contrôle LEOS pour les fonctions propres au projet.
-- Thèmes, fonds d'écran et animations configurables.
-
-### Gaming Mode
-- Interface plein écran utilisable à la manette, au clavier et à la souris.
+- Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
+- Interface utilisable à la manette, au clavier et à la souris.
 - Bibliothèque unifiée de jeux PC et de jeux émulés.
-- Accès aux plateformes et outils compatibles avec Linux.
-- Informations système et performances dans un tableau de bord discret.
-- Gestion des manettes et profils de configuration.
+- Détection automatique des jeux installés et ajout manuel.
+- Métadonnées et jaquettes récupérées automatiquement lorsque disponibles, avec édition manuelle.
+- Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
+- Retour à la bibliothèque avec une animation discrète après fermeture d'un jeu.
+- Panneau rapide horizontal en haut de l'écran.
+- Tableau de bord technique complet accessible depuis ce panneau.
+- Overlay de performances en jeu discret, facultatif et personnalisable.
+- Intégration des lanceurs et émulateurs compatibles, sans les remplacer.
+- Quelques émulateurs essentiels préinstallés ; les autres proposés dans la boutique.
 
-### Fonctions communes
-- Sélecteur de mode et raccourcis personnalisables.
-- Notifications et identité sonore LEOS.
-- Boutique envisagée pour les applications, jeux, émulateurs et thèmes.
-- Assistant LEOS facultatif, avec des fonctions d'aide et de recommandation.
-- Mises à jour proposées à l'utilisateur, qui garde le contrôle de leur installation.
+## Desktop Mode
 
-La disponibilité et les performances de chaque fonction dépendront du matériel, des pilotes et de la compatibilité Linux.
+- Bureau KDE personnalisé avec l'identité LEOS.
+- Menu principal LEOS et dock personnalisable avec dispositions prédéfinies.
+- Centre de contrôle simplifié pour les fonctions propres à LEOS, avec accès aux paramètres Linux avancés.
+- Thèmes, fonds d'écran, sons et animations configurables.
 
-## Architecture du dépôt
+## Boutique LEOS
 
-La structure sera enrichie progressivement. Les principaux éléments prévus sont :
+La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
 
-- `recipe.yml` — recette BlueBuild de l'image LEOS.
-- `.github/workflows/` — automatisation de la construction et des vérifications.
-- `config/` — configuration propre à LEOS.
-- `desktop/` — éléments du Desktop Mode.
-- `gaming/` — éléments du Gaming Mode.
-- `branding/` — logos, animations, sons et ressources visuelles.
+**Toute installation ou désinstallation exige une confirmation explicite.** Chaque fiche doit préciser le contenu de l'opération, sa source, sa compatibilité et ses éventuelles dépendances.
 
-Les dossiers seront ajoutés au fur et à mesure que leur contenu sera défini.
+## Principes de sécurité et de fiabilité
+
+- Aucune installation ou désinstallation sans confirmation.
+- Aucune fermeture d'application sans choix explicite de l'utilisateur lors d'une transition.
+- Les mises à jour utilisent les mécanismes natifs de Bazzite ; l'utilisateur décide de leur installation.
+- Les opérations de nettoyage, suppression ou modification système demandent une confirmation.
+- Les limites de compatibilité matérielle et logicielle sont indiquées clairement.
+
+## Structure du dépôt
+
+```text
+LEOS/
+├── .github/workflows/   # Automatisation et vérifications
+├── branding/            # Logos, animations, sons et ressources
+├── config/              # Configuration partagée de LEOS
+├── desktop/             # Personnalisation du Desktop Mode
+├── docs/                # Architecture et documentation
+├── gaming/              # Application Gaming LEOS
+├── recipe.yml           # Recette BlueBuild
+└── README.md
+```
 
 ## Feuille de route
 
 1. **Fondations** — structurer le dépôt et valider la recette BlueBuild.
-2. **Première image** — construire une image LEOS minimale basée sur Bazzite.
+2. **Image minimale** — construire et tester une première image LEOS basée sur Bazzite.
 3. **Identité LEOS** — intégrer les premiers éléments visuels et le sélecteur de mode.
 4. **Desktop Mode** — développer progressivement le bureau personnalisé.
-5. **Gaming Mode** — développer l'interface gaming et la bibliothèque.
-6. **Tests et ISO** — vérifier la compatibilité, la stabilité et préparer une image installable.
+5. **Gaming Mode** — développer l'application plein écran et la bibliothèque.
+6. **Intégrations** — boutique, paramètres et outils LEOS.
+7. **Tests et ISO** — vérifier la compatibilité, la stabilité et préparer une image installable.
 
 ## État actuel
 
 - [x] Dépôt GitHub créé.
-- [x] Première recette BlueBuild ajoutée.
-- [x] Premier workflow GitHub Actions ajouté.
-- [ ] Recette et workflow à valider avant toute compilation.
-- [ ] Clé de signature à configurer dans les secrets GitHub.
-- [ ] Première image LEOS à construire et tester.
+- [x] Première recette BlueBuild ajoutée (squelette à valider).
+- [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
+- [x] Architecture générale des deux modes définie.
+- [ ] Valider la recette et le workflow avant compilation.
+- [ ] Configurer la clé de signature dans les secrets GitHub.
+- [ ] Construire et tester la première image LEOS.
 
 **Aucune image LEOS compilée ni ISO installable n'est encore disponible.**
-
-## Philosophie du projet
-
-LEOS doit rester personnalisable, cohérent, fiable et simple à utiliser. Les actions sensibles — fermeture d'applications, nettoyage, suppression ou modification système — devront demander une confirmation à l'utilisateur.
 
 ---
 
