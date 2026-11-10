@@ -1,0 +1,22 @@
+name: Build LEOS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  bluebuild:
+    name: Build LEOS image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and publish LEOS
+        uses: blue-build/github-action@v1
+        with:
+          recipe: recipe.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number || 0 }}
