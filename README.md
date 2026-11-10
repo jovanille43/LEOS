@@ -40,7 +40,8 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - Backend Gaming PySide6 : détection initiale des jeux Steam via les manifestes locaux et ajout manuel de jeux.
 - Tableau technique : premières mesures CPU/RAM et température CPU lorsque les capteurs sont exposés ; GPU et FPS restent à intégrer.
 - Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
-- Sélecteur de modes Desktop/Gaming et point d'entrée de session préparés.
+- Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
+- Premier Centre de contrôle LEOS : préférences de thème, animations, sons, overlay et profil de performances enregistrées localement.
 - Vérifications automatiques du code Python via GitHub Actions.
 
 Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
