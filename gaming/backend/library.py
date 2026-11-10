@@ -191,4 +191,7 @@ class GameLibraryModel(QAbstractListModel):
         target = launch[0]
         if "://" in target:
             return QDesktopServices.openUrl(QUrl(target))
-        return QProcess.startDetached(target, launch[1:])
+        process = QProcess()
+        process.setProgram(target)
+        process.setArguments(launch[1:])
+        return process.startDetached()
