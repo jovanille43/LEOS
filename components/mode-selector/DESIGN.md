@@ -42,3 +42,12 @@ La navigation doit être claire, avec un focus visible et une sélection cohére
 ## État
 
 Design hybride validé. Cette documentation fixe l'intention visuelle ; l'interface et les transitions restent à implémenter et à tester.
+
+## Présentation des cartes — validée
+
+Les deux cartes ont la même taille et la même importance visuelle.
+
+- **Desktop Mode :** halo cyan, emblème officiel du lion seul, ambiance sobre et élégante.
+- **Gaming Mode :** halo cyan et magenta, emblème officiel du lion avec manette, ambiance plus énergique.
+
+La différence d'ambiance doit rester cohérente avec l'identité LEOS. Aucun des deux modes ne doit sembler secondaire.
