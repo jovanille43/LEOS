@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS Session
+Comment=Restaurer le dernier mode LEOS utilisé
+Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py
+Terminal=false
+NoDisplay=true
+X-KDE-autostart-phase=2
