@@ -10,10 +10,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -46,7 +42,11 @@ def main() -> int:
                 return 1
         return 0
 
-    app = QGuiApplication(sys.argv)
+    from PySide6.QtCore import QUrl
+    from PySide6.QtGui import QGuiApplication
+    from PySide6.QtQml import QQmlApplicationEngine
+
+    app = QGuiApplication([sys.argv[0]])
     app.setApplicationName("LEOS Mode Selector")
     app.setOrganizationName("LEOS")
 
