@@ -1,15 +1,21 @@
 # LEOS — Gaming Mode
 
-Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**. Elle s'exécute au-dessus de KDE, qui reste actif en arrière-plan.
+Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, au-dessus de KDE.
 
-## Premier prototype
+## Éléments développés dans le prototype
 
-Le dépôt contient maintenant :
-- `main.py` : point d'entrée PySide6 et chargement de QML ;
-- `qml/Main.qml` : premier squelette visuel plein écran ;
-- `requirements.txt` : dépendance PySide6.
+- `main.py` : initialise Qt Quick et connecte les services backend.
+- `qml/Main.qml` : première interface plein écran avec bibliothèque, fiche de jeu, panneau rapide et formulaire d'ajout manuel.
+- `backend/library.py` : modèle de bibliothèque, détection initiale des jeux Steam à partir des fichiers `appmanifest_*.acf`, ajout manuel et lancement configuré.
+- `backend/system_monitor.py` : CPU/RAM et température CPU si les capteurs sont disponibles. Les valeurs non disponibles sont affichées comme indisponibles.
+- `backend/controller.py` : relie le modèle et les services à QML.
+- `requirements.txt` : dépendances du prototype.
 
-Pour lancer le prototype depuis ce dossier, dans un environnement Python disposant de Qt 6 :
+Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell.
+
+## Développement local
+
+Depuis le dossier `gaming/` :
 
 ```bash
 python -m venv .venv
@@ -18,13 +24,15 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Sur une distribution Linux, les bibliothèques Qt système et le support graphique doivent être disponibles. Le prototype n'a pas encore été exécuté ni testé sur matériel.
+Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte.
 
-## Prochaines étapes
+## Limites connues
 
-1. Tester le lancement sous Bazzite KDE.
-2. Remplacer les contenus provisoires par les composants de navigation LEOS.
-3. Construire la bibliothèque unifiée et ses intégrations.
-4. Ajouter les transitions cinématiques, le panneau rapide et les contrôles.
+- La détection automatique est actuellement limitée aux manifestes Steam locaux.
+- Heroic, Lutris et les autres plateformes n'ont pas encore de fournisseurs de bibliothèque.
+- Les jaquettes, métadonnées en ligne, fiches cinématiques et animations de lancement ne sont pas encore connectées.
+- Le GPU, les températures GPU et le FPS en jeu nécessitent des intégrations dédiées.
+- La navigation manette et les raccourcis globaux ne sont pas encore implémentés.
+- Le prototype n'a pas encore été exécuté ni testé sur Bazzite.
 
-Les fonctions de bibliothèque et les intégrations de lanceurs ne sont pas encore implémentées.
+Ne pas présenter ces fonctions comme opérationnelles avant les tests correspondants.
