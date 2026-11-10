@@ -13,6 +13,8 @@ class SettingsStoreTests(unittest.TestCase):
             path = Path(directory) / "settings.json"
             settings = SettingsStore(path)
             self.assertEqual(settings.get("last_mode"), "desktop")
+            self.assertEqual(settings.get("theme"), "leos-original")
+            self.assertEqual(settings.get("performance_profile"), "balanced")
             self.assertTrue(settings.get("animations_enabled"))
             self.assertFalse(path.exists())
 
@@ -22,18 +24,26 @@ class SettingsStoreTests(unittest.TestCase):
             settings = SettingsStore(path)
             settings.set("last_mode", "gaming")
             settings.set("sounds_enabled", False)
+            settings.set("theme", "cyan")
+            settings.set("performance_profile", "quiet")
 
             reloaded = SettingsStore(path)
             self.assertEqual(reloaded.get("last_mode"), "gaming")
             self.assertFalse(reloaded.get("sounds_enabled"))
+            self.assertEqual(reloaded.get("theme"), "cyan")
+            self.assertEqual(reloaded.get("performance_profile"), "quiet")
 
-    def test_unknown_keys_and_invalid_modes_are_rejected(self) -> None:
+    def test_unknown_keys_and_invalid_values_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             settings = SettingsStore(Path(directory) / "settings.json")
             with self.assertRaises(KeyError):
                 settings.set("not_a_setting", True)
             with self.assertRaises(ValueError):
                 settings.set("last_mode", "unknown")
+            with self.assertRaises(ValueError):
+                settings.set("theme", "nonexistent")
+            with self.assertRaises(TypeError):
+                settings.set("sounds_enabled", "false")
 
 
 if __name__ == "__main__":
