@@ -119,14 +119,16 @@ def upsert_manual_game(
     new_key = title_identity_key(str(new_game.get("title", "")))
     if not new_key:
         return list(games) + [new_game]
-    matching = [
-        game for game in games
-        if title_identity_key(str(game.get("title", ""))) == new_key
-    ]
-    retained = [
-        game for game in games
-        if title_identity_key(str(game.get("title", ""))) != new_key
-    ]
+    def is_same_manual_entry(game: dict[str, Any]) -> bool:
+        game_id = game.get("id")
+        return (
+            isinstance(game_id, str)
+            and game_id.startswith("manual:")
+            and title_identity_key(str(game.get("title", ""))) == new_key
+        )
+
+    matching = [game for game in games if is_same_manual_entry(game)]
+    retained = [game for game in games if not is_same_manual_entry(game)]
     replacement = dict(new_game)
     if matching:
         previous_id = matching[0].get("id")
