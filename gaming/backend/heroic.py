@@ -66,9 +66,9 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
             or record.get("installPath")
             or record.get("install_dir")
         )
-        if not isinstance(install_path, str) or not install_path.strip():
-            continue
-        install_dir = Path(install_path).expanduser()
+        if not isinstance(install_path, str):
+            install_path = ""
+        install_dir = Path(install_path).expanduser() if install_path.strip() else None
 
         title = (
             record.get("title")
@@ -99,7 +99,7 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
             "source": runner_label,
             "app_id": app_name,
             "launch": [launch_url],
-            "install_path": str(install_dir),
+            "install_path": str(install_dir) if install_dir else "",
             "artwork": find_heroic_artwork(record),
         })
         seen.add(normalized_id)
