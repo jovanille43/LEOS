@@ -22,7 +22,8 @@ class DesktopMenuTests(unittest.TestCase):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("/usr/share/applications", source)
         self.assertIn(".local/share/applications", source)
-        self.assertIn("shlex.split", source)
+        self.assertIn("parse_desktop_exec", source)
+        self.assertIn("QProcess.startDetached", source)
         self.assertIn("QProcess.startDetached", source)
         self.assertNotIn("shell=True", source)
         self.assertNotIn("os.system(", source)
@@ -60,6 +61,12 @@ class DesktopMenuTests(unittest.TestCase):
         main = (ROOT / "desktop/menu_main.py").read_text(encoding="utf-8")
         self.assertIn("ApplicationCatalog()", main)
         self.assertIn(' / "qml" / "Menu.qml"', main)
+
+    def test_menu_uses_a_dedicated_desktop_exec_field_code_parser(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("from desktop.desktop_exec import parse_desktop_exec", source)
+        self.assertIn('desktop_file=item["path"]', source)
+        self.assertNotIn("shlex.split(item[", source)
 
 
 if __name__ == "__main__":
