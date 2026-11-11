@@ -15,7 +15,7 @@ from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
 
-from .library_state import CATEGORIES, filter_games
+from .library_state import (\n    CATEGORIES, filter_games, normalize_display_title, title_identity_key,\n    duplicate_title_metadata,\n)
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
@@ -39,7 +39,7 @@ class GameLibraryModel(QAbstractListModel):
         self._manual_file = data_dir / "library.json"
         self._favorites_file = data_dir / "favorites.json"
         self._recent_file = data_dir / "recent.json"
-        self._games: list[dict[str, Any]] = []
+        self._games: list[dict[str, Any]] = []\n        self._duplicate_metadata: dict[str, dict[str, Any]] = {}
         self._visible_games: list[dict[str, Any]] = []
         self._favorites: set[str] = set()
         self._recent: list[str] = []
@@ -317,7 +317,7 @@ class GameLibraryModel(QAbstractListModel):
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
-        self._games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
+        for game in discovered.values():\n            game["title"] = normalize_display_title(str(game.get("title", "")))\n        self._games = sorted(discovered.values(), key=lambda item: item["title"].casefold())\n        self._duplicate_metadata = duplicate_title_metadata(self._games)
         available_ids = {game["id"] for game in self._games}
         self._favorites = set(self._read_id_list(self._favorites_file)) & available_ids
         self._recent = [
@@ -393,7 +393,7 @@ class GameLibraryModel(QAbstractListModel):
                 if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:"))
                 else "Ajout manuel"
             ),
-            "appId": str(game.get("app_id", "")),
+            "appId": str(game.get("app_id", "")),\n            "duplicateCount": int(self._duplicate_metadata.get(game["id"], {}).get("count", 1)),\n            "duplicateSources": list(self._duplicate_metadata.get(game["id"], {}).get("sources", [])),
         }
 
     @Slot(str, str, str, result=bool)
@@ -411,7 +411,7 @@ class GameLibraryModel(QAbstractListModel):
             return False
 
         games = self._load_manual_games()
-        game_id = f"manual:{title.casefold()}"
+        game_id = f"manual:{title_identity_key(title)}"
         games = [game for game in games if game.get("id") != game_id]
         games.append({
             "id": game_id,
