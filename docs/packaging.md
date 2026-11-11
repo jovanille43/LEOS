@@ -29,7 +29,7 @@ La base KDE fournit déjà le framework Qt et les composants QML habituels, mais
 
 Le Centre des manettes enregistre les profils, zones mortes et centres d'axes dans `~/.config/leos/controllers.json`, avec des permissions utilisateur restrictives. Il ne modifie ni les permissions udev, ni les règles système, ni les réglages Steam/Lutris. L'accès à un périphérique dépend donc des permissions de session Linux existantes.
 
-Les profils enregistrés sont chargés par le Gaming Mode pour sa propre navigation (notamment l'inversion confirmer/retour Nintendo, la zone morte et le centre des sticks). Ils ne remappent pas les commandes des jeux externes : Steam et les lanceurs conservent leur configuration, sans remappage global caché.
+Le profil « Automatique » est sélectionné par défaut. LEOS s'appuie sur le nom du périphérique et les identifiants USB connus pour reconnaître certaines manettes Nintendo Switch, Sony PlayStation et Microsoft Xbox. En cas d'identification incertaine, la disposition Standard est conservée ; l'utilisateur peut toujours imposer un profil manuel. Les profils enregistrés sont chargés par le Gaming Mode pour sa propre navigation (notamment l'inversion confirmer/retour Nintendo, la zone morte et le centre des sticks). Ils ne remappent pas les commandes des jeux externes : Steam et les lanceurs conservent leur configuration, sans remappage global caché.
 
 ## Prudence
 
