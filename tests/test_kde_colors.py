@@ -4,6 +4,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -49,6 +50,7 @@ class KdeColorSchemeTests(unittest.TestCase):
     def test_builds_complete_kde_color_scheme_ini(self):
         content = build_colorscheme("leos-original")
         parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
         parser.read_string(content)
         self.assertEqual(parser["General"]["ColorScheme"], "LEOS-leos-original")
         self.assertEqual(parser["General"]["Name"], "LEOS Original")
@@ -136,18 +138,19 @@ class KdeColorSchemeTests(unittest.TestCase):
         self.manager.apply_theme("gaming")
         self.assertEqual(self.manager._read_state()["previous_scheme"], "Nordic")
 
-    def test_failed_application_does_not_claim_theme_is_applied(self):
+    def test_failed_application_keeps_previous_scheme_recoverable(self):
         self.runner.returncode = 1
         with self.assertRaises(RuntimeError):
             self.manager.apply_theme("leos-original")
-        self.assertFalse(self.manager.can_restore())
+        self.assertTrue(self.manager.can_restore())
+        self.assertTrue(self.manager._read_state()["apply_pending"])
 
     def test_missing_apply_tool_is_reported(self):
         manager = KdeColorSchemeManager(
             self.data, self.config, self.state, apply_executable=""
         )
         # Empty string intentionally triggers PATH lookup; patch the lookup result below.
-        with unittest.mock.patch("desktop.kde_colors.shutil.which", return_value=None):
+        with mock.patch("desktop.kde_colors.shutil.which", return_value=None):
             with self.assertRaises(FileNotFoundError):
                 manager.apply_theme("leos-original")
 
@@ -164,6 +167,17 @@ class KdeColorSchemeTests(unittest.TestCase):
         state_file.parent.mkdir()
         state_file.write_text("{broken", encoding="utf-8")
         self.assertFalse(self.manager.can_restore())
+
+    def test_control_center_exposes_apply_and_restore_with_confirmation(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("KdeColorSchemeManager()", controller)
+        self.assertIn("def applyKdeTheme(self)", controller)
+        self.assertIn("def restorePreviousKdeTheme(self)", controller)
+        self.assertIn("kdeThemeConfirmation.open()", qml)
+        self.assertIn("controlCenter.applyKdeTheme()", qml)
+        self.assertIn("controlCenter.restorePreviousKdeTheme()", qml)
 
     def test_state_symlink_is_rejected_before_write(self):
         state_dir = self.state / "leos"
