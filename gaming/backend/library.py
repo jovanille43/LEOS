@@ -102,7 +102,7 @@ class GameLibraryModel(QAbstractListModel):
                 text = library_file.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 text = ""
-            for library_path in re.findall(r'"path"\\s+"([^"]+)"', text):
+            for library_path in re.findall(r'"path"\s+"([^"]+)"', text):
                 candidates.append(Path(library_path).expanduser() / "steamapps")
             for candidate in candidates:
                 if not candidate.is_dir():
@@ -114,11 +114,24 @@ class GameLibraryModel(QAbstractListModel):
                     directories.append(resolved)
         return directories
 
-    @staticmethod
-    def _steam_artwork(app_id: str, steamapps_dir: Path) -> str:
-        cache_dir = steamapps_dir.parent / "appcache" / "librarycache"
-        artwork = find_steam_artwork(cache_dir, app_id)
-        return artwork.as_uri() if artwork else ""
+    def _steam_artwork(self, app_id: str, steamapps_dir: Path) -> str:
+        cache_dirs = [
+            steamapps_dir.parent / "appcache" / "librarycache",
+            *(
+                root / "appcache" / "librarycache"
+                for root in self._steam_roots()
+            ),
+        ]
+        seen: set[str] = set()
+        for cache_dir in cache_dirs:
+            key = str(cache_dir)
+            if key in seen:
+                continue
+            seen.add(key)
+            artwork = find_steam_artwork(cache_dir, app_id)
+            if artwork:
+                return artwork.as_uri()
+        return ""
 
     @staticmethod
     def _read_steam_manifest(path: Path) -> dict[str, Any] | None:
