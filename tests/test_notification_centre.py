@@ -34,6 +34,10 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("leos.openNotificationCentre()", qml)
         self.assertIn("native=False", controller)
         self.assertIn("Lancement de jeu impossible", controller)
+        self.assertIn("toggleSilentNotifications", controller)
+        self.assertIn("silentNotificationsInGaming", controller)
+        self.assertIn("SILENCE ACTIVÉ", qml)
+        self.assertIn("ALERTES AUTORISÉES", qml)
 
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
