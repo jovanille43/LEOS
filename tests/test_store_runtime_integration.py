@@ -33,6 +33,13 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("enabled: !store.busy", qml)
         self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
 
+    def test_qprocess_streams_stdout_and_stderr_while_flatpak_runs(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn("readyReadStandardOutput.connect(self._read_output)", source)
+        self.assertIn("readyReadStandardError.connect(self._read_output)", source)
+        self.assertIn("self._stdout.extend(self._process.readAllStandardOutput().data())", source)
+        self.assertIn("self._stderr.extend(self._process.readAllStandardError().data())", source)
+
 
 if __name__ == "__main__":
     unittest.main()
