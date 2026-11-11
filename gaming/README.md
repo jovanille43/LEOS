@@ -5,10 +5,10 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 ## Éléments développés dans le prototype
 
 - `main.py` : initialise Qt Quick et connecte les services backend.
-- `qml/Main.qml` : première interface plein écran avec bibliothèque, fiche de jeu, panneau rapide et formulaire d'ajout manuel.
-- `backend/library.py` : modèle de bibliothèque, détection initiale des jeux Steam à partir des fichiers `appmanifest_*.acf`, ajout manuel et lancement configuré.
+- `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel.
+- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic et Lutris, ajout manuel, favoris et historique récent.
 - `backend/system_monitor.py` : CPU/RAM et température CPU si les capteurs sont disponibles. Les valeurs non disponibles sont affichées comme indisponibles.
-- `backend/controller.py` : relie le modèle et les services à QML.
+- `backend/controller.py` : relie le modèle et les services à QML, surveille les manettes compatibles et transmet les actions de navigation.
 - `requirements.txt` : dépendances du prototype.
 
 Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell.
