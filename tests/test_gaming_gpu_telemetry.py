@@ -29,7 +29,7 @@ class GpuTelemetryTests(unittest.TestCase):
     def test_missing_gpu_or_driver_metrics_remain_unavailable(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            metrics = SystemMonitor._read_gpu_metrics(root)
+            metrics = read_gpu_metrics(root)
         self.assertEqual(metrics["name"], "GPU non détecté")
         self.assertEqual(metrics["usage"], -1.0)
         self.assertEqual(metrics["memory_used"], -1)
@@ -43,7 +43,7 @@ class GpuTelemetryTests(unittest.TestCase):
             (device / "vendor").write_text("0x10de")
             (device / "device").write_text("0x2684")
             (device / "gpu_busy_percent").write_text("140")
-            metrics = SystemMonitor._read_gpu_metrics(root)
+            metrics = read_gpu_metrics(root)
         self.assertEqual(metrics["usage"], -1.0)
         self.assertEqual(metrics["name"], "NVIDIA · PCI 0x2684")
 
