@@ -20,6 +20,7 @@ ApplicationWindow {
     property string selectedPlatform: ""
     property string selectedSource: ""
     property string selectedArtwork: ""
+    property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
     property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
@@ -49,6 +50,7 @@ ApplicationWindow {
         selectedSource = source
         selectedIsFavorite = favorite
         selectedArtwork = artwork || ""
+        selectedArtworkFailed = false
     }
 
     function selectGameAt(row) {
@@ -63,6 +65,7 @@ ApplicationWindow {
         selectedPlatform = ""
         selectedSource = ""
         selectedArtwork = ""
+        selectedArtworkFailed = false
         selectedIsFavorite = false
     }
 
@@ -484,7 +487,10 @@ ApplicationWindow {
                         }
                         Button {
                             text: "ACTUALISER"
-                            onClicked: leos.refreshLibrary()
+                            onClicked: {
+                                window.clearSelection()
+                                leos.refreshLibrary()
+                            }
                         }
                         Button {
                             text: "+ AJOUTER UN JEU"
@@ -545,7 +551,7 @@ ApplicationWindow {
                                             Layout.preferredHeight: 100
                                             Layout.alignment: Qt.AlignVCenter
                                             radius: 8
-                                            visible: gameCard.artwork.length === 0
+                                            visible: gameCard.artwork.length === 0 || gameArtwork.status === Image.Error
                                             clip: true
                                             color: "#101b29"
                                             border.color: "#294455"
@@ -579,6 +585,7 @@ ApplicationWindow {
                                             }
                                         }
                                         Image {
+                                            id: gameArtwork
                                             Layout.preferredWidth: 70
                                             Layout.preferredHeight: 100
                                             Layout.alignment: Qt.AlignVCenter
@@ -665,6 +672,7 @@ ApplicationWindow {
                                     color: "#0b1018"
                                     border.color: "#293849"
                                     Image {
+                                        id: selectedGameArtwork
                                         anchors.fill: parent
                                         source: window.selectedArtwork
                                         visible: window.selectedArtwork.length > 0
@@ -673,11 +681,12 @@ ApplicationWindow {
                                         cache: true
                                         sourceSize.width: 560
                                         sourceSize.height: 344
+                                        onStatusChanged: window.selectedArtworkFailed = status === Image.Error
                                     }
                                     Column {
                                         anchors.centerIn: parent
                                         spacing: 6
-                                        visible: window.selectedArtwork.length === 0
+                                        visible: window.selectedArtwork.length === 0 || window.selectedArtworkFailed
                                         Label {
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: "LEOS"
