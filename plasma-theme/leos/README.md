@@ -10,6 +10,8 @@ for elements not yet customized.
   to magenta edge lighting.
 - `dialogs/background.svg`: matching widget popup and KRunner surface.
 - `widgets/background.svg`: desktop widget surface.
+- `widgets/button.svg`: normal, hover, pressed and focus states, including
+  borderless toolbutton states.
 
 The package does not include the official LEOS lion artwork because the source
 assets have not yet been added to the repository. It must not substitute a
