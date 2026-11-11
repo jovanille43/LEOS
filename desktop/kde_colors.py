@@ -112,6 +112,7 @@ def build_colorscheme(theme: str) -> str:
         "[General]",
         f"ColorScheme=LEOS-{theme}",
         f"Name={name}",
+        f"AccentColor={_rgb(primary)}",
         "shadeSortColumn=true",
         "",
         "[KDE]",
