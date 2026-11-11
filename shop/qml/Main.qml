@@ -57,12 +57,12 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     placeholderText: "Rechercher une application…"
                     color: "white"
-                    onTextChanged: appFilter.invalidate()
+                    
                 }
                 ComboBox {
                     id: categoryFilter
                     model: ["Toutes", "Gaming", "Multimedia", "Internet", "Productivité", "Création"]
-                    onActivated: appFilter.invalidate()
+                    
                 }
             }
 
