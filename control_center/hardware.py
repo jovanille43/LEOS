@@ -137,6 +137,22 @@ def _controller_details() -> str:
     return " · ".join(names) if names else "Aucune manette détectée"
 
 
+def _network_details() -> str:
+    output = _run(["ip", "-brief", "address"], timeout=1.5)
+    if not output:
+        return "État réseau indisponible"
+    entries: list[str] = []
+    for line in output.splitlines():
+        columns = line.split()
+        if len(columns) < 2 or columns[0] == "lo":
+            continue
+        interface, state = columns[0], columns[1]
+        addresses = [value for value in columns[2:] if "/" in value]
+        address_text = ", ".join(addresses) if addresses else "Aucune adresse IP"
+        entries.append(f"{interface} · {state.lower()} · {address_text}")
+    return " | ".join(entries) if entries else "Aucune interface réseau détectée"
+
+
 def _battery_details() -> str:
     try:
         batteries = sorted(Path("/sys/class/power_supply").glob("*/capacity"))
@@ -202,4 +218,5 @@ def collect_hardware_snapshot() -> dict[str, str]:
         "controllers": _controller_details(),
         "battery": _battery_details(),
         "usbDevices": _usb_details(),
+        "network": _network_details(),
     }
