@@ -32,3 +32,8 @@ Les noms de profils sont pour l'instant des préférences LEOS locales ; leur ap
 ## Prudence
 
 La recette de référence se trouve dans `recipes/recipe.yml`. L'action officielle BlueBuild recherche le fichier dans `recipes/` ou `config/`. La recette référence les paquets Fedora et copie les sources du dépôt dans l'image. Elle doit néanmoins être validée avec la version exacte du CLI BlueBuild et de Bazzite avant la première compilation. Les entrées menu/autostart ne seront actives qu'après installation effective du code par le workflow.
+
+
+## Bibliothèque multi-lanceurs
+
+Le backend Gaming détecte Steam, puis importe les manifestes locaux de Heroic/Legendary pour Epic, GOG et Amazon Games (installation native ou Flatpak). Les jeux sont ouverts via le protocole Heroic afin de conserver ses paramètres Wine/Proton par titre. LEOS ne lit ni ne modifie les jetons de connexion ou les données d'authentification.
