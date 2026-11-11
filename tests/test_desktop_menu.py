@@ -40,6 +40,10 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('applicationCatalog.launch("leos-mode-selector.desktop")', qml)
         self.assertIn('applicationCatalog.launch("leos-control-center.desktop")', qml)
 
+    def test_menu_has_quick_access_to_notification_centre(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('applicationCatalog.launch("leos-notifications.desktop")', qml)
+
     def test_menu_qml_exposes_search_categories_and_empty_state(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         for feature in ("Rechercher une application", "applicationCatalog.categories()",
