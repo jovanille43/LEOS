@@ -43,3 +43,8 @@ Ne pas présenter ces fonctions comme opérationnelles avant les tests correspon
 ### Fiches de jeux
 
 La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : titre, plateforme, source, état d'installation et identifiant du catalogue lorsqu'il est disponible. Les entrées détectées via Steam, Heroic et Lutris sont marquées « Installé » car elles proviennent de leurs catalogues locaux d'éléments installés. Les entrées créées manuellement sont identifiées comme telles ; LEOS ne prétend pas vérifier leur installation. Aucun chemin privé complet ni argument de lancement n'est exposé dans l'interface.
+
+
+### Lancement et retours d'état
+
+LEOS vérifie qu'un exécutable direct est trouvable et exécutable avant de demander son démarrage. Les adresses de protocole (par exemple `steam://`) sont transmises au gestionnaire associé via les services Qt, sans prétendre vérifier que le jeu a effectivement démarré. Pour une commande directe, LEOS indique uniquement que le processus de lancement a été créé ; le chargement complet du jeu n'est pas confirmé. Les erreurs de sélection, de commande absente, d'exécutable indisponible et de démarrage sont différenciées. Aucun shell n'est utilisé.
