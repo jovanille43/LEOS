@@ -115,7 +115,7 @@ ApplicationWindow {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 14
-                    Label { text: "Toutes les applications"; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                    Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
                     GridView {
                         id: appGrid
                         Layout.fillWidth: true
