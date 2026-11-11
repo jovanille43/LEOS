@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90">
+<g id="topleft"><path d="M8 22 Q8 8 22 8" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="top"><path d="M22 8 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="left"><path d="M8 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#090D18" fill-opacity=".92"/></g>
+<g id="right"><path d="M82 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="bottom"><path d="M22 82 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="bottomright"><path d="M68 82 Q82 82 82 68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<rect id="hint-stretch-borders" x="0" y="0" width="1" height="1" fill="none"/>
+</svg>
