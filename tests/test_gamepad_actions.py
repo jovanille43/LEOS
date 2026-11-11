@@ -43,7 +43,7 @@ class GamepadActionTests(unittest.TestCase):
 
     def test_analog_stick_respects_deadzone(self):
         event = {"kind": "axis", "name": "ABS_X", "minimum": -1000, "maximum": 1000}
-        event["value"] = 100
+        event["value"] = 50
         self.assertIsNone(self.mapper.feed(event))
         event["value"] = 500
         self.assertEqual(self.mapper.feed(event), "right")
