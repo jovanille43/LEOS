@@ -32,6 +32,8 @@ ApplicationWindow {
     Connections {
         target: controlCenter
         function onSettingsChanged() {
+            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
+            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
