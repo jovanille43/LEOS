@@ -39,6 +39,10 @@ modules:
     dest: /usr/share/leos/
 
   - type: copy
+    src: plasma-theme/leos
+    dest: /usr/share/plasma/desktoptheme/leos/
+
+  - type: copy
     src: config
     dest: /usr/share/leos/
 
