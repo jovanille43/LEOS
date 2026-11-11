@@ -23,9 +23,10 @@ class RecentApplications:
     ) -> None:
         if path is None:
             state_home_value = os.environ.get("XDG_STATE_HOME", "")
+            configured_state_home = Path(state_home_value) if state_home_value.strip() else None
             state_home = (
-                Path(state_home_value)
-                if state_home_value.strip()
+                configured_state_home
+                if configured_state_home is not None and configured_state_home.is_absolute()
                 else Path.home() / ".local" / "state"
             )
             path = state_home / "leos" / "recent-applications.json"
