@@ -47,7 +47,7 @@ class PlasmaBackupTests(unittest.TestCase):
     def test_tampered_backup_is_rejected(self):
         backup_id = self.manager.create_backup()
         (self.backups / f"{backup_id}.bak").write_text("tampered", encoding="utf-8")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(FileNotFoundError):
             self.manager.restore_backup(backup_id, confirmed=True)
 
     def test_invalid_backup_identifier_is_rejected(self):
