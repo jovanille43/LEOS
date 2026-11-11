@@ -163,12 +163,19 @@ ApplicationWindow {
                             ComboBox {
                                 id: profileBox
                                 Layout.fillWidth: true
-                                model: ["Standard", "Xbox", "PlayStation", "Nintendo", "Personnalisé"]
+                                model: ["Automatique", "Standard", "Xbox", "PlayStation", "Nintendo", "Personnalisé"]
                                 currentIndex: {
-                                    const names = ["Standard", "Xbox", "PlayStation", "Nintendo", "Personnalisé"]
+                                    const names = ["Automatique", "Standard", "Xbox", "PlayStation", "Nintendo", "Personnalisé"]
                                     return Math.max(0, names.indexOf(controllerCenter.profileName))
                                 }
                                 onActivated: controllerCenter.setProfile(currentText)
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: controllerCenter.profileHint
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
                             }
                             Label {
                                 text: "Zone morte des sticks"
