@@ -362,6 +362,12 @@ class GameLibraryModel(QAbstractListModel):
             "source": str(game.get("source", "")),
             "favorite": game["id"] in self._favorites,
             "artwork": str(game.get("artwork", "")),
+            "installStatus": (
+                "Installé"
+                if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:"))
+                else "Ajout manuel"
+            ),
+            "appId": str(game.get("app_id", "")),
         }
 
     @Slot(str, str, str, result=bool)
