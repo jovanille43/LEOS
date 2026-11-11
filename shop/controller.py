@@ -36,6 +36,8 @@ class StoreController(QObject):
         self._process = QProcess(self)
         self._process.finished.connect(self._on_finished)
         self._process.errorOccurred.connect(self._on_error)
+        self._process.readyReadStandardOutput.connect(self._read_output)
+        self._process.readyReadStandardError.connect(self._read_output)
         self._action = ""
         self._target = ""
         self._stdout = bytearray()
