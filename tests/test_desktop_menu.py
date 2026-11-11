@@ -76,6 +76,12 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('try_exec = values.get("TryExec", "").strip()', source)
         self.assertIn("os.access(try_exec, os.X_OK)", source)
 
+    def test_desktop_menu_uses_shared_accent_insensitive_search(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("from leos_core.text import normalize_search_text", source)
+        self.assertIn("item[\"desktopId\"]", source)
+        self.assertIn("normalize_search_text(self._query)", source)
+
 
 if __name__ == "__main__":
     unittest.main()
