@@ -306,7 +306,7 @@ ApplicationWindow {
                     ColumnLayout {
                         Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
-                        Label { text: "GPU  —"; color: window.muted; font.pixelSize: 15 }
+                        Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                     }
                     Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
