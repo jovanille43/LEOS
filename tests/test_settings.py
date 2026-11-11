@@ -19,6 +19,7 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertTrue(settings.get("notifications_enabled"))
             self.assertEqual(settings.get("notification_duration_seconds"), 5)
             self.assertTrue(settings.get("silent_notifications_in_gaming"))
+            self.assertEqual(settings.get("transition_app_policy"), "ask")
             self.assertFalse(path.exists())
 
     def test_values_persist_between_instances(self) -> None:
@@ -91,6 +92,29 @@ class SettingsStoreTests(unittest.TestCase):
                 second.snapshot(("theme", "notification_duration_seconds")),
                 ("magenta", 3),
             )
+    def test_transition_policy_requires_confirmation_and_rejects_close_or_keep(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            for policy in ("keep", "close", "automatic"):
+                with self.subTest(policy=policy):
+                    with self.assertRaises(ValueError):
+                        settings.set("transition_app_policy", policy)
+            settings.set("transition_app_policy", "ask")
+            self.assertEqual(SettingsStore(path).get("transition_app_policy"), "ask")
+
+    def test_legacy_automatic_transition_policy_falls_back_to_ask(self) -> None:
+        import json
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                json.dumps({"transition_app_policy": "close"}),
+                encoding="utf-8",
+            )
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("transition_app_policy"), "ask")
+
 
 if __name__ == "__main__":
     unittest.main()
