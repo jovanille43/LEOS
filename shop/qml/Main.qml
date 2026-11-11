@@ -327,6 +327,12 @@ ApplicationWindow {
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
+            Label {
+                text: store.verificationDetails
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
             Button {
                 text: "INSTALLER MAINTENANT"
                 Layout.fillWidth: true
