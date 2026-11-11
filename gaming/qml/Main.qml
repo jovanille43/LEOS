@@ -551,7 +551,7 @@ ApplicationWindow {
                                             Layout.preferredHeight: 100
                                             Layout.alignment: Qt.AlignVCenter
                                             radius: 8
-                                            visible: gameCard.artwork.length === 0 || gameArtwork.status === Image.Error
+                                            visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
                                             clip: true
                                             color: "#101b29"
                                             border.color: "#294455"
@@ -681,12 +681,14 @@ ApplicationWindow {
                                         cache: true
                                         sourceSize.width: 560
                                         sourceSize.height: 344
+                                        opacity: status === Image.Ready ? 1 : 0
+                                        Behavior on opacity { NumberAnimation { duration: 220 } }
                                         onStatusChanged: window.selectedArtworkFailed = status === Image.Error
                                     }
                                     Column {
                                         anchors.centerIn: parent
                                         spacing: 6
-                                        visible: window.selectedArtwork.length === 0 || window.selectedArtworkFailed
+                                        visible: window.selectedArtwork.length === 0 || window.selectedArtworkFailed || selectedGameArtwork.status !== Image.Ready
                                         Label {
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: "LEOS"
