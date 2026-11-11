@@ -41,6 +41,17 @@ class GamepadActionTests(unittest.TestCase):
             "down",
         )
 
+    def test_nintendo_profile_swaps_confirm_and_back_buttons(self):
+        mapper = GamepadActionMapper(profile="nintendo")
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_EAST", "value": 1}),
+            "confirm",
+        )
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "back",
+        )
+
     def test_analog_stick_respects_deadzone(self):
         event = {"kind": "axis", "name": "ABS_X", "minimum": -1000, "maximum": 1000}
         event["value"] = 50
