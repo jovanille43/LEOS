@@ -1,5 +1,6 @@
 """Ensure controller discovery never opens Linux input devices for writing."""
 
+import os
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -100,6 +101,46 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 monitor.open("/dev/input/event0")
         self.assertTrue(monitor.device is None)
+
+
+    def test_legacy_evdev_opens_descriptor_strictly_read_only(self):
+        class LegacyInputDevice:
+            def __init__(self, _path):
+                raise AssertionError("Legacy constructor must be bypassed")
+
+            def close(self):
+                if self.fd >= 0:
+                    os.close(self.fd)
+                    self.fd = -1
+
+            def capabilities(self):
+                return self._rawcapabilities
+
+        helpers = SimpleNamespace(
+            ioctl_devinfo=lambda _fd: (3, 1, 2, 1, "Legacy Gamepad", "usb", "serial"),
+            ioctl_EVIOCGVERSION=lambda _fd: 1,
+            ioctl_capabilities=lambda _fd: {},
+            ioctl_EVIOCGEFFECTS=lambda _fd: 0,
+        )
+        with (
+            patch.object(backend, "InputDevice", LegacyInputDevice),
+            patch.object(backend, "_input", helpers),
+            patch.object(
+                backend, "DeviceInfo",
+                lambda *values: SimpleNamespace(vendor=values[1], product=values[2]),
+            ),
+            patch.object(backend.os, "open", return_value=42) as open_mock,
+            patch.object(backend.os, "close") as close_mock,
+        ):
+            device = backend._open_readonly_input_device("/dev/input/event0")
+            self.assertEqual(device.fd, 42)
+            self.assertEqual(device.name, "Legacy Gamepad")
+            self.assertEqual(
+                open_mock.call_args.args[1],
+                os.O_RDONLY | os.O_NONBLOCK,
+            )
+            device.close()
+            close_mock.assert_called_once_with(42)
 
 
 if __name__ == "__main__":
