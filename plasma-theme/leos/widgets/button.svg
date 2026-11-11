@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <path id="normal-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <rect id="normal-top" x="18" y="0" width="60" height="18" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <path id="normal-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <rect id="normal-left" x="0" y="18" width="18" height="60" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <rect id="normal-center" x="18" y="18" width="60" height="60" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <rect id="normal-right" x="78" y="18" width="18" height="60" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <path id="normal-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <rect id="normal-bottom" x="18" y="78" width="60" height="18" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <path id="normal-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#17212D" fill-opacity="0.92" stroke="#344455" stroke-opacity="0.75"/>
+  <path id="hover-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="hover-top" x="18" y="0" width="60" height="18" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="hover-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="hover-left" x="0" y="18" width="18" height="60" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="hover-center" x="18" y="18" width="60" height="60" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="hover-right" x="78" y="18" width="18" height="60" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="hover-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="hover-bottom" x="18" y="78" width="60" height="18" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="hover-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#17313D" fill-opacity="0.26" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="pressed-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="pressed-top" x="18" y="0" width="60" height="18" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="pressed-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="pressed-left" x="0" y="18" width="18" height="60" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="pressed-center" x="18" y="18" width="60" height="60" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="pressed-right" x="78" y="18" width="18" height="60" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="pressed-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="pressed-bottom" x="18" y="78" width="60" height="18" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="pressed-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#0E3442" fill-opacity="0.42" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="focus-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="focus-top" x="18" y="0" width="60" height="18" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="focus-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="focus-left" x="0" y="18" width="18" height="60" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="focus-center" x="18" y="18" width="60" height="60" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="focus-right" x="78" y="18" width="18" height="60" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="focus-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="focus-bottom" x="18" y="78" width="60" height="18" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="focus-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#101722" fill-opacity="0.58" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="toolbutton-hover-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-hover-top" x="18" y="0" width="60" height="18" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-hover-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-hover-left" x="0" y="18" width="18" height="60" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-hover-center" x="18" y="18" width="60" height="60" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-hover-right" x="78" y="18" width="18" height="60" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-hover-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-hover-bottom" x="18" y="78" width="60" height="18" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-hover-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#183440" fill-opacity="0.32" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-pressed-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-pressed-top" x="18" y="0" width="60" height="18" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-pressed-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-pressed-left" x="0" y="18" width="18" height="60" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-pressed-center" x="18" y="18" width="60" height="60" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-pressed-right" x="78" y="18" width="18" height="60" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-pressed-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-pressed-bottom" x="18" y="78" width="60" height="18" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-pressed-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#0E3442" fill-opacity="0.46" stroke="#00D9FF" stroke-opacity="0.75"/>
+  <path id="toolbutton-focus-topleft" d="M8 0H18V18H0V8Q0 0 8 0Z" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-focus-top" x="18" y="0" width="60" height="18" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="toolbutton-focus-topright" d="M78 0H88Q96 0 96 8V18H78Z" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-focus-left" x="0" y="18" width="18" height="60" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-focus-center" x="18" y="18" width="60" height="60" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-focus-right" x="78" y="18" width="18" height="60" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="toolbutton-focus-bottomleft" d="M0 78H18V96H8Q0 96 0 88Z" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="toolbutton-focus-bottom" x="18" y="78" width="60" height="18" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <path id="toolbutton-focus-bottomright" d="M78 78H96V88Q96 96 88 96H78Z" fill="#101722" fill-opacity="0.62" stroke="#E33BFF" stroke-opacity="0.75"/>
+  <rect id="normal-hint-compose-over-border" x="0" y="0" width="1" height="1" fill="none"/>
+  <rect id="pressed-hint-compose-over-border" x="0" y="0" width="1" height="1" fill="none"/>
+  <rect id="normal-hint-top-margin" x="0" y="0" width="1" height="6" fill="none"/>
+  <rect id="normal-hint-bottom-margin" x="0" y="0" width="1" height="6" fill="none"/>
+  <rect id="normal-hint-left-margin" x="0" y="0" width="6" height="1" fill="none"/>
+  <rect id="normal-hint-right-margin" x="0" y="0" width="6" height="1" fill="none"/>
+</svg>
