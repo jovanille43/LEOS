@@ -156,7 +156,13 @@ ApplicationWindow {
                                 spacing: 5
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    Label { text: "◇"; color: window.cyan; font.pixelSize: 23 }
+                                    Image {
+                                        source: "image://desktop-icons/" + encodeURIComponent(icon)
+                                        sourceSize: Qt.size(64, 64)
+                                        Layout.preferredWidth: 28
+                                        Layout.preferredHeight: 28
+                                        fillMode: Image.PreserveAspectFit
+                                    }
                                     Item { Layout.fillWidth: true }
                                     ToolButton {
                                         text: isPinned ? "★" : "☆"
