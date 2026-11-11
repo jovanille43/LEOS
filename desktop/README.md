@@ -211,9 +211,7 @@ accessible depuis l'entrée **LEOS — Applications** et utilise son icône déd
 cyan/bleu/violet/magenta.
 
 Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
-du menu Plasma ni un dock intégré. Les favoris du dock, les raccourcis globaux,
-les applications récemment utilisées et l'intégration des deux modes seront
-raccordés dans les prochaines étapes. Le rendu et le lancement doivent encore
+du menu Plasma ni un dock intégré. La catégorie Favoris affiche les applications épinglées dans leur ordre personnalisé. Les favoris ne sont pas encore appliqués au panneau Plasma ; les raccourcis globaux, les applications récemment utilisées et l'intégration des deux modes restent à raccorder. Le rendu et le lancement doivent encore
 être validés sur une session Bazzite KDE réelle.
 
 ### Menu LEOS — favoris connectés au dock
