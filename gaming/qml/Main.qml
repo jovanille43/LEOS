@@ -299,7 +299,7 @@ ApplicationWindow {
                 id: quickPanel
                 Layout.fillWidth: true
                 visible: false
-                implicitHeight: 204
+                implicitHeight: 230
                 radius: 15
                 color: "#ee111722"
                 border.color: "#354052"
@@ -348,6 +348,15 @@ ApplicationWindow {
                             font.pixelSize: 9
                             wrapMode: Text.WordWrap
                             Layout.maximumWidth: 190
+                        }
+                        Repeater {
+                            model: leos.launcherStatuses
+                            delegate: Label {
+                                required property string modelData
+                                text: modelData
+                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.cyan : window.muted
+                                font.pixelSize: 9
+                            }
                         }
                     }
                     ColumnLayout {
