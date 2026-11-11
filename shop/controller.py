@@ -85,8 +85,6 @@ class StoreController(QObject):
         if not APP_ID_RE.fullmatch(item["id"]):
             self._set_status("Identifiant d'application invalide.")
             return
-        self._target = item["id"]
-        self._action = "verify-install"
         self._start(
             "verify-install",
             item["id"],
