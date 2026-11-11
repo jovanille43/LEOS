@@ -18,17 +18,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from leos_core.paths import config_home as xdg_config_home, state_home as xdg_state_home
+
 BACKUP_SCHEMA_VERSION = 1
 _BACKUP_ID = re.compile(r"^[0-9a-f]{32}$")
 MAX_BACKUP_BYTES = 32 * 1024 * 1024
 
 
 def _config_root() -> Path:
-    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    return xdg_config_home()
 
 
 def _backup_root() -> Path:
-    state = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+    state = xdg_state_home()
     return state / "leos" / "plasma-backups"
 
 
