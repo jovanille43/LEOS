@@ -32,6 +32,10 @@ class GamingController(QObject):
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
         self._power_profiles = inspect_power_profiles()
+        self._power_profile_refresh_timer = QTimer(self)
+        self._power_profile_refresh_timer.setInterval(10000)
+        self._power_profile_refresh_timer.timeout.connect(self.refreshPowerProfiles)
+        self._power_profile_refresh_timer.start()
         self.settings = SettingsStore()
         self.settings.set("last_mode", "gaming")
         self.notifications = NotificationStore()
@@ -203,6 +207,7 @@ class GamingController(QObject):
 
     def shutdown(self) -> None:
         self._notification_refresh_timer.stop()
+        self._power_profile_refresh_timer.stop()
         self._gamepad_poll_timer.stop()
         self._gamepad_refresh_timer.stop()
         self._gamepad.close()
