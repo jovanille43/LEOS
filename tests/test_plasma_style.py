@@ -64,6 +64,48 @@ class PlasmaStylePackageTests(unittest.TestCase):
         self.assertTrue({"topleft", "top", "topright", "left", "center",
                          "right", "bottomleft", "bottom", "bottomright"} <= ids)
 
+
+    def test_extended_plasma_assets_have_required_kde_ids(self):
+        expected = {
+            "widgets/tooltip.svg": {
+                "topleft", "top", "topright", "left", "center", "right",
+                "bottomleft", "bottom", "bottomright", "hint-stretch-borders",
+            },
+            "widgets/lineedit.svg": {
+                f"{state}-{position}"
+                for state in ("base", "hover", "focus")
+                for position in (
+                    "topleft", "top", "topright", "left", "center", "right",
+                    "bottomleft", "bottom", "bottomright",
+                )
+            },
+            "widgets/menubaritem.svg": {
+                f"{state}-{position}"
+                for state in ("normal", "hover", "pressed")
+                for position in (
+                    "topleft", "top", "topright", "left", "center", "right",
+                    "bottomleft", "bottom", "bottomright",
+                )
+            },
+            "widgets/viewitem.svg": {
+                f"{state}-{position}"
+                for state in ("normal", "hover", "selected", "selected+hover")
+                for position in (
+                    "topleft", "top", "topright", "left", "center", "right",
+                    "bottomleft", "bottom", "bottomright",
+                )
+            },
+            "widgets/arrows.svg": {
+                "up-arrow", "right-arrow", "down-arrow", "left-arrow",
+            },
+        }
+        for relative, required in expected.items():
+            with self.subTest(relative=relative):
+                root = ET.parse(THEME / relative).getroot()
+                self.assertEqual(root.tag, f"{SVG_NS}svg")
+                ids = {node.attrib.get("id") for node in root.iter()}
+                self.assertTrue(required <= ids, required - ids)
+
     def test_package_does_not_claim_official_lion_asset_exists(self):
         self.assertFalse((THEME / "widgets" / "branding.svg").exists())
         readme = (THEME / "README.md").read_text(encoding="utf-8")
