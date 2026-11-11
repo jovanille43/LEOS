@@ -82,6 +82,12 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("item[\"desktopId\"]", source)
         self.assertIn("normalize_search_text(self._query)", source)
 
+    def test_menu_uses_validated_desktop_entry_working_directory(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("resolve_desktop_working_directory(values.get(\"Path\", \"\"))", source)
+        self.assertIn('"workingDirectory": working_directory', source)
+        self.assertIn('QProcess.startDetached(program, args, item["workingDirectory"])', source)
+
 
 if __name__ == "__main__":
     unittest.main()
