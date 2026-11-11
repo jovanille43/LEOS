@@ -31,7 +31,7 @@ def _read(path: str | Path) -> str:
 def _memory_percent() -> float | None:
     values: dict[str, int] = {}
     for line in _read("/proc/meminfo").splitlines():
-        match = re.match(r"^(MemTotal|MemAvailable):\\s+(\\d+)\\s+kB", line)
+        match = re.match(r"^(MemTotal|MemAvailable):\s+(\d+)\s+kB", line)
         if match:
             values[match.group(1)] = int(match.group(2))
     total = values.get("MemTotal", 0)
@@ -127,7 +127,7 @@ def collect_system_diagnostics() -> dict[str, object]:
 
     if memory_percent is not None and memory_percent >= 92:
         findings.append(f"Utilisation mémoire élevée : {memory_percent:.0f}%.")
-        severity = "Critique" if severity == "OK" else severity
+        severity = "Critique"
     elif memory_percent is not None and memory_percent >= 85:
         findings.append(f"Utilisation mémoire à surveiller : {memory_percent:.0f}%.")
         if severity == "OK":
