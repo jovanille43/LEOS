@@ -83,7 +83,7 @@ ApplicationWindow {
                         anchors.margins: 8
                         clip: true
                         spacing: 6
-                        model: appFilter
+                        model: catalogModel
                         delegate: Rectangle {
                             required property string appId
                             required property string name
@@ -95,7 +95,11 @@ ApplicationWindow {
                             required property bool installed
                             required property int index
                             width: ListView.view.width
-                            height: 86
+                            height: visible ? 86 : 0
+                            visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
+                                && (searchField.text.length === 0
+                                    || name.toLowerCase().includes(searchField.text.toLowerCase())
+                                    || appId.toLowerCase().includes(searchField.text.toLowerCase()))
                             radius: 9
                             color: window.selectedRow === index ? "#182a36" : "#151b25"
                             border.color: window.selectedRow === index ? window.cyan : "#28313e"
@@ -228,28 +232,6 @@ ApplicationWindow {
                 BusyIndicator { running: store.busy; visible: store.busy; implicitWidth: 28; implicitHeight: 28 }
             }
         }
-    }
-
-    ListModel { id: filteredRows }
-    SortFilterProxyModel {
-        id: appFilter
-        sourceModel: catalogModel
-        filters: [
-            FunctionFilter {
-                component RoleData: QtObject {
-                    property string name
-                    property string category
-                    property string appId
-                }
-                function filter(data) {
-                    const query = searchField.text.toLowerCase()
-                    const category = categoryFilter.currentText
-                    return (category === "Toutes" || data.category === category)
-                        && (query.length === 0 || data.name.toLowerCase().includes(query)
-                            || data.appId.toLowerCase().includes(query))
-                }
-            }
-        ]
     }
 
     Dialog {
