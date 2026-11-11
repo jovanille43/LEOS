@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
 from desktop.layouts import DesktopLayoutStore
+from desktop.plasma_backup import PlasmaBackupManager
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 
@@ -18,6 +19,7 @@ class ControlCenterController(QObject):
         super().__init__()
         self.settings = SettingsStore()
         self.desktopLayout = DesktopLayoutStore()
+        self.plasmaBackups = PlasmaBackupManager()
         self.monitor = SystemMonitor(self)
 
     @Property(bool, notify=settingsChanged)
@@ -68,6 +70,15 @@ class ControlCenterController(QObject):
     @Property(bool, notify=settingsChanged)
     def desktopWidgetsEnabled(self) -> bool:
         return bool(self.desktopLayout.get("widgets_enabled"))
+
+    @Property(bool, notify=settingsChanged)
+    def plasmaConfigAvailable(self) -> bool:
+        path = self.plasmaBackups.config_path
+        return path.is_file() and not path.is_symlink()
+
+    @Property(bool, notify=settingsChanged)
+    def hasPlasmaBackup(self) -> bool:
+        return self.plasmaBackups.latest_backup_id() is not None
 
     @Slot(bool)
     def setAnimationsEnabled(self, enabled: bool) -> None:
@@ -123,6 +134,17 @@ class ControlCenterController(QObject):
     def setDesktopWidgetsEnabled(self, enabled: bool) -> None:
         self.desktopLayout.set_widgets_enabled(enabled)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def createPlasmaBackup(self) -> str:
+        try:
+            backup_id = self.plasmaBackups.create_backup()
+        except FileNotFoundError:
+            return "Le fichier de disposition KDE est introuvable sur cette session."
+        except (OSError, ValueError):
+            return "La sauvegarde Plasma n'a pas pu être créée."
+        self.settingsChanged.emit()
+        return f"Sauvegarde Plasma créée ({backup_id[:8]})."
 
     @Slot(str, result=bool)
     def openSettingsModule(self, section: str) -> bool:
