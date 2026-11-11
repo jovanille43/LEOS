@@ -1,0 +1,48 @@
+name: BlueBuild recipe checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "recipes/**"
+      - "gaming/**"
+      - "launcher/**"
+      - "control_center/**"
+      - "controller_center/**"
+      - "shop/**"
+      - "leos_core/**"
+      - "branding/**"
+      - "desktop/**"
+      - ".github/workflows/recipe-checks.yml"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-recipe:
+    name: Validate LEOS image recipe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install BlueBuild CLI
+        run: |
+          set -euo pipefail
+          docker pull ghcr.io/blue-build/cli:v0.9-installer
+          docker create --name bluebuild-cli ghcr.io/blue-build/cli:v0.9-installer
+          docker cp bluebuild-cli:/out/bluebuild "$RUNNER_TEMP/bluebuild"
+          docker rm bluebuild-cli
+          chmod +x "$RUNNER_TEMP/bluebuild"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Validate BlueBuild recipe
+        run: bluebuild validate recipes/recipe.yml
+
+      - name: Generate Containerfile
+        run: bluebuild generate recipes/recipe.yml -o "$RUNNER_TEMP/LEOS-Containerfile"
+
+      - name: Confirm generated build file
+        run: test -s "$RUNNER_TEMP/LEOS-Containerfile"
