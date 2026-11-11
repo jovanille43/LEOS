@@ -70,3 +70,10 @@ Le diagnostic ne lance aucune réparation, aucun redémarrage de service, aucune
 La page affiche également les huit processus les plus consommateurs en CPU, avec PID, mémoire résidente et pourcentages CPU/RAM, à partir de `ps`. Cette liste est informative et en lecture seule : LEOS ne termine aucun processus automatiquement.
 
 Un raccourci ouvre également **Moniteur système KDE** lorsqu'il est présent, sans élévation de privilèges. Il sert d'outil natif pour approfondir l'inspection ou gérer manuellement les processus ; LEOS ne termine aucun processus depuis son propre diagnostic.
+
+
+## Centre de nettoyage (prévisualisation)
+
+La page **Nettoyage** inspecte uniquement le cache de miniatures KDE (`~/.cache/thumbnails`) et les fichiers déjà placés dans la corbeille utilisateur (`~/.local/share/Trash/files`). Elle affiche le nombre de fichiers et l'espace occupé, actualisés à la demande ou toutes les 60 secondes. Les liens symboliques ne sont pas suivis ; les erreurs d'accès sont ignorées sans interrompre l'analyse.
+
+Cette première version est strictement en prévisualisation : aucun fichier n'est déplacé, vidé ou supprimé. Elle exclut volontairement le cache global des applications, les données personnelles, les journaux système et les composants immuables de Bazzite. La stratégie d'action (mise à la corbeille ou suppression définitive, avec confirmation explicite et aperçu exact des éléments) reste à définir avant d'activer toute opération destructive.
