@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QProcess, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
+from pathlib import Path
+
+from desktop.notification_store import NotificationStore
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 
@@ -19,12 +22,18 @@ class GamingController(QObject):
     desktopRequested = Signal()
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
+    notificationCountChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
         self.settings = SettingsStore()
+        self.notifications = NotificationStore()
+        self._notification_refresh_timer = QTimer(self)
+        self._notification_refresh_timer.setInterval(3000)
+        self._notification_refresh_timer.timeout.connect(self.refreshNotificationCount)
+        self._notification_refresh_timer.start()
         self._message = ""
         self._gamepad = GamepadBackend()
         self._gamepad_mapper = GamepadActionMapper()
@@ -45,6 +54,23 @@ class GamingController(QObject):
         self._refresh_gamepad()
         self._gamepad_poll_timer.start()
         self._gamepad_refresh_timer.start()
+
+    @Property(int, notify=notificationCountChanged)
+    def unreadNotificationCount(self) -> int:
+        return self.notifications.unread_count()
+
+    @Slot()
+    def refreshNotificationCount(self) -> None:
+        if self.notifications.load():
+            self.notificationCountChanged.emit()
+
+    @Slot(result=bool)
+    def openNotificationCentre(self) -> bool:
+        entry = Path(__file__).resolve().parents[2] / "desktop" / "notifications_main.py"
+        if not entry.is_file():
+            return False
+        result = QProcess.startDetached("python3", [str(entry)], str(Path.home()))
+        return bool(result[0] if isinstance(result, tuple) else result)
 
     @Property(str, notify=gamepadStatusChanged)
     def gamepadStatus(self) -> str:
@@ -126,6 +152,7 @@ class GamingController(QObject):
         return launched
 
     def shutdown(self) -> None:
+        self._notification_refresh_timer.stop()
         self._gamepad_poll_timer.stop()
         self._gamepad_refresh_timer.stop()
         self._gamepad.close()
@@ -133,5 +160,5 @@ class GamingController(QObject):
     @Slot()
     def returnToDesktop(self) -> None:
         self.settings.set("last_mode", "desktop")
-        post_notification("Retour à Desktop Mode", "Retour vers le bureau KDE demandé.", "info")
+        post_notification("Retour à Desktop Mode", "Retour vers le bureau KDE demandé.", "info", native=False)
         self.desktopRequested.emit()
