@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.library import GameLibraryModel
+from gaming.backend.steam_manifest import read_steam_manifest
 
 
 class SteamManifestTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class SteamManifestTests(unittest.TestCase):
             '}\n',
             encoding="utf-8",
         )
-        return GameLibraryModel._read_steam_manifest(manifest)
+        return read_steam_manifest(manifest)
 
     def test_reads_safe_install_directory(self):
         game = self.read_manifest("Example Game")
