@@ -77,6 +77,8 @@ ApplicationWindow {
         selectedArtwork = ""
         selectedInstallStatus = ""
         selectedAppId = ""
+        selectedDuplicateCount = 1
+        selectedDuplicateSources = ""
         selectedArtworkFailed = false
         selectedIsFavorite = false
     }
