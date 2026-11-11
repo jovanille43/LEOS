@@ -17,6 +17,30 @@ ApplicationWindow {
     property color muted: "#929bad"
     property date currentDate: new Date()
 
+    function handleGamepadAction(action) {
+        if (transitionDialog.visible) {
+            if (action === "confirm") {
+                transitionDialog.close()
+                modeManager.requestMode("gaming")
+            } else if (action === "back") {
+                transitionDialog.close()
+            }
+            return
+        }
+
+        if (action === "left" || action === "right") {
+            if (desktopCard.activeFocus)
+                gamingCard.forceActiveFocus()
+            else
+                desktopCard.forceActiveFocus()
+        } else if (action === "confirm") {
+            if (gamingCard.activeFocus)
+                transitionDialog.open()
+            else
+                modeManager.requestMode("desktop")
+        }
+    }
+
     Timer {
         interval: 1000
         running: true
@@ -200,6 +224,19 @@ ApplicationWindow {
                 font.pixelSize: 10
                 Layout.alignment: Qt.AlignHCenter
             }
+            Label {
+                text: modeSelectorController.gamepadStatus
+                color: "#596779"
+                font.pixelSize: 9
+                Layout.alignment: Qt.AlignHCenter
+            }
+        }
+    }
+
+    Connections {
+        target: modeSelectorController
+        function onGamepadAction(action) {
+            window.handleGamepadAction(action)
         }
     }
 
