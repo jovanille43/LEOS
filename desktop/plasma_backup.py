@@ -131,6 +131,7 @@ class PlasmaBackupManager:
                 or not re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"])
                 or backup_path.is_symlink()
                 or not backup_path.is_file()
+                or backup_path.stat().st_size > MAX_BACKUP_BYTES
                 or backup_path.stat().st_size != manifest["size"]
                 or _sha256(backup_path) != manifest["sha256"]
             ):
@@ -154,6 +155,8 @@ class PlasmaBackupManager:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             raise ValueError("Invalid Plasma backup identifier")
 
+        if self.backup_dir.is_symlink():
+            raise ValueError("Symbolic-link backup directories are not accepted")
         backup_path = self.backup_dir / f"{backup_id}.bak"
         manifest_path = self.backup_dir / f"{backup_id}.json"
         if backup_path.is_symlink() or manifest_path.is_symlink():
