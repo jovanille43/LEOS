@@ -12,6 +12,7 @@ modules:
       packages:
         - python3-pyside6
         - python3-psutil
+        - python3-evdev
 
   - type: copy
     src: gaming
@@ -23,6 +24,10 @@ modules:
 
   - type: copy
     src: control_center
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: controller_center
     dest: /usr/share/leos/
 
   - type: copy
@@ -43,6 +48,10 @@ modules:
 
   - type: copy
     src: desktop/applications/leos-control-center.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-controller-center.desktop
     dest: /usr/share/applications/
 
   - type: copy
