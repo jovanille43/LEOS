@@ -138,15 +138,19 @@ ApplicationWindow {
                             height: appGrid.cellHeight - 8
                             activeFocusOnTab: true
                             focus: GridView.isCurrentItem
-                            Keys.onReturnPressed: {
+                            function activateApplication() {
                                 if (!applicationCatalog.launch(desktopId))
                                     status.text = "Lancement impossible. Vérifie l’installation de l’application."
                                 else
                                     status.text = name + " : lancement demandé."
-                                event.accepted = true
                             }
-                            Keys.onEnterPressed: Keys.onReturnPressed(event)
-                            Keys.onSpacePressed: Keys.onReturnPressed(event)
+                            Keys.onPressed: {
+                                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter
+                                        || event.key === Qt.Key_Space) {
+                                    activateApplication()
+                                    event.accepted = true
+                                }
+                            }
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
