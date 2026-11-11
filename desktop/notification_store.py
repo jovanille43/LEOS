@@ -1,12 +1,15 @@
 """Private, bounded local notification inbox for LEOS-owned events."""
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import tempfile
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from contextlib import contextmanager
+from typing import Iterator
 
 MAX_NOTIFICATIONS = 100
 MAX_TITLE = 160
@@ -43,7 +46,25 @@ class NotificationStore:
         self._items: list[dict] = []
         self.load()
 
+    @contextmanager
+    def _exclusive_lock(self) -> Iterator[None]:
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink():
+            raise OSError("Notification history directory cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("Notification history lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
     def load(self) -> bool:
+        if self.path.is_symlink():
+            return False
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
         except FileNotFoundError:
@@ -70,8 +91,6 @@ class NotificationStore:
         return sum(not x["read"] for x in self._items)
 
     def add(self, title: str, body: str = "", level: str = "info") -> str:
-        if not self.load():
-            raise OSError("Notification history is invalid or inaccessible")
         if not isinstance(title, str) or not title.strip() or len(title.strip()) > MAX_TITLE:
             raise ValueError("Invalid notification title")
         if not isinstance(body, str) or len(body) > MAX_BODY:
@@ -83,50 +102,61 @@ class NotificationStore:
             "level": level, "created_at": datetime.now(timezone.utc).isoformat(),
             "read": False,
         }
-        self._items.append(record)
-        self._items = self._items[-MAX_NOTIFICATIONS:]
-        self.save()
+        with self._exclusive_lock():
+            if not self.load():
+                raise OSError("Notification history is invalid or inaccessible")
+            self._items.append(record)
+            self._items = self._items[-MAX_NOTIFICATIONS:]
+            self.save()
         return record["id"]
 
     def mark_read(self, notification_id: str) -> bool:
-        if not self.load():
-            return False
-        for item in self._items:
-            if item["id"] == notification_id:
-                item["read"] = True
-                self.save()
-                return True
+        with self._exclusive_lock():
+            if not self.load():
+                return False
+            for item in self._items:
+                if item["id"] == notification_id:
+                    if not item["read"]:
+                        item["read"] = True
+                        self.save()
+                    return True
         return False
 
     def dismiss(self, notification_id: str) -> bool:
-        if not self.load():
-            return False
-        before = len(self._items)
-        self._items = [x for x in self._items if x["id"] != notification_id]
-        if len(self._items) == before:
-            return False
-        self.save()
-        return True
+        with self._exclusive_lock():
+            if not self.load():
+                return False
+            before = len(self._items)
+            self._items = [x for x in self._items if x["id"] != notification_id]
+            if len(self._items) == before:
+                return False
+            self.save()
+            return True
 
     def mark_all_read(self) -> None:
-        if not self.load():
-            return
-        changed = False
-        for item in self._items:
-            if not item["read"]:
-                item["read"] = True
-                changed = True
-        if changed:
-            self.save()
+        with self._exclusive_lock():
+            if not self.load():
+                return
+            changed = False
+            for item in self._items:
+                if not item["read"]:
+                    item["read"] = True
+                    changed = True
+            if changed:
+                self.save()
 
     def clear(self) -> None:
-        if not self.load():
-            return
-        if self._items:
-            self._items = []
-            self.save()
+        with self._exclusive_lock():
+            if not self.load():
+                return
+            if self._items:
+                self._items = []
+                self.save()
 
     def save(self) -> None:
+        """Atomically persist the in-memory snapshot; callers hold _exclusive_lock."""
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise OSError("Notification history path cannot be a symbolic link")
         payload = json.dumps({"schema_version": 1, "items": self._items},
                              ensure_ascii=False, indent=2) + "\n"
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
