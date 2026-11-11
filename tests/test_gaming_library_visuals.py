@@ -19,6 +19,17 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("Behavior on opacity { NumberAnimation { duration: 180 } }", source)
         self.assertIn("Behavior on border.color { ColorAnimation { duration: 150 } }", source)
 
+    def test_missing_or_broken_artwork_has_a_fallback(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("gameArtwork.status === Image.Error", source)
+        self.assertIn("window.selectedArtworkFailed", source)
+        self.assertIn("onStatusChanged: window.selectedArtworkFailed = status === Image.Error", source)
+
+    def test_refresh_clears_stale_selection(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("window.clearSelection()", source)
+        self.assertIn("leos.refreshLibrary()", source)
+
     def test_library_shows_filtered_game_count(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")', source)
