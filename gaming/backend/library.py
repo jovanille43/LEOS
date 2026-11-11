@@ -228,8 +228,9 @@ class GameLibraryModel(QAbstractListModel):
         ]
         self._recent = self._recent[:50]
         self._write_id_list(self._recent_file, self._recent)
-        if self._category == "Récemment joués":
-            self._apply_filter()
+        # Keep the currently displayed row order stable while a game is launched.
+        # The recent-order view is refreshed the next time the category is opened
+        # or the user explicitly refreshes the library.
 
     @Slot(int, result="QVariantMap")
     def gameInfo(self, row: int) -> dict[str, Any]:
