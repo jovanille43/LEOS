@@ -8,6 +8,8 @@ from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal
 
+from desktop.dock_favourites import DockFavourites
+
 
 APP_DIRS = (
     Path("/usr/share/applications"),
@@ -19,6 +21,7 @@ ROLE_NAMES = {
     Qt.ItemDataRole.UserRole + 3: b"icon",
     Qt.ItemDataRole.UserRole + 4: b"category",
     Qt.ItemDataRole.UserRole + 5: b"description",
+    Qt.ItemDataRole.UserRole + 6: b"isPinned",
 }
 
 
@@ -33,6 +36,7 @@ class ApplicationCatalog(QAbstractListModel):
         self._visible: list[dict[str, str]] = []
         self._query = ""
         self._category = "Tout"
+        self.favourites = DockFavourites()
         self.refresh()
 
     def roleNames(self):
@@ -54,6 +58,8 @@ class ApplicationCatalog(QAbstractListModel):
             Qt.ItemDataRole.UserRole + 4: "category",
             Qt.ItemDataRole.UserRole + 5: "description",
         }.get(role)
+        if role == Qt.ItemDataRole.UserRole + 6:
+            return item["desktopId"] in self.favourites.items()
         return item.get(key, "") if key else None
 
     @staticmethod
@@ -134,6 +140,22 @@ class ApplicationCatalog(QAbstractListModel):
     @Slot(result=int)
     def applicationCount(self):
         return len(self._all)
+
+    @Slot(str, result=bool)
+    def toggleFavourite(self, desktop_id: str) -> bool:
+        if not any(item["desktopId"] == desktop_id for item in self._all):
+            return False
+        try:
+            if desktop_id in self.favourites.items():
+                self.favourites.unpin(desktop_id)
+            else:
+                self.favourites.pin(desktop_id)
+        except (OSError, ValueError):
+            return False
+        if self._visible:
+            self.dataChanged.emit(self.index(0, 0), self.index(len(self._visible) - 1, 0),
+                                   [Qt.ItemDataRole.UserRole + 6])
+        return True
 
     @Slot(str, result=bool)
     def launch(self, desktop_id: str) -> bool:
