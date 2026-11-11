@@ -116,16 +116,16 @@ class DesktopLayoutStore:
         self._layout["dock"] = dock
         self._layout["profile"] = "custom"
         # "custom" is an explicit state, not a selectable built-in preset.
-        self.save(allow_custom=True)
+        self.save()
 
     def set_widgets_enabled(self, enabled: bool) -> None:
         if not isinstance(enabled, bool):
             raise TypeError("enabled must be a boolean")
         self._layout["widgets_enabled"] = enabled
         self._layout["profile"] = "custom"
-        self.save(allow_custom=True)
+        self.save()
 
-    def save(self, *, allow_custom: bool = False) -> None:
+    def save(self) -> None:
         if not validate_layout(self._layout):
             raise ValueError("Refusing to save invalid LEOS desktop layout")
 
