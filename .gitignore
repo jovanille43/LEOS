@@ -10,3 +10,11 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+
+# Never commit the private image-signing key or local secret environment files.
+/cosign.key
+/cosign.key.*
+.env
+.env.*
+!.env.example
