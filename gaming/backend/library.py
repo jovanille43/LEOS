@@ -134,6 +134,17 @@ class GameLibraryModel(QAbstractListModel):
         self._games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
         self.endResetModel()
 
+    @Slot(int, result="QVariantMap")
+    def gameInfo(self, row: int) -> dict[str, str]:
+        if not 0 <= row < len(self._games):
+            return {}
+        game = self._games[row]
+        return {
+            "title": str(game.get("title", "")),
+            "platform": str(game.get("platform", "")),
+            "source": str(game.get("source", "")),
+        }
+
     @Slot(str, str, str, result=bool)
     def addManualGame(self, title: str, platform: str, command: str) -> bool:
         title = title.strip()
