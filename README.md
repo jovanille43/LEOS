@@ -58,8 +58,8 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 - Recherche par nom, plateforme ou source dans la bibliothèque.
 - Favoris et liste des jeux récemment lancés, conservés localement.
 - Navigation des catégories et des jeux à la manette ou au clavier.
-- Détection automatique initiale des jeux Steam et ajout manuel.
-- Métadonnées et jaquettes récupérées automatiquement lorsque disponibles, avec édition manuelle.
+- Détection automatique des jeux Steam dans les bibliothèques principales et secondaires, ainsi qu'ajout manuel.
+- Jaquettes Steam lues depuis le cache local (y compris les formats récents à sous-dossiers) ; aucune image n'est téléchargée par LEOS à ce stade.
 - Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
 - Retour à la bibliothèque avec une animation discrète après fermeture d'un jeu.
 - Panneau rapide horizontal en haut de l'écran.
@@ -129,7 +129,7 @@ LEOS/
 - [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
 - [x] Architecture générale des deux modes définie.
 - [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
-- [x] Navigation Gaming au clavier et à la manette, profils manette, catégories de bibliothèque, favoris et jeux récents intégrés au code source.
+- [x] Navigation Gaming au clavier et à la manette, profils manette, catégories, favoris, jeux récents, recherche et jaquettes Steam locales intégrés au code source.
 - [ ] Valider la recette et le workflow avant compilation.
 - [ ] Configurer la clé de signature dans les secrets GitHub.
 - [ ] Construire et tester la première image LEOS.
