@@ -110,7 +110,7 @@ class PlasmaBackupManager:
         return backup_id
 
     def list_backups(self) -> list[dict[str, Any]]:
-        if not self.backup_dir.is_dir():
+        if self.backup_dir.is_symlink() or not self.backup_dir.is_dir():
             return []
         entries: list[dict[str, Any]] = []
         for manifest_path in self.backup_dir.glob("*.json"):
@@ -124,7 +124,7 @@ class PlasmaBackupManager:
             if (
                 not isinstance(manifest, dict)
                 or type(manifest.get("schema_version")) is not int
-                or type(manifest.get("schema_version")) is not int or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
+                or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
                 or manifest.get("backup_id") != manifest_path.stem
                 or type(manifest.get("size")) is not int
                 or not isinstance(manifest.get("sha256"), str)
@@ -164,6 +164,7 @@ class PlasmaBackupManager:
             raise FileNotFoundError("Plasma backup manifest is unavailable") from exc
         if (
             not isinstance(manifest, dict)
+            or type(manifest.get("schema_version")) is not int
             or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
             or manifest.get("backup_id") != backup_id
             or type(manifest.get("size")) is not int
