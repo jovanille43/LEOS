@@ -40,6 +40,12 @@ ApplicationWindow {
             dockPositionBox.currentIndex = Math.max(0, positions.indexOf(controlCenter.dockPosition))
             const alignments = ["left", "center", "right"]
             dockAlignmentBox.currentIndex = Math.max(0, alignments.indexOf(controlCenter.dockAlignment))
+            const profiles = ["performance", "balanced", "quiet", "battery-saver"]
+            profileBox.currentIndex = Math.max(0, profiles.indexOf(controlCenter.performanceProfile))
+            const durations = [3, 5, 8]
+            notificationDurationBox.currentIndex = Math.max(0, durations.indexOf(controlCenter.notificationDuration))
+            const priorities = ["all", "important", "critical"]
+            notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
         }
     }
 
