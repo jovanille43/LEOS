@@ -14,11 +14,13 @@ from typing import Iterator
 MAX_NOTIFICATIONS = 100
 MAX_TITLE = 160
 MAX_BODY = 2000
+from leos_core.paths import state_home as xdg_state_home
+
 LEVELS = {"info", "success", "warning", "error"}
 
 
 def _store_path() -> Path:
-    root = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
+    root = xdg_state_home()
     return root / "leos" / "notifications.json"
 
 
