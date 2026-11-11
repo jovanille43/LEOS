@@ -6,6 +6,7 @@ own per-game launch options.
 """
 from __future__ import annotations
 
+import re
 import shutil
 from collections.abc import Sequence
 
@@ -22,7 +23,9 @@ def build_launch_command(
     command = [str(part) for part in launch]
     if not command or not enabled:
         return command
-    if "://" in command[0]:
+    # Protocol handlers delegate execution to another process; wrapping the
+    # handler would instrument the launcher rather than the actual game.
+    if any(re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", part) for part in command):
         return command
     binary = executable if executable is not None else find_mangohud()
     if not binary:
