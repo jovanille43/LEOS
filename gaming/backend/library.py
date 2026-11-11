@@ -16,6 +16,7 @@ from PySide6.QtCore import QProcess
 
 from .library_state import CATEGORIES, filter_games
 from .steam_artwork import find_steam_artwork
+from .heroic import load_heroic_games
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -133,6 +134,36 @@ class GameLibraryModel(QAbstractListModel):
                 return artwork.as_uri()
         return ""
 
+    def _heroic_installed_files(self) -> list[tuple[Path, str]]:
+        home = Path.home()
+        config_roots = [
+            home / ".config" / "heroic",
+            home / ".var/app/com.heroicgameslauncher.hgl/config/heroic",
+        ]
+        candidates: list[tuple[Path, str]] = []
+        seen: set[str] = set()
+        for root in config_roots:
+            if not root.is_dir():
+                continue
+            runner_files = {
+                "legendary": (
+                    root / "legendaryConfig/legendary/installed.json",
+                    root / "legendary/installed.json",
+                ),
+                "gog": (root / "gog_store/installed.json",),
+                "nile": (
+                    root / "nile_store/installed.json",
+                    root / "nile_config/installed.json",
+                ),
+            }
+            for runner, paths in runner_files.items():
+                for path in paths:
+                    key = str(path)
+                    if path.is_file() and key not in seen:
+                        seen.add(key)
+                        candidates.append((path, runner))
+        return candidates
+
     @staticmethod
     def _read_steam_manifest(path: Path) -> dict[str, Any] | None:
         try:
@@ -227,6 +258,10 @@ class GameLibraryModel(QAbstractListModel):
                 if game:
                     game["artwork"] = self._steam_artwork(game["app_id"], directory)
                     discovered[game["id"]] = game
+        for installed_file, runner in self._heroic_installed_files():
+            for game in load_heroic_games(installed_file, runner):
+                game["artwork"] = ""
+                discovered.setdefault(game["id"], game)
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
