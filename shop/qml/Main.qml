@@ -216,7 +216,7 @@ ApplicationWindow {
                         Button {
                             Layout.fillWidth: true
                             enabled: detailsPane.appId.length > 0 && !store.busy
-                            text: detailsPane.installedScope === "system" ? "INCLUSE DANS LEOS" : detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
+                            text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 8
