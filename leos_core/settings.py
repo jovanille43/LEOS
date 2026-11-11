@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import tempfile
@@ -79,10 +80,6 @@ class SettingsStore:
     def set(self, key: str, value: Any) -> None:
         if key not in DEFAULTS:
             raise KeyError(f"Unknown LEOS setting: {key}")
-        # Merge with the latest on-disk values before changing one key. This
-        # prevents one LEOS process from overwriting unrelated preferences
-        # saved by another process since this instance was created.
-        self.load()
         if not isinstance(value, type(DEFAULTS[key])):
             raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
         allowed = ALLOWED_VALUES.get(key)
@@ -90,8 +87,19 @@ class SettingsStore:
             raise ValueError(f"Invalid value for {key}: {value}")
         if key == "notification_duration_seconds" and value not in {3, 5, 8}:
             raise ValueError(f"Invalid value for {key}: {value}")
-        self._values[key] = value
-        self.save()
+
+        # Serialize read-modify-write across Desktop, Gaming and Control Center.
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                self.load()
+                self._values[key] = value
+                self.save()
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
