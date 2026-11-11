@@ -19,18 +19,21 @@ ApplicationWindow {
     property string selectedTitle: ""
     property string selectedPlatform: ""
     property string selectedSource: ""
+    property string selectedCategory: "Accueil"
+    property bool selectedIsFavorite: false
 
-    function selectGame(row, title, platform, source) {
+    function selectGame(row, title, platform, source, favorite) {
         selectedIndex = row
         selectedTitle = title
         selectedPlatform = platform
         selectedSource = source
+        selectedIsFavorite = favorite
     }
 
     function selectGameAt(row) {
         const info = gameLibrary.gameInfo(row)
         if (info && info.title)
-            selectGame(row, info.title, info.platform, info.source)
+            selectGame(row, info.title, info.platform, info.source, info.favorite)
     }
 
     function clearSelection() {
@@ -38,6 +41,7 @@ ApplicationWindow {
         selectedTitle = ""
         selectedPlatform = ""
         selectedSource = ""
+        selectedIsFavorite = false
     }
 
     function moveSelection(direction) {
@@ -243,8 +247,8 @@ ApplicationWindow {
                             text: modelData
                             background: Rectangle {
                                 radius: 9
-                                color: modelData === "Accueil" ? "#202b38" : "transparent"
-                                border.color: modelData === "Accueil" ? window.cyan : "transparent"
+                                color: modelData === window.selectedCategory ? "#202b38" : "transparent"
+                                border.color: modelData === window.selectedCategory ? window.cyan : "transparent"
                             }
                             contentItem: Label {
                                 text: parent.text
@@ -252,6 +256,11 @@ ApplicationWindow {
                                 leftPadding: 9
                                 verticalAlignment: Text.AlignVCenter
                                 font.pixelSize: 13
+                            }
+                            onClicked: {
+                                window.selectedCategory = modelData
+                                gameLibrary.setCategory(modelData)
+                                window.clearSelection()
                             }
                         }
                     }
@@ -273,7 +282,7 @@ ApplicationWindow {
                     RowLayout {
                         Layout.fillWidth: true
                         Label {
-                            text: "Votre bibliothèque"
+                            text: window.selectedCategory
                             color: "white"
                             font.pixelSize: 25
                             font.weight: Font.Bold
@@ -318,9 +327,10 @@ ApplicationWindow {
                                 required property string title
                                 required property string platform
                                 required property string source
+                                required property bool favorite
                                 width: gameGrid.cellWidth - 12
                                 height: gameGrid.cellHeight - 12
-                                onClicked: window.selectGame(index, title, platform, source)
+                                onClicked: window.selectGame(index, title, platform, source, favorite)
                                 background: Rectangle {
                                     radius: 13
                                     color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
@@ -392,6 +402,32 @@ ApplicationWindow {
                                     wrapMode: Text.WordWrap
                                 }
                                 Item { Layout.fillHeight: true }
+                                Button {
+                                    Layout.fillWidth: true
+                                    enabled: window.selectedIndex >= 0
+                                    text: window.selectedIsFavorite ? "RETIRER DES FAVORIS" : "AJOUTER AUX FAVORIS"
+                                    onClicked: {
+                                        const row = window.selectedIndex
+                                        const wasFavorite = window.selectedIsFavorite
+                                        const nowFavorite = gameLibrary.toggleFavorite(row)
+                                        if (window.selectedCategory === "Favoris" && wasFavorite && !nowFavorite)
+                                            window.clearSelection()
+                                        else
+                                            window.selectGameAt(row)
+                                    }
+                                    background: Rectangle {
+                                        radius: 9
+                                        color: "#191d2a"
+                                        border.color: window.magenta
+                                    }
+                                    contentItem: Label {
+                                        text: parent.text
+                                        color: "white"
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
                                 Button {
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
