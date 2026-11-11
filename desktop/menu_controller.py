@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer
 
-from desktop.desktop_exec import parse_desktop_exec
+from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
 from leos_core.text import normalize_search_text
@@ -96,6 +96,10 @@ class ApplicationCatalog(QAbstractListModel):
         # entries whose Desktop Entry explicitly requires a terminal window.
         if values.get("Terminal", "false").casefold() == "true":
             return None
+        try:
+            working_directory = resolve_desktop_working_directory(values.get("Path", ""))
+        except ValueError:
+            return None
         try_exec = values.get("TryExec", "").strip()
         if try_exec:
             if os.path.isabs(try_exec):
@@ -114,6 +118,7 @@ class ApplicationCatalog(QAbstractListModel):
             "description": values.get("Comment", ""),
             "exec": exec_line,
             "path": str(path),
+            "workingDirectory": working_directory,
         }
 
     @Slot()
@@ -219,7 +224,7 @@ class ApplicationCatalog(QAbstractListModel):
                 return False
             program = resolved
         from PySide6.QtCore import QProcess
-        result = QProcess.startDetached(program, args, str(Path.home()))
+        result = QProcess.startDetached(program, args, item["workingDirectory"])
         ok = result[0] if isinstance(result, tuple) else result
         if not ok:
             self.launchFailed.emit("Impossible de démarrer cette application.")
