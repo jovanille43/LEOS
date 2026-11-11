@@ -41,7 +41,7 @@ La navigation doit être claire, avec un focus visible et une sélection cohére
 
 ## État
 
-Design hybride validé. Cette documentation fixe l'intention visuelle ; l'interface et les transitions restent à implémenter et à tester.
+Design hybride validé. Le sélecteur, l'horloge, le rappel du dernier mode et la navigation souris/clavier/manette sont intégrés côté code. Les animations cinématiques officielles et les tests sur session KDE réelle restent à réaliser.
 
 ## Présentation des cartes — validée
 
