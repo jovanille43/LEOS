@@ -8,6 +8,7 @@ from control_center.settings_modules import (
     SETTINGS_MODULES,
     general_settings_command,
     settings_module_command,
+    system_monitor_command,
 )
 
 
@@ -44,6 +45,15 @@ class SettingsModuleCommandTests(unittest.TestCase):
     def test_missing_kde_tools_returns_no_command(self):
         self.assertIsNone(settings_module_command("bluetooth", lambda _name: None))
         self.assertIsNone(general_settings_command(lambda _name: None))
+
+    def test_native_system_monitor_is_opened_only_when_installed(self):
+        self.assertEqual(
+            system_monitor_command(
+                lambda name: "/usr/bin/plasma-systemmonitor" if name == "plasma-systemmonitor" else None
+            ),
+            ["/usr/bin/plasma-systemmonitor"],
+        )
+        self.assertIsNone(system_monitor_command(lambda _name: None))
 
     def test_general_settings_command_has_no_user_arguments(self):
         self.assertEqual(
