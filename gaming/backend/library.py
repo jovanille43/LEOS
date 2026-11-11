@@ -15,6 +15,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
 
 from .library_state import CATEGORIES, filter_games
+from .steam_artwork import find_steam_artwork
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -23,6 +24,7 @@ class GameLibraryModel(QAbstractListModel):
     SourceRole = TitleRole + 2
     AppIdRole = TitleRole + 3
     FavoriteRole = TitleRole + 4
+    ArtworkRole = TitleRole + 5
 
     def __init__(self) -> None:
         super().__init__()
@@ -46,6 +48,7 @@ class GameLibraryModel(QAbstractListModel):
             self.SourceRole: QByteArray(b"source"),
             self.AppIdRole: QByteArray(b"appId"),
             self.FavoriteRole: QByteArray(b"favorite"),
+            self.ArtworkRole: QByteArray(b"artwork"),
         }
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -64,17 +67,58 @@ class GameLibraryModel(QAbstractListModel):
         }
         if role == self.FavoriteRole:
             return game["id"] in self._favorites
+        if role == self.ArtworkRole:
+            return str(game.get("artwork", ""))
         key = mapping.get(role)
         return game.get(key) if key else None
 
-    def _steam_directories(self) -> list[Path]:
+    def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [
-            home / ".local/share/Steam/steamapps",
-            home / ".steam/steam/steamapps",
-            home / ".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps",
+            home / ".local/share/Steam",
+            home / ".steam/steam",
+            home / ".steam/root",
+            home / ".var/app/com.valvesoftware.Steam/.local/share/Steam",
         ]
-        return [path for path in candidates if path.is_dir()]
+        roots: list[Path] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            if not candidate.is_dir():
+                continue
+            resolved = candidate.resolve()
+            key = str(resolved)
+            if key not in seen:
+                seen.add(key)
+                roots.append(resolved)
+        return roots
+
+    def _steam_directories(self) -> list[Path]:
+        directories: list[Path] = []
+        seen: set[str] = set()
+        for root in self._steam_roots():
+            candidates = [root / "steamapps"]
+            library_file = root / "steamapps" / "libraryfolders.vdf"
+            try:
+                text = library_file.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            for library_path in re.findall(r'"path"\\s+"([^"]+)"', text):
+                candidates.append(Path(library_path).expanduser() / "steamapps")
+            for candidate in candidates:
+                if not candidate.is_dir():
+                    continue
+                resolved = candidate.resolve()
+                key = str(resolved)
+                if key not in seen:
+                    seen.add(key)
+                    directories.append(resolved)
+        return directories
+
+    @staticmethod
+    def _steam_artwork(app_id: str, steamapps_dir: Path) -> str:
+        cache_dir = steamapps_dir.parent / "appcache" / "librarycache"
+        artwork = find_steam_artwork(cache_dir, app_id)
+        return artwork.as_uri() if artwork else ""
 
     @staticmethod
     def _read_steam_manifest(path: Path) -> dict[str, Any] | None:
@@ -168,6 +212,7 @@ class GameLibraryModel(QAbstractListModel):
             for manifest in directory.glob("appmanifest_*.acf"):
                 game = self._read_steam_manifest(manifest)
                 if game:
+                    game["artwork"] = self._steam_artwork(game["app_id"], directory)
                     discovered[game["id"]] = game
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
