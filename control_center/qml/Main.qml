@@ -18,6 +18,7 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
+    property string kdeThemeNotice: ""
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -36,6 +37,29 @@ ApplicationWindow {
             dockPositionBox.currentIndex = Math.max(0, positions.indexOf(controlCenter.dockPosition))
             const alignments = ["left", "center", "right"]
             dockAlignmentBox.currentIndex = Math.max(0, alignments.indexOf(controlCenter.dockAlignment))
+        }
+    }
+
+    Dialog {
+        id: kdeThemeConfirmation
+        property string action: "apply"
+        modal: true
+        title: action === "apply" ? "Appliquer le thème LEOS à KDE ?" : "Restaurer le thème KDE précédent"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: kdeThemeConfirmation.action === "apply"
+                ? "LEOS va installer son schéma de couleurs dans ton espace utilisateur puis demander à KDE de l'appliquer. Tes panneaux, icônes, disposition et fichiers système ne seront pas modifiés."
+                : "LEOS va réappliquer le schéma de couleurs KDE enregistré avant le premier changement LEOS."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            Layout.preferredWidth: 420
+            padding: 12
+        }
+        onAccepted: {
+            if (action === "apply")
+                window.kdeThemeNotice = controlCenter.applyKdeTheme()
+            else
+                window.kdeThemeNotice = controlCenter.restorePreviousKdeTheme()
         }
     }
 
@@ -406,6 +430,68 @@ ApplicationWindow {
                                             radius: 3
                                             color: window.themeColors.accent_secondary
                                         }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 190
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "THÈME KDE PLASMA"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Transfère la palette LEOS vers les applications KDE et les éléments Plasma compatibles. L'application demande toujours une confirmation."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Schéma KDE actif : " + controlCenter.activeKdeColorScheme
+                                        color: window.themeColors.text
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Button {
+                                            text: "Appliquer à KDE"
+                                            enabled: controlCenter.kdeColorSchemeToolAvailable
+                                            onClicked: {
+                                                kdeThemeConfirmation.action = "apply"
+                                                kdeThemeConfirmation.open()
+                                            }
+                                        }
+                                        Button {
+                                            text: "Restaurer le précédent"
+                                            enabled: controlCenter.canRestoreKdeTheme
+                                            onClicked: {
+                                                kdeThemeConfirmation.action = "restore"
+                                                kdeThemeConfirmation.open()
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: !controlCenter.kdeColorSchemeToolAvailable
+                                            ? "Outil plasma-apply-colorscheme indisponible sur cette session."
+                                            : window.kdeThemeNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                 }
                             }
