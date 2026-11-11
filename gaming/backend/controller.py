@@ -28,6 +28,7 @@ class GamingController(QObject):
     notificationSettingsChanged = Signal()
     powerProfilesChanged = Signal()
     mangoHudChanged = Signal()
+    launchStatusChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -99,6 +100,10 @@ class GamingController(QObject):
         self.messageChanged.emit(message)
         self.powerProfilesChanged.emit()
         return success
+
+    @Property(str, notify=launchStatusChanged)
+    def lastLaunchStatus(self) -> str:
+        return self.library.lastLaunchStatus
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
@@ -220,12 +225,9 @@ class GamingController(QObject):
         launched = self.library.launchGame(
             row, mango_hud=bool(mango_hud and self._mangohud_enabled)
         )
-        self._message = (
-            ""
-            if launched
-            else "Impossible d'ouvrir ce jeu avec sa configuration actuelle."
-        )
+        self._message = self.library.lastLaunchStatus
         self.messageChanged.emit(self._message)
+        self.launchStatusChanged.emit()
         if not launched:
             post_notification(
                 "Lancement de jeu impossible",
