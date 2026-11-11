@@ -9,6 +9,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from leos_core.paths import config_home as xdg_config_home
+
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
@@ -39,8 +41,7 @@ class SettingsStore:
     """Stores user preferences in XDG_CONFIG_HOME without editing system files."""
 
     def __init__(self, path: Path | None = None) -> None:
-        config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-        self.path = path or config_home / "leos" / "settings.json"
+        self.path = path or xdg_config_home() / "leos" / "settings.json"
         self._values = DEFAULTS.copy()
         self.load()
 
