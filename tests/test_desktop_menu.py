@@ -1,9 +1,14 @@
 """Structural tests for the LEOS application menu."""
+import os
+import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+from desktop.menu_controller import ApplicationCatalog, localized_desktop_value
 
 
 class DesktopMenuTests(unittest.TestCase):
@@ -109,6 +114,51 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("def localized_desktop_value(", source)
         self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
         self.assertIn('localized_desktop_value(values, "Comment", locale_name)', source)
+
+    def test_localized_desktop_value_prefers_country_then_language(self):
+        values = {
+            "Name": "Generic name",
+            "Name[fr]": "Nom français",
+            "Name[fr_FR]": "Nom français France",
+        }
+        self.assertEqual(
+            localized_desktop_value(values, "Name", "fr_FR"),
+            "Nom français France",
+        )
+        self.assertEqual(
+            localized_desktop_value({"Name": "Generic", "Name[fr]": "Français"}, "Name", "fr_CA"),
+            "Français",
+        )
+        self.assertEqual(
+            localized_desktop_value({"Name": "Generic"}, "Name", "C"),
+            "Generic",
+        )
+
+    def test_catalog_hides_entries_for_other_desktops(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gn_only = root / "gnome.desktop"
+            gn_only.write_text(
+                "[Desktop Entry]\\nType=Application\\nName=GNOME Only\\n"
+                "OnlyShowIn=GNOME;\\nExec=/usr/bin/true\\n",
+                encoding="utf-8",
+            )
+            kde_hidden = root / "kde-hidden.desktop"
+            kde_hidden.write_text(
+                "[Desktop Entry]\\nType=Application\\nName=Not KDE\\n"
+                "NotShowIn=KDE;\\nExec=/usr/bin/true\\n",
+                encoding="utf-8",
+            )
+            kde_only = root / "kde.desktop"
+            kde_only.write_text(
+                "[Desktop Entry]\\nType=Application\\nName=KDE App\\n"
+                "OnlyShowIn=KDE;\\nExec=/usr/bin/true\\n",
+                encoding="utf-8",
+            )
+            with patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "KDE:Plasma"}):
+                self.assertIsNone(ApplicationCatalog._read_entry(gn_only))
+                self.assertIsNone(ApplicationCatalog._read_entry(kde_hidden))
+                self.assertEqual(ApplicationCatalog._read_entry(kde_only)["name"], "KDE App")
 
 
 if __name__ == "__main__":
