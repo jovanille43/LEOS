@@ -20,7 +20,7 @@ def _is_gamepad(device: Any) -> bool:
     capabilities = device.capabilities()
     keys = set(capabilities.get(ecodes.EV_KEY, []))
     has_gamepad_buttons = any(
-        ecodes.BTN_GAMEPAD <= code <= ecodes.BTN_THUMBR
+        getattr(ecodes, "BTN_JOYSTICK", ecodes.BTN_GAMEPAD) <= code <= ecodes.BTN_THUMBR
         for code in keys
     )
     dpad = any(
@@ -82,6 +82,7 @@ class GamepadBackend:
             self.close()
             raise ValueError("This input device is not a game controller")
         self.axes = {}
+        self.axis_ranges = {}
         self.axis_ranges = {}
         for code in self.device.capabilities().get(ecodes.EV_ABS, []):
             name = ecodes.ABS.get(code, f"AXIS_{code}")
