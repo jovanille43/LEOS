@@ -90,7 +90,8 @@ class ApplicationCatalog(QAbstractListModel):
             "exec": exec_line,
         }
 
-    @Slot()\n    def refresh(self):
+    @Slot()
+    def refresh(self):
         found: dict[str, dict[str, str]] = {}
         for directory in APP_DIRS:
             if not directory.is_dir():
@@ -159,7 +160,8 @@ class ApplicationCatalog(QAbstractListModel):
                 return False
             program = resolved
         from PySide6.QtCore import QProcess
-        ok = QProcess.startDetached(program, args, str(Path.home()))
+        result = QProcess.startDetached(program, args, str(Path.home()))
+        ok = result[0] if isinstance(result, tuple) else result
         if not ok:
             self.launchFailed.emit("Impossible de démarrer cette application.")
         return bool(ok)
