@@ -51,14 +51,21 @@ def _config_path() -> Path:
 def validate_layout(value: object) -> bool:
     if not isinstance(value, dict) or set(value) != set(DEFAULT_LAYOUT):
         return False
-    if value.get("schema_version") != 1 or value.get("profile") not in (set(PROFILES) | {"custom"}):
+    if type(value.get("schema_version")) is not int or value["schema_version"] != 1:
+        return False
+    profile = value.get("profile")
+    if not isinstance(profile, str) or profile not in (set(PROFILES) | {"custom"}):
         return False
     dock = value.get("dock")
     if not isinstance(dock, dict) or set(dock) != {"enabled", "position", "alignment", "auto_hide"}:
         return False
-    if not all(isinstance(dock.get(k), bool) for k in ("enabled", "auto_hide")):
+    if not all(type(dock.get(k)) is bool for k in ("enabled", "auto_hide")):
         return False
-    if dock.get("position") not in POSITIONS or dock.get("alignment") not in ALIGNMENTS:
+    position = dock.get("position")
+    alignment = dock.get("alignment")
+    if not isinstance(position, str) or position not in POSITIONS:
+        return False
+    if not isinstance(alignment, str) or alignment not in ALIGNMENTS:
         return False
     return isinstance(value.get("widgets_enabled"), bool)
 
@@ -108,9 +115,9 @@ class DesktopLayoutStore:
                 continue
             if key in {"enabled", "auto_hide"} and not isinstance(value, bool):
                 raise TypeError(f"{key} must be a boolean")
-            if key == "position" and value not in POSITIONS:
+            if key == "position" and (not isinstance(value, str) or value not in POSITIONS):
                 raise ValueError("Invalid dock position")
-            if key == "alignment" and value not in ALIGNMENTS:
+            if key == "alignment" and (not isinstance(value, str) or value not in ALIGNMENTS):
                 raise ValueError("Invalid dock alignment")
             dock[key] = value
         self._layout["dock"] = dock
