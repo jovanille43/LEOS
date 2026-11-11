@@ -101,6 +101,15 @@ class PlasmaInspectorTests(unittest.TestCase):
         self.assertEqual(result["status"], "unsafe")
         self.assertFalse(result["available"])
 
+    def test_control_center_exposes_inspection_but_not_apply(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def inspectPlasmaLayout(self)", controller)
+        self.assertIn("controlCenter.inspectPlasmaLayout()", qml)
+        self.assertIn("INSPECTION DU BUREAU KDE", qml)
+        self.assertNotIn("applyPlasmaLayout", controller + qml)
+
     def test_report_explains_read_only_state(self):
         result = inspect_plasma_config(self.path)
         store = DesktopLayoutStore(self.path.parent / "desktop-layout.json")
