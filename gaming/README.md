@@ -8,6 +8,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 - `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel.
 - `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic et Lutris, ajout manuel, favoris et historique récent.
 - `backend/system_monitor.py` : CPU/RAM, température CPU et télémétrie GPU/VRAM via les métriques DRM exposées par le pilote Linux. Les données non fournies par le pilote restent indisponibles.
+- `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/controller.py` : relie le modèle et les services à QML, surveille les manettes compatibles et transmet les actions de navigation.
 - `requirements.txt` : dépendances du prototype.
 
@@ -33,5 +34,6 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 - Les métadonnées en ligne, les fiches cinématiques et les animations de lancement ne sont pas encore connectées.
 - La charge GPU et la VRAM sont lues via sysfs DRM lorsqu'elles sont exposées (notamment sur les pilotes AMD compatibles). Le nom affiché identifie le constructeur et l'identifiant PCI, pas nécessairement le modèle commercial. La température GPU et le FPS en jeu nécessitent encore des intégrations dédiées ; les valeurs non disponibles ne sont pas simulées.
 - La navigation à la manette couvre les directions, la validation, le retour et le panneau rapide. Les raccourcis globaux du système restent à définir.
+- Les profils d'énergie sont limités aux modes natifs détectés (Performance, Équilibré, Économie d'énergie). LEOS ne simule pas de profil silencieux distinct et ne pilote pas directement les ventilateurs ; si le service système est absent, les commandes sont désactivées.
 - Les tests automatisés vérifient les fonctions Python et les contrats d'intégration QML ; l'exécution réelle de l'interface et la validation matérielle sur Bazzite restent à effectuer.
 Ne pas présenter ces fonctions comme opérationnelles avant les tests correspondants.
