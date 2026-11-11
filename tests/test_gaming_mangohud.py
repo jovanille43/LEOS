@@ -25,6 +25,20 @@ class MangoHudTests(unittest.TestCase):
             ["steam://rungameid/123", "--ignored"],
         )
 
+    def test_steam_protocol_argument_does_not_wrap_steam_client(self):
+        launch = ["steam", "steam://rungameid/123"]
+        self.assertEqual(
+            build_launch_command(launch, True, "/usr/bin/mangohud"),
+            launch,
+        )
+
+    def test_lutris_protocol_argument_does_not_wrap_lutris(self):
+        launch = ["lutris", "lutris:rungameid/123"]
+        self.assertEqual(
+            build_launch_command(launch, True, "/usr/bin/mangohud"),
+            launch,
+        )
+
     def test_missing_mangohud_keeps_original_command(self):
         self.assertEqual(
             build_launch_command(["/games/example"], True, ""),
