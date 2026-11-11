@@ -551,7 +551,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 150
+                                Layout.preferredHeight: 195
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
