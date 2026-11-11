@@ -27,44 +27,43 @@ class PlasmaAdapterTests(unittest.TestCase):
         script = build_panel_management_script(self.store.get())
         self.assertIn(LEOS_PANEL_MARKER, script)
         self.assertIn('panel.readConfig("managedBy", "")', script)
-        self.assertIn('panel.remove()', script)
+        self.assertIn('panel.writeConfig("managedBy", markerValue)', script)
 
-    def test_script_does_not_adopt_or_remove_unmanaged_panels(self):
+    def test_script_does_not_adopt_unmanaged_panels(self):
         script = build_panel_management_script(self.store.get())
         self.assertIn('if (isLeosPanel(allPanels[i]))', script)
         self.assertIn('var panel = existing.length === 1 ? existing[0] : null', script)
         self.assertIn('panel = new Panel()', script)
-        self.assertNotIn('allPanels[0].remove()', script)
+        self.assertIn('desired.enabled && !panel && allPanels.length > 0', script)
 
-    def test_script_checks_widget_availability_and_avoids_duplicates(self):
+    def test_script_checks_widget_availability_before_panel_creation(self):
         script = build_panel_management_script(self.store.get())
         for widget in PANEL_WIDGETS:
             self.assertIn(widget, script)
-        self.assertIn('availableTypes.indexOf(widgetType)', script)
-        self.assertIn('currentTypes.indexOf(widgetType)', script)
+        self.assertIn('availableTypes.indexOf(widgetTypes[a])', script)
+        self.assertIn('newPanelWidgets.length < 2', script)
 
-    def test_script_refuses_to_create_a_duplicate_beside_unmanaged_panels(self):
+    def test_script_never_deletes_a_panel_or_widget(self):
         script = build_panel_management_script(self.store.get())
-        self.assertIn('desired.enabled && !panel && allPanels.length > 0', script)
-        self.assertIn('refuse de créer un doublon', script)
+        self.assertNotIn('.remove()', script)
+        self.assertIn('LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1', script)
+
+    def test_disabling_dock_is_not_applied_yet(self):
+        self.store.set_dock(enabled=False)
+        script = build_panel_management_script(self.store.get())
+        self.assertIn('if (!desired.enabled)', script)
+        self.assertIn('LEOS_PANEL_DISABLE_NOT_IMPLEMENTED=1', script)
+        self.assertNotIn('.remove()', script)
 
     def test_script_requires_plasma_six_or_newer(self):
         script = build_panel_management_script(self.store.get())
         self.assertIn('versionMajor < 6', script)
         self.assertIn('applicationVersion', script)
 
-    def test_script_contains_rollback_for_existing_or_new_panel(self):
+    def test_script_contains_rollback_for_existing_panel_properties(self):
         script = build_panel_management_script(self.store.get())
-        self.assertIn('if (created && panel)', script)
         self.assertIn('panel.location = before.location', script)
-        self.assertIn('addedWidgets[r].remove()', script)
-
-    def test_disabling_dock_removes_only_marked_leos_panel(self):
-        self.store.set_dock(enabled=False)
-        script = build_panel_management_script(self.store.get())
-        self.assertIn('if (!desired.enabled)', script)
-        self.assertIn('if (panel) {\n            panel.remove();', script)
-        self.assertIn('LEOS_PANEL_ALREADY_ABSENT', script)
+        self.assertIn('panel.alignment = before.alignment', script)
 
     def test_invalid_layout_is_rejected(self):
         with self.assertRaises(ValueError):
@@ -73,6 +72,7 @@ class PlasmaAdapterTests(unittest.TestCase):
     def test_capabilities_are_honest_about_runtime_validation(self):
         capabilities = adapter_capabilities()
         self.assertFalse(capabilities["touches_unmanaged_panels"])
+        self.assertFalse(capabilities["can_remove_leos_owned_dock"])
         self.assertFalse(capabilities["desktop_widgets_applied"])
         self.assertFalse(capabilities["runtime_validated_on_bazzite"])
         self.assertTrue(capabilities["requires_backup_and_explicit_confirmation"])
