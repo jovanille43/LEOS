@@ -55,7 +55,9 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
 - Bibliothèque unifiée de jeux PC et de jeux émulés, avec catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade.
+- Recherche par nom, plateforme ou source dans la bibliothèque.
 - Favoris et liste des jeux récemment lancés, conservés localement.
+- Navigation des catégories et des jeux à la manette ou au clavier.
 - Détection automatique initiale des jeux Steam et ajout manuel.
 - Métadonnées et jaquettes récupérées automatiquement lorsque disponibles, avec édition manuelle.
 - Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
