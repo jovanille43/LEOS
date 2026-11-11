@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
+from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 
 
@@ -14,6 +15,7 @@ class ControlCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self.monitor = SystemMonitor(self)
 
     @Property(bool, notify=settingsChanged)
     def animationsEnabled(self) -> bool:
