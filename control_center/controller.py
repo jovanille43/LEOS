@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
 
-from control_center.settings_modules import general_settings_command, settings_module_command
+from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
 from desktop.themes import palette_for_theme
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
@@ -575,6 +575,11 @@ class ControlCenterController(QObject):
     def openSettingsModule(self, section: str) -> bool:
         """Open one allowlisted KDE settings module without running a shell."""
         return self._start_detached(settings_module_command(section))
+
+    @Slot(result=bool)
+    def openSystemMonitor(self) -> bool:
+        """Open the native KDE process monitor without elevating privileges."""
+        return self._start_detached(system_monitor_command())
 
     @Slot(result=bool)
     def openAdvancedSettings(self) -> bool:
