@@ -281,7 +281,6 @@ class GameLibraryModel(QAbstractListModel):
                     discovered[game["id"]] = game
         for installed_file, runner in self._heroic_installed_files():
             for game in load_heroic_games(installed_file, runner):
-                game["artwork"] = ""
                 discovered.setdefault(game["id"], game)
         data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
         for database in self._lutris_databases():
