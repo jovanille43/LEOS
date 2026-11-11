@@ -63,7 +63,10 @@ de contrôle expose ces préférences et les conserve entre les sessions.
 reconfigurent pas encore le panneau Plasma. L'intégration Plasma devra détecter
 la configuration active, créer une sauvegarde restaurable, vérifier les
 applications épinglées et demander une confirmation explicite avant toute
-modification. Aucune commande de configuration KDE n'est exécutée par ce module.
+modification. Le Centre de contrôle expose la création d'une sauvegarde. La restauration
+reste une opération de maintenance explicite : elle n'est pas déclenchée depuis
+l'interface tant que le comportement de Plasma pendant une session active n'a
+pas été validé. Aucune commande de configuration KDE n'est exécutée par ce module.
 
 
 ## Sauvegarde et restauration Plasma
