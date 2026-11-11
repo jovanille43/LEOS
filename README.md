@@ -134,13 +134,13 @@ LEOS/
 
 - [x] Dépôt GitHub créé.
 - [x] Recette BlueBuild structurée dans `recipes/recipe.yml`.
-- [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
+- [x] Workflows GitHub Actions de tests Python et de validation/génération de la recette BlueBuild exécutés avec succès.
 - [x] Architecture générale des deux modes définie.
 - [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
 - [x] Navigation Gaming au clavier et à la manette, profils manette, catégories, favoris, jeux récents, recherche, jaquettes Steam locales et imports Steam, Heroic et Lutris intégrés au code source.
-- [ ] Valider la recette et le workflow avant compilation.
-- [ ] Configurer la clé de signature dans les secrets GitHub.
-- [ ] Construire et tester la première image LEOS.
+- [x] Valider la recette BlueBuild et générer le Containerfile par GitHub Actions.
+- [ ] Vérifier la configuration de la clé publique `cosign.pub` et du secret `SIGNING_SECRET`.
+- [ ] Déclencher manuellement le build, construire une image LEOS puis la tester sur un PC de test.
 
 **Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
 
