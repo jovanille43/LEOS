@@ -13,6 +13,7 @@ modules:
         - python3-pyside6
         - python3-psutil
         - python3-evdev
+        - aurorae
 
   - type: copy
     src: gaming
@@ -45,6 +46,10 @@ modules:
   - type: copy
     src: icons/leos
     dest: /usr/share/icons/leos/
+
+  - type: copy
+    src: aurorae/leos
+    dest: /usr/share/aurorae/themes/leos/
 
   - type: copy
     src: config
