@@ -15,7 +15,8 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
     def test_qml_passes_artwork_through_game_selection(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('property string selectedArtwork: ""', source)
-        self.assertIn('info.artwork, info.installStatus, info.appId)', source)
+        self.assertIn('info.artwork, info.installStatus, info.appId,', source)
+        self.assertIn('info.duplicateCount, info.duplicateSources)', source)
         self.assertIn('source: window.selectedArtwork', source)
         self.assertIn('window.selectedArtwork.length === 0', source)
 
@@ -80,6 +81,15 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         self.assertIn("self.launcherStatusChanged.emit()", controller)
         self.assertIn("self.library.lastLaunchStatus,", controller)
         self.assertIn("self._launcher_refresh_timer.stop()", controller)
+
+    def test_duplicate_metadata_is_exposed_without_private_paths(self):
+        backend = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('"duplicateCount": int(self._duplicate_metadata', backend)
+        self.assertIn('"duplicateSources": list(self._duplicate_metadata', backend)
+        self.assertIn('visible: window.selectedDuplicateCount > 1', qml)
+        self.assertIn('DOUBLON POTENTIEL', qml)
+        self.assertIn('selectedDuplicateSources = ""', qml)
 
 
 if __name__ == "__main__":
