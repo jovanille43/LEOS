@@ -5,10 +5,15 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
-from controller_center.profiles import ControllerProfileStore, device_profile_id
+from controller_center.profiles import (
+    ControllerProfileStore,
+    detect_controller_profile,
+    device_profile_id,
+)
 
 
 PROFILE_LABELS = {
+    "auto": "Automatique",
     "standard": "Standard",
     "xbox": "Xbox",
     "playstation": "PlayStation",
@@ -35,7 +40,7 @@ class ControllerCenterController(QObject):
         )
         self.buttons_text = "Aucun bouton détecté pour le moment."
         self.axes_text = "Aucun axe détecté pour le moment."
-        self._profile = "standard"
+        self._profile = "auto"
         self._deadzone = 8
 
         self.poll_timer = QTimer(self)
@@ -85,6 +90,21 @@ class ControllerCenterController(QObject):
     @Property(str, notify=changed)
     def profileName(self) -> str:
         return PROFILE_LABELS[self._profile]
+
+
+    @Property(str, notify=changed)
+    def profileHint(self) -> str:
+        if self._profile != "auto":
+            return "Profil choisi manuellement"
+        if not 0 <= self.selected_index < len(self.devices):
+            return "Détection automatique à la connexion"
+        item = self.devices[self.selected_index]
+        detected = detect_controller_profile(item["name"], item["vendor"], item["product"])
+        return (
+            f"Profil détecté : {PROFILE_LABELS[detected]}"
+            if detected
+            else "Manette non reconnue — disposition standard utilisée"
+        )
 
     @Property(int, notify=changed)
     def deadzone(self) -> int:
