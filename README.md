@@ -43,7 +43,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - Tableau technique : premières mesures CPU/RAM et température CPU lorsque les capteurs sont exposés ; GPU et FPS restent à intégrer.
 - Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
 - Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
-- Centre de contrôle LEOS : pages Apparence, Matériel & connexions, Performances et Paramètres KDE. Les raccourcis matériels ouvrent les modules natifs KDE autorisés (Bluetooth, réseau, audio, écran, énergie, clavier et souris) ; les préférences LEOS restent stockées localement.
+- Centre de contrôle LEOS : vue d'ensemble des ressources système (CPU, RAM et température CPU si exposée), pages Apparence, Matériel & connexions, Performances et Paramètres KDE. Les mesures réutilisent le moniteur du Gaming Mode ; les raccourcis matériels ouvrent les modules natifs KDE autorisés (Bluetooth, réseau, audio, écran, énergie, clavier et souris). Les préférences LEOS restent stockées localement.
 - Centre des manettes : détection des contrôleurs Linux, test des entrées, profils locaux, zone morte et enregistrement du neutre des sticks.
 - Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak utilisateur/système et opérations d'installation/désinstallation soumises à confirmation explicite.
 - Applications prévues par défaut : Brave, LibreOffice et VLC installées une seule fois en Flatpak utilisateur au premier démarrage ; elles restent librement désinstallables et ne sont pas réinstallées ensuite. Steam est déjà fourni par Bazzite Desktop.
@@ -73,7 +73,7 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 
 - Bureau KDE personnalisé avec l'identité LEOS.
 - Menu principal LEOS et dock personnalisable avec dispositions prédéfinies.
-- Centre de contrôle simplifié pour les fonctions propres à LEOS, avec accès aux paramètres Linux avancés.
+- Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
 - Thèmes, fonds d'écran, sons et animations configurables.
 
 ## Bluetooth
