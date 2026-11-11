@@ -10,6 +10,7 @@ from leos_core.settings import SettingsStore
 class ModeManager(QObject):
     modeRequested = Signal(str)
     statusChanged = Signal(str)
+    lastModeChanged = Signal()
 
     def __init__(self, settings: SettingsStore | None = None) -> None:
         super().__init__()
@@ -20,7 +21,7 @@ class ModeManager(QObject):
     def status(self) -> str:
         return self._status
 
-    @Property(str, constant=False, notify=statusChanged)
+    @Property(str, constant=False, notify=lastModeChanged)
     def lastMode(self) -> str:
         return str(self.settings.get("last_mode", "desktop"))
 
@@ -38,4 +39,4 @@ class ModeManager(QObject):
 
     def rememberMode(self, mode: str) -> None:
         self.settings.set("last_mode", mode)
-        self.statusChanged.emit(self._status)
+        self.lastModeChanged.emit()
