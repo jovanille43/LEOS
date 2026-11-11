@@ -13,6 +13,7 @@ modules:
         - python3-pyside6
         - python3-psutil
         - python3-evdev
+        - libnotify
         - aurorae
 
   - type: copy
