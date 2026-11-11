@@ -46,7 +46,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - Premier Centre de contrôle LEOS : préférences de thème, animations, sons, overlay et profil de performances enregistrées localement.
 - Centre des manettes : détection des contrôleurs Linux, test des entrées, profils locaux, zone morte et enregistrement du neutre des sticks.
 - Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak utilisateur/système et opérations soumises à confirmation explicite.
-- Applications prévues préinstallées : Brave, LibreOffice et VLC via Flathub système ; Steam est déjà fourni par Bazzite Desktop.
+- Applications prévues par défaut : Brave, LibreOffice et VLC configurées en Flatpak système et installées automatiquement au premier démarrage ; Steam est déjà fourni par Bazzite Desktop.
 - Vérifications automatiques du code Python et tests du stockage local via GitHub Actions.
 
 Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
@@ -84,7 +84,7 @@ Les préférences sont enregistrées dans le compte Linux de l'utilisateur. Le p
 
 ## Applications fournies et boutique LEOS
 
-Brave, LibreOffice et VLC sont prévus comme applications Flatpak système incluses avec LEOS. Steam est fourni par la base Bazzite Desktop. La boutique distingue les applications livrées par le système des applications installées dans le profil utilisateur : seules ces dernières peuvent être désinstallées directement depuis la boutique.
+Brave, LibreOffice et VLC sont configurées comme applications Flatpak système par défaut et installées automatiquement au premier démarrage par le module BlueBuild. Steam est déjà fourni par la base Bazzite Desktop. La boutique distingue les applications livrées par le système des applications installées dans le profil utilisateur : seules ces dernières peuvent être désinstallées directement depuis la boutique.
 
 La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
 
