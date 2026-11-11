@@ -13,9 +13,9 @@ ApplicationWindow {
     property var themeColors: controlCenter.themePalette
     color: themeColors.background
 
-    property color cyan: palette.accent_primary
-    property color magenta: palette.accent_secondary
-    property color muted: palette.muted_text
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
 
