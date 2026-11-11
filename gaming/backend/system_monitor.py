@@ -1,10 +1,12 @@
-"""Best-effort system metrics for the Gaming dashboard.
+"""Best-effort system metrics shared by LEOS Gaming and Control Center.
 
 Only metrics exposed by the host are reported. FPS and GPU telemetry require
 separate game/driver providers and are intentionally not fabricated here.
 """
 
 from __future__ import annotations
+
+import time
 
 from PySide6.QtCore import QObject, Property, QTimer, Signal
 
@@ -22,6 +24,10 @@ class SystemMonitor(QObject):
         self._cpu = -1.0
         self._memory = -1.0
         self._cpu_temp = -1.0
+        self._disk_usage = -1.0
+        self._network_receive_rate = -1.0
+        self._network_send_rate = -1.0
+        self._last_network_sample: tuple[float, int, int] | None = None
         self._timer = QTimer(self)
         self._timer.setInterval(2000)
         self._timer.timeout.connect(self.refresh)
@@ -55,6 +61,38 @@ class SystemMonitor(QObject):
                     return float(current)
         return -1.0
 
+    def _read_disk_usage(self) -> float:
+        if psutil is None:
+            return -1.0
+        try:
+            return float(psutil.disk_usage("/").percent)
+        except (OSError, RuntimeError):
+            return -1.0
+
+    def _read_network_rates(self) -> tuple[float, float]:
+        if psutil is None:
+            return -1.0, -1.0
+        try:
+            counters = psutil.net_io_counters()
+        except (OSError, RuntimeError):
+            return -1.0, -1.0
+        if counters is None:
+            return -1.0, -1.0
+
+        now = time.monotonic()
+        current = (now, int(counters.bytes_recv), int(counters.bytes_sent))
+        previous = self._last_network_sample
+        self._last_network_sample = current
+        if previous is None:
+            return -1.0, -1.0
+
+        elapsed = now - previous[0]
+        if elapsed <= 0:
+            return -1.0, -1.0
+        received = max(0, current[1] - previous[1]) / elapsed
+        sent = max(0, current[2] - previous[2]) / elapsed
+        return float(received), float(sent)
+
     def refresh(self) -> None:
         if psutil is None:
             return
@@ -62,6 +100,8 @@ class SystemMonitor(QObject):
             self._cpu = float(psutil.cpu_percent(interval=None))
             self._memory = float(psutil.virtual_memory().percent)
             self._cpu_temp = self._read_cpu_temperature()
+            self._disk_usage = self._read_disk_usage()
+            self._network_receive_rate, self._network_send_rate = self._read_network_rates()
         except (OSError, RuntimeError):
             return
         self.metricsChanged.emit()
@@ -77,6 +117,18 @@ class SystemMonitor(QObject):
     @Property(float, notify=metricsChanged)
     def cpuTemperature(self) -> float:
         return self._cpu_temp
+
+    @Property(float, notify=metricsChanged)
+    def diskUsage(self) -> float:
+        return self._disk_usage
+
+    @Property(float, notify=metricsChanged)
+    def networkReceiveRate(self) -> float:
+        return self._network_receive_rate
+
+    @Property(float, notify=metricsChanged)
+    def networkSendRate(self) -> float:
+        return self._network_send_rate
 
     @Property(bool, constant=True)
     def available(self) -> bool:
