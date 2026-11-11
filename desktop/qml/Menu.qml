@@ -115,7 +115,21 @@ ApplicationWindow {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 14
-                    Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                        Item { Layout.fillWidth: true }
+                        Button {
+                            visible: applicationCatalog.currentCategory === "Récemment utilisées"
+                            text: "EFFACER L’HISTORIQUE"
+                            onClicked: {
+                                if (applicationCatalog.clearRecentApplications())
+                                    status.text = "Historique des applications effacé."
+                                else
+                                    status.text = "Impossible d’effacer l’historique."
+                            }
+                        }
+                    }
                     GridView {
                         id: appGrid
                         Layout.fillWidth: true
