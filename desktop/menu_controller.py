@@ -90,7 +90,7 @@ class ApplicationCatalog(QAbstractListModel):
             "exec": exec_line,
         }
 
-    def refresh(self):
+    @Slot()\n    def refresh(self):
         found: dict[str, dict[str, str]] = {}
         for directory in APP_DIRS:
             if not directory.is_dir():
