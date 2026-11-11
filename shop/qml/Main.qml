@@ -15,6 +15,25 @@ ApplicationWindow {
     property color muted: "#929bad"
     property int selectedRow: -1
 
+    function normalizedSearchText(value) {
+        return String(value || "")
+            .normalize("NFKD")
+            .toLowerCase()
+            .replace(/[\\u0300-\\u036f]/g, "")
+            .replace(/\\s+/g, " ")
+            .trim()
+    }
+
+    function matchesSearch(name, appId, category, description, source) {
+        const query = normalizedSearchText(searchField.text)
+        if (!query)
+            return true
+        const searchable = normalizedSearchText(
+            [name, appId, category, description, source].join(" ")
+        )
+        return searchable.includes(query)
+    }
+
     Rectangle {
         anchors.fill: parent
         color: window.color
@@ -100,9 +119,7 @@ ApplicationWindow {
                             width: ListView.view.width
                             height: visible ? 86 : 0
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
-                                && (searchField.text.length === 0
-                                    || name.toLowerCase().includes(searchField.text.toLowerCase())
-                                    || appId.toLowerCase().includes(searchField.text.toLowerCase()))
+                                && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
                             color: window.selectedRow === index ? "#182a36" : "#151b25"
                             border.color: window.selectedRow === index ? window.cyan : "#28313e"
