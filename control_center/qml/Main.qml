@@ -19,6 +19,7 @@ ApplicationWindow {
     property int selectedPage: 0
     property string launchNotice: ""
     property string kdeThemeNotice: ""
+    property string plasmaStyleNotice: ""
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -60,6 +61,29 @@ ApplicationWindow {
                 window.kdeThemeNotice = controlCenter.applyKdeTheme()
             else
                 window.kdeThemeNotice = controlCenter.restorePreviousKdeTheme()
+        }
+    }
+
+    Dialog {
+        id: plasmaStyleConfirmation
+        property string action: "apply"
+        modal: true
+        title: action === "apply" ? "Appliquer le Plasma Style LEOS ?" : "Restaurer le style Plasma précédent"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: plasmaStyleConfirmation.action === "apply"
+                ? "LEOS va demander à Plasma d'utiliser son style de bureau. Cela modifie l'apparence des panneaux, widgets et fenêtres contextuelles Plasma, sans remplacer les icônes ni les réglages de disposition."
+                : "LEOS va réappliquer le style Plasma enregistré avant le premier changement LEOS."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 420
+            padding: 12
+        }
+        onAccepted: {
+            if (action === "apply")
+                window.plasmaStyleNotice = controlCenter.applyPlasmaStyle()
+            else
+                window.plasmaStyleNotice = controlCenter.restorePreviousPlasmaStyle()
         }
     }
 
@@ -488,6 +512,70 @@ ApplicationWindow {
                                         text: !controlCenter.kdeColorSchemeToolAvailable
                                             ? "Outil plasma-apply-colorscheme indisponible sur cette session."
                                             : window.kdeThemeNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 190
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "STYLE DE BUREAU LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Habillage Plasma : panneaux, widgets et fenêtres contextuelles. Les éléments non personnalisés conservent le style Breeze."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Style actif : " + controlCenter.activePlasmaStyle
+                                        color: window.themeColors.text
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Button {
+                                            text: "Appliquer le style LEOS"
+                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled
+                                            onClicked: {
+                                                plasmaStyleConfirmation.action = "apply"
+                                                plasmaStyleConfirmation.open()
+                                            }
+                                        }
+                                        Button {
+                                            text: "Restaurer le précédent"
+                                            enabled: controlCenter.canRestorePlasmaStyle
+                                            onClicked: {
+                                                plasmaStyleConfirmation.action = "restore"
+                                                plasmaStyleConfirmation.open()
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: !controlCenter.plasmaStyleInstalled
+                                            ? "Paquet Plasma Style LEOS indisponible."
+                                            : !controlCenter.plasmaStyleToolAvailable
+                                                ? "Outil plasma-apply-desktoptheme indisponible."
+                                                : window.plasmaStyleNotice
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
