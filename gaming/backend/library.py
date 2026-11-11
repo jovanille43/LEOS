@@ -17,7 +17,7 @@ from PySide6.QtCore import QProcess
 
 from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
-    duplicate_title_metadata,
+    duplicate_title_metadata, upsert_manual_game,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -421,8 +421,7 @@ class GameLibraryModel(QAbstractListModel):
 
         games = self._load_manual_games()
         game_id = f"manual:{title_identity_key(title)}"
-        games = [game for game in games if game.get("id") != game_id]
-        games.append({
+        games = upsert_manual_game(games, {
             "id": game_id,
             "title": title,
             "platform": platform,
