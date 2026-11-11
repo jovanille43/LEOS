@@ -225,4 +225,8 @@ L'intégration graphique au véritable panneau Plasma reste une étape distincte
 
 `notification_store.py` conserve un historique local privé, borné à 100 événements, avec niveaux info/succès/avertissement/erreur, état lu/non lu, suppression individuelle et effacement global. Les données sont validées, écrites atomiquement et protégées en permissions 0700/0600. `notification_model.py`, `qml/Notifications.qml` et `notifications_main.py` fournissent une interface Qt Quick autonome, installée dans le menu d'applications KDE par `leos-notifications.desktop`.
 
-**Périmètre explicite :** ce centre affiche les événements émis par les composants LEOS via `NotificationModel.addNotification`. Il ne capture ni ne remplace l'historique des notifications système KDE : Plasma reste responsable des notifications natives. Les intégrations avec les composants LEOS seront raccordées progressivement.
+**Périmètre explicite :** ce centre affiche les événements émis par les composants LEOS via `NotificationModel.addNotification` ou `desktop.notifications.post_notification`. Il ne capture ni ne remplace l'historique des notifications système KDE : Plasma reste responsable des notifications natives.
+
+La boutique publie désormais les résultats des opérations Flatpak (installation, désinstallation, vérification échouée, inventaire indisponible et erreurs d'exécution). Le Centre de contrôle publie les résultats d'application/restauration des schémas de couleurs KDE, des Plasma Styles et de création des sauvegardes Plasma. Les préférences ordinaires ne génèrent pas de notification afin d'éviter le bruit.
+
+Le stockage recharge l'historique avant chaque modification afin de tenir compte des événements écrits par d'autres processus LEOS. Un fichier invalide ou inaccessible n'est pas écrasé lors de l'ajout d'un événement. Les composants restent fonctionnels même si l'historique est indisponible : l'échec d'enregistrement ne bloque jamais une installation ou un réglage.
