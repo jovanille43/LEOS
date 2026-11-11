@@ -88,6 +88,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('"workingDirectory": working_directory', source)
         self.assertIn('QProcess.startDetached(program, args, item["workingDirectory"])', source)
 
+    def test_menu_registers_kde_icon_provider(self):
+        main = (ROOT / "desktop/menu_main.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("DesktopIconProvider()", main)
+        self.assertIn('engine.addImageProvider("desktop-icons"', main)
+        self.assertIn("image://desktop-icons/", qml)
+        self.assertIn("encodeURIComponent(icon)", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
