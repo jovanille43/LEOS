@@ -5,7 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from controller_center.profiles import ControllerProfileStore, device_profile_id
+from controller_center.profiles import (
+    ControllerProfileStore,
+    detect_controller_profile,
+    device_profile_id,
+)
 
 
 class ControllerProfileTests(unittest.TestCase):
@@ -23,7 +27,7 @@ class ControllerProfileTests(unittest.TestCase):
     def test_defaults_are_returned_for_unknown_device(self):
         self.assertEqual(
             self.store.get(self.device_id),
-            {"profile": "standard", "deadzone": 8, "axis_centers": {}},
+            {"profile": "auto", "deadzone": 8, "axis_centers": {}},
         )
 
     def test_preferences_persist_per_device(self):
@@ -52,7 +56,26 @@ class ControllerProfileTests(unittest.TestCase):
     def test_corrupt_file_falls_back_to_defaults(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text("{not valid json", encoding="utf-8")
-        self.assertEqual(self.store.get(self.device_id)["profile"], "standard")
+        self.assertEqual(self.store.get(self.device_id)["profile"], "auto")
+
+    def test_detects_known_controller_families_by_usb_identity(self):
+        self.assertEqual(
+            detect_controller_profile("USB Gamepad", vendor=0x057E, product=0x2009),
+            "nintendo",
+        )
+        self.assertEqual(
+            detect_controller_profile("Wireless Controller", vendor=0x054C, product=0x0CE6),
+            "playstation",
+        )
+        self.assertEqual(
+            detect_controller_profile("Xbox Wireless Controller", vendor=0x045E),
+            "xbox",
+        )
+
+    def test_unknown_controller_is_not_misclassified(self):
+        self.assertIsNone(
+            detect_controller_profile("Generic USB Gamepad", vendor=0x1234, product=0x5678)
+        )
 
     def test_device_id_is_stable_for_same_identity(self):
         first = device_profile_id("Gamepad", 1, 2, phys="usb-port-1")
