@@ -11,7 +11,7 @@ class HardwareInventoryTests(unittest.TestCase):
         expected = {
             "cpu", "cpuThreads", "memory", "storage", "gpu",
             "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
-            "audioServer", "audioOutput", "audioInputs", "controllers",
+            "audioServer", "audioOutput", "audioInputs", "controllers", "battery", "usbDevices",
         }
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
@@ -53,6 +53,11 @@ class HardwareInventoryTests(unittest.TestCase):
                 hardware._audio_details(),
                 ("PipeWire / PulseAudio", "alsa_output.pci-1.analog-stereo", "1 entrée(s) détectée(s)"),
             )
+
+    def test_battery_and_usb_are_reported_as_absent_when_sysfs_has_none(self):
+        with patch.object(hardware.Path, "glob", return_value=[]):
+            self.assertEqual(hardware._battery_details(), "Aucune batterie détectée")
+            self.assertEqual(hardware._usb_details(), "Aucun périphérique USB listé")
 
     def test_subprocess_timeout_and_missing_commands_are_non_fatal(self):
         with patch.object(hardware.subprocess, "run", side_effect=FileNotFoundError):
