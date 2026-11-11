@@ -82,3 +82,18 @@ l'interface appelante. Avant de restaurer, le module sauvegarde également la
 configuration courante afin de permettre un retour arrière. Aucun changement
 n'est appliqué automatiquement à Plasma ; cette brique prépare la future
 intégration du dock et des dispositions LEOS.
+
+
+## Inspection Plasma et aperçu de disposition
+
+Le module `desktop/plasma_inspector.py` analyse le fichier de configuration
+Plasma en lecture seule. Il relève les conteneurs, panneaux et applets identifiés,
+puis compare ces éléments aux préférences de disposition LEOS enregistrées.
+L'interface affiche un rapport synthétique et une empreinte SHA-256 du fichier
+inspecté.
+
+Cette étape n'exécute aucune commande KDE et n'écrit aucun fichier. L'aperçu
+indique les points à traiter, mais ne prétend pas produire un patch Plasma
+applicable. Le moteur d'application reste désactivé (`can_apply=false`) tant
+qu'il n'a pas été validé sur une véritable session Bazzite KDE. Une sauvegarde
+préalable et une confirmation explicite resteront obligatoires.
