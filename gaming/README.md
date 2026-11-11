@@ -28,11 +28,10 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 
 ## Limites connues
 
-- La détection automatique est actuellement limitée aux manifestes Steam locaux.
-- Heroic, Lutris et les autres plateformes n'ont pas encore de fournisseurs de bibliothèque.
-- Les jaquettes, métadonnées en ligne, fiches cinématiques et animations de lancement ne sont pas encore connectées.
-- Le GPU, les températures GPU et le FPS en jeu nécessitent des intégrations dédiées.
-- La navigation manette et les raccourcis globaux ne sont pas encore implémentés.
-- Le prototype n'a pas encore été exécuté ni testé sur Bazzite.
-
+- Les fournisseurs automatiques actuels couvrent Steam, les installations Heroic (Epic, GOG et Amazon Games) et Lutris ; les autres lanceurs ne sont pas encore importés.
+- Les jaquettes sont recherchées dans les caches locaux Steam et Lutris. Aucune image n'est téléchargée et l'absence d'illustration est signalée dans l'interface.
+- Les métadonnées en ligne, les fiches cinématiques et les animations de lancement ne sont pas encore connectées.
+- Le GPU, les températures GPU et le FPS en jeu nécessitent des intégrations dédiées ; les valeurs non disponibles ne sont pas simulées.
+- La navigation à la manette couvre les directions, la validation, le retour et le panneau rapide. Les raccourcis globaux du système restent à définir.
+- Les tests automatisés vérifient les fonctions Python et les contrats d'intégration QML ; l'exécution réelle de l'interface et la validation matérielle sur Bazzite restent à effectuer.
 Ne pas présenter ces fonctions comme opérationnelles avant les tests correspondants.
