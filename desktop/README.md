@@ -214,3 +214,9 @@ du menu Plasma ni un dock intégré. Les favoris du dock, les raccourcis globaux
 les applications récemment utilisées et l'intégration des deux modes seront
 raccordés dans les prochaines étapes. Le rendu et le lancement doivent encore
 être validés sur une session Bazzite KDE réelle.
+
+### Menu LEOS — favoris connectés au dock
+
+Le catalogue du menu utilise désormais le stockage `DockFavourites` : chaque carte d'application propose une étoile pour épingler ou retirer l'application des favoris. Le choix est conservé dans le fichier local privé du dock ; le menu ne modifie toujours pas la configuration Plasma. Les commandes de lancement restent séparées des identifiants favoris et sont exécutées sans shell. Le raccourci `leos-menu.desktop` est inclus dans la recette BlueBuild et apparaît dans le menu d'applications KDE.
+
+L'intégration graphique au véritable panneau Plasma reste une étape distincte. Elle nécessitera une sauvegarde de la disposition existante, une confirmation explicite et une validation sur Bazzite KDE avant activation.
