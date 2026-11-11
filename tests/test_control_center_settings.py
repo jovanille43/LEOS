@@ -59,6 +59,19 @@ class SettingsModuleCommandTests(unittest.TestCase):
         sections = set(re.findall(r'section: "([a-z-]+)"', qml))
         self.assertEqual(sections, set(SETTINGS_MODULES))
 
+    def test_overview_uses_real_shared_monitor_values(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        main = (root / "control_center" / "main.py").read_text(encoding="utf-8")
+        monitor = (root / "gaming" / "backend" / "system_monitor.py").read_text(encoding="utf-8")
+        self.assertIn("systemMonitor.cpuUsage", qml)
+        self.assertIn("systemMonitor.memoryUsage", qml)
+        self.assertIn("systemMonitor.cpuTemperature >= 0", qml)
+        self.assertIn("from gaming.backend.system_monitor import SystemMonitor", controller)
+        self.assertIn('context.setContextProperty("systemMonitor", controller.monitor)', main)
+        self.assertIn("self._timer.setInterval(2000)", monitor)
+
 
 if __name__ == "__main__":
     unittest.main()
