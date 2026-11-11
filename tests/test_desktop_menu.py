@@ -151,6 +151,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("Qt.Key_Space", qml)
         self.assertIn("function activateApplication()", qml)
 
+    def test_menu_offers_explicit_recent_history_clear_action(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("def clearRecentApplications(self)", source)
+        self.assertIn("self.recentApplications.clear()", source)
+        self.assertIn('applicationCatalog.clearRecentApplications()', qml)
+        self.assertIn('applicationCatalog.currentCategory === "Récemment utilisées"', qml)
+
 
 if __name__ == "__main__":
     unittest.main()
