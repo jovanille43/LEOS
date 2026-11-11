@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shlex
+from pathlib import Path
 
 
 _FILE_CODES_WITHOUT_INPUT = frozenset({"%f", "%F", "%u", "%U"})
@@ -58,3 +59,20 @@ def parse_desktop_exec(
         argv.append(token.replace("%%", "%"))
 
     return argv
+
+
+
+def resolve_desktop_working_directory(value: str, home: Path | None = None) -> str:
+    """Resolve a Desktop Entry Path, rejecting relative or unavailable directories."""
+    if not isinstance(value, str) or not value.strip():
+        return str((home or Path.home()).resolve())
+    candidate = Path(value.strip()).expanduser()
+    if not candidate.is_absolute():
+        raise ValueError("Desktop Entry Path must be absolute")
+    try:
+        resolved = candidate.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise ValueError("Desktop Entry working directory is unavailable") from exc
+    if not resolved.is_dir():
+        raise ValueError("Desktop Entry Path is not a directory")
+    return str(resolved)
