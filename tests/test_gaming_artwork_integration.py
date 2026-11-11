@@ -15,9 +15,18 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
     def test_qml_passes_artwork_through_game_selection(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('property string selectedArtwork: ""', source)
-        self.assertIn('info.favorite, info.artwork)', source)
+        self.assertIn('info.artwork, info.installStatus, info.appId)', source)
         self.assertIn('source: window.selectedArtwork', source)
         self.assertIn('window.selectedArtwork.length === 0', source)
+
+    def test_game_details_expose_verified_installation_metadata(self):
+        backend = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('"installStatus": (', backend)
+        self.assertIn('"appId": str(game.get("app_id", ""))', backend)
+        self.assertIn('property string selectedInstallStatus: ""', qml)
+        self.assertIn('text: window.selectedInstallStatus || "—"', qml)
+        self.assertIn('text: "IDENTIFIANT  ·  " + window.selectedAppId', qml)
 
     def test_missing_artwork_has_an_explicit_fallback(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
