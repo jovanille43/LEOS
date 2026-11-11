@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -42,6 +43,7 @@ class GameLibraryModel(QAbstractListModel):
         self._recent: list[str] = []
         self._category = "Accueil"
         self._search_query = ""
+        self._last_launch_status = "Sélectionne un jeu à lancer."
         self.refresh()
 
     def roleNames(self) -> dict[int, QByteArray]:
@@ -416,13 +418,19 @@ class GameLibraryModel(QAbstractListModel):
             except FileNotFoundError:
                 pass
 
+    @property
+    def lastLaunchStatus(self) -> str:
+        return self._last_launch_status
+
     @Slot(int, result=bool)
     def launchGame(self, row: int, mango_hud: bool = False) -> bool:
         if not 0 <= row < len(self._visible_games):
+            self._last_launch_status = "Sélection de jeu invalide."
             return False
         game = self._visible_games[row]
         launch = game.get("launch", [])
-        if not launch:
+        if not launch or not all(isinstance(part, str) for part in launch):
+            self._last_launch_status = "Aucune commande de lancement valide n'est enregistrée."
             return False
 
         launch_command = list(launch)
@@ -430,15 +438,38 @@ class GameLibraryModel(QAbstractListModel):
             launch_command[0] = str(Path(launch_command[0]).expanduser())
         command = build_launch_command(launch_command, bool(mango_hud))
         target = command[0]
+        if not target:
+            self._last_launch_status = "La commande de lancement est vide."
+            return False
+
         if "://" in target:
             launched = QDesktopServices.openUrl(QUrl(target))
+            self._last_launch_status = (
+                "Demande transmise au gestionnaire associé ; le démarrage du jeu n'est pas confirmé."
+                if launched else
+                "Aucun gestionnaire n'a accepté cette adresse de lancement."
+            )
         else:
-            if target.startswith("~/"):
-                target = str(Path(target).expanduser())
+            executable = (
+                shutil.which(target)
+                if "/" not in target
+                else str(Path(target).expanduser())
+                if Path(target).expanduser().is_file()
+                and os.access(Path(target).expanduser(), os.X_OK)
+                else None
+            )
+            if not executable:
+                self._last_launch_status = "Lanceur ou exécutable introuvable, ou non exécutable."
+                return False
             process = QProcess()
-            process.setProgram(target)
+            process.setProgram(executable)
             process.setArguments(command[1:])
             launched = process.startDetached()
+            self._last_launch_status = (
+                "Processus de lancement démarré ; le chargement du jeu n'est pas confirmé."
+                if launched else
+                "Le système n'a pas réussi à démarrer le processus."
+            )
         if launched:
             self._record_recent(str(game["id"]))
         return bool(launched)
