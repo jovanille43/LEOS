@@ -51,7 +51,9 @@ ApplicationWindow {
                 }
             }
             Button {
-                text: "NOTIFICATIONS"
+                text: applicationCatalog.unreadNotificationCount > 0
+                      ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
+                      : "NOTIFICATIONS"
                 onClicked: {
                     if (!applicationCatalog.launch("leos-notifications.desktop"))
                         status.text = "Centre de notifications indisponible."
