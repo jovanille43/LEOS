@@ -16,6 +16,7 @@ from desktop.notifications import post_notification
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
 from .power_profiles import inspect_power_profiles, set_power_profile
+from .mangohud import find_mangohud
 
 
 class GamingController(QObject):
@@ -26,6 +27,7 @@ class GamingController(QObject):
     notificationCountChanged = Signal()
     notificationSettingsChanged = Signal()
     powerProfilesChanged = Signal()
+    mangoHudChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -39,6 +41,10 @@ class GamingController(QObject):
         self._power_profile_refresh_timer.start()
         self.settings = SettingsStore()
         self.settings.set("last_mode", "gaming")
+        self._mangohud_path = find_mangohud()
+        self._mangohud_enabled = bool(
+            self.settings.get("gaming_mangohud_enabled", False)
+        ) and bool(self._mangohud_path)
         self.notifications = NotificationStore()
         self._notification_refresh_timer = QTimer(self)
         self._notification_refresh_timer.setInterval(3000)
@@ -93,6 +99,25 @@ class GamingController(QObject):
         self.messageChanged.emit(message)
         self.powerProfilesChanged.emit()
         return success
+
+    @Property(bool, notify=mangoHudChanged)
+    def mangoHudAvailable(self) -> bool:
+        return bool(self._mangohud_path)
+
+    @Property(bool, notify=mangoHudChanged)
+    def mangoHudEnabled(self) -> bool:
+        return self._mangohud_enabled
+
+    @Slot(bool, result=bool)
+    def setMangoHudEnabled(self, enabled: bool) -> bool:
+        if enabled and not self._mangohud_path:
+            self._mangohud_enabled = False
+            self.mangoHudChanged.emit()
+            return False
+        self._mangohud_enabled = bool(enabled)
+        self.settings.set("gaming_mangohud_enabled", self._mangohud_enabled)
+        self.mangoHudChanged.emit()
+        return self._mangohud_enabled
 
     @Property(int, notify=notificationCountChanged)
     def unreadNotificationCount(self) -> int:
@@ -190,9 +215,11 @@ class GamingController(QObject):
     def refreshLibrary(self) -> None:
         self.library.refresh()
 
-    @Slot(int, result=bool)
-    def launchGame(self, row: int) -> bool:
-        launched = self.library.launchGame(row)
+    @Slot(int, bool, result=bool)
+    def launchGame(self, row: int, mango_hud: bool = False) -> bool:
+        launched = self.library.launchGame(
+            row, mango_hud=bool(mango_hud and self._mangohud_enabled)
+        )
         self._message = (
             ""
             if launched
