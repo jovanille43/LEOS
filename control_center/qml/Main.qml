@@ -10,11 +10,12 @@ ApplicationWindow {
     minimumHeight: 620
     visible: true
     title: "LEOS — Centre de contrôle"
-    color: "#090b10"
+    property var palette: controlCenter.themePalette
+    color: palette.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#909aac"
+    property color cyan: palette.accent_primary
+    property color magenta: palette.accent_secondary
+    property color muted: palette.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
 
@@ -41,7 +42,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.palette.text
                         font.pixelSize: 28
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -92,12 +93,12 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 10
-                                color: window.selectedPage === modelData.page ? "#182732" : "#121720"
+                                color: window.selectedPage === modelData.page ? window.palette.surface_elevated : window.palette.surface
                                 border.color: window.selectedPage === modelData.page ? window.cyan : "#293342"
                             }
                             contentItem: Label {
                                 text: parent.text
-                                color: "white"
+                                color: window.palette.text
                                 font.pixelSize: 12
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: 8
@@ -108,7 +109,7 @@ ApplicationWindow {
                     Item { Layout.fillHeight: true }
                     Label {
                         text: "LEOS • BUILD EN DÉVELOPPEMENT"
-                        color: "#626d7d"
+                        color: window.palette.muted_text
                         font.pixelSize: 9
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -129,7 +130,7 @@ ApplicationWindow {
 
                             Label {
                                 text: "VUE D'ENSEMBLE"
-                                color: "white"
+                                color: window.palette.text
                                 font.pixelSize: 20
                                 font.weight: Font.Bold
                             }
@@ -150,8 +151,8 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 132
                                     radius: 13
-                                    color: "#121720"
-                                    border.color: "#293342"
+                                    color: window.palette.surface
+                                    border.color: window.palette.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -166,7 +167,7 @@ ApplicationWindow {
                                             text: systemMonitor.cpuUsage >= 0
                                                 ? Math.round(systemMonitor.cpuUsage) + "%"
                                                 : "—"
-                                            color: "white"
+                                            color: window.palette.text
                                             font.pixelSize: 26
                                             font.weight: Font.Bold
                                         }
@@ -181,8 +182,8 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 132
                                     radius: 13
-                                    color: "#121720"
-                                    border.color: "#293342"
+                                    color: window.palette.surface
+                                    border.color: window.palette.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -197,7 +198,7 @@ ApplicationWindow {
                                             text: systemMonitor.memoryUsage >= 0
                                                 ? Math.round(systemMonitor.memoryUsage) + "%"
                                                 : "—"
-                                            color: "white"
+                                            color: window.palette.text
                                             font.pixelSize: 26
                                             font.weight: Font.Bold
                                         }
@@ -212,8 +213,8 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 132
                                     radius: 13
-                                    color: "#121720"
-                                    border.color: "#293342"
+                                    color: window.palette.surface
+                                    border.color: window.palette.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -228,7 +229,7 @@ ApplicationWindow {
                                             text: systemMonitor.cpuTemperature >= 0
                                                 ? Math.round(systemMonitor.cpuTemperature) + " °C"
                                                 : "Indisponible"
-                                            color: "white"
+                                            color: window.palette.text
                                             font.pixelSize: systemMonitor.cpuTemperature >= 0 ? 26 : 16
                                             font.weight: Font.Bold
                                         }
@@ -247,8 +248,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 132
                                 radius: 13
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 14
@@ -263,7 +264,7 @@ ApplicationWindow {
                                         text: systemMonitor.diskUsage >= 0
                                             ? Math.round(systemMonitor.diskUsage) + "%"
                                             : "Indisponible"
-                                        color: "white"
+                                        color: window.palette.text
                                         font.pixelSize: systemMonitor.diskUsage >= 0 ? 26 : 16
                                         font.weight: Font.Bold
                                     }
@@ -278,8 +279,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 132
                                 radius: 13
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 14
@@ -293,7 +294,7 @@ ApplicationWindow {
                                     Label {
                                         text: "↓  " + window.formatRate(systemMonitor.networkReceiveRate)
                                             + "    ↑  " + window.formatRate(systemMonitor.networkSendRate)
-                                        color: "white"
+                                        color: window.palette.text
                                         font.pixelSize: 16
                                         font.weight: Font.Bold
                                         Layout.fillWidth: true
@@ -311,8 +312,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 108
                                 radius: 13
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -346,10 +347,10 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 160
+                                Layout.preferredHeight: 184
                                 radius: 15
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
@@ -378,6 +379,22 @@ ApplicationWindow {
                                             controlCenter.setTheme(values[currentIndex])
                                         }
                                     }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 6
+                                            radius: 3
+                                            color: window.palette.accent_primary
+                                        }
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 6
+                                            radius: 3
+                                            color: window.palette.accent_secondary
+                                        }
+                                    }
                                 }
                             }
 
@@ -385,8 +402,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 205
                                 radius: 15
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
@@ -399,7 +416,7 @@ ApplicationWindow {
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "Animations LEOS"; color: "white"; Layout.fillWidth: true }
+                                        Label { text: "Animations LEOS"; color: window.palette.text; Layout.fillWidth: true }
                                         Switch {
                                             checked: controlCenter.animationsEnabled
                                             onToggled: controlCenter.setAnimationsEnabled(checked)
@@ -407,7 +424,7 @@ ApplicationWindow {
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "Sons LEOS"; color: "white"; Layout.fillWidth: true }
+                                        Label { text: "Sons LEOS"; color: window.palette.text; Layout.fillWidth: true }
                                         Switch {
                                             checked: controlCenter.soundsEnabled
                                             onToggled: controlCenter.setSoundsEnabled(checked)
@@ -426,7 +443,7 @@ ApplicationWindow {
                             spacing: 14
                             Label {
                                 text: "MATÉRIEL & CONNEXIONS"
-                                color: "white"
+                                color: window.palette.text
                                 font.pixelSize: 20
                                 font.weight: Font.Bold
                             }
@@ -459,15 +476,15 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: 132
                                         radius: 12
-                                        color: "#121720"
-                                        border.color: "#293342"
+                                        color: window.palette.surface
+                                        border.color: window.palette.border
                                         ColumnLayout {
                                             anchors.fill: parent
                                             anchors.margins: 14
                                             spacing: 7
                                             Label {
                                                 text: modelData.title
-                                                color: "white"
+                                                color: window.palette.text
                                                 font.pixelSize: 14
                                                 font.weight: Font.DemiBold
                                             }
@@ -512,8 +529,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 190
                                 radius: 15
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
@@ -550,14 +567,14 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 105
                                 radius: 15
-                                color: "#121720"
-                                border.color: "#293342"
+                                color: window.palette.surface
+                                border.color: window.palette.border
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
                                     Label {
                                         text: "Overlay de performances en jeu"
-                                        color: "white"
+                                        color: window.palette.text
                                         Layout.fillWidth: true
                                     }
                                     Switch {
@@ -574,7 +591,7 @@ ApplicationWindow {
                         spacing: 14
                         Label {
                             text: "PARAMÈTRES KDE"
-                            color: "white"
+                            color: window.palette.text
                             font.pixelSize: 20
                             font.weight: Font.Bold
                         }
