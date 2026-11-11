@@ -1001,7 +1001,7 @@ ApplicationWindow {
                                 font.weight: Font.Bold
                             }
                             Label {
-                                text: "LEOS vérifie la disponibilité des mises à jour Bazzite sans installer ni préparer de nouvelle version."
+                                text: "LEOS suit les déploiements préparés par Bazzite et vérifie leur état localement, sans lancer de téléchargement ni d’installation."
                                 color: window.muted
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
@@ -1092,7 +1092,7 @@ ApplicationWindow {
                                 }
                             }
                             Label {
-                                text: "La vérification utilise la commande uupd update-check en mode lecture seule. Aucune mise à jour n'est installée par cette vérification. L'application d'une mise à jour peut nécessiter un redémarrage."
+                                text: "Bazzite effectue ses vérifications automatiques selon la politique native de l’image. LEOS observe périodiquement les déploiements préparés avec rpm-ostree, sans démarrer de transaction. L’application d’une version préparée se fait au redémarrage."
                                 color: window.muted
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
