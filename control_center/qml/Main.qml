@@ -905,7 +905,9 @@ ApplicationWindow {
                                         { title: "BLUETOOTH", value: controlCenter.hardwareSnapshot.bluetooth, detail: controlCenter.hardwareSnapshot.bluetoothDevices },
                                         { title: "SERVEUR AUDIO", value: controlCenter.hardwareSnapshot.audioServer, detail: "Sortie : " + controlCenter.hardwareSnapshot.audioOutput },
                                         { title: "ENTRÉES AUDIO", value: controlCenter.hardwareSnapshot.audioInputs, detail: "Sources exposées par PipeWire / PulseAudio" },
-                                        { title: "MANETTES", value: controlCenter.hardwareSnapshot.controllers, detail: "Périphériques d’entrée reconnus comme contrôleurs" }
+                                        { title: "MANETTES", value: controlCenter.hardwareSnapshot.controllers, detail: "Périphériques d’entrée reconnus comme contrôleurs" },
+                                        { title: "BATTERIE", value: controlCenter.hardwareSnapshot.battery, detail: "État exposé par le noyau Linux" },
+                                        { title: "PÉRIPHÉRIQUES USB", value: controlCenter.hardwareSnapshot.usbDevices, detail: "Liste des périphériques USB identifiés" }
                                     ]
                                     delegate: Rectangle {
                                         required property var modelData
