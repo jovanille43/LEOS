@@ -8,6 +8,7 @@ from control_center.settings_modules import general_settings_command, settings_m
 from desktop.themes import palette_for_theme
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
+from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 
@@ -145,6 +146,13 @@ class ControlCenterController(QObject):
             return "La sauvegarde Plasma n'a pas pu être créée."
         self.settingsChanged.emit()
         return f"Sauvegarde Plasma créée ({backup_id[:8]})."
+
+    @Slot(result=str)
+    def inspectPlasmaLayout(self) -> str:
+        """Inspect the current KDE layout and return a non-mutating LEOS preview."""
+        inspection = inspect_plasma_config(self.plasmaBackups.config_path)
+        plan = build_layout_plan(self.desktopLayout.get(), inspection)
+        return format_layout_report(inspection, plan)
 
     @Slot(str, result=bool)
     def openSettingsModule(self, section: str) -> bool:
