@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS Controller Center
+Name[fr]=Centre des manettes LEOS
+Comment=Detect and test game controllers
+Comment[fr]=Détecter et tester les manettes
+Exec=python3 /usr/share/leos/controller_center/main.py
+Icon=input-gaming
+Terminal=false
+Categories=Settings;HardwareSettings;Game;
+StartupNotify=true
