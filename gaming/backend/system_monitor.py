@@ -30,6 +30,7 @@ class SystemMonitor(QObject):
         self._network_send_rate = -1.0
         self._gpu_name = "GPU non détecté"
         self._gpu_usage = -1.0
+        self._gpu_temperature = -1.0
         self._gpu_memory_used = -1
         self._gpu_memory_total = -1
         self._last_network_sample: tuple[float, int, int] | None = None
@@ -110,6 +111,7 @@ class SystemMonitor(QObject):
             gpu = read_gpu_metrics()
             self._gpu_name = str(gpu["name"])
             self._gpu_usage = float(gpu["usage"])
+            self._gpu_temperature = float(gpu["temperature"])
             self._gpu_memory_used = int(gpu["memory_used"])
             self._gpu_memory_total = int(gpu["memory_total"])
         except (OSError, RuntimeError):
@@ -147,6 +149,10 @@ class SystemMonitor(QObject):
     @Property(float, notify=metricsChanged)
     def gpuUsage(self) -> float:
         return self._gpu_usage
+
+    @Property(float, notify=metricsChanged)
+    def gpuTemperature(self) -> float:
+        return self._gpu_temperature
 
     @Property(int, notify=metricsChanged)
     def gpuMemoryUsed(self) -> int:
