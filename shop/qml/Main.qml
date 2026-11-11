@@ -94,6 +94,7 @@ ApplicationWindow {
                             required property string operationNote
                             required property bool installed
                             required property string installedScope
+                            required property bool bundled
                             required property int index
                             width: ListView.view.width
                             height: visible ? 86 : 0
@@ -126,7 +127,7 @@ ApplicationWindow {
                                     Label { text: category + "  •  " + source; color: window.muted; font.pixelSize: 10 }
                                 }
                                 Label {
-                                    text: installedScope === "system" ? "INCLUSE LEOS" : installed ? "INSTALLÉE" : "DISPONIBLE"
+                                    text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME") : installed ? "INSTALLÉE" : "DISPONIBLE"
                                     color: installed ? window.cyan : window.muted
                                     font.pixelSize: 9
                                 }
@@ -143,6 +144,7 @@ ApplicationWindow {
                                     detailsPane.operationNote = operationNote
                                     detailsPane.isInstalled = installed
                                     detailsPane.installedScope = installedScope
+                                    detailsPane.bundled = bundled
                                 }
                             }
                         }
@@ -159,6 +161,7 @@ ApplicationWindow {
                     property string operationNote: ""
                     property bool isInstalled: false
                     property string installedScope: ""
+                    property bool bundled: false
                     Layout.preferredWidth: 360
                     Layout.fillHeight: true
                     radius: 14
@@ -204,7 +207,7 @@ ApplicationWindow {
                         Label {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
-                            text: "Cette application est incluse dans LEOS et installée pour tous les utilisateurs. Elle n'est pas supprimable depuis la boutique."
+                            text: detailsPane.bundled ? "Cette application est fournie avec LEOS pour tous les utilisateurs. Elle n'est pas supprimable depuis la boutique." : "Cette application est installée au niveau système. Elle n'est pas supprimable depuis la boutique utilisateur."
                             color: window.cyan
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
