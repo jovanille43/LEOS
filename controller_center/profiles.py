@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Any
 
 PROFILE_NAMES = ("auto", "standard", "xbox", "playstation", "nintendo", "custom")
+from leos_core.paths import config_home as xdg_config_home
+
+
 DEFAULT_PROFILE = {
     "profile": "auto",
     "deadzone": 8,
@@ -43,7 +46,7 @@ def detect_controller_profile(name: str, vendor: int = 0, product: int = 0) -> s
 
 
 def config_path() -> Path:
-    root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    root = xdg_config_home()
     return root / "leos" / "controllers.json"
 
 
