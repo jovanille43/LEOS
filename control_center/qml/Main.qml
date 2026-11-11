@@ -141,6 +141,7 @@ ApplicationWindow {
                             { label: "Matériel & connexions", page: 2 },
                             { label: "Performances", page: 3 },
                             { label: "Paramètres KDE", page: 4 },
+                            { label: "Mises à jour", page: 5 },
                             { label: "Mises à jour", page: 5 }
                         ]
                         delegate: Button {
