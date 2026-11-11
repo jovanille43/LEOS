@@ -264,8 +264,7 @@ class GameLibraryModel(QAbstractListModel):
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
                 json.dump(values, stream, indent=2, ensure_ascii=False)
-                stream.write("
-")
+                stream.write("\n")
                 stream.flush()
                 os.fsync(stream.fileno())
             os.chmod(temp_name, 0o600)
@@ -441,8 +440,7 @@ class GameLibraryModel(QAbstractListModel):
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
                 json.dump(games, stream, indent=2, ensure_ascii=False)
-                stream.write("
-")
+                stream.write("\n")
                 stream.flush()
                 os.fsync(stream.fileno())
             os.chmod(temp_name, 0o600)
