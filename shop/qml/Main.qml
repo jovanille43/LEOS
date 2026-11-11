@@ -57,12 +57,12 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     placeholderText: "Rechercher une application…"
                     color: "white"
-                    
+                    enabled: !store.busy
                 }
                 ComboBox {
                     id: categoryFilter
                     model: ["Toutes", "Gaming", "Multimedia", "Internet", "Productivité", "Création"]
-                    
+                    enabled: !store.busy
                 }
             }
 
@@ -84,6 +84,7 @@ ApplicationWindow {
                         clip: true
                         spacing: 6
                         model: catalogModel
+                        enabled: !store.busy
                         delegate: Rectangle {
                             required property string appId
                             required property string name
