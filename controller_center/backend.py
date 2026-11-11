@@ -45,7 +45,7 @@ class GamepadBackend:
         for path in list_devices():
             device = None
             try:
-                device = InputDevice(path)
+                device = InputDevice(path, readonly=True)
                 if not _is_gamepad(device):
                     continue
                 info = device.info
@@ -77,7 +77,7 @@ class GamepadBackend:
         self.close()
         if not backend_available() or not path.startswith("/dev/input/event"):
             raise ValueError("Invalid input device")
-        self.device = InputDevice(path)
+        self.device = InputDevice(path, readonly=True)
         if not _is_gamepad(self.device):
             self.close()
             raise ValueError("This input device is not a game controller")
