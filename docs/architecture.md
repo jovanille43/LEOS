@@ -8,7 +8,7 @@ LEOS est une seule installation basée sur Bazzite KDE Desktop. Desktop Mode et 
 
 - **Bazzite KDE** : système de base, pilotes, services et mécanismes de mise à jour/rollback.
 - **Desktop Mode** : KDE Plasma personnalisé, sans remplacer les fonctions natives utiles.
-- **Gaming Mode** : application plein écran LEOS lancée au-dessus de KDE ; KDE reste actif en arrière-plan.
+- **Gaming Mode** : application LEOS plein écran lancée au-dessus de KDE ; KDE reste actif en arrière-plan.
 - **LEOS Control Center** : accès simplifié aux fonctions spécifiques LEOS et aux outils Linux avancés.
 - **LEOS Store** : catalogue unifié s'appuyant sur les sources et gestionnaires existants.
 
@@ -52,13 +52,16 @@ Avant toute installation ou désinstallation, présenter :
 
 Demander une confirmation explicite avant l'opération. Ne pas contourner l'architecture immuable de Bazzite.
 
-## 7. Transitions entre modes
+## 7. Démarrage et transitions entre modes
 
-- Accès par bouton et raccourcis clavier.
-- Raccourcis prévus : Super + G pour Gaming, Super + D pour Desktop, plus un raccourci personnalisable pour ouvrir le sélecteur.
-- Le dernier mode utilisé est mémorisé pour le démarrage.
-- Avant une transition, demander à l'utilisateur s'il souhaite conserver les applications en arrière-plan ou fermer proprement la session concernée.
-- La conservation effective des applications dépendra de l'architecture des processus et devra être testée ; ne pas promettre une conservation parfaite.
+- Après l'ouverture de la session KDE, le sélecteur LEOS s'affiche à chaque démarrage de session.
+- Il présente l'heure, la date, le dernier mode utilisé et deux grandes cartes Desktop/Gaming.
+- Desktop laisse apparaître KDE ; Gaming lance l'application LEOS plein écran au-dessus de la même session KDE.
+- Le dernier mode choisi est mémorisé et présenté au prochain démarrage, sans imposer de lancement automatique.
+- Depuis Gaming, l'action de retour ferme uniquement l'application Gaming et réaffiche le bureau déjà actif.
+- Les applications du bureau ne sont jamais fermées automatiquement. Leur maintien en arrière-plan dépend de leur propre comportement et devra être validé en test.
+- Le sélecteur ne remplace pas SDDM : il apparaît après l'authentification de l'utilisateur.
+- Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
 
 ## 8. Principes de développement
 
