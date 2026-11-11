@@ -149,6 +149,13 @@ class GamingController(QObject):
             else "Impossible d'ouvrir ce jeu avec sa configuration actuelle."
         )
         self.messageChanged.emit(self._message)
+        if not launched:
+            post_notification(
+                "Lancement de jeu impossible",
+                "Vérifie le lanceur associé et la disponibilité du jeu.",
+                "error",
+                native=False,
+            )
         return launched
 
     def shutdown(self) -> None:
