@@ -70,6 +70,12 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("QProcess.startDetached(program, args", source)
         self.assertNotIn("shlex.split(item[", source)
 
+    def test_catalog_respects_tryexec_and_hides_terminal_only_entries(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn('values.get("Terminal", "false").casefold() == "true"', source)
+        self.assertIn('try_exec = values.get("TryExec", "").strip()', source)
+        self.assertIn("os.access(try_exec, os.X_OK)", source)
+
 
 if __name__ == "__main__":
     unittest.main()
