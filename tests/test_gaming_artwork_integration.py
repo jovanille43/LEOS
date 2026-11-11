@@ -63,5 +63,14 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         self.assertIn("model: leos.launcherStatuses", qml)
 
 
+    def test_launcher_status_is_refreshed_and_errors_are_specific(self):
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        self.assertIn("setInterval(15000)", controller)
+        self.assertIn("timeout.connect(self.refreshLauncherStatuses)", controller)
+        self.assertIn("self.launcherStatusChanged.emit()", controller)
+        self.assertIn("self.library.lastLaunchStatus,", controller)
+        self.assertIn("self._launcher_refresh_timer.stop()", controller)
+
+
 if __name__ == "__main__":
     unittest.main()
