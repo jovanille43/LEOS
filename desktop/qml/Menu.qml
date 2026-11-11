@@ -116,6 +116,17 @@ ApplicationWindow {
                                 color: appMouse.containsMouse ? "#1B2633" : "#151B25"
                                 border.color: appMouse.containsMouse ? window.cyan : "#2B3544"
                             }
+                            MouseArea {
+                                id: appMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    if (!applicationCatalog.launch(desktopId))
+                                        status.text = "Lancement impossible. Vérifie l'installation de l'application."
+                                    else
+                                        status.text = name + " : lancement demandé."
+                                }
+                            }
                             ColumnLayout {
                                 anchors.fill: parent
                                 anchors.margins: 10
@@ -138,17 +149,6 @@ ApplicationWindow {
                                 }
                                 Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
                                 Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
-                            }
-                            MouseArea {
-                                id: appMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    if (!applicationCatalog.launch(desktopId))
-                                        status.text = "Lancement impossible. Vérifie l'installation de l'application."
-                                    else
-                                        status.text = name + " : lancement demandé."
-                                }
                             }
                         }
                         Label {
