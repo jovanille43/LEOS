@@ -77,6 +77,25 @@ class GameLibraryModel(QAbstractListModel):
         key = mapping.get(role)
         return game.get(key) if key else None
 
+    @staticmethod
+    def _flatpak_app_available(app_id: str) -> bool:
+        data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+        roots = [data_home / "flatpak" / "app", Path("/var/lib/flatpak/app")]
+        return any((root / app_id).is_dir() for root in roots)
+
+    def launcherStatuses(self) -> list[str]:
+        launchers = [
+            ("STEAM", bool(shutil.which("steam")) or bool(self._steam_roots())
+             or self._flatpak_app_available("com.valvesoftware.Steam")),
+            ("HEROIC", bool(shutil.which("heroic"))
+             or self._flatpak_app_available("com.heroicgameslauncher.hgl")),
+            ("LUTRIS", bool(shutil.which("lutris"))
+             or self._flatpak_app_available("net.lutris.Lutris")),
+        ]
+        return [
+            f"{name} · {'DISPONIBLE' if available else 'NON DÉTECTÉ'}"
+            for name, available in launchers
+        ]
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [
