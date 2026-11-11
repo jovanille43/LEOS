@@ -15,6 +15,7 @@ from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
+from control_center.diagnostics import collect_system_diagnostics
 from control_center.system_updates import (
     interpret_update_check_exit_code,
     system_update_check_command,
@@ -38,10 +39,21 @@ class _HardwareScanTask(QRunnable):
         self.signals.completed.emit(collect_hardware_snapshot())
 
 
+class _DiagnosticsScanTask(QRunnable):
+    def __init__(self) -> None:
+        super().__init__()
+        self.signals = _HardwareScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        self.signals.completed.emit(collect_system_diagnostics())
+
+
 class ControlCenterController(QObject):
     settingsChanged = Signal()
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
+    diagnosticsChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -71,6 +83,25 @@ class ControlCenterController(QObject):
         self._hardware_timer.timeout.connect(self.refreshHardware)
         self._hardware_timer.start()
         QTimer.singleShot(0, self.scanHardwareNow)
+        self._diagnostics_snapshot = {
+            "severity": "Analyse en cours…",
+            "summary": "Lecture des indicateurs système…",
+            "findings": [],
+            "storage": "Analyse en cours…",
+            "memory": "Analyse en cours…",
+            "temperature": "Analyse en cours…",
+            "failedServices": "Analyse en cours…",
+            "failedServiceNames": [],
+            "recentErrors": "Analyse en cours…",
+            "uptime": "Analyse en cours…",
+            "loadAverage": "Analyse en cours…",
+        }
+        self._diagnostics_task = None
+        self._diagnostics_timer = QTimer(self)
+        self._diagnostics_timer.setInterval(30_000)
+        self._diagnostics_timer.timeout.connect(self.scanDiagnostics)
+        self._diagnostics_timer.start()
+        QTimer.singleShot(500, self.scanDiagnostics)
         self._system_update_status = "Aucune vérification lancée."
         self._system_update_check_running = False
         self._system_update_process = QProcess(self)
@@ -128,6 +159,27 @@ class ControlCenterController(QObject):
         if snapshot != self._hardware_snapshot:
             self._hardware_snapshot = snapshot
             self.hardwareChanged.emit()
+
+    @Property("QVariantMap", notify=diagnosticsChanged)
+    def diagnosticsSnapshot(self) -> dict:
+        return dict(self._diagnostics_snapshot)
+
+    @Slot()
+    def scanDiagnostics(self) -> None:
+        """Collect system health indicators without blocking the QML thread."""
+        if self._diagnostics_task is not None:
+            return
+        task = _DiagnosticsScanTask()
+        task.signals.completed.connect(self._on_diagnostics_completed)
+        self._diagnostics_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(dict)
+    def _on_diagnostics_completed(self, snapshot: dict) -> None:
+        self._diagnostics_task = None
+        if snapshot != self._diagnostics_snapshot:
+            self._diagnostics_snapshot = snapshot
+            self.diagnosticsChanged.emit()
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
