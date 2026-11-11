@@ -14,6 +14,15 @@ modules:
         - python3-psutil
         - python3-evdev
 
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: true
+        install:
+          - com.brave.Browser
+          - org.libreoffice.LibreOffice
+          - org.videolan.VLC
+
   - type: copy
     src: gaming
     dest: /usr/share/leos/
