@@ -432,6 +432,108 @@ ApplicationWindow {
                                     }
                                 }
                             }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 390
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "BUREAU & DOCK"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Choisis un profil et prépare la disposition de ton bureau."
+                                        color: window.muted
+                                        font.pixelSize: 12
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    ComboBox {
+                                        id: desktopLayoutBox
+                                        Layout.fillWidth: true
+                                        model: ["LEOS par défaut", "Minimal", "Espace de travail"]
+                                        Component.onCompleted: {
+                                            const values = ["leos-default", "minimal", "workspace"]
+                                            currentIndex = Math.max(0, values.indexOf(controlCenter.desktopLayoutProfile))
+                                        }
+                                        onActivated: {
+                                            const values = ["leos-default", "minimal", "workspace"]
+                                            controlCenter.applyDesktopLayout(values[currentIndex])
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Afficher le dock"; color: window.themeColors.text; Layout.fillWidth: true }
+                                        Switch {
+                                            checked: controlCenter.dockEnabled
+                                            onToggled: controlCenter.setDockEnabled(checked)
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Position du dock"; color: window.themeColors.text; Layout.fillWidth: true }
+                                        ComboBox {
+                                            Layout.preferredWidth: 150
+                                            model: ["Bas", "Haut", "Gauche", "Droite"]
+                                            Component.onCompleted: {
+                                                const values = ["bottom", "top", "left", "right"]
+                                                currentIndex = Math.max(0, values.indexOf(controlCenter.dockPosition))
+                                            }
+                                            onActivated: {
+                                                const values = ["bottom", "top", "left", "right"]
+                                                controlCenter.setDockPosition(values[currentIndex])
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Alignement"; color: window.themeColors.text; Layout.fillWidth: true }
+                                        ComboBox {
+                                            Layout.preferredWidth: 150
+                                            model: ["Gauche", "Centre", "Droite"]
+                                            Component.onCompleted: {
+                                                const values = ["left", "center", "right"]
+                                                currentIndex = Math.max(0, values.indexOf(controlCenter.dockAlignment))
+                                            }
+                                            onActivated: {
+                                                const values = ["left", "center", "right"]
+                                                controlCenter.setDockAlignment(values[currentIndex])
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Masquer automatiquement"; color: window.themeColors.text; Layout.fillWidth: true }
+                                        Switch {
+                                            checked: controlCenter.dockAutoHide
+                                            onToggled: controlCenter.setDockAutoHide(checked)
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Widgets du bureau"; color: window.themeColors.text; Layout.fillWidth: true }
+                                        Switch {
+                                            checked: controlCenter.desktopWidgetsEnabled
+                                            onToggled: controlCenter.setDesktopWidgetsEnabled(checked)
+                                        }
+                                    }
+                                    Label {
+                                        text: "Préférences enregistrées localement. KDE Plasma ne sera pas modifié tant que l’application du profil avec sauvegarde/restauration n’est pas prête."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
                             Item { Layout.fillHeight: true }
                         }
                     }
