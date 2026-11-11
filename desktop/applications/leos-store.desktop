@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS — Boutique
+Comment=Découvrir et gérer les applications Flatpak
+Exec=/usr/bin/python3 /usr/share/leos/shop/main.py
+Icon=software-center
+Terminal=false
+Categories=System;PackageManager;
+StartupNotify=true
