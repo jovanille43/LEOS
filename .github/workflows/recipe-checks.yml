@@ -16,6 +16,7 @@ on:
       - "desktop/**"
       - "plasma-theme/**"
       - "icons/**"
+      - "aurorae/**"
       - ".github/workflows/recipe-checks.yml"
   pull_request:
   workflow_dispatch:
