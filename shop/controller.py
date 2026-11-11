@@ -74,7 +74,7 @@ class StoreController(QObject):
 
     @Slot()
     def refreshInstalled(self) -> None:
-        self._start("list", "", "flatpak", ["list", "--app", "--columns=application"])
+        self._start("list", "", "flatpak", ["list", "--user", "--app", "--columns=application"])
 
     @Slot(int)
     def requestInstall(self, row: int) -> None:
