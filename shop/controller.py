@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 
 from shop.catalog import CatalogModel
 from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
+from desktop.notifications import post_notification
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -61,6 +62,7 @@ class StoreController(QObject):
         executable = shutil.which(program)
         if not executable:
             self._set_status(f"{program} n'est pas disponible sur ce système.")
+            post_notification("Opération impossible", self._status, "error")
             self.operationFinished.emit(False, self._status)
             return
         self._action, self._target = action, target
@@ -157,6 +159,7 @@ class StoreController(QObject):
                 lines = stderr.strip().splitlines()
                 reason = lines[-1] if lines else "Inventaire Flatpak indisponible."
                 self._set_status(f"Impossible d'actualiser la boutique : {reason}")
+                post_notification("Boutique LEOS", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
                 return
             user_apps, system_apps = parse_flatpak_inventory(stdout)
@@ -182,6 +185,7 @@ class StoreController(QObject):
                 detail = stderr.strip().splitlines()
                 reason = detail[-1] if detail else "Application ou dépôt indisponible."
                 self._set_status(f"Vérification impossible : {reason}")
+                post_notification("Vérification Flatpak échouée", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
             return
 
@@ -189,18 +193,21 @@ class StoreController(QObject):
             verb = "installée" if action == "install" else "désinstallée"
             message = f"{target} a été {verb}."
             self._set_status(message)
+            post_notification("Boutique LEOS", message, "success")
             self.operationFinished.emit(True, message)
             self.refreshInstalled()
         else:
             lines = stderr.strip().splitlines()
             reason = lines[-1] if lines else "Flatpak a signalé une erreur."
             self._set_status(f"Opération non terminée : {reason}")
+            post_notification("Échec d’une opération Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
 
     def _on_error(self, _error) -> None:
         if self._busy:
             self._set_busy(False)
             self._set_status("Erreur pendant l'exécution de Flatpak.")
+            post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
 
     def _read_output(self) -> None:
