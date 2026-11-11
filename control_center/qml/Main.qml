@@ -143,7 +143,8 @@ ApplicationWindow {
                             { label: "Paramètres KDE", page: 4 },
                             { label: "Mises à jour", page: 5 },
                             { label: "Notifications", page: 6 },
-                            { label: "Diagnostic système", page: 7 }
+                            { label: "Diagnostic système", page: 7 },
+                            { label: "Nettoyage", page: 8 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -1514,6 +1515,109 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "Les journaux ne sont pas affichés dans LEOS : seule une quantité d’entrées d’erreur est indiquée. Les contrôles peuvent être incomplets si les outils ou permissions système ne sont pas disponibles."
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+                            Label {
+                                text: "CENTRE DE NETTOYAGE"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "Prévisualise l’espace occupé par quelques éléments régénérables ou déjà placés dans ta corbeille. Cette analyse ne supprime et ne déplace aucun fichier."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 100
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.cyan
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "ESPACE REPÉRÉ"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.5 }
+                                        Label {
+                                            text: controlCenter.cleanupPreview.totalSize || "Analyse en cours…"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 22
+                                            font.weight: Font.Bold
+                                        }
+                                        Label { text: "Sur les deux emplacements inspectés"; color: window.muted; font.pixelSize: 10 }
+                                    }
+                                    Button {
+                                        text: "ANALYSER"
+                                        onClicked: controlCenter.scanCleanupPreview()
+                                    }
+                                }
+                            }
+                            Repeater {
+                                model: [
+                                    {
+                                        title: "CACHE DE MINIATURES",
+                                        detail: "Miniatures générées par KDE et les applications. Elles peuvent être recréées après suppression.",
+                                        data: controlCenter.cleanupPreview.thumbnails
+                                    },
+                                    {
+                                        title: "CORBEILLE UTILISATEUR",
+                                        detail: "Fichiers déjà déplacés dans la corbeille. Les supprimer définitivement nécessite une confirmation distincte.",
+                                        data: controlCenter.cleanupPreview.trash
+                                    }
+                                ]
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 138
+                                    radius: 13
+                                    color: window.themeColors.surface
+                                    border.color: window.themeColors.border
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 16
+                                        spacing: 7
+                                        Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.2 }
+                                        Label {
+                                            text: modelData.data.size || "Non disponible"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 18
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            text: (modelData.data.files || 0) + " fichier(s) · " + modelData.detail
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                            wrapMode: Text.WordWrap
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                text: controlCenter.cleanupPreview.note || ""
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Label {
+                                text: "LEOS n’inspecte pas l’ensemble de ~/.cache, les données des applications, les fichiers personnels, les journaux système ni les composants Bazzite. Aucun nettoyage automatique n’est activé."
                                 color: window.muted
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
