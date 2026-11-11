@@ -37,6 +37,20 @@ ApplicationWindow {
             Item { Layout.fillWidth: true }
             Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
             Button {
+                text: "MODES"
+                onClicked: {
+                    if (!applicationCatalog.launch("leos-mode-selector.desktop"))
+                        status.text = "Sélecteur de modes indisponible."
+                }
+            }
+            Button {
+                text: "CENTRE DE CONTRÔLE"
+                onClicked: {
+                    if (!applicationCatalog.launch("leos-control-center.desktop"))
+                        status.text = "Centre de contrôle indisponible."
+                }
+            }
+            Button {
                 text: "ACTUALISER"
                 onClicked: applicationCatalog.refresh()
             }
