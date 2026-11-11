@@ -54,8 +54,9 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque unifiée de jeux PC et de jeux émulés.
-- Détection automatique des jeux installés et ajout manuel.
+- Bibliothèque unifiée de jeux PC et de jeux émulés, avec catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade.
+- Favoris et liste des jeux récemment lancés, conservés localement.
+- Détection automatique initiale des jeux Steam et ajout manuel.
 - Métadonnées et jaquettes récupérées automatiquement lorsque disponibles, avec édition manuelle.
 - Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
 - Retour à la bibliothèque avec une animation discrète après fermeture d'un jeu.
@@ -126,6 +127,7 @@ LEOS/
 - [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
 - [x] Architecture générale des deux modes définie.
 - [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
+- [x] Navigation Gaming au clavier et à la manette, profils manette, catégories de bibliothèque, favoris et jeux récents intégrés au code source.
 - [ ] Valider la recette et le workflow avant compilation.
 - [ ] Configurer la clé de signature dans les secrets GitHub.
 - [ ] Construire et tester la première image LEOS.
