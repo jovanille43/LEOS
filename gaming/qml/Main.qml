@@ -21,7 +21,9 @@ ApplicationWindow {
     property string selectedSource: ""
     property string selectedArtwork: ""
     property string selectedInstallStatus: ""
-    property string selectedAppId: ""\n    property int selectedDuplicateCount: 1\n    property string selectedDuplicateSources: ""
+    property string selectedAppId: ""
+    property int selectedDuplicateCount: 1
+    property string selectedDuplicateSources: ""
     property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
@@ -53,7 +55,9 @@ ApplicationWindow {
         selectedIsFavorite = favorite
         selectedArtwork = artwork || ""
         selectedInstallStatus = installStatus || ""
-        selectedAppId = appId || ""\n        selectedDuplicateCount = duplicateCount || 1\n        selectedDuplicateSources = (duplicateSources || []).join(" · ")
+        selectedAppId = appId || ""
+        selectedDuplicateCount = duplicateCount || 1
+        selectedDuplicateSources = (duplicateSources || []).join(" · ")
         selectedArtworkFailed = false
     }
 
@@ -61,7 +65,8 @@ ApplicationWindow {
         const info = gameLibrary.gameInfo(row)
         if (info && info.title)
             selectGame(row, info.title, info.platform, info.source, info.favorite,
-                       info.artwork, info.installStatus, info.appId,\n                       info.duplicateCount, info.duplicateSources)
+                       info.artwork, info.installStatus, info.appId,
+                       info.duplicateCount, info.duplicateSources)
     }
 
     function clearSelection() {
@@ -625,7 +630,15 @@ ApplicationWindow {
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                             }
-                                            Label {\n                                    Layout.fillWidth: true\n                                    visible: window.selectedDuplicateCount > 1\n                                    text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"\n                                    color: "#d5a45d"\n                                    font.pixelSize: 9\n                                    wrapMode: Text.WordWrap\n                                }\n                                Item { Layout.fillHeight: true }
+                                            Label {
+                                    Layout.fillWidth: true
+                                    visible: window.selectedDuplicateCount > 1
+                                    text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"
+                                    color: "#d5a45d"
+                                    font.pixelSize: 9
+                                    wrapMode: Text.WordWrap
+                                }
+                                Item { Layout.fillHeight: true }
                                             Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
                                                 color: window.magenta
