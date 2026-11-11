@@ -39,12 +39,15 @@ PROFILES: dict[str, dict[str, Any]] = {
     },
 }
 
+from leos_core.paths import config_home as xdg_config_home
+
+
 POSITIONS = frozenset({"bottom", "left", "right", "top"})
 ALIGNMENTS = frozenset({"left", "center", "right"})
 
 
 def _config_path() -> Path:
-    root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    root = xdg_config_home()
     return root / "leos" / "desktop-layout.json"
 
 
