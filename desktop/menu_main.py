@@ -21,7 +21,7 @@ def main() -> int:
     catalog = ApplicationCatalog()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("applicationCatalog", catalog)
-    engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Main.qml")))
+    engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Menu.qml")))
     if not engine.rootObjects():
         return 1
     return app.exec()
