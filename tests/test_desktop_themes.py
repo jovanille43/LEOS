@@ -47,6 +47,7 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
         self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("property color cyan: themeColors.accent_primary", qml)
         self.assertIn("def themePalette(self)", controller)
         self.assertIn("palette_for_theme(self.theme)", controller)
         self.assertNotIn("#121720", qml)
