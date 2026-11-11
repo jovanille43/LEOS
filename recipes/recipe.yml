@@ -35,6 +35,10 @@ modules:
     dest: /usr/share/leos/
 
   - type: copy
+    src: desktop
+    dest: /usr/share/leos/
+
+  - type: copy
     src: config
     dest: /usr/share/leos/
 
