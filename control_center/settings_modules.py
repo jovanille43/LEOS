@@ -33,6 +33,14 @@ def settings_module_command(
     return [executable, module] if executable else None
 
 
+def system_monitor_command(
+    find_executable: Callable[[str], str | None] = shutil.which,
+) -> list[str] | None:
+    """Open KDE's native process and resource monitor when installed."""
+    executable = find_executable("plasma-systemmonitor") or find_executable("systemmonitor")
+    return [executable] if executable else None
+
+
 def general_settings_command(
     find_executable: Callable[[str], str | None] = shutil.which,
 ) -> list[str] | None:
