@@ -91,6 +91,17 @@ class ApplicationCatalog(QAbstractListModel):
             return None
         if values.get("Hidden") == "true" or values.get("Name", "").startswith("_"):
             return None
+        # This first menu has no terminal emulator integration; do not expose
+        # entries whose Desktop Entry explicitly requires a terminal window.
+        if values.get("Terminal", "false").casefold() == "true":
+            return None
+        try_exec = values.get("TryExec", "").strip()
+        if try_exec:
+            if os.path.isabs(try_exec):
+                if not Path(try_exec).is_file() or not os.access(try_exec, os.X_OK):
+                    return None
+            elif not shutil.which(try_exec):
+                return None
         exec_line = values.get("Exec", "").strip()
         if not exec_line:
             return None
