@@ -49,8 +49,10 @@ def inspect_power_profiles() -> PowerProfileState:
     profiles: list[str] = []
     for line in raw.splitlines():
         candidate = line.strip().lstrip("*").strip().split()[0:1]
-        if candidate and candidate[0] in PROFILE_LABELS and candidate[0] not in profiles:
-            profiles.append(candidate[0])
+        if candidate:
+            profile = candidate[0].rstrip(":")
+            if profile in PROFILE_LABELS and profile not in profiles:
+                profiles.append(profile)
     if not profiles and active in PROFILE_LABELS:
         profiles = [active]
     if not profiles:
