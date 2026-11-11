@@ -7,11 +7,12 @@ from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
-from desktop.desktop_entries import desktop_entry_is_visible, localized_desktop_value
+from desktop.desktop_entries import (
+    desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value,
+)
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
-from leos_core.text import normalize_search_text
 
 
 APP_DIRS = (
@@ -145,28 +146,12 @@ class ApplicationCatalog(QAbstractListModel):
         self._apply_filter()
 
     def _apply_filter(self):
-        query = normalize_search_text(self._query)
-        pinned_order = self.favourites.items()
-        pinned_ids = set(pinned_order)
-        selected = []
-        for item in self._all:
-            desktop_id = item["desktopId"]
-            if self._category == "Favoris":
-                if desktop_id not in pinned_ids:
-                    continue
-            elif self._category != "Tout" and item["category"] != self._category:
-                continue
-            haystack = normalize_search_text(
-                " ".join((
-                    item["name"], desktop_id, item["description"],
-                    item["category"],
-                ))
-            )
-            if query and query not in haystack:
-                continue
-            selected.append(item)
-        if self._category == "Favoris":
-            selected.sort(key=lambda item: pinned_order.index(item["desktopId"]))
+        selected = filter_desktop_applications(
+            self._all,
+            self._category,
+            self.favourites.items(),
+            self._query,
+        )
         self.beginResetModel()
         self._visible = selected
         self.endResetModel()
