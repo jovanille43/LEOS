@@ -43,6 +43,16 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('availableTypes.indexOf(widgetType)', script)
         self.assertIn('currentTypes.indexOf(widgetType)', script)
 
+    def test_script_refuses_to_create_a_duplicate_beside_unmanaged_panels(self):
+        script = build_panel_management_script(self.store.get())
+        self.assertIn('desired.enabled && !panel && allPanels.length > 0', script)
+        self.assertIn('refuse de créer un doublon', script)
+
+    def test_script_requires_plasma_six_or_newer(self):
+        script = build_panel_management_script(self.store.get())
+        self.assertIn('versionMajor < 6', script)
+        self.assertIn('applicationVersion', script)
+
     def test_script_contains_rollback_for_existing_or_new_panel(self):
         script = build_panel_management_script(self.store.get())
         self.assertIn('if (created && panel)', script)
