@@ -61,6 +61,7 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 - Depuis Gaming, l'action de retour ferme uniquement l'application Gaming et réaffiche le bureau déjà actif.
 - Les applications du bureau ne sont jamais fermées automatiquement. Leur maintien en arrière-plan dépend de leur propre comportement et devra être validé en test.
 - Le sélecteur ne remplace pas SDDM : il apparaît après l'authentification de l'utilisateur.
+- Il accepte la souris, le clavier et les manettes reconnues via evdev en lecture seule ; il réutilise les profils contrôleur LEOS sans modifier globalement les entrées Linux.
 - Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
 
 ## 8. Principes de développement
