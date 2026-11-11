@@ -23,11 +23,15 @@ def main() -> int:
 
     controller = ControlCenterController()
     engine = QQmlApplicationEngine()
-    engine.rootContext().setContextProperty("controlCenter", controller)
+    context = engine.rootContext()
+    context.setContextProperty("controlCenter", controller)
+    context.setContextProperty("systemMonitor", controller.monitor)
     qml_file = Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         return 1
+    controller.monitor.start()
+    app.aboutToQuit.connect(controller.monitor.stop)
     return app.exec()
 
 
