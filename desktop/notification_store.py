@@ -76,7 +76,7 @@ class NotificationStore:
             raise ValueError("Invalid notification title")
         if not isinstance(body, str) or len(body) > MAX_BODY:
             raise ValueError("Invalid notification body")
-        if level not in LEVELS:
+        if not isinstance(level, str) or level not in LEVELS:
             raise ValueError("Invalid notification level")
         record = {
             "id": str(uuid.uuid4()), "title": title.strip(), "body": body,
