@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
 from desktop.kde_colors import KdeColorSchemeManager
+from desktop.plasma_style import PlasmaStyleManager
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
@@ -23,6 +24,7 @@ class ControlCenterController(QObject):
         self.desktopLayout = DesktopLayoutStore()
         self.plasmaBackups = PlasmaBackupManager()
         self.kdeColorSchemes = KdeColorSchemeManager()
+        self.plasmaStyle = PlasmaStyleManager()
         self.monitor = SystemMonitor(self)
 
     @Property(bool, notify=settingsChanged)
@@ -57,6 +59,22 @@ class ControlCenterController(QObject):
     @Property(bool, notify=settingsChanged)
     def canRestoreKdeTheme(self) -> bool:
         return self.kdeColorSchemes.can_restore()
+
+    @Property(bool, notify=settingsChanged)
+    def plasmaStyleToolAvailable(self) -> bool:
+        return self.plasmaStyle.tool_available()
+
+    @Property(bool, notify=settingsChanged)
+    def plasmaStyleInstalled(self) -> bool:
+        return self.plasmaStyle.style_installed()
+
+    @Property(str, notify=settingsChanged)
+    def activePlasmaStyle(self) -> str:
+        return self.plasmaStyle.current_style() or "Inconnu"
+
+    @Property(bool, notify=settingsChanged)
+    def canRestorePlasmaStyle(self) -> bool:
+        return self.plasmaStyle.can_restore()
 
     @Property(str, notify=settingsChanged)
     def performanceProfile(self) -> str:
@@ -138,6 +156,30 @@ class ControlCenterController(QObject):
             return "Aucun thème KDE précédent n'est enregistré."
         except (OSError, RuntimeError, ValueError):
             return "La restauration du thème KDE a échoué."
+        self.settingsChanged.emit()
+        return message
+
+    @Slot(result=str)
+    def applyPlasmaStyle(self) -> str:
+        """Apply the LEOS Plasma Style only after explicit UI confirmation."""
+        try:
+            message = self.plasmaStyle.apply_style()
+        except FileNotFoundError:
+            return "Style LEOS ou outil KDE introuvable : aucun changement appliqué."
+        except (OSError, RuntimeError, ValueError):
+            return "Le style Plasma LEOS n'a pas pu être appliqué. Le thème précédent reste récupérable."
+        self.settingsChanged.emit()
+        return message
+
+    @Slot(result=str)
+    def restorePreviousPlasmaStyle(self) -> str:
+        """Restore the Plasma Style saved before the first LEOS application."""
+        try:
+            message = self.plasmaStyle.restore_previous_style()
+        except FileNotFoundError:
+            return "Aucun style Plasma précédent n'est enregistré."
+        except (OSError, RuntimeError, ValueError):
+            return "La restauration du style Plasma a échoué."
         self.settingsChanged.emit()
         return message
 
