@@ -14,7 +14,7 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
 
     def test_qml_passes_artwork_through_game_selection(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('property string selectedArtwork = ""', source)
+        self.assertIn('property string selectedArtwork: ""', source)
         self.assertIn('info.favorite, info.artwork)', source)
         self.assertIn('source: window.selectedArtwork', source)
         self.assertIn('window.selectedArtwork.length === 0', source)
