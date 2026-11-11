@@ -29,6 +29,9 @@ fi
 if [[ "$FAIL_REMOTE" == "1" && "$1" == "remote-add" ]]; then
     exit 1
 fi
+if [[ "$FAIL_INSTALL" == "1" && "$1" == "install" ]]; then
+    exit 1
+fi
 exit 0
 """,
             encoding="utf-8",
@@ -38,13 +41,14 @@ exit 0
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def run_setup(self, fail_remote=False):
+    def run_setup(self, fail_remote=False, fail_install=False):
         env = os.environ.copy()
         env.update({
             "HOME": str(self.home),
             "PATH": f"{self.bin_dir}:{env.get('PATH', '')}",
             "FLATPAK_LOG": str(self.log),
             "FAIL_REMOTE": "1" if fail_remote else "0",
+            "FAIL_INSTALL": "1" if fail_install else "0",
         })
         return subprocess.run(
             ["/usr/bin/bash", str(SCRIPT)],
@@ -73,6 +77,14 @@ exit 0
         self.assertNotEqual(result.returncode, 0)
         marker = self.home / ".local/state/leos/default-apps-seeded"
         self.assertFalse(marker.exists())
+
+    def test_does_not_write_marker_when_an_application_install_fails(self):
+        result = self.run_setup(fail_install=True)
+        self.assertNotEqual(result.returncode, 0)
+        marker = self.home / ".local/state/leos/default-apps-seeded"
+        self.assertFalse(marker.exists())
+        calls = self.log.read_text(encoding="utf-8").splitlines()
+        self.assertTrue(any(line.startswith("install ") for line in calls))
 
 
 if __name__ == "__main__":
