@@ -30,6 +30,11 @@ class ControlCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self._settings_sync_timer = QTimer(self)
+        self._settings_sync_timer.setInterval(1500)
+        self._settings_sync_timer.timeout.connect(self.refreshSharedSettings)
+        self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
         self.plasmaBackups = PlasmaBackupManager()
         self.kdeColorSchemes = KdeColorSchemeManager()
@@ -49,6 +54,23 @@ class ControlCenterController(QObject):
         self._deployment_timer.timeout.connect(self.refreshPendingSystemUpdate)
         self._deployment_timer.start()
         QTimer.singleShot(2500, self.refreshPendingSystemUpdate)
+
+    def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
+        keys = (
+            "last_mode", "theme", "performance_profile", "animations_enabled",
+            "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
+            "notification_duration_seconds", "notification_minimum_priority",
+            "notification_sounds_enabled", "silent_notifications_in_gaming",
+        )
+        return tuple(self.settings.get(key) for key in keys)
+
+    @Slot()
+    def refreshSharedSettings(self) -> None:
+        """Reflect preferences changed by another LEOS process."""
+        snapshot = self._read_shared_settings_snapshot()
+        if snapshot != self._shared_settings_snapshot:
+            self._shared_settings_snapshot = snapshot
+            self.settingsChanged.emit()
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
