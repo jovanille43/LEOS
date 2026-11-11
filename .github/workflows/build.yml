@@ -13,6 +13,20 @@ jobs:
     name: Build LEOS image
     runs-on: ubuntu-latest
     steps:
+      - name: Check signing prerequisites
+        env:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SIGNING_SECRET}" ]]; then
+            echo "::error::The SIGNING_SECRET repository secret is not configured."
+            exit 1
+          fi
+          if [[ ! -s cosign.pub ]]; then
+            echo "::error::The matching cosign.pub file is missing from the repository root."
+            exit 1
+          fi
+
       - name: Build and publish LEOS
         uses: blue-build/github-action@v1
         with:
