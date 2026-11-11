@@ -71,6 +71,11 @@ class SettingsStore:
         self.load()
         return self._values.get(key, default)
 
+    def snapshot(self, keys: tuple[str, ...]) -> tuple[Any, ...]:
+        """Read several preferences from one consistent file refresh."""
+        self.load()
+        return tuple(self._values.get(key) for key in keys)
+
     def set(self, key: str, value: Any) -> None:
         if key not in DEFAULTS:
             raise KeyError(f"Unknown LEOS setting: {key}")
