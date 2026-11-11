@@ -18,6 +18,15 @@ BUTTON_ACTIONS = {
 }
 
 
+def mapper_from_preferences(preferences: dict[str, Any]) -> "GamepadActionMapper":
+    """Build the Gaming Mode mapper from a stored per-controller profile."""
+    return GamepadActionMapper(
+        deadzone_percent=preferences.get("deadzone", 8),
+        axis_centers=preferences.get("axis_centers", {}),
+        profile=preferences.get("profile", "standard"),
+    )
+
+
 class GamepadActionMapper:
     """Convert button presses and calibrated stick movement into UI actions."""
 
