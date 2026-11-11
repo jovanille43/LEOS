@@ -3,6 +3,7 @@
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from desktop.recent_applications import RecentApplications
@@ -82,6 +83,16 @@ class RecentApplicationsTests(unittest.TestCase):
                 self.assertEqual(RecentApplications(link).items(), [])
                 with self.assertRaises(ValueError):
                     RecentApplications(link).record("org.example.App.desktop")
+
+    def test_empty_xdg_state_home_uses_standard_user_state_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            with patch.dict("os.environ", {"HOME": str(home), "XDG_STATE_HOME": ""}):
+                history = RecentApplications()
+            self.assertEqual(
+                history.path,
+                home / ".local" / "state" / "leos" / "recent-applications.json",
+            )
 
 
 if __name__ == "__main__":
