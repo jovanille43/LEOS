@@ -67,10 +67,11 @@ ApplicationWindow {
 
                     Repeater {
                         model: [
-                            { label: "Apparence", page: 0 },
-                            { label: "Matériel & connexions", page: 1 },
-                            { label: "Performances", page: 2 },
-                            { label: "Paramètres KDE", page: 3 }
+                            { label: "Vue d'ensemble", page: 0 },
+                            { label: "Apparence", page: 1 },
+                            { label: "Matériel & connexions", page: 2 },
+                            { label: "Performances", page: 3 },
+                            { label: "Paramètres KDE", page: 4 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -111,6 +112,159 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     currentIndex: window.selectedPage
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+
+                            Label {
+                                text: "VUE D'ENSEMBLE"
+                                color: "white"
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "État en direct des ressources détectées sur cet appareil."
+                                color: window.muted
+                                font.pixelSize: 12
+                                Layout.fillWidth: true
+                            }
+
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 3
+                                columnSpacing: 10
+                                rowSpacing: 10
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 132
+                                    radius: 13
+                                    color: "#121720"
+                                    border.color: "#293342"
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 14
+                                        spacing: 10
+                                        Label {
+                                            text: "UTILISATION CPU"
+                                            color: window.cyan
+                                            font.pixelSize: 10
+                                            font.letterSpacing: 1
+                                        }
+                                        Label {
+                                            text: systemMonitor.cpuUsage >= 0
+                                                ? Math.round(systemMonitor.cpuUsage) + "%"
+                                                : "—"
+                                            color: "white"
+                                            font.pixelSize: 26
+                                            font.weight: Font.Bold
+                                        }
+                                        Label {
+                                            text: "Processeur"
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 132
+                                    radius: 13
+                                    color: "#121720"
+                                    border.color: "#293342"
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 14
+                                        spacing: 10
+                                        Label {
+                                            text: "MÉMOIRE"
+                                            color: window.cyan
+                                            font.pixelSize: 10
+                                            font.letterSpacing: 1
+                                        }
+                                        Label {
+                                            text: systemMonitor.memoryUsage >= 0
+                                                ? Math.round(systemMonitor.memoryUsage) + "%"
+                                                : "—"
+                                            color: "white"
+                                            font.pixelSize: 26
+                                            font.weight: Font.Bold
+                                        }
+                                        Label {
+                                            text: "RAM utilisée"
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 132
+                                    radius: 13
+                                    color: "#121720"
+                                    border.color: "#293342"
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 14
+                                        spacing: 10
+                                        Label {
+                                            text: "TEMPÉRATURE CPU"
+                                            color: window.cyan
+                                            font.pixelSize: 10
+                                            font.letterSpacing: 1
+                                        }
+                                        Label {
+                                            text: systemMonitor.cpuTemperature >= 0
+                                                ? Math.round(systemMonitor.cpuTemperature) + " °C"
+                                                : "Indisponible"
+                                            color: "white"
+                                            font.pixelSize: systemMonitor.cpuTemperature >= 0 ? 26 : 16
+                                            font.weight: Font.Bold
+                                        }
+                                        Label {
+                                            text: "Selon les capteurs Linux"
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                            wrapMode: Text.WordWrap
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 108
+                                radius: 13
+                                color: "#121720"
+                                border.color: "#293342"
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    spacing: 7
+                                    Label {
+                                        text: "SURVEILLANCE LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 10
+                                        font.letterSpacing: 1
+                                    }
+                                    Label {
+                                        text: systemMonitor.available
+                                            ? "Actualisation automatique toutes les deux secondes. Les valeurs non exposées par le matériel restent indisponibles."
+                                            : "Le module de mesure système n'est pas disponible sur cette installation."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
 
                     ScrollView {
                         clip: true
