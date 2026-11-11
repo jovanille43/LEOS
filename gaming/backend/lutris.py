@@ -39,10 +39,14 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         games: list[dict[str, Any]] = []
         for row in rows:
             record = dict(zip(selected, row))
-            game_id = record.get("id")
+            raw_game_id = record.get("id")
             title = record.get("name")
             slug = record.get("slug")
-            if game_id is None or not isinstance(title, str) or not title.strip():
+            try:
+                game_id = int(raw_game_id)
+            except (TypeError, ValueError):
+                continue
+            if game_id <= 0 or not isinstance(title, str) or not title.strip():
                 continue
 
             directory = record.get("directory")
