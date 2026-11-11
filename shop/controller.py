@@ -159,9 +159,10 @@ class StoreController(QObject):
 
         if exit_code == 0:
             verb = "installée" if action == "install" else "désinstallée"
-            self._set_status(f"{target} a été {verb}.")
+            message = f"{target} a été {verb}."
+            self._set_status(message)
+            self.operationFinished.emit(True, message)
             self.refreshInstalled()
-            self.operationFinished.emit(True, self._status)
         else:
             lines = stderr.strip().splitlines()
             reason = lines[-1] if lines else "Flatpak a signalé une erreur."
