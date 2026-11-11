@@ -1,7 +1,7 @@
 """LEOS session entry point.
 
-Without --select, this is suitable for session autostart: Gaming is opened only
-when it was the last selected mode. With --select, it displays the mode picker.
+KDE autostart uses --select to show the mode picker after login. Without
+--select, the legacy restore path opens Gaming only when it was last selected.
 """
 
 from __future__ import annotations
