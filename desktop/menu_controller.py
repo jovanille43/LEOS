@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import os
-import shlex
 import shutil
 from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer
 
+from desktop.desktop_exec import parse_desktop_exec
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
 
@@ -101,6 +101,7 @@ class ApplicationCatalog(QAbstractListModel):
             "category": values.get("Categories", "Other;").split(";")[0] or "Other",
             "description": values.get("Comment", ""),
             "exec": exec_line,
+            "path": str(path),
         }
 
     @Slot()
@@ -180,17 +181,19 @@ class ApplicationCatalog(QAbstractListModel):
             self.launchFailed.emit("Cette application n'est plus disponible.")
             return False
         try:
-            parts = shlex.split(item["exec"], posix=True)
+            argv = parse_desktop_exec(
+                item["exec"],
+                name=item["name"],
+                icon=item["icon"],
+                desktop_file=item["path"],
+            )
         except ValueError:
             self.launchFailed.emit("La commande de lancement de cette application est invalide.")
             return False
-        if not parts:
+        if not argv:
             self.launchFailed.emit("Aucune commande de lancement disponible.")
             return False
-        # Desktop Entry field codes are metadata placeholders, not shell syntax.
-        args = [part for part in parts[1:] if not (part.startswith("%") and len(part) == 2)]
-        args = [part.replace("%%", "%") for part in args]
-        program = parts[0]
+        program = argv[0]
         if not os.path.isabs(program):
             resolved = shutil.which(program)
             if not resolved:
