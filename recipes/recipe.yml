@@ -42,6 +42,11 @@ modules:
     src: packaging/leos-default-apps.service
     dest: /usr/lib/systemd/user/
 
+  - type: systemd
+    user:
+      enabled:
+        - leos-default-apps.service
+
   - type: copy
     src: leos_core
     dest: /usr/share/leos/
