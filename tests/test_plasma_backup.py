@@ -65,6 +65,15 @@ class PlasmaBackupTests(unittest.TestCase):
         self.manager.restore_backup(backup_id, confirmed=True)
         self.assertEqual(self.config.read_text(encoding="utf-8"), "[Containments]\nlayout=original\n")
 
+    def test_control_center_exposes_backup_without_automatic_restore(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("PlasmaBackupManager()", controller)
+        self.assertIn("def createPlasmaBackup(self)", controller)
+        self.assertIn("controlCenter.createPlasmaBackup()", qml)
+        self.assertNotIn("restorePlasmaBackup", qml)
+
     def test_corrupt_manifest_is_not_listed_or_restored(self):
         backup_id = self.manager.create_backup()
         (self.backups / f"{backup_id}.json").write_text("{broken", encoding="utf-8")
