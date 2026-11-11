@@ -1,0 +1,16 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "LEOS Project"
+      }
+    ],
+    "Category": "Plasma Theme",
+    "Description": "A restrained dark Plasma style with metallic surfaces and cyan/magenta LEOS accents.",
+    "Id": "leos",
+    "License": "GPL-3.0-or-later",
+    "Name": "LEOS",
+    "Version": "0.1.0",
+    "Website": "https://github.com/jovanille43/LEOS"
+  }
+}
