@@ -30,6 +30,12 @@ def parse_desktop_exec(
     except ValueError as exc:
         raise ValueError("Invalid desktop Exec quoting") from exc
 
+    file_code_count = sum(token in _FILE_CODES_WITHOUT_INPUT for token in tokens)
+    if file_code_count > 1:
+        raise ValueError("Only one file or URL field code is permitted")
+    if tokens[0] in (_FILE_CODES_WITHOUT_INPUT | _DEPRECATED_CODES | {"%i", "%c", "%k"}):
+        raise ValueError("The executable cannot be a desktop Exec field code")
+
     argv: list[str] = []
     for token in tokens:
         if token in _FILE_CODES_WITHOUT_INPUT or token in _DEPRECATED_CODES:
