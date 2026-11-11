@@ -1,6 +1,7 @@
 """Tests for LEOS interface theme palettes."""
 
 import unittest
+from pathlib import Path
 
 from desktop.themes import (
     DEFAULT_THEME,
@@ -38,6 +39,18 @@ class DesktopThemeTests(unittest.TestCase):
         invalid = palette_for_theme(DEFAULT_THEME)
         invalid["accent_primary"] = "cyan"
         self.assertFalse(validate_palette(invalid))
+
+    def test_control_center_is_bound_to_live_theme_tokens(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        self.assertIn("property var palette: controlCenter.themePalette", qml)
+        self.assertIn("window.palette.background", qml)
+        self.assertIn("window.palette.accent_primary", qml)
+        self.assertIn("def themePalette(self)", controller)
+        self.assertIn("palette_for_theme(self.theme)", controller)
+        self.assertNotIn("#121720", qml)
+        self.assertNotIn("#293342", qml)
 
 
 if __name__ == "__main__":
