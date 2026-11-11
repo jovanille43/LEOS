@@ -78,7 +78,7 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 
 ## Centre des manettes
 
-Le Centre des manettes propose une vue des contrôleurs détectés par Linux, un test des boutons et axes analogiques, des profils locaux par appareil, le réglage d'une zone morte et l'enregistrement de la position neutre des axes.
+Le Centre des manettes propose une vue des contrôleurs détectés par Linux, un test des boutons et axes analogiques, la détection automatique des profils Xbox/PlayStation/Nintendo lorsqu'elle est fiable, le choix manuel d'un profil, le réglage d'une zone morte et l'enregistrement de la position neutre des axes.
 
 Les préférences sont enregistrées dans le compte Linux de l'utilisateur et appliquées à la navigation de l'interface Gaming LEOS (profil, zone morte et calibration des sticks). Le prototype ne modifie pas les mappings du système ou des jeux externes : les configurations Steam et des lanceurs restent prioritaires.
 
