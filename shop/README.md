@@ -8,7 +8,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - Recherche par nom ou identifiant et filtrage par catégorie.
 - Détection des applications Flatpak installées dans le profil utilisateur uniquement ; les applications système fournies par Bazzite ne sont pas proposées à la désinstallation par ce prototype.
 - Fiches indiquant identifiant, source, compatibilité et information sur les dépendances.
-- Vérification de disponibilité d'une application sur Flathub avant installation.
+- Vérification de disponibilité d'une application sur Flathub avant installation ; lecture du runtime déclaré dans les métadonnées de l'application lorsque disponible.
 - Confirmation explicite avant installation et désinstallation.
 - Opérations réalisées par Flatpak, sans gestionnaire de paquets parallèle et sans shell.
 
@@ -18,7 +18,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - La désinstallation n'est jamais déclenchée depuis la fiche sans dialogue de confirmation.
 - Le prototype ne supprime pas automatiquement les données utilisateur et ne lance pas de nettoyage des dépendances inutilisées.
 - Le catalogue est une sélection initiale et non une recherche exhaustive Flathub.
-- Les descriptions, catégories et notes de compatibilité sont éditoriales ; elles ne constituent pas une certification officielle.
+- Les descriptions, catégories et notes de compatibilité sont éditoriales ; elles ne constituent pas une certification officielle. Le runtime affiché provient des métadonnées Flathub, lorsqu'il est déclaré ; il ne représente pas une liste exhaustive de tous les composants qui pourraient être installés.
 - Le code n'a pas encore été exécuté sur Bazzite. Le comportement de Flatpak, les modules QML et l'affichage des sorties doivent être testés dans l'image LEOS.
 
 La boutique ne remplace ni Discover, ni Flatpak, ni les intégrations de lanceurs. Elle prépare une interface LEOS unifiée et transparente.
