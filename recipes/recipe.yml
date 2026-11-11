@@ -43,6 +43,10 @@ modules:
     dest: /usr/share/plasma/desktoptheme/leos/
 
   - type: copy
+    src: icons/leos
+    dest: /usr/share/icons/leos/
+
+  - type: copy
     src: config
     dest: /usr/share/leos/
 
