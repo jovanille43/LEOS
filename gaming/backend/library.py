@@ -17,6 +17,7 @@ from PySide6.QtCore import QProcess
 
 from .library_state import CATEGORIES, filter_games
 from .steam_artwork import find_steam_artwork
+from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
 from .mangohud import build_launch_command
@@ -207,46 +208,6 @@ class GameLibraryModel(QAbstractListModel):
                         candidates.append((path, runner))
         return candidates
 
-    @staticmethod
-    def _read_steam_manifest(path: Path) -> dict[str, Any] | None:
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            return None
-        app_id_match = re.search(r'"appid"\s+"(\d+)"', text)
-        name_match = re.search(r'"name"\s+"((?:\\.|[^"])*)"', text)
-        if not app_id_match or not name_match:
-            return None
-        name = name_match.group(1).replace(r'\"', '"').replace(r"\\", "\\").strip()
-        if not name:
-            return None
-        app_id = app_id_match.group(1)
-        install_dir_match = re.search(r'"installdir"\s+"((?:\\.|[^"])*)"', text)
-        install_dir = (
-            install_dir_match.group(1).replace(r'\"', '"').replace(r"\\", "\\")
-            if install_dir_match else ""
-        )
-        install_path = (
-            str(path.parent / "common" / install_dir)
-            if (
-                install_dir
-                and install_dir not in {".", ".."}
-                and Path(install_dir).name == install_dir
-                and "/" not in install_dir
-                and "\\" not in install_dir
-            )
-            else ""
-        )
-        return {
-            "id": f"steam:{app_id}",
-            "title": name,
-            "platform": "PC",
-            "source": "Steam",
-            "app_id": app_id,
-            "launch": [f"steam://rungameid/{app_id}"],
-            "install_path": install_path,
-        }
-
     def _load_manual_games(self) -> list[dict[str, Any]]:
         try:
             raw = json.loads(self._manual_file.read_text(encoding="utf-8"))
@@ -314,7 +275,7 @@ class GameLibraryModel(QAbstractListModel):
         discovered: dict[str, dict[str, Any]] = {}
         for directory in self._steam_directories():
             for manifest in directory.glob("appmanifest_*.acf"):
-                game = self._read_steam_manifest(manifest)
+                game = read_steam_manifest(manifest)
                 if game:
                     game["artwork"] = self._steam_artwork(game["app_id"], directory)
                     discovered[game["id"]] = game
