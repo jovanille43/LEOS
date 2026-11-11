@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Any
+import re
+import unicodedata
 
 
 CATEGORIES = (
@@ -62,3 +64,39 @@ def filter_games(
         or query in str(game.get("platform", "")).casefold()
         or query in str(game.get("source", "")).casefold()
     ]
+
+
+
+def normalize_display_title(title: str) -> str:
+    """Trim and collapse whitespace without changing visible naming."""
+    if not isinstance(title, str):
+        return ""
+    return re.sub(r"\s+", " ", title).strip()
+
+
+def title_identity_key(title: str) -> str:
+    """Conservative identity key; punctuation and edition markers are retained."""
+    return unicodedata.normalize("NFC", normalize_display_title(title)).casefold()
+
+
+def duplicate_title_metadata(games: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Expose exact-title matches without merging or deleting provider records."""
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for game in games:
+        key = title_identity_key(str(game.get("title", "")))
+        if key:
+            grouped.setdefault(key, []).append(game)
+    metadata: dict[str, dict[str, Any]] = {}
+    for matches in grouped.values():
+        if len(matches) < 2:
+            continue
+        sources = list(dict.fromkeys(
+            normalize_display_title(str(game.get("source", "")))
+            for game in matches if game.get("source")
+        ))
+        for game in matches:
+            metadata[str(game.get("id", ""))] = {
+                "count": len(matches),
+                "sources": sources,
+            }
+    return metadata
