@@ -5,7 +5,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 ## Éléments déjà préparés
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
-- `autostart/leos-session.desktop` : point d'entrée de session qui restaure Gaming si ce mode était le dernier utilisé. En mode Desktop, il se ferme sans action.
+- `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
 - `config/desktop-defaults.json` : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
 
 ## Direction visuelle Desktop
@@ -25,8 +25,8 @@ Aucune configuration Plasma existante ne sera écrasée silencieusement.
 ## À finaliser
 
 - Intégration de l'emblème et du fond d'écran officiels.
-- Moteur de thème et configurateur du dock, avec sauvegarde/restauration.
-- Menu principal LEOS et recherche universelle.
+- Application automatique des profils de disposition au véritable panneau Plasma (l'adaptateur de panneau existe mais reste inactif) ; dock et widgets encore non intégrés.
+- Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).
 - Tests de session sur une vraie installation Bazzite KDE.
 
@@ -203,9 +203,10 @@ tests sur une session Bazzite KDE.
 
 `menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une
 première interface de recherche et de lancement d'applications. Le catalogue
-lit les fichiers `.desktop` système et utilisateur, filtre par nom, description
-et catégorie, et lance le programme sans shell via `QProcess.startDetached`.
-Les commandes non résolues et les entrées invalides sont refusées. Le menu est
+lit les fichiers `.desktop` système et utilisateur, filtre sans distinction de casse
+ou d'accents par nom, identifiant, description et catégorie, et lance le programme
+sans shell via `QProcess.startDetached`.
+Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est
 accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
 cyan/bleu/violet/magenta.
 
