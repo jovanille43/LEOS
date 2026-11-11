@@ -22,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Compile Python sources
-        run: python -m compileall -q gaming leos_core tests
+        run: python -m compileall -q gaming launcher control_center shop leos_core tests
 
       - name: Run shared-core tests
         run: python -m unittest discover -s tests -v
