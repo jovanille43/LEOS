@@ -12,7 +12,7 @@ La variante Bazzite standard vise les GPU AMD/Intel ; les images NVIDIA sont sé
 
 ## Contenu prévu de l'image
 
-La recette ajoute les paquets Fedora `python3-pyside6` et `python3-psutil`, puis copie les dossiers Gaming, launcher, Control Center, boutique, core et branding dans `/usr/share/leos`. Elle ajoute l'entrée KDE de la boutique. Elle installe les entrées KDE du sélecteur de modes et du Centre de contrôle, ainsi que l'autostart de session. Les noms de paquets sont publiés dans Fedora ; leur présence et leur compatibilité doivent tout de même être confirmées avec la version exacte de Bazzite utilisée pour le build.
+La recette ajoute les paquets Fedora `python3-pyside6`, `python3-psutil` et `python3-evdev`, puis copie les dossiers Gaming, launcher, Control Center, Controller Center, boutique, core et branding dans `/usr/share/leos`. Elle installe les entrées KDE du sélecteur de modes, du Centre de contrôle, du Centre des manettes et de la boutique, ainsi que l'autostart de session. Les noms de paquets sont publiés dans Fedora ; leur présence et leur compatibilité doivent tout de même être confirmées avec la version exacte de Bazzite utilisée pour le build.
 
 ## Signature de l'image
 
