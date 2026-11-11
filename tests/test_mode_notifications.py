@@ -17,6 +17,7 @@ class ModeNotificationTests(unittest.TestCase):
         source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         self.assertIn("from desktop.notifications import post_notification", source)
         self.assertIn('post_notification("Retour à Desktop Mode"', source)
+        self.assertIn("native=False", source)
         self.assertLess(source.index('self.settings.set("last_mode", "desktop")'), source.index('post_notification("Retour à Desktop Mode"'))
 
     def test_mode_notification_does_not_use_native_popup_command(self):
