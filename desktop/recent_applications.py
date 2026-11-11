@@ -10,6 +10,9 @@ import tempfile
 from pathlib import Path
 
 
+from leos_core.paths import state_home as xdg_state_home
+
+
 DESKTOP_ID_RE = re.compile(r"^[A-Za-z0-9_.+-]{1,240}\.desktop$")
 
 
@@ -22,14 +25,7 @@ class RecentApplications:
         limit: int = 20,
     ) -> None:
         if path is None:
-            state_home_value = os.environ.get("XDG_STATE_HOME", "")
-            configured_state_home = Path(state_home_value) if state_home_value.strip() else None
-            state_home = (
-                configured_state_home
-                if configured_state_home is not None and configured_state_home.is_absolute()
-                else Path.home() / ".local" / "state"
-            )
-            path = state_home / "leos" / "recent-applications.json"
+            path = xdg_state_home() / "leos" / "recent-applications.json"
         self.path = path
         self.limit = max(1, min(int(limit), 100))
 
