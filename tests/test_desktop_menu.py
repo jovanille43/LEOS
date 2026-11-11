@@ -112,6 +112,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("selected.sort(key=lambda item: pinned_order.index", filters)
         self.assertIn("filter_desktop_applications(", source)
 
+    def test_menu_exposes_recent_applications_and_records_only_successful_launches(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("RecentApplications()", source)
+        self.assertIn('"Récemment utilisées"', source)
+        self.assertIn("self.recentApplications.record(desktop_id)", source)
+        self.assertIn("if not ok:", source)
+        self.assertIn("self._apply_filter()", source)
+
 
 if __name__ == "__main__":
     unittest.main()
