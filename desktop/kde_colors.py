@@ -52,7 +52,7 @@ def _luminance(hex_color: str) -> float:
 
 
 def _contrast_text(background: str) -> str:
-    return "15,17,23" if _luminance(background) > 0.42 else "255,255,255"
+    return "#0F1117" if _luminance(background) > 0.42 else "#FFFFFF"
 
 
 def _color_set(
@@ -304,7 +304,6 @@ class KdeColorSchemeManager:
             raise FileNotFoundError("plasma-apply-colorscheme is unavailable")
         if self.state_file.is_symlink():
             raise ValueError("Symbolic-link LEOS theme state files are not accepted")
-        self.install_scheme(theme)
         state = self._read_state()
         current = self.current_scheme()
         if current is None:
@@ -320,6 +319,7 @@ class KdeColorSchemeManager:
                 "A LEOS color scheme is active but its previous KDE scheme is unavailable."
             )
 
+        self.install_scheme(theme)
         # Persist the rollback target before changing KDE. If the command fails
         # or the process is interrupted, the previous scheme remains recoverable.
         self._write_state({
