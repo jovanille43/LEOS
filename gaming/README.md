@@ -48,3 +48,7 @@ La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : t
 ### Lancement et retours d'état
 
 LEOS vérifie qu'un exécutable direct est trouvable et exécutable avant de demander son démarrage. Les adresses de protocole (par exemple `steam://`) sont transmises au gestionnaire associé via les services Qt, sans prétendre vérifier que le jeu a effectivement démarré. Pour une commande directe, LEOS indique uniquement que le processus de lancement a été créé ; le chargement complet du jeu n'est pas confirmé. Les erreurs de sélection, de commande absente, d'exécutable indisponible et de démarrage sont différenciées. Aucun shell n'est utilisé.
+
+### Détection des lanceurs
+
+Le panneau rapide indique la disponibilité de Steam, Heroic et Lutris à partir des exécutables natifs trouvés dans le PATH, des emplacements Steam connus et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
