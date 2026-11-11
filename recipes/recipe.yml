@@ -1,0 +1,65 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
+name: leos
+description: LEOS, a Bazzite-based Linux distribution with custom Desktop and Gaming modes.
+base-image: ghcr.io/ublue-os/bazzite
+image-version: stable
+
+modules:
+  - type: dnf
+    install:
+      packages:
+        - python3-pyside6
+        - python3-psutil
+        - python3-evdev
+
+  - type: copy
+    src: gaming
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: launcher
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: control_center
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: controller_center
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: shop
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: leos_core
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: branding
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: desktop/applications/leos-mode-selector.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-control-center.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-controller-center.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-store.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/autostart/leos-session.desktop
+    dest: /usr/etc/xdg/autostart/
+
+  - type: signing
