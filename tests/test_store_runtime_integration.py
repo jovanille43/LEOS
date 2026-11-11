@@ -40,6 +40,15 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("self._stdout.extend(self._process.readAllStandardOutput().data())", source)
         self.assertIn("self._stderr.extend(self._process.readAllStandardError().data())", source)
 
+    def test_store_search_normalizes_accents_spaces_and_searches_metadata(self):
+        qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function normalizedSearchText(value)", qml)
+        self.assertIn('.normalize("NFKD")', qml)
+        self.assertIn('.replace(/[\\\\u0300-\\\\u036f]/g, "")', qml)
+        self.assertIn(".replace(/\\\\s+/g, \" \")", qml)
+        self.assertIn("[name, appId, category, description, source].join", qml)
+        self.assertIn("window.matchesSearch(name, appId, category, description, source)", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
