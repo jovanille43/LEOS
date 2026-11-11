@@ -7,7 +7,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 - `main.py` : initialise Qt Quick et connecte les services backend.
 - `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel.
 - `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic et Lutris, ajout manuel, favoris et historique récent.
-- `backend/system_monitor.py` : CPU/RAM, température CPU et télémétrie GPU/VRAM via les métriques DRM exposées par le pilote Linux. Les données non fournies par le pilote restent indisponibles.
+- `backend/system_monitor.py` : CPU/RAM, températures CPU/GPU et télémétrie GPU/VRAM via les métriques DRM/hwmon exposées par le pilote Linux. Les données non fournies par le pilote restent indisponibles.
 - `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/controller.py` : relie le modèle et les services à QML, surveille les manettes compatibles et transmet les actions de navigation.
 - `requirements.txt` : dépendances du prototype.
