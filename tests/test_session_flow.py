@@ -35,6 +35,17 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("../../branding/desktop-logo.png", qml)
         self.assertIn("../../branding/gaming-logo.png", qml)
 
+    def test_selector_accepts_read_only_controller_navigation(self):
+        root = ROOT
+        controller = (root / "launcher" / "controller.py").read_text(encoding="utf-8")
+        main = (root / "launcher" / "main.py").read_text(encoding="utf-8")
+        qml = (root / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("GamepadBackend()", controller)
+        self.assertIn("mapper_from_preferences", controller)
+        self.assertIn('setContextProperty("modeSelectorController", selector_controller)', main)
+        self.assertIn("function onGamepadAction(action)", qml)
+        self.assertIn("window.handleGamepadAction(action)", qml)
+
     def test_mode_choice_does_not_add_automatic_application_closing(self):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
