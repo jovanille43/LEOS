@@ -140,6 +140,14 @@ class DesktopMenuTests(unittest.TestCase):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("if category not in self.categories():", source)
 
+    def test_application_grid_supports_keyboard_navigation_and_activation(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("keyNavigationEnabled: true", qml)
+        self.assertIn("keyNavigationWraps: false", qml)
+        self.assertIn("activeFocusOnTab: true", qml)
+        self.assertIn("Keys.onReturnPressed", qml)
+        self.assertIn("Keys.onSpacePressed", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
