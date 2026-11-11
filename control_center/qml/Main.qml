@@ -144,7 +144,8 @@ ApplicationWindow {
                             { label: "Mises à jour", page: 5 },
                             { label: "Notifications", page: 6 },
                             { label: "Diagnostic système", page: 7 },
-                            { label: "Nettoyage", page: 8 }
+                            { label: "Nettoyage", page: 8 },
+                            { label: "Réseau", page: 9 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -1618,6 +1619,133 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "LEOS n’inspecte pas l’ensemble de ~/.cache, les données des applications, les fichiers personnels, les journaux système ni les composants Bazzite. Aucun nettoyage automatique n’est activé."
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+                            Label {
+                                text: "RÉSEAU & CONNECTIVITÉ"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: controlCenter.networkSnapshot.status || "Analyse en cours…"
+                                    color: window.cyan
+                                    font.pixelSize: 14
+                                    font.weight: Font.DemiBold
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: "ACTUALISER"
+                                    onClicked: controlCenter.scanNetwork()
+                                }
+                            }
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2
+                                columnSpacing: 10
+                                rowSpacing: 10
+                                Repeater {
+                                    model: [
+                                        { title: "INTERFACE PAR DÉFAUT", value: controlCenter.networkSnapshot.defaultInterface },
+                                        { title: "PASSERELLE", value: controlCenter.networkSnapshot.gateway },
+                                        { title: "SERVEURS DNS", value: controlCenter.networkSnapshot.dns },
+                                        { title: "RÉSEAU WI-FI", value: controlCenter.networkSnapshot.wifiSsid },
+                                        { title: "SIGNAL WI-FI", value: controlCenter.networkSnapshot.wifiSignal }
+                                    ]
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 86
+                                        radius: 11
+                                        color: window.themeColors.surface
+                                        border.color: window.themeColors.border
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 13
+                                            spacing: 6
+                                            Label {
+                                                text: modelData.title
+                                                color: window.cyan
+                                                font.pixelSize: 9
+                                                font.letterSpacing: 1
+                                            }
+                                            Label {
+                                                text: modelData.value || "Non détecté"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 13
+                                                font.weight: Font.DemiBold
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "INTERFACES DÉTECTÉES"
+                                color: window.cyan
+                                font.pixelSize: 11
+                                font.letterSpacing: 1.4
+                            }
+                            Repeater {
+                                model: controlCenter.networkSnapshot.interfaces || []
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 126
+                                    radius: 12
+                                    color: window.themeColors.surface
+                                    border.color: modelData.isDefault === "true" ? window.cyan : window.themeColors.border
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 14
+                                        spacing: 6
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            Label {
+                                                text: modelData.name + " · " + modelData.type
+                                                color: window.themeColors.text
+                                                font.pixelSize: 13
+                                                font.weight: Font.DemiBold
+                                            }
+                                            Item { Layout.fillWidth: true }
+                                            Label {
+                                                text: modelData.state + (modelData.isDefault === "true" ? " · PRINCIPALE" : "")
+                                                color: modelData.state === "Connectée" ? window.cyan : window.muted
+                                                font.pixelSize: 9
+                                            }
+                                        }
+                                        Label {
+                                            text: modelData.addresses
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                        }
+                                        Label {
+                                            text: "↓ " + modelData.downloadRate + "     ↑ " + modelData.uploadRate
+                                            color: window.themeColors.text
+                                            font.pixelSize: 12
+                                            font.weight: Font.DemiBold
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "Les débits sont calculés à partir des compteurs locaux du noyau entre deux relevés. LEOS ne lance aucun test de débit, aucune requête Internet et ne modifie pas la configuration réseau."
                                 color: window.muted
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
