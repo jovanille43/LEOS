@@ -20,6 +20,7 @@ from .steam_artwork import find_steam_artwork
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
 from .mangohud import build_launch_command
+from .install_state import installation_status
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -220,6 +221,16 @@ class GameLibraryModel(QAbstractListModel):
         if not name:
             return None
         app_id = app_id_match.group(1)
+        install_dir_match = re.search(r'"installdir"\s+"((?:\\.|[^"])*)"', text)
+        install_dir = (
+            install_dir_match.group(1).replace(r'\"', '"').replace(r"\\", "\\")
+            if install_dir_match else ""
+        )
+        install_path = (
+            str(path.parent / "common" / install_dir)
+            if install_dir and Path(install_dir).name == install_dir
+            else ""
+        )
         return {
             "id": f"steam:{app_id}",
             "title": name,
@@ -227,6 +238,7 @@ class GameLibraryModel(QAbstractListModel):
             "source": "Steam",
             "app_id": app_id,
             "launch": [f"steam://rungameid/{app_id}"],
+            "install_path": install_path,
         }
 
     def _load_manual_games(self) -> list[dict[str, Any]]:
@@ -384,7 +396,7 @@ class GameLibraryModel(QAbstractListModel):
             "favorite": game["id"] in self._favorites,
             "artwork": str(game.get("artwork", "")),
             "installStatus": (
-                "Installé"
+                installation_status(game)
                 if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:"))
                 else "Ajout manuel"
             ),
