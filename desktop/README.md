@@ -247,3 +247,9 @@ Les cartes du menu utilisent les noms d'icônes déclarés dans les fichiers
 accepte également un chemin d'icône local et utilise une icône système générique
 si l'icône demandée est absente. Aucun paquet ni thème d'icônes supplémentaire
 n'est installé ou sélectionné par LEOS.
+
+
+Le catalogue respecte aussi les listes `OnlyShowIn` et `NotShowIn` pour
+l'environnement actif (`XDG_CURRENT_DESKTOP`, KDE par défaut) et privilégie
+les entrées localisées `Name[fr_FR]` / `Name[fr]` et `Comment[fr_FR]` /
+`Comment[fr]` selon la locale système.
