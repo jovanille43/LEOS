@@ -30,7 +30,7 @@ ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
     "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
-    "transition_app_policy": {"ask", "keep", "close"},
+    "transition_app_policy": {"ask"},
     "notification_minimum_priority": {"all", "important", "critical"},
 }
 
