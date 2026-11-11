@@ -18,6 +18,11 @@ DEFAULTS: dict[str, Any] = {
     "onboarding_complete": False,
     "transition_app_policy": "ask",
     "last_notified_system_update": "",
+    "notifications_enabled": True,
+    "notification_duration_seconds": 5,
+    "notification_minimum_priority": "all",
+    "notification_sounds_enabled": True,
+    "silent_notifications_in_gaming": True,
 }
 
 ALLOWED_VALUES = {
@@ -25,6 +30,7 @@ ALLOWED_VALUES = {
     "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask", "keep", "close"},
+    "notification_minimum_priority": {"all", "important", "critical"},
 }
 
 
@@ -54,6 +60,8 @@ class SettingsStore:
             allowed = ALLOWED_VALUES.get(key)
             if allowed is not None and value not in allowed:
                 continue
+            if key == "notification_duration_seconds" and value not in {3, 5, 8}:
+                continue
             self._values[key] = value
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -66,6 +74,8 @@ class SettingsStore:
             raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
         allowed = ALLOWED_VALUES.get(key)
         if allowed is not None and value not in allowed:
+            raise ValueError(f"Invalid value for {key}: {value}")
+        if key == "notification_duration_seconds" and value not in {3, 5, 8}:
             raise ValueError(f"Invalid value for {key}: {value}")
         self._values[key] = value
         self.save()
