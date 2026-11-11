@@ -64,6 +64,15 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         self.assertIn("model: leos.launcherStatuses", qml)
 
 
+    def test_catalogue_providers_are_isolated_during_refresh(self):
+        source = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        self.assertIn("Each provider is isolated", source)
+        self.assertIn("steam_directories = self._steam_directories()", source)
+        self.assertIn("heroic_files = self._heroic_installed_files()", source)
+        self.assertIn("lutris_databases = self._lutris_databases()", source)
+        self.assertIn("except OSError:", source)
+        self.assertIn('game["artwork"] = ""', source)
+
     def test_launcher_status_is_refreshed_and_errors_are_specific(self):
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         self.assertIn("setInterval(15000)", controller)
