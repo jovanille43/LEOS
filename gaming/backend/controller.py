@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
-from gaming.backend.gamepad import GamepadActionMapper
+from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
 from leos_core.settings import SettingsStore
 
 from .library import GameLibraryModel
@@ -81,11 +81,7 @@ class GamingController(QObject):
                     candidate["path"],
                 )
                 preferences = self._controller_profiles.get(profile_id)
-                self._gamepad_mapper = GamepadActionMapper(
-                    preferences["deadzone"],
-                    preferences["axis_centers"],
-                    preferences["profile"],
-                )
+                self._gamepad_mapper = mapper_from_preferences(preferences)
                 self._set_gamepad_status(f"Manette : {candidate['name']}")
             except (OSError, ValueError):
                 self._gamepad.close()
