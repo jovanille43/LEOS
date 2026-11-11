@@ -220,3 +220,9 @@ raccordés dans les prochaines étapes. Le rendu et le lancement doivent encore
 Le catalogue du menu utilise désormais le stockage `DockFavourites` : chaque carte d'application propose une étoile pour épingler ou retirer l'application des favoris. Le choix est conservé dans le fichier local privé du dock ; le menu ne modifie toujours pas la configuration Plasma. Les commandes de lancement restent séparées des identifiants favoris et sont exécutées sans shell. Le raccourci `leos-menu.desktop` est inclus dans la recette BlueBuild et apparaît dans le menu d'applications KDE.
 
 L'intégration graphique au véritable panneau Plasma reste une étape distincte. Elle nécessitera une sauvegarde de la disposition existante, une confirmation explicite et une validation sur Bazzite KDE avant activation.
+
+## Centre de notifications LEOS — première alpha
+
+`notification_store.py` conserve un historique local privé, borné à 100 événements, avec niveaux info/succès/avertissement/erreur, état lu/non lu, suppression individuelle et effacement global. Les données sont validées, écrites atomiquement et protégées en permissions 0700/0600. `notification_model.py`, `qml/Notifications.qml` et `notifications_main.py` fournissent une interface Qt Quick autonome, installée dans le menu d'applications KDE par `leos-notifications.desktop`.
+
+**Périmètre explicite :** ce centre affiche les événements émis par les composants LEOS via `NotificationModel.addNotification`. Il ne capture ni ne remplace l'historique des notifications système KDE : Plasma reste responsable des notifications natives. Les intégrations avec les composants LEOS seront raccordées progressivement.
