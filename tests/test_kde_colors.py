@@ -54,6 +54,7 @@ class KdeColorSchemeTests(unittest.TestCase):
         parser.read_string(content)
         self.assertEqual(parser["General"]["ColorScheme"], "LEOS-leos-original")
         self.assertEqual(parser["General"]["Name"], "LEOS Original")
+        self.assertEqual(parser["General"]["AccentColor"], "0,217,255")
         self.assertEqual(parser["LEOS"]["ManagedBy"], MANAGED_BY)
         for group in (
             "Colors:Window", "Colors:View", "Colors:Button",
