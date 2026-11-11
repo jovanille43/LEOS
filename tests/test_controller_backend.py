@@ -11,15 +11,11 @@ class FakeGamepad:
     def __init__(self, path, readonly=False):
         self.path = path
         self.readonly = readonly
-        self.nonblocking = False
         self.name = "Test Gamepad"
         self.phys = "usb-test"
         self.uniq = "test-serial"
         self.info = SimpleNamespace(vendor=1, product=2)
         self.closed = False
-
-    def set_nonblocking(self, value=True):
-        self.nonblocking = value
 
     def capabilities(self):
         return {
@@ -80,11 +76,10 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
         self.assertTrue(self.devices[0].readonly)
         self.assertTrue(self.devices[0].closed)
 
-    def test_monitor_opens_read_only_and_sets_nonblocking_mode(self):
+    def test_monitor_opens_read_only_without_extra_nonblocking_api(self):
         monitor = backend.GamepadBackend()
         monitor.open("/dev/input/event0")
         self.assertTrue(self.devices[-1].readonly)
-        self.assertTrue(self.devices[-1].nonblocking)
         self.assertEqual(monitor.poll(), [])
         monitor.close()
         self.assertTrue(self.devices[-1].closed)
