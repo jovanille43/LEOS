@@ -5,6 +5,8 @@ from control_center.system_updates import (
     interpret_update_check_exit_code,
     system_update_check_command,
     system_updater_command,
+    pending_deployment_from_status,
+    rpm_ostree_status_command,
 )
 
 
@@ -34,6 +36,39 @@ class SystemUpdateCommandTests(unittest.TestCase):
             ["/usr/bin/bazzite-updater"],
         )
         self.assertIsNone(system_updater_command(lambda _name: None))
+
+    def test_rpm_ostree_status_is_read_only(self):
+        self.assertEqual(
+            rpm_ostree_status_command(lambda name: "/usr/bin/rpm-ostree" if name == "rpm-ostree" else None),
+            ["/usr/bin/rpm-ostree", "status", "--json"],
+        )
+        self.assertIsNone(rpm_ostree_status_command(lambda _name: None))
+
+    def test_detects_staged_deployment_and_ignores_booted_deployment(self):
+        payload = """{"deployments":[
+            {"checksum":"old","booted":true,"staged":false},
+            {"checksum":"next","booted":false,"staged":true,"version":"stable-2026.11"}
+        ]}"""
+        self.assertEqual(
+            pending_deployment_from_status(payload),
+            {"checksum": "next", "version": "stable-2026.11"},
+        )
+
+    def test_pending_deployment_without_version_uses_fallback(self):
+        self.assertEqual(
+            pending_deployment_from_status(
+                '{"deployments":[{"checksum":"next","booted":false,"pending":true}]}'
+            ),
+            {"checksum": "next", "version": "Nouvelle version"},
+        )
+
+    def test_invalid_or_non_pending_status_is_ignored(self):
+        self.assertIsNone(pending_deployment_from_status("not-json"))
+        self.assertIsNone(
+            pending_deployment_from_status(
+                '{"deployments":[{"checksum":"current","booted":true,"staged":true}]}'
+            )
+        )
 
     def test_uupd_exit_codes_are_interpreted_correctly(self):
         self.assertEqual(interpret_update_check_exit_code(0), "available")
