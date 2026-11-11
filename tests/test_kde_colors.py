@@ -138,6 +138,21 @@ class KdeColorSchemeTests(unittest.TestCase):
         self.manager.apply_theme("gaming")
         self.assertEqual(self.manager._read_state()["previous_scheme"], "Nordic")
 
+    def test_apply_refuses_when_active_kde_scheme_cannot_be_identified(self):
+        (self.config / "kdeglobals").write_text("[General]\n", encoding="utf-8")
+        with self.assertRaises(RuntimeError):
+            self.manager.apply_theme("leos-original")
+        self.assertEqual(self.runner.calls, [])
+        self.assertFalse(self.manager.can_restore())
+
+    def test_apply_refuses_leos_overwrite_without_existing_rollback_state(self):
+        (self.config / "kdeglobals").write_text(
+            "[General]\nColorScheme=LEOS-cyan\n", encoding="utf-8"
+        )
+        with self.assertRaises(RuntimeError):
+            self.manager.apply_theme("leos-original")
+        self.assertEqual(self.runner.calls, [])
+
     def test_failed_application_keeps_previous_scheme_recoverable(self):
         self.runner.returncode = 1
         with self.assertRaises(RuntimeError):
