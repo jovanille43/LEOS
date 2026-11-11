@@ -97,3 +97,25 @@ indique les points à traiter, mais ne prétend pas produire un patch Plasma
 applicable. Le moteur d'application reste désactivé (`can_apply=false`) tant
 qu'il n'a pas été validé sur une véritable session Bazzite KDE. Une sauvegarde
 préalable et une confirmation explicite resteront obligatoires.
+
+
+## Adaptateur de panneaux LEOS (préparé, non activé)
+
+Le module `desktop/plasma_adapter.py` génère un script utilisant l'API officielle
+de scripting Plasma 6 pour créer, mettre à jour ou retirer un panneau LEOS.
+Chaque panneau créé reçoit un marqueur privé `LEOS/managedBy=leos-panel-v1`.
+Les opérations suivantes ne ciblent que ce marqueur : un panneau KDE personnel
+ne peut pas être adopté ou supprimé implicitement.
+
+L'adaptateur refuse de créer un second dock lorsqu'un panneau non géré existe
+déjà, et refuse les versions antérieures à Plasma 6. Il préserve les widgets
+déjà présents sur un panneau LEOS et n'ajoute que les widgets KDE disponibles.
+Une tentative de mise à jour comporte un retour arrière en cas d'erreur.
+
+**Cet adaptateur n'est pas encore exécuté par le Centre de contrôle.** Il n'a
+pas été validé sur une vraie session Bazzite KDE ; aucune action d'application
+n'est donc proposée dans l'interface. Les widgets de bureau restent hors du
+périmètre de cette première version.
+
+Références techniques : [API de scripting Plasma](https://develop.kde.org/docs/plasma/scripting/api/)
+et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting/).
