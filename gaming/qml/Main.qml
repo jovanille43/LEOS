@@ -19,6 +19,7 @@ ApplicationWindow {
     property string selectedTitle: ""
     property string selectedPlatform: ""
     property string selectedSource: ""
+    property string selectedArtwork: ""
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
     property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
