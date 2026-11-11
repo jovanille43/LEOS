@@ -161,7 +161,6 @@ class StoreController(QObject):
     @Slot()
     def refreshCatalogue(self) -> None:
         self.refreshInstalled()
-        self._set_status("Catalogue LEOS : disponibilité vérifiée au moment de l'installation.")
 
     def _on_finished(self, exit_code: int, _exit_status) -> None:
         stdout = bytes(self._stdout + self._process.readAllStandardOutput().data()).decode(
