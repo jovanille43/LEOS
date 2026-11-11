@@ -84,6 +84,7 @@ class GamingController(QObject):
                 self._gamepad_mapper = GamepadActionMapper(
                     preferences["deadzone"],
                     preferences["axis_centers"],
+                    preferences["profile"],
                 )
                 self._set_gamepad_status(f"Manette : {candidate['name']}")
             except (OSError, ValueError):
