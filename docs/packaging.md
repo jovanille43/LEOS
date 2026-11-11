@@ -25,6 +25,10 @@ Le backend ouvre les périphériques en lecture seule et utilise leur descripteu
 
 La base KDE fournit déjà le framework Qt et les composants QML habituels, mais les modules QML réellement nécessaires seront confirmés pendant les tests de l'image.
 
+## Bluetooth
+
+LEOS s'appuie sur les composants Bluetooth natifs de Bazzite KDE : BlueZ et son service système, l'intégration KDE Bluedevil/BluezQt et PipeWire pour l'audio Bluetooth. Aucun daemon ni gestionnaire parallèle n'est prévu. La recette ne force pas encore l'ajout de paquets BlueZ ni l'activation d'un service avant d'avoir inspecté l'image Bazzite de référence : cette vérification évite les doublons et doit confirmer le comportement réel de la base. Les contrôles de présence du service, de l'interface KDE, des profils audio et des périphériques sont listés dans [docs/bluetooth.md](bluetooth.md).
+
 ## Préférences des manettes
 
 Le Centre des manettes enregistre les profils, zones mortes et centres d'axes dans `~/.config/leos/controllers.json`, avec des permissions utilisateur restrictives. Il ne modifie ni les permissions udev, ni les règles système, ni les réglages Steam/Lutris. L'accès à un périphérique dépend donc des permissions de session Linux existantes.
