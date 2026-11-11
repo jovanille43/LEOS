@@ -7,6 +7,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
+from desktop.desktop_entries import desktop_entry_is_visible, localized_desktop_value
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
@@ -26,23 +27,6 @@ ROLE_NAMES = {
     Qt.ItemDataRole.UserRole + 6: b"isPinned",
 }
 
-
-def localized_desktop_value(
-    values: dict[str, str], key: str, locale_name: str
-) -> str:
-    """Choose a locale-specific Desktop Entry value before its generic fallback."""
-    locale = str(locale_name or "").replace("-", "_")
-    candidates = []
-    if locale and locale.casefold() != "c":
-        candidates.append(f"{key}[{locale}]")
-        language = locale.split("_", 1)[0]
-        if language and language != locale:
-            candidates.append(f"{key}[{language}]")
-    for candidate in candidates:
-        value = values.get(candidate, "").strip()
-        if value:
-            return value
-    return values.get(key, "").strip()
 
 
 class ApplicationCatalog(QAbstractListModel):
@@ -115,19 +99,7 @@ class ApplicationCatalog(QAbstractListModel):
             for item in os.environ.get("XDG_CURRENT_DESKTOP", "KDE").split(":")
             if item.strip()
         }
-        only_show_in = {
-            item.strip().casefold()
-            for item in values.get("OnlyShowIn", "").split(";")
-            if item.strip()
-        }
-        not_show_in = {
-            item.strip().casefold()
-            for item in values.get("NotShowIn", "").split(";")
-            if item.strip()
-        }
-        if only_show_in and not (only_show_in & current_desktops):
-            return None
-        if not_show_in & current_desktops:
+        if not desktop_entry_is_visible(values, current_desktops):
             return None
         # This first menu has no terminal emulator integration; do not expose
         # entries whose Desktop Entry explicitly requires a terminal window.
