@@ -6,6 +6,8 @@ import unittest
 
 from gaming.backend.install_state import installation_status
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 class InstallationStateTests(unittest.TestCase):
     def test_existing_install_directory_is_installed(self):
@@ -25,6 +27,11 @@ class InstallationStateTests(unittest.TestCase):
 
     def test_missing_metadata_is_unknown_not_installed(self):
         self.assertEqual(installation_status({}), "État inconnu")
+
+    def test_game_details_highlight_missing_files(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('window.selectedInstallStatus === "Fichiers absents"', qml)
+        self.assertIn("window.magenta", qml)
 
     def test_existing_executable_is_sufficient_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
