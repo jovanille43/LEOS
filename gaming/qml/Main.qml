@@ -21,7 +21,7 @@ ApplicationWindow {
     property string selectedSource: ""
     property string selectedArtwork: ""
     property string selectedInstallStatus: ""
-    property string selectedAppId: ""
+    property string selectedAppId: ""\n    property int selectedDuplicateCount: 1\n    property string selectedDuplicateSources: ""
     property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
@@ -44,7 +44,7 @@ ApplicationWindow {
         return profile.toUpperCase()
     }
 
-    function selectGame(row, title, platform, source, favorite, artwork, installStatus, appId) {
+    function selectGame(row, title, platform, source, favorite, artwork, installStatus, appId, duplicateCount, duplicateSources) {
         navigationArea = "games"
         selectedIndex = row
         selectedTitle = title
@@ -53,7 +53,7 @@ ApplicationWindow {
         selectedIsFavorite = favorite
         selectedArtwork = artwork || ""
         selectedInstallStatus = installStatus || ""
-        selectedAppId = appId || ""
+        selectedAppId = appId || ""\n        selectedDuplicateCount = duplicateCount || 1\n        selectedDuplicateSources = (duplicateSources || []).join(" · ")
         selectedArtworkFailed = false
     }
 
@@ -61,7 +61,7 @@ ApplicationWindow {
         const info = gameLibrary.gameInfo(row)
         if (info && info.title)
             selectGame(row, info.title, info.platform, info.source, info.favorite,
-                       info.artwork, info.installStatus, info.appId)
+                       info.artwork, info.installStatus, info.appId,\n                       info.duplicateCount, info.duplicateSources)
     }
 
     function clearSelection() {
@@ -625,7 +625,7 @@ ApplicationWindow {
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                             }
-                                            Item { Layout.fillHeight: true }
+                                            Label {\n                                    Layout.fillWidth: true\n                                    visible: window.selectedDuplicateCount > 1\n                                    text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"\n                                    color: "#d5a45d"\n                                    font.pixelSize: 9\n                                    wrapMode: Text.WordWrap\n                                }\n                                Item { Layout.fillHeight: true }
                                             Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
                                                 color: window.magenta
