@@ -97,6 +97,10 @@ modules:
     dest: /usr/share/applications/
 
   - type: copy
+    src: desktop/applications/leos-notifications.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
     src: desktop/autostart/leos-session.desktop
     dest: /usr/etc/xdg/autostart/
 
