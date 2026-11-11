@@ -12,7 +12,7 @@ La variante Bazzite standard vise les GPU AMD/Intel ; les images NVIDIA sont sé
 
 ## Contenu prévu de l'image
 
-La recette ajoute les paquets Fedora `python3-pyside6`, `python3-psutil` et `python3-evdev`, puis copie les dossiers Gaming, launcher, Control Center, Controller Center, boutique, core et branding dans `/usr/share/leos`. Elle installe les entrées KDE du sélecteur de modes, du Centre de contrôle, du Centre des manettes et de la boutique, ainsi que l'autostart de session. Les noms de paquets sont publiés dans Fedora ; leur présence et leur compatibilité doivent tout de même être confirmées avec la version exacte de Bazzite utilisée pour le build.
+La recette ajoute les paquets Fedora `python3-pyside6`, `python3-psutil` et `python3-evdev`, puis utilise `default-flatpaks` en portée système pour fournir Brave (`com.brave.Browser`), LibreOffice (`org.libreoffice.LibreOffice`) et VLC (`org.videolan.VLC`). Le module BlueBuild configure leur installation au démarrage et les maintient comme applications système par défaut. La boutique LEOS les détecte comme incluses et ne propose pas de les désinstaller depuis le profil utilisateur. La recette copie ensuite les dossiers Gaming, launcher, Control Center, Controller Center, boutique, core et branding dans `/usr/share/leos`. Elle installe les entrées KDE du sélecteur de modes, du Centre de contrôle, du Centre des manettes et de la boutique, ainsi que l'autostart de session. Les noms de paquets sont publiés dans Fedora ; leur présence et leur compatibilité doivent tout de même être confirmées avec la version exacte de Bazzite utilisée pour le build.
 
 ## Signature de l'image
 
@@ -36,7 +36,7 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 
 La documentation BlueBuild recommande de valider/générer la recette avec son CLI avant de construire l'image. La compilation et surtout le premier démarrage doivent ensuite être testés sur une machine de test, jamais directement sur le seul poste de travail principal.
 
-Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
+Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module default-flatpaks](https://blue-build.org/reference/modules/default-flatpaks/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
 ## Construction ISO
 
