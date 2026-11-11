@@ -15,6 +15,7 @@ on:
       - "branding/**"
       - "desktop/**"
       - "plasma-theme/**"
+      - "icons/**"
       - ".github/workflows/recipe-checks.yml"
   pull_request:
   workflow_dispatch:
