@@ -20,6 +20,33 @@ class NotificationEmissionTests(unittest.TestCase):
                 self.assertEqual(data["items"][0]["id"], identifier)
                 self.assertEqual(data["items"][0]["level"], "success")
 
+    def test_desktop_notification_uses_native_service_when_available(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.run") as run:
+                        self.assertIsNotNone(post_notification("Desktop notice", "Body", "warning"))
+                        args = run.call_args.args[0]
+                        self.assertEqual(args[0], "/usr/bin/notify-send")
+                        self.assertIn("--urgency=normal", args)
+                        self.assertIn("--", args)
+                        self.assertEqual(args[-2:], ["Desktop notice", "Body"])
+
+    def test_gaming_can_persist_without_showing_native_popup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
+                with patch("desktop.notifications.subprocess.run") as run:
+                    identifier = post_notification("Gaming event", "Saved locally", native=False)
+                    self.assertIsNotNone(identifier)
+                    run.assert_not_called()
+
+    def test_native_notification_failure_does_not_break_persistence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.run", side_effect=OSError("no service")):
+                        self.assertIsNotNone(post_notification("Still saved", "Inbox fallback"))
+
     def test_post_notification_does_not_raise_for_invalid_events(self):
         self.assertIsNone(post_notification("", "Contenu", "info"))
         self.assertIsNone(post_notification("Titre", "", "unknown"))
