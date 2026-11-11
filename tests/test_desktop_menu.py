@@ -96,6 +96,20 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("image://desktop-icons/", qml)
         self.assertIn("encodeURIComponent(icon)", qml)
 
+    def test_catalog_respects_onlyshowin_and_notshowin_for_kde(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn('os.environ.get("XDG_CURRENT_DESKTOP", "KDE")', source)
+        self.assertIn('values.get("OnlyShowIn", "").split(";")', source)
+        self.assertIn('values.get("NotShowIn", "").split(";")', source)
+        self.assertIn("only_show_in & current_desktops", source)
+        self.assertIn("not_show_in & current_desktops", source)
+
+    def test_localized_desktop_names_and_comments_are_supported(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("def localized_desktop_value(", source)
+        self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
+        self.assertIn('localized_desktop_value(values, "Comment", locale_name)', source)
+
 
 if __name__ == "__main__":
     unittest.main()
