@@ -2,7 +2,7 @@
 
 **LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État du projet :** prototype en développement. Le dépôt contient des premières applications sources (Gaming, sélecteur de modes, Centre de contrôle et boutique), mais elles ne sont pas encore validées sur une session Bazzite réelle ni intégrées dans une ISO installable.
+> **État du projet :** prototype en développement. Le dépôt contient des premières applications sources (Gaming, sélecteur de modes, Centre de contrôle, Centre des manettes et boutique), mais elles ne sont pas encore validées sur une session Bazzite réelle ni intégrées dans une ISO installable.
 
 ## Vision
 
@@ -31,19 +31,22 @@ Les références visuelles fournies pour le projet doivent être respectées. L'
 | Construction de l'image | BlueBuild |
 | Interface Gaming | Qt 6 / QML avec logique applicative PySide6 |
 | Interface Desktop | KDE Plasma personnalisé |
+| Gestion des manettes | Linux evdev via python3-evdev |
 | Dépôt | GitHub |
 | Distribution visée | Image LEOS dédiée, puis ISO installable |
 
 LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
 
 ### Premiers composants présents dans le dépôt
+
 - Backend Gaming PySide6 : détection initiale des jeux Steam via les manifestes locaux et ajout manuel de jeux.
 - Tableau technique : premières mesures CPU/RAM et température CPU lorsque les capteurs sont exposés ; GPU et FPS restent à intégrer.
 - Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
 - Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
 - Premier Centre de contrôle LEOS : préférences de thème, animations, sons, overlay et profil de performances enregistrées localement.
+- Centre des manettes : détection des contrôleurs Linux, test des entrées, profils locaux, zone morte et enregistrement du neutre des sticks.
 - Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak installés et opérations soumises à confirmation explicite.
-- Vérifications automatiques du code Python via GitHub Actions.
+- Vérifications automatiques du code Python et tests du stockage local via GitHub Actions.
 
 Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
 
@@ -69,6 +72,12 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec accès aux paramètres Linux avancés.
 - Thèmes, fonds d'écran, sons et animations configurables.
 
+## Centre des manettes
+
+Le Centre des manettes propose une vue des contrôleurs détectés par Linux, un test des boutons et axes analogiques, des profils locaux par appareil, le réglage d'une zone morte et l'enregistrement de la position neutre des axes.
+
+Les préférences sont enregistrées dans le compte Linux de l'utilisateur. Le prototype ne modifie pas les mappings du système ou des jeux : les configurations Steam et des lanceurs restent prioritaires jusqu'à la mise en place de leurs intégrations LEOS.
+
 ## Boutique LEOS
 
 La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
@@ -90,6 +99,8 @@ LEOS/
 ├── .github/workflows/   # Automatisation et vérifications
 ├── branding/            # Logos, animations, sons et ressources
 ├── config/              # Configuration partagée de LEOS
+├── controller_center/   # Gestion et test des manettes
+├── control_center/      # Paramètres LEOS
 ├── desktop/             # Personnalisation du Desktop Mode
 ├── docs/                # Architecture et documentation
 ├── gaming/              # Application Gaming LEOS
@@ -114,11 +125,12 @@ LEOS/
 - [x] Première recette BlueBuild ajoutée (squelette à valider).
 - [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
 - [x] Architecture générale des deux modes définie.
+- [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
 - [ ] Valider la recette et le workflow avant compilation.
 - [ ] Configurer la clé de signature dans les secrets GitHub.
 - [ ] Construire et tester la première image LEOS.
 
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est ajouté ; ses résultats devront être consultés sur GitHub Actions.
+**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
 
 ---
 
