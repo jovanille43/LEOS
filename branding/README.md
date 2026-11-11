@@ -8,26 +8,29 @@ Ce dossier regroupe les ressources visuelles et sonores officielles de LEOS.
 - **Gaming Mode :** emblème officiel avec le lion tenant/croquant une manette.
 - **Style :** lion métallique, éclairages cyan et magenta, typographie LEOS et fond noir.
 
-Les références visuelles fournies pour le projet doivent être respectées fidèlement. L'image comparative montrant les deux emblèmes côte à côte sert de référence, mais ne doit pas être utilisée comme logo principal d'un mode.
+L'image comparative des deux emblèmes est une référence interne ; elle ne doit jamais devenir le logo principal d'un écran.
 
-## Organisation prévue
+## Organisation
 
-Les ressources seront ajoutées progressivement dans les sous-dossiers suivants :
-
-- `logos/` — emblèmes et variantes officielles.
-- `animations/` — animations d'entrée et de transition.
+- `desktop-logo.png` — emblème Desktop.
+- `gaming-logo.png` — emblème Gaming.
+- `reference-comparison.png` — comparaison interne uniquement.
+- `animations/` — animations d'entrée des deux modes.
 - `sounds/` — signatures sonores et effets LEOS.
 - `wallpapers/` — fonds d'écran Desktop et Gaming.
-- `icons/` — icônes et éléments graphiques de l'interface.
+- `icons/` — icônes et éléments graphiques.
+
+Les noms de fichiers, usages, contraintes de fidélité et règles de packaging sont définis dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
 
 ## Règles
 
 - Ne pas remplacer les emblèmes officiels par des lions génériques.
-- Conserver les couleurs, proportions et détails de chaque référence.
+- Conserver les couleurs, proportions et détails des références originales.
 - Utiliser le lion seul pour Desktop et le lion avec manette pour Gaming.
-- Prévoir des variantes adaptées aux différentes résolutions et usages.
-- Les animations et sons devront pouvoir être désactivés dans les paramètres.
+- Ne pas afficher l'image comparative comme emblème d'un mode.
+- Les animations et sons doivent pouvoir être désactivés dans les paramètres.
+- Préserver les fichiers originaux ; toute optimisation doit produire une copie.
 
 ## État
 
-La structure documentaire est créée. Les fichiers graphiques et audio seront ajoutés lorsqu'ils seront disponibles et vérifiés.
+Les chemins d'intégration sont définis, mais les fichiers binaires des emblèmes séparés, des animations et des signatures sonores ne sont pas encore présents dans le dépôt GitHub. Leur intégration ne sera déclarée terminée qu'après vérification des fichiers et test dans une session Bazzite réelle.
