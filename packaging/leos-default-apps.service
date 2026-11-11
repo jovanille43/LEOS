@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/leos-default-apps-setup
+ExecStart=/usr/bin/bash /usr/libexec/leos-default-apps-setup
 Restart=on-failure
 RestartSec=5min
 
