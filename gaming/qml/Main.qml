@@ -27,6 +27,13 @@ ApplicationWindow {
     property string navigationArea: "categories"
     property string pendingPowerProfile: ""
 
+    function gameMonogram(title) {
+        const words = String(title || "").trim().split(/\\s+/).filter(Boolean)
+        if (words.length === 0)
+            return "LE"
+        return words.slice(0, 2).map(word => word.charAt(0)).join("").toUpperCase()
+    }
+
     function powerProfileLabel(profile) {
         if (profile === "performance") return "PERFORMANCE"
         if (profile === "balanced") return "ÉQUILIBRÉ"
@@ -457,6 +464,12 @@ ApplicationWindow {
                             font.pixelSize: 25
                             font.weight: Font.Bold
                         }
+                        Label {
+                            text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")
+                            color: window.muted
+                            font.pixelSize: 10
+                            font.letterSpacing: 1
+                        }
                         Item { Layout.fillWidth: true }
                         TextField {
                             id: searchField
@@ -518,6 +531,8 @@ ApplicationWindow {
                                     color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
                                     border.color: window.selectedIndex === gameCard.index ? window.cyan : "#2a3444"
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    Behavior on border.color { ColorAnimation { duration: 150 } }
                                 }
                                 contentItem: ColumnLayout {
                                     spacing: 7
@@ -525,9 +540,48 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
                                         spacing: 10
+                                        Rectangle {
+                                            Layout.preferredWidth: 70
+                                            Layout.preferredHeight: 100
+                                            Layout.alignment: Qt.AlignVCenter
+                                            radius: 8
+                                            visible: gameCard.artwork.length === 0
+                                            clip: true
+                                            color: "#101b29"
+                                            border.color: "#294455"
+                                            Rectangle {
+                                                width: parent.width * 1.5
+                                                height: parent.width * 1.5
+                                                radius: width / 2
+                                                x: -parent.width * 0.55
+                                                y: parent.height * 0.25
+                                                color: "#123b4b"
+                                                opacity: 0.55
+                                            }
+                                            Column {
+                                                anchors.centerIn: parent
+                                                spacing: 4
+                                                Label {
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    text: window.gameMonogram(gameCard.title)
+                                                    color: "white"
+                                                    font.pixelSize: 23
+                                                    font.weight: Font.Black
+                                                    font.letterSpacing: 1
+                                                }
+                                                Label {
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    text: "LEOS"
+                                                    color: window.cyan
+                                                    font.pixelSize: 7
+                                                    font.letterSpacing: 2
+                                                }
+                                            }
+                                        }
                                         Image {
-                                            Layout.preferredWidth: gameCard.artwork.length > 0 ? 70 : 0
-                                            Layout.fillHeight: true
+                                            Layout.preferredWidth: 70
+                                            Layout.preferredHeight: 100
+                                            Layout.alignment: Qt.AlignVCenter
                                             source: gameCard.artwork
                                             visible: gameCard.artwork.length > 0
                                             fillMode: Image.PreserveAspectCrop
@@ -535,6 +589,8 @@ ApplicationWindow {
                                             cache: true
                                             sourceSize.width: 140
                                             sourceSize.height: 210
+                                            opacity: status === Image.Ready ? 1 : 0
+                                            Behavior on opacity { NumberAnimation { duration: 180 } }
                                         }
                                         ColumnLayout {
                                             Layout.fillWidth: true
