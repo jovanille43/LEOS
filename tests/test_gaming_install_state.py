@@ -17,6 +17,15 @@ class InstallationStateTests(unittest.TestCase):
                 "Installé",
             )
 
+    def test_install_path_must_be_a_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            file_path = Path(directory) / "not-a-game-folder"
+            file_path.write_text("x", encoding="utf-8")
+            self.assertEqual(
+                installation_status({"install_path": str(file_path)}),
+                "Fichiers absents",
+            )
+
     def test_missing_external_drive_path_is_reported_unavailable(self):
         with tempfile.TemporaryDirectory() as directory:
             missing = Path(directory) / "offline-drive" / "Game"
