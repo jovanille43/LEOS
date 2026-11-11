@@ -37,38 +37,37 @@ Les références visuelles fournies pour le projet doivent être respectées. L'
 
 LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
 
-### Premiers composants présents dans le dépôt
+### Composants source présents dans le dépôt
 
-- Backend Gaming PySide6 : détection initiale des jeux Steam via les manifestes locaux et ajout manuel de jeux.
-- Tableau technique : premières mesures CPU/RAM et température CPU lorsque les capteurs sont exposés ; GPU et FPS restent à intégrer.
-- Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
-- Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
-- Centre de contrôle LEOS : vue d'ensemble des ressources système (CPU, RAM, température CPU si exposée, occupation du système de fichiers racine et débits réseau agrégés), pages Apparence, Matériel & connexions, Performances et Paramètres KDE. Les mesures réutilisent le moniteur du Gaming Mode ; les raccourcis matériels ouvrent les modules natifs KDE autorisés (Bluetooth, réseau, audio, écran, énergie, clavier et souris). Les préférences LEOS restent stockées localement.
-- Centre des notifications LEOS : historique local persistant, notifications natives Plasma pour les événements Desktop, niveaux de priorité et actions de lecture/suppression ; les événements Gaming sont conservés sans popup pour ne pas interrompre une partie.
-- Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak utilisateur/système et opérations d'installation/désinstallation soumises à confirmation explicite.
-- Applications prévues par défaut : Brave, LibreOffice et VLC installées une seule fois en Flatpak utilisateur au premier démarrage ; elles restent librement désinstallables et ne sont pas réinstallées ensuite. Steam est déjà fourni par Bazzite Desktop.
-- Vérifications automatiques du code Python et tests du stockage local via GitHub Actions.
+- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games) et Lutris, ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
+- **Cohérence de bibliothèque** : titres nettoyés sans réécriture de leur capitalisation, recherche tolérante aux accents et aux espaces répétés, signalement prudent des titres identiques entre sources. Les entrées ne sont jamais fusionnées ou supprimées automatiquement.
+- **Métadonnées de jeu** : source, identifiant de catalogue, jaquette locale lorsqu'elle existe et état d'installation vérifié. Les chemins privés et commandes de lancement ne sont pas exposés dans la fiche QML.
+- **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
+- **Sélecteur Desktop/Gaming** : modes au sein d'une seule session KDE, dernier mode mémorisé et navigation par clavier/manette ; les transitions doivent encore être validées en session réelle.
+- **Centre de contrôle LEOS** : pages matériel et connexions, diagnostic système, nettoyage avec aperçu et confirmation, mises à jour, notifications et réseau. Les inventaires matériels et diagnostics sont en lecture seule ; les réglages système s'appuient sur les outils natifs.
+- **Centre des notifications LEOS** : historique persistant, notifications Plasma en Desktop Mode et conservation silencieuse des événements Gaming pour ne pas interrompre une partie.
+- **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
+- **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
+- **Applications initiales** : Brave, LibreOffice et VLC sont prévues pour une installation unique en Flatpak utilisateur ; le marqueur empêche leur réinstallation automatique après désinstallation.
+- **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
-Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
+Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
 
 ## Gaming Mode
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque unifiée de jeux PC et de jeux émulés, avec catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade.
-- Recherche par nom, plateforme ou source dans la bibliothèque.
-- Favoris et liste des jeux récemment lancés, conservés localement.
-- Navigation des catégories et des jeux à la manette ou au clavier.
-- Détection automatique des jeux Steam dans les bibliothèques principales et secondaires, import des jeux installés via Heroic (Epic/Legendary, GOG et Amazon Games) et Lutris, ainsi qu'ajout manuel.
-- Jaquettes Steam lues depuis le cache local (y compris les formats récents à sous-dossiers) ; aucune image n'est téléchargée par LEOS à ce stade.
-- Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
-- Retour à la bibliothèque avec une animation discrète après fermeture d'un jeu.
-- Panneau rapide horizontal en haut de l'écran.
-- Accès direct au Centre de notifications avec compteur des événements non lus ; les erreurs de lancement de jeu sont historisées sans notification intrusive.
-- Tableau de bord technique complet accessible depuis ce panneau.
-- Overlay de performances en jeu discret, facultatif et personnalisable.
-- Intégration des lanceurs et émulateurs compatibles, sans les remplacer.
-- Quelques émulateurs essentiels préinstallés ; les autres proposés dans la boutique.
+- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les catégories console/arcade sont prêtes pour les futures intégrations ; l'import automatique actuel concerne Steam, Heroic et Lutris.
+- Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
+- Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
+- Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
+- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games) et Lutris ; ajout manuel de commandes de lancement.
+- Jaquettes recherchées dans les caches locaux Steam/Lutris et les fichiers explicitement référencés par Heroic. Aucune image distante n'est téléchargée.
+- Fiche de jeu : titre, plateforme, source, statut des fichiers locaux et identifiant catalogue ; chemins privés et arguments de lancement restent masqués.
+- Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
+- Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
+- MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
+- Le démarrage cinématique, les transitions animées de lancement/retour et les intégrations d'émulateurs restent des étapes à développer et valider.
 
 ## Desktop Mode
 
