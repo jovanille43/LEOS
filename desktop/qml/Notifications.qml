@@ -36,7 +36,7 @@ ApplicationWindow {
                 implicitHeight: 34
                 Label {
                     anchors.centerIn: parent
-                    text: notificationModel.unreadCount() + " non lues"
+                    text: notificationModel.unreadCount + " non lues"
                     color: window.cyan
                     font.pixelSize: 11
                 }
