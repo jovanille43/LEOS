@@ -20,6 +20,8 @@ ApplicationWindow {
     property string selectedPlatform: ""
     property string selectedSource: ""
     property string selectedArtwork: ""
+    property string selectedInstallStatus: ""
+    property string selectedAppId: ""
     property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
@@ -42,7 +44,7 @@ ApplicationWindow {
         return profile.toUpperCase()
     }
 
-    function selectGame(row, title, platform, source, favorite, artwork) {
+    function selectGame(row, title, platform, source, favorite, artwork, installStatus, appId) {
         navigationArea = "games"
         selectedIndex = row
         selectedTitle = title
@@ -50,13 +52,16 @@ ApplicationWindow {
         selectedSource = source
         selectedIsFavorite = favorite
         selectedArtwork = artwork || ""
+        selectedInstallStatus = installStatus || ""
+        selectedAppId = appId || ""
         selectedArtworkFailed = false
     }
 
     function selectGameAt(row) {
         const info = gameLibrary.gameInfo(row)
         if (info && info.title)
-            selectGame(row, info.title, info.platform, info.source, info.favorite, info.artwork)
+            selectGame(row, info.title, info.platform, info.source, info.favorite,
+                       info.artwork, info.installStatus, info.appId)
     }
 
     function clearSelection() {
@@ -65,6 +70,8 @@ ApplicationWindow {
         selectedPlatform = ""
         selectedSource = ""
         selectedArtwork = ""
+        selectedInstallStatus = ""
+        selectedAppId = ""
         selectedArtworkFailed = false
         selectedIsFavorite = false
     }
@@ -531,7 +538,7 @@ ApplicationWindow {
                                 required property string artwork
                                 width: gameGrid.cellWidth - 12
                                 height: gameGrid.cellHeight - 12
-                                onClicked: window.selectGame(index, title, platform, source, favorite, artwork)
+                                onClicked: window.selectGameAt(index)
                                 background: Rectangle {
                                     radius: 13
                                     color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
@@ -719,6 +726,37 @@ ApplicationWindow {
                                     color: window.muted
                                     font.pixelSize: 12
                                     wrapMode: Text.WordWrap
+                                    Layout.fillWidth: true
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    implicitHeight: 1
+                                    color: "#293849"
+                                }
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Label {
+                                        text: "STATUT"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        font.letterSpacing: 1
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                    Label {
+                                        text: window.selectedInstallStatus || "—"
+                                        color: window.selectedInstallStatus === "Installé" ? window.cyan : "white"
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                    }
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    visible: window.selectedAppId.length > 0
+                                    text: "IDENTIFIANT  ·  " + window.selectedAppId
+                                    color: "#697789"
+                                    font.pixelSize: 9
+                                    elide: Text.ElideMiddle
                                 }
                                 Item { Layout.fillHeight: true }
                                 Button {
