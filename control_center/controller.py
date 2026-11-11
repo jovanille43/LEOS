@@ -164,6 +164,26 @@ class ControlCenterController(QObject):
         return bool(self.settings.get("sounds_enabled"))
 
     @Property(bool, notify=settingsChanged)
+    def notificationsEnabled(self) -> bool:
+        return bool(self.settings.get("notifications_enabled", True))
+
+    @Property(int, notify=settingsChanged)
+    def notificationDuration(self) -> int:
+        return int(self.settings.get("notification_duration_seconds", 5))
+
+    @Property(str, notify=settingsChanged)
+    def notificationMinimumPriority(self) -> str:
+        return str(self.settings.get("notification_minimum_priority", "all"))
+
+    @Property(bool, notify=settingsChanged)
+    def notificationSoundsEnabled(self) -> bool:
+        return bool(self.settings.get("notification_sounds_enabled", True))
+
+    @Property(bool, notify=settingsChanged)
+    def silentNotificationsInGaming(self) -> bool:
+        return bool(self.settings.get("silent_notifications_in_gaming", True))
+
+    @Property(bool, notify=settingsChanged)
     def gamingOverlayEnabled(self) -> bool:
         return bool(self.settings.get("gaming_overlay_enabled"))
 
@@ -249,6 +269,33 @@ class ControlCenterController(QObject):
     @Slot(bool)
     def setSoundsEnabled(self, enabled: bool) -> None:
         self.settings.set("sounds_enabled", enabled)
+        self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setNotificationsEnabled(self, enabled: bool) -> None:
+        self.settings.set("notifications_enabled", enabled)
+        self.settingsChanged.emit()
+
+    @Slot(int)
+    def setNotificationDuration(self, seconds: int) -> None:
+        if seconds in {3, 5, 8}:
+            self.settings.set("notification_duration_seconds", seconds)
+            self.settingsChanged.emit()
+
+    @Slot(str)
+    def setNotificationMinimumPriority(self, priority: str) -> None:
+        if priority in {"all", "important", "critical"}:
+            self.settings.set("notification_minimum_priority", priority)
+            self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setNotificationSoundsEnabled(self, enabled: bool) -> None:
+        self.settings.set("notification_sounds_enabled", enabled)
+        self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setSilentNotificationsInGaming(self, enabled: bool) -> None:
+        self.settings.set("silent_notifications_in_gaming", enabled)
         self.settingsChanged.emit()
 
     @Slot(bool)
