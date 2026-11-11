@@ -88,5 +88,44 @@ class NotificationEmissionTests(unittest.TestCase):
             self.assertFalse(store.load())
 
 
+    def test_native_notification_uses_saved_duration_and_sound_preference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
+                from leos_core.settings import SettingsStore
+                settings = SettingsStore()
+                settings.set("notification_duration_seconds", 8)
+                settings.set("notification_sounds_enabled", False)
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.run") as run:
+                        post_notification("Réglage", "Test", "info")
+                        args = run.call_args.args[0]
+                        self.assertIn("--expire-time=8000", args)
+                        self.assertIn("--hint=boolean:suppress-sound:true", args)
+
+    def test_priority_filter_keeps_event_in_history_without_popup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
+                from leos_core.settings import SettingsStore
+                SettingsStore().set("notification_minimum_priority", "critical")
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.run") as run:
+                        identifier = post_notification("Information", "Conservée", "info")
+                        run.assert_not_called()
+                self.assertIsNotNone(identifier)
+                self.assertEqual(len(NotificationStore().items()), 1)
+
+    def test_silent_gaming_mode_suppresses_native_popup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
+                from leos_core.settings import SettingsStore
+                settings = SettingsStore()
+                settings.set("last_mode", "gaming")
+                settings.set("silent_notifications_in_gaming", True)
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.run") as run:
+                        self.assertIsNotNone(post_notification("Jeu", "Événement", "error"))
+                        run.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
