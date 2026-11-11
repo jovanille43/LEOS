@@ -51,7 +51,7 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - Le manifeste [branding/ASSET_MANIFEST.md](../branding/ASSET_MANIFEST.md) décrit les fichiers officiels attendus (logos séparés Desktop/Gaming, animations, sons et fonds d'écran), mais ils ne figurent pas encore dans le dépôt. L'interface conserve des replis propres tant que ces fichiers ne sont pas disponibles.
 - Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles nécessaires et la machine de test ne sont pas prêts.
+Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles nécessaires et la machine de test ne sont pas prêts. Son premier job vérifie désormais la présence du secret `SIGNING_SECRET` et du fichier `cosign.pub` avant d'appeler BlueBuild ; il s'arrête clairement si l'un manque.
 
 ## Construction ISO
 
