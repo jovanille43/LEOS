@@ -1,0 +1,74 @@
+[
+  {
+    "id": "org.videolan.VLC",
+    "name": "VLC",
+    "category": "Multimedia",
+    "description": "Lecteur multimédia polyvalent pour les fichiers audio et vidéo.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak ; compatibilité dépendante de l'environnement graphique et des codecs disponibles.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.mozilla.firefox",
+    "name": "Firefox",
+    "category": "Internet",
+    "description": "Navigateur web Firefox.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak pour Linux.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.libreoffice.LibreOffice",
+    "name": "LibreOffice",
+    "category": "Productivité",
+    "description": "Suite bureautique complète.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak pour Linux.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.gimp.GIMP",
+    "name": "GIMP",
+    "category": "Création",
+    "description": "Éditeur d'images et de photos.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak pour Linux.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "com.obsproject.Studio",
+    "name": "OBS Studio",
+    "category": "Création",
+    "description": "Enregistrement vidéo et diffusion en direct.",
+    "source": "Flathub",
+    "compatibility": "L'accès à certains périphériques et à l'accélération matérielle dépend de la configuration du système.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "com.heroicgameslauncher.hgl",
+    "name": "Heroic Games Launcher",
+    "category": "Gaming",
+    "description": "Lanceur pour les bibliothèques Epic Games, GOG et Amazon Games.",
+    "source": "Flathub",
+    "compatibility": "La compatibilité des jeux dépend de Proton, Wine, des pilotes et de chaque titre.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "net.lutris.Lutris",
+    "name": "Lutris",
+    "category": "Gaming",
+    "description": "Gestionnaire de jeux et de lanceurs compatibles Linux.",
+    "source": "Flathub",
+    "compatibility": "La prise en charge de chaque lanceur et jeu varie ; certains composants supplémentaires peuvent être requis.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.kde.krita",
+    "name": "Krita",
+    "category": "Création",
+    "description": "Peinture numérique et illustration.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak pour Linux.",
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  }
+]
