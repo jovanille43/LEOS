@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.heroic import load_heroic_games
+from gaming.backend.heroic import find_heroic_artwork, load_heroic_games
 
 
 class HeroicGameImportTests(unittest.TestCase):
@@ -72,6 +72,29 @@ class HeroicGameImportTests(unittest.TestCase):
         self.assertEqual(len(games), 1)
         self.assertIn("appName=my%20game%2042", games[0]["launch"][0])
         self.assertIn("runner=gog", games[0]["launch"][0])
+
+    def test_imports_existing_local_cover_artwork(self):
+        artwork = self.root / "cover.webp"
+        artwork.write_bytes(b"image")
+        self.write_manifest({
+            "APP": {
+                "app_name": "APP",
+                "title": "Covered Game",
+                "install_path": str(self.game_dir),
+                "art_cover": str(artwork),
+            }
+        })
+        games = load_heroic_games(self.manifest, "legendary")
+        self.assertEqual(games[0]["artwork"], artwork.resolve().as_uri())
+
+    def test_ignores_remote_urls_and_unsupported_artwork_files(self):
+        self.assertEqual(
+            find_heroic_artwork({"art_cover": "https://example.invalid/cover.jpg"}),
+            "",
+        )
+        unsupported = self.root / "cover.svg"
+        unsupported.write_text("<svg/>", encoding="utf-8")
+        self.assertEqual(find_heroic_artwork({"icon": str(unsupported)}), "")
 
     def test_rejects_unsupported_runner_and_corrupt_files(self):
         self.write_manifest({})
