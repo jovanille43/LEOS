@@ -31,7 +31,7 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 ## Limites connues
 
 - Les fournisseurs automatiques actuels couvrent Steam, les installations Heroic (Epic, GOG et Amazon Games) et Lutris ; les autres lanceurs ne sont pas encore importés.
-- Les jaquettes sont recherchées dans les caches locaux Steam et Lutris. Aucune image n'est téléchargée et l'absence d'illustration est signalée dans l'interface.
+- Les jaquettes sont recherchées dans les caches locaux Steam et Lutris, ainsi que dans les chemins d'images locaux explicitement référencés par les manifestes Heroic. Aucune image n'est téléchargée ; les URL distantes et formats non pris en charge sont ignorés.
 - Les métadonnées en ligne, les fiches cinématiques et les animations de lancement ne sont pas encore connectées.
 - La charge GPU, la VRAM et la température GPU sont lues via sysfs DRM/hwmon lorsqu'elles sont exposées (notamment sur les pilotes AMD compatibles). Le nom affiché identifie le constructeur et l'identifiant PCI, pas nécessairement le modèle commercial. Le FPS en jeu nécessite encore une intégration dédiée ; les valeurs non disponibles ne sont pas simulées.
 - La navigation à la manette couvre les directions, la validation, le retour et le panneau rapide. Les raccourcis globaux du système restent à définir.
