@@ -25,19 +25,20 @@ ApplicationWindow {
     property int selectedCategoryIndex: 0
     property string navigationArea: "categories"
 
-    function selectGame(row, title, platform, source, favorite) {
+    function selectGame(row, title, platform, source, favorite, artwork) {
         navigationArea = "games"
         selectedIndex = row
         selectedTitle = title
         selectedPlatform = platform
         selectedSource = source
         selectedIsFavorite = favorite
+        selectedArtwork = artwork || ""
     }
 
     function selectGameAt(row) {
         const info = gameLibrary.gameInfo(row)
         if (info && info.title)
-            selectGame(row, info.title, info.platform, info.source, info.favorite)
+            selectGame(row, info.title, info.platform, info.source, info.favorite, info.artwork)
     }
 
     function clearSelection() {
@@ -45,6 +46,7 @@ ApplicationWindow {
         selectedTitle = ""
         selectedPlatform = ""
         selectedSource = ""
+        selectedArtwork = ""
         selectedIsFavorite = false
     }
 
@@ -431,7 +433,7 @@ ApplicationWindow {
                                 required property string artwork
                                 width: gameGrid.cellWidth - 12
                                 height: gameGrid.cellHeight - 12
-                                onClicked: window.selectGame(index, title, platform, source, favorite)
+                                onClicked: window.selectGame(index, title, platform, source, favorite, artwork)
                                 background: Rectangle {
                                     radius: 13
                                     color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
@@ -519,6 +521,44 @@ ApplicationWindow {
                                     color: window.cyan
                                     font.pixelSize: 10
                                     font.letterSpacing: 2
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 172
+                                    radius: 11
+                                    clip: true
+                                    color: "#0b1018"
+                                    border.color: "#293849"
+                                    Image {
+                                        anchors.fill: parent
+                                        source: window.selectedArtwork
+                                        visible: window.selectedArtwork.length > 0
+                                        fillMode: Image.PreserveAspectCrop
+                                        asynchronous: true
+                                        cache: true
+                                        sourceSize.width: 560
+                                        sourceSize.height: 344
+                                    }
+                                    Column {
+                                        anchors.centerIn: parent
+                                        spacing: 6
+                                        visible: window.selectedArtwork.length === 0
+                                        Label {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: "LEOS"
+                                            color: "#617184"
+                                            font.pixelSize: 25
+                                            font.weight: Font.Black
+                                            font.letterSpacing: 5
+                                        }
+                                        Label {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: window.selectedTitle ? "ARTWORK NON DISPONIBLE" : "SÉLECTIONNE UN JEU"
+                                            color: window.muted
+                                            font.pixelSize: 9
+                                            font.letterSpacing: 1
+                                        }
+                                    }
                                 }
                                 Label {
                                     text: window.selectedTitle || "Choisis un jeu"
