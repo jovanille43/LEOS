@@ -55,3 +55,5 @@ Cette page ne modifie ni les appareils, ni les pilotes, ni la configuration Blue
 **Validation restante :** les tests automatisés couvrent les réponses disponibles/indisponibles et les délais d'expiration. La détection réelle doit encore être vérifiée sur différentes machines Bazzite, notamment avec GPU hybrides, périphériques Bluetooth et PipeWire.
 
 L'inventaire inclut également le niveau et l'état de la batterie lorsque le noyau expose une alimentation de type batterie, ainsi que les périphériques USB dont les noms fabricant/produit sont publiés dans sysfs. Les machines fixes affichent explicitement qu'aucune batterie n'a été détectée.
+
+Le tableau inclut enfin les interfaces réseau locales et leurs adresses IPv4/IPv6 à partir de `ip -brief address`. L'interface de boucle locale est masquée ; aucun service distant ni test de débit n'est lancé par cette détection.
