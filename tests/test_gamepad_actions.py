@@ -41,6 +41,25 @@ class GamepadActionTests(unittest.TestCase):
             "down",
         )
 
+    def test_analog_stick_respects_deadzone(self):
+        event = {"kind": "axis", "name": "ABS_X", "minimum": -1000, "maximum": 1000}
+        event["value"] = 100
+        self.assertIsNone(self.mapper.feed(event))
+        event["value"] = 500
+        self.assertEqual(self.mapper.feed(event), "right")
+        event["value"] = 0
+        self.assertIsNone(self.mapper.feed(event))
+
+    def test_analog_stick_uses_saved_neutral_center(self):
+        mapper = GamepadActionMapper(deadzone_percent=5, axis_centers={"ABS_Y": 100})
+        event = {
+            "kind": "axis", "name": "ABS_Y", "minimum": -900,
+            "maximum": 1100, "value": 150,
+        }
+        self.assertIsNone(mapper.feed(event))
+        event["value"] = 700
+        self.assertEqual(mapper.feed(event), "down")
+
     def test_unknown_events_are_ignored(self):
         self.assertIsNone(
             self.mapper.feed({"kind": "button", "name": "BTN_TRIGGER", "value": 1})
