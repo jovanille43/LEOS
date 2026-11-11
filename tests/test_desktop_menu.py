@@ -120,6 +120,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("if not ok:", source)
         self.assertIn("self._apply_filter()", source)
 
+    def test_favourite_toggle_reapplies_filter_and_updates_membership(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        start = source.index("def toggleFavourite")
+        end = source.index("    @Slot(str, result=bool)\\n    def launch", start)
+        block = source[start:end]
+        self.assertIn("self._apply_filter()", block)
+        self.assertNotIn("self.dataChanged.emit", block)
+
 
 if __name__ == "__main__":
     unittest.main()
