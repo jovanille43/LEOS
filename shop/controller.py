@@ -12,7 +12,7 @@ import shutil
 from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 
 from shop.catalog import CatalogModel
-from shop.flatpak_inventory import parse_flatpak_inventory
+from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -112,12 +112,11 @@ class StoreController(QObject):
         ):
             self._set_status("Cette application n'est pas reconnue comme une installation Flatpak gérable.")
             return
-        scope_flag = "--user" if item["installed_scope"] == "user" else "--system"
         self._start(
             "uninstall",
             item["id"],
             "flatpak",
-            ["uninstall", scope_flag, "--assumeyes", item["id"]],
+            flatpak_uninstall_args(item["id"], item["installed_scope"]),
         )
 
     @Slot(int)
