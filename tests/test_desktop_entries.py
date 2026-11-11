@@ -2,7 +2,9 @@
 
 import unittest
 
-from desktop.desktop_entries import desktop_entry_is_visible, localized_desktop_value
+from desktop.desktop_entries import (
+    desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value,
+)
 
 
 class DesktopEntriesTests(unittest.TestCase):
@@ -40,6 +42,48 @@ class DesktopEntriesTests(unittest.TestCase):
         self.assertFalse(desktop_entry_is_visible({"Hidden": "true"}, {"KDE"}))
         self.assertFalse(desktop_entry_is_visible({"NoDisplay": "true"}, {"KDE"}))
         self.assertTrue(desktop_entry_is_visible({}, {"KDE"}))
+
+    def test_favourites_filter_preserves_the_saved_pin_order(self):
+        items = [
+            {"desktopId": "alpha.desktop", "name": "Alpha", "category": "Utility", "description": ""},
+            {"desktopId": "beta.desktop", "name": "Beta", "category": "Internet", "description": ""},
+            {"desktopId": "gamma.desktop", "name": "Gamma", "category": "Utility", "description": ""},
+        ]
+        result = filter_desktop_applications(
+            items, "Favoris", ["gamma.desktop", "alpha.desktop"]
+        )
+        self.assertEqual(
+            [item["desktopId"] for item in result],
+            ["gamma.desktop", "alpha.desktop"],
+        )
+
+    def test_application_filter_supports_category_and_accent_insensitive_search(self):
+        items = [
+            {"desktopId": "cafe.desktop", "name": "Café Manager", "category": "Utility", "description": "Gestion"},
+            {"desktopId": "browser.desktop", "name": "Navigateur", "category": "Internet", "description": "Web"},
+        ]
+        self.assertEqual(
+            [item["desktopId"] for item in filter_desktop_applications(
+                items, "Tout", [], "CAFE   manager"
+            )],
+            ["cafe.desktop"],
+        )
+        self.assertEqual(
+            [item["desktopId"] for item in filter_desktop_applications(
+                items, "Internet", [], ""
+            )],
+            ["browser.desktop"],
+        )
+
+    def test_favourites_filter_applies_search_without_reordering_matches(self):
+        items = [
+            {"desktopId": "alpha.desktop", "name": "Alpha Café", "category": "Utility", "description": ""},
+            {"desktopId": "beta.desktop", "name": "Beta", "category": "Utility", "description": ""},
+        ]
+        result = filter_desktop_applications(
+            items, "Favoris", ["beta.desktop", "alpha.desktop"], "cafe"
+        )
+        self.assertEqual([item["desktopId"] for item in result], ["alpha.desktop"])
 
 
 if __name__ == "__main__":
