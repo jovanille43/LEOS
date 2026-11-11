@@ -95,6 +95,7 @@ class ControlCenterController(QObject):
             "recentErrors": "Analyse en cours…",
             "uptime": "Analyse en cours…",
             "loadAverage": "Analyse en cours…",
+            "topProcesses": [],
         }
         self._diagnostics_task = None
         self._diagnostics_timer = QTimer(self)
