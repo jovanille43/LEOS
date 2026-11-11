@@ -18,6 +18,7 @@ from .library_state import CATEGORIES, filter_games
 from .steam_artwork import find_steam_artwork
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
+from .mangohud import build_launch_command
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -411,7 +412,7 @@ class GameLibraryModel(QAbstractListModel):
                 pass
 
     @Slot(int, result=bool)
-    def launchGame(self, row: int) -> bool:
+    def launchGame(self, row: int, mango_hud: bool = False) -> bool:
         if not 0 <= row < len(self._visible_games):
             return False
         game = self._visible_games[row]
@@ -419,7 +420,8 @@ class GameLibraryModel(QAbstractListModel):
         if not launch:
             return False
 
-        target = launch[0]
+        command = build_launch_command(launch, bool(mango_hud))
+        target = command[0]
         if "://" in target:
             launched = QDesktopServices.openUrl(QUrl(target))
         else:
@@ -427,7 +429,7 @@ class GameLibraryModel(QAbstractListModel):
                 target = str(Path(target).expanduser())
             process = QProcess()
             process.setProgram(target)
-            process.setArguments(launch[1:])
+            process.setArguments(command[1:])
             launched = process.startDetached()
         if launched:
             self._record_recent(str(game["id"]))
