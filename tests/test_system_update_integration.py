@@ -16,6 +16,10 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertIn("controlCenter.checkForSystemUpdates()", qml)
         self.assertIn("controlCenter.openSystemUpdater()", qml)
         self.assertIn("Mises à jour", qml)
+        self.assertIn("refreshPendingSystemUpdate", controller)
+        self.assertIn("setInterval(10 * 60 * 1000)", controller)
+        self.assertIn('"status", "--json"', update_module)
+        self.assertIn("pending_deployment_from_status", update_module)
 
     def test_update_check_never_calls_install_or_upgrade(self):
         module = (ROOT / "control_center/system_updates.py").read_text(encoding="utf-8")
@@ -24,6 +28,8 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertNotIn('"update"', module)
         self.assertNotIn('"upgrade"', module)
         self.assertNotIn("uupd-update", controller)
+        self.assertNotIn('"upgrade"', module)
+        self.assertNotIn('"deploy"', module)
 
     def test_update_installation_remains_user_controlled(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
