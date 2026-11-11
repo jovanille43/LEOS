@@ -49,5 +49,19 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         self.assertIn("statusText.text = leos.lastLaunchStatus", qml)
 
 
+    def test_launcher_detection_uses_host_installation_evidence(self):
+        backend = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('shutil.which("steam")', backend)
+        self.assertIn("com.valvesoftware.Steam", backend)
+        self.assertIn('shutil.which("heroic")', backend)
+        self.assertIn("com.heroicgameslauncher.hgl", backend)
+        self.assertIn('shutil.which("lutris")', backend)
+        self.assertIn("net.lutris.Lutris", backend)
+        self.assertIn("def launcherStatuses(self) -> list[str]:", controller)
+        self.assertIn("model: leos.launcherStatuses", qml)
+
+
 if __name__ == "__main__":
     unittest.main()
