@@ -152,6 +152,10 @@ class ControllerCenterController(QObject):
 
     def _poll(self) -> None:
         events = self.backend.poll()
+        if self.backend.device is None and self.poll_timer.isActive():
+            self.poll_timer.stop()
+            self.status = "Connexion interrompue — nouvelle détection en cours…"
+            self.changed.emit()
         if not events:
             return
         for event in events[-12:]:
