@@ -140,7 +140,8 @@ ApplicationWindow {
                             { label: "Apparence", page: 1 },
                             { label: "Matériel & connexions", page: 2 },
                             { label: "Performances", page: 3 },
-                            { label: "Paramètres KDE", page: 4 }
+                            { label: "Paramètres KDE", page: 4 },
+                            { label: "Mises à jour", page: 5 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -986,6 +987,120 @@ ApplicationWindow {
                         }
                         Item { Layout.fillHeight: true }
                     }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 16
+                            Label {
+                                text: "MISES À JOUR DU SYSTÈME"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "LEOS vérifie la disponibilité des mises à jour Bazzite sans installer ni préparer de nouvelle version."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 230
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 14
+                                    Label {
+                                        text: "ÉTAT DU SYSTÈME"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: controlCenter.systemUpdateStatus
+                                        color: window.themeColors.text
+                                        font.pixelSize: 13
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: controlCenter.systemUpdateCheckRunning ? "VÉRIFICATION…" : "VÉRIFIER MAINTENANT"
+                                            enabled: !controlCenter.systemUpdateCheckRunning
+                                            onClicked: controlCenter.checkForSystemUpdates()
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        BusyIndicator {
+                                            running: controlCenter.systemUpdateCheckRunning
+                                            visible: running
+                                            implicitWidth: 28
+                                            implicitHeight: 28
+                                        }
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 210
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 12
+                                    Label {
+                                        text: "INSTALLATION MANUELLE"
+                                        color: window.magenta
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Lorsqu'une mise à jour est disponible, Bazzite Updater permet de consulter les détails, les changements et les options de retour arrière. L'installation reste une action volontaire dans cet outil."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "OUVRIR BAZZITE UPDATER"
+                                        enabled: controlCenter.systemUpdaterAvailable
+                                        onClicked: {
+                                            if (!controlCenter.openSystemUpdater())
+                                                window.launchNotice = "Bazzite Updater est introuvable ou n'a pas pu être lancé."
+                                            else
+                                                window.launchNotice = ""
+                                        }
+                                    }
+                                    Label {
+                                        text: controlCenter.systemUpdaterAvailable
+                                              ? "Bazzite Updater est disponible."
+                                              : "Bazzite Updater n'est pas détecté sur cette image."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "La vérification utilise la commande uupd update-check en mode lecture seule. Aucune mise à jour n'est installée par cette vérification. L'application d'une mise à jour peut nécessiter un redémarrage."
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
                 }
             }
         }
