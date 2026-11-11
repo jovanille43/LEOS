@@ -82,6 +82,9 @@ class StoreController(QObject):
         if not item:
             self._set_status("Application inconnue dans le catalogue.")
             return
+        if not APP_ID_RE.fullmatch(item["id"]):
+            self._set_status("Identifiant d'application invalide.")
+            return
         self._target = item["id"]
         self._action = "verify-install"
         self._start(
@@ -94,8 +97,8 @@ class StoreController(QObject):
     @Slot(int)
     def requestUninstall(self, row: int) -> None:
         item = self.catalog.itemAt(row)
-        if not item or item["id"] not in self.catalog._installed:
-            self._set_status("Cette application n'est pas marquée comme installée.")
+        if not item or not APP_ID_RE.fullmatch(item["id"]) or item["id"] not in self.catalog._installed:
+            self._set_status("Cette application n'est pas marquée comme installée ou son identifiant est invalide.")
             return
         self._start(
             "uninstall",
