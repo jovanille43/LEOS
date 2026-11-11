@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 
 from shop.catalog import CatalogModel
 from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
+from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
 
 
@@ -24,11 +25,13 @@ class StoreController(QObject):
     busyChanged = Signal(bool)
     operationFinished = Signal(bool, str)
     catalogUpdated = Signal()
+    verificationDetailsChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.catalog = CatalogModel(self)
         self._status = "Catalogue LEOS prêt. Vérifie les sources avant toute opération."
+        self._verification_details = "Les dépendances seront résolues par Flatpak."
         self._busy = False
         self._process = QProcess(self)
         self._process.finished.connect(self._on_finished)
@@ -45,6 +48,15 @@ class StoreController(QObject):
     @Property(bool, notify=busyChanged)
     def busy(self) -> bool:
         return self._busy
+
+    @Property(str, notify=verificationDetailsChanged)
+    def verificationDetails(self) -> str:
+        return self._verification_details
+
+    def _set_verification_details(self, message: str) -> None:
+        if self._verification_details != message:
+            self._verification_details = message
+            self.verificationDetailsChanged.emit()
 
     def _set_status(self, message: str) -> None:
         self._status = message
@@ -97,6 +109,7 @@ class StoreController(QObject):
         if item.get("installed_scope"):
             self._set_status("Cette application est déjà installée.")
             return
+        self._set_verification_details("Lecture des métadonnées Flathub en cours…")
         self._start(
             "verify-install",
             item["id"],
@@ -176,12 +189,14 @@ class StoreController(QObject):
         if action == "verify-install":
             if exit_code == 0:
                 self._action = "verified"
+                self._set_verification_details(runtime_summary(stdout))
                 self._set_status(
                     f"{target} est disponible sur Flathub. Tu peux maintenant confirmer son installation."
                 )
                 self.operationFinished.emit(True, self._status)
             else:
                 self._action = ""
+                self._set_verification_details("Les informations de dépendances n’ont pas pu être vérifiées.")
                 detail = stderr.strip().splitlines()
                 reason = detail[-1] if detail else "Application ou dépôt indisponible."
                 self._set_status(f"Vérification impossible : {reason}")
