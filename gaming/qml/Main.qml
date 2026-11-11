@@ -210,6 +210,29 @@ ApplicationWindow {
                 }
 
                 Button {
+                    text: leos.unreadNotificationCount > 0
+                          ? "NOTIFICATIONS · " + leos.unreadNotificationCount
+                          : "NOTIFICATIONS"
+                    onClicked: {
+                        if (!leos.openNotificationCentre())
+                            statusText.text = "Centre de notifications indisponible."
+                    }
+                    background: Rectangle {
+                        radius: 10
+                        color: parent.down ? "#26313e" : "#171d28"
+                        border.color: "#344052"
+                    }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Button {
                     text: "PANNEAU RAPIDE  ☰"
                     onClicked: quickPanel.visible = !quickPanel.visible
                     background: Rectangle {
