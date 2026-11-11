@@ -72,7 +72,7 @@ class PlasmaStyleManager:
             value = parser.get("Theme", "name", fallback="").strip()
         except (OSError, configparser.Error):
             return None
-        if not value or len(value) > 80 or any(ch in value for ch in ("/", "\\\\", "\\n", "\\r")):
+        if not value or len(value) > 80 or any(ch in value for ch in ("/", "\", "\n", "\r")):
             return None
         return value
 
