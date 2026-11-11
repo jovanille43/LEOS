@@ -16,6 +16,7 @@ from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
 from control_center.diagnostics import collect_system_diagnostics
+from control_center.cleanup import collect_cleanup_preview
 from control_center.system_updates import (
     interpret_update_check_exit_code,
     system_update_check_command,
@@ -49,11 +50,22 @@ class _DiagnosticsScanTask(QRunnable):
         self.signals.completed.emit(collect_system_diagnostics())
 
 
+class _CleanupScanTask(QRunnable):
+    def __init__(self) -> None:
+        super().__init__()
+        self.signals = _HardwareScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        self.signals.completed.emit(collect_cleanup_preview())
+
+
 class ControlCenterController(QObject):
     settingsChanged = Signal()
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
     diagnosticsChanged = Signal()
+    cleanupChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -103,6 +115,19 @@ class ControlCenterController(QObject):
         self._diagnostics_timer.timeout.connect(self.scanDiagnostics)
         self._diagnostics_timer.start()
         QTimer.singleShot(500, self.scanDiagnostics)
+        self._cleanup_snapshot = {
+            "thumbnails": {"available": False, "files": 0, "bytes": 0, "size": "Analyse en cours…", "path": ""},
+            "trash": {"available": False, "files": 0, "bytes": 0, "size": "Analyse en cours…", "path": ""},
+            "totalBytes": 0,
+            "totalSize": "Analyse en cours…",
+            "note": "Analyse en lecture seule…",
+        }
+        self._cleanup_task = None
+        self._cleanup_timer = QTimer(self)
+        self._cleanup_timer.setInterval(60_000)
+        self._cleanup_timer.timeout.connect(self.scanCleanupPreview)
+        self._cleanup_timer.start()
+        QTimer.singleShot(750, self.scanCleanupPreview)
         self._system_update_status = "Aucune vérification lancée."
         self._system_update_check_running = False
         self._system_update_process = QProcess(self)
@@ -160,6 +185,27 @@ class ControlCenterController(QObject):
         if snapshot != self._hardware_snapshot:
             self._hardware_snapshot = snapshot
             self.hardwareChanged.emit()
+
+    @Property("QVariantMap", notify=cleanupChanged)
+    def cleanupPreview(self) -> dict:
+        return dict(self._cleanup_snapshot)
+
+    @Slot()
+    def scanCleanupPreview(self) -> None:
+        """Preview eligible cache and trash contents without modifying files."""
+        if self._cleanup_task is not None:
+            return
+        task = _CleanupScanTask()
+        task.signals.completed.connect(self._on_cleanup_preview_completed)
+        self._cleanup_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(dict)
+    def _on_cleanup_preview_completed(self, snapshot: dict) -> None:
+        self._cleanup_task = None
+        if snapshot != self._cleanup_snapshot:
+            self._cleanup_snapshot = snapshot
+            self.cleanupChanged.emit()
 
     @Property("QVariantMap", notify=diagnosticsChanged)
     def diagnosticsSnapshot(self) -> dict:
