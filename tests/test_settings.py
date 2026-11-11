@@ -53,5 +53,32 @@ class SettingsStoreTests(unittest.TestCase):
                 settings.set("notification_minimum_priority", "low")
 
 
+    def test_long_lived_instances_observe_each_others_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            desktop = SettingsStore(path)
+            gaming = SettingsStore(path)
+
+            desktop.set("notification_duration_seconds", 8)
+            self.assertEqual(gaming.get("notification_duration_seconds"), 8)
+
+            gaming.set("silent_notifications_in_gaming", False)
+            self.assertFalse(desktop.get("silent_notifications_in_gaming"))
+            self.assertEqual(desktop.get("notification_duration_seconds"), 8)
+
+    def test_separate_instances_preserve_unrelated_updates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            first = SettingsStore(path)
+            second = SettingsStore(path)
+
+            first.set("theme", "cyan")
+            second.set("sounds_enabled", False)
+
+            final = SettingsStore(path)
+            self.assertEqual(final.get("theme"), "cyan")
+            self.assertFalse(final.get("sounds_enabled"))
+
+
 if __name__ == "__main__":
     unittest.main()
