@@ -81,7 +81,7 @@ class GamingController(QObject):
                     candidate["path"],
                 )
                 preferences = self._controller_profiles.get(profile_id)
-                self._gamepad_mapper = mapper_from_preferences(preferences)
+                self._gamepad_mapper = mapper_from_preferences(preferences, candidate)
                 self._set_gamepad_status(f"Manette : {candidate['name']}")
             except (OSError, ValueError):
                 self._gamepad.close()
