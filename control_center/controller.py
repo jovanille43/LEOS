@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
+from desktop.kde_colors import KdeColorSchemeManager
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
@@ -21,6 +22,7 @@ class ControlCenterController(QObject):
         self.settings = SettingsStore()
         self.desktopLayout = DesktopLayoutStore()
         self.plasmaBackups = PlasmaBackupManager()
+        self.kdeColorSchemes = KdeColorSchemeManager()
         self.monitor = SystemMonitor(self)
 
     @Property(bool, notify=settingsChanged)
@@ -43,6 +45,18 @@ class ControlCenterController(QObject):
     def themePalette(self) -> dict[str, str]:
         """Expose the selected palette to LEOS-owned QML without changing KDE."""
         return palette_for_theme(self.theme)
+
+    @Property(bool, notify=settingsChanged)
+    def kdeColorSchemeToolAvailable(self) -> bool:
+        return self.kdeColorSchemes.tool_available()
+
+    @Property(str, notify=settingsChanged)
+    def activeKdeColorScheme(self) -> str:
+        return self.kdeColorSchemes.current_scheme() or "Inconnu"
+
+    @Property(bool, notify=settingsChanged)
+    def canRestoreKdeTheme(self) -> bool:
+        return self.kdeColorSchemes.can_restore()
 
     @Property(str, notify=settingsChanged)
     def performanceProfile(self) -> str:
@@ -100,6 +114,32 @@ class ControlCenterController(QObject):
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def applyKdeTheme(self) -> str:
+        """Apply the currently selected LEOS colors after a confirmed UI action."""
+        try:
+            message = self.kdeColorSchemes.apply_theme(self.theme)
+        except FileNotFoundError:
+            return "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
+        except FileExistsError:
+            return "Un fichier de thème portant ce nom existe déjà ; il a été conservé."
+        except (OSError, RuntimeError, ValueError):
+            return "KDE n'a pas pu appliquer le thème. Le thème précédent reste récupérable."
+        self.settingsChanged.emit()
+        return message
+
+    @Slot(result=str)
+    def restorePreviousKdeTheme(self) -> str:
+        """Restore the non-LEOS color scheme captured before applying LEOS."""
+        try:
+            message = self.kdeColorSchemes.restore_previous_theme()
+        except FileNotFoundError:
+            return "Aucun thème KDE précédent n'est enregistré."
+        except (OSError, RuntimeError, ValueError):
+            return "La restauration du thème KDE a échoué."
+        self.settingsChanged.emit()
+        return message
 
     @Slot(str)
     def setPerformanceProfile(self, profile: str) -> None:
