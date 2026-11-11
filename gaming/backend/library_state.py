@@ -109,3 +109,18 @@ def normalize_search_text(value: str) -> str:
         return ""
     decomposed = unicodedata.normalize("NFKD", normalize_display_title(value)).casefold()
     return "".join(character for character in decomposed if not unicodedata.combining(character))
+
+
+
+def upsert_manual_game(
+    games: list[dict[str, Any]], new_game: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Replace a manual entry with the same normalized title, retaining other games."""
+    new_key = title_identity_key(str(new_game.get("title", "")))
+    if not new_key:
+        return list(games) + [new_game]
+    retained = [
+        game for game in games
+        if title_identity_key(str(game.get("title", ""))) != new_key
+    ]
+    return retained + [new_game]
