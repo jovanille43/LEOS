@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
+from desktop.layouts import DesktopLayoutStore
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 
@@ -16,6 +17,7 @@ class ControlCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self.desktopLayout = DesktopLayoutStore()
         self.monitor = SystemMonitor(self)
 
     @Property(bool, notify=settingsChanged)
@@ -43,6 +45,30 @@ class ControlCenterController(QObject):
     def performanceProfile(self) -> str:
         return str(self.settings.get("performance_profile"))
 
+    @Property(str, notify=settingsChanged)
+    def desktopLayoutProfile(self) -> str:
+        return str(self.desktopLayout.get("profile"))
+
+    @Property(bool, notify=settingsChanged)
+    def dockEnabled(self) -> bool:
+        return bool(self.desktopLayout.get("dock")["enabled"])
+
+    @Property(str, notify=settingsChanged)
+    def dockPosition(self) -> str:
+        return str(self.desktopLayout.get("dock")["position"])
+
+    @Property(str, notify=settingsChanged)
+    def dockAlignment(self) -> str:
+        return str(self.desktopLayout.get("dock")["alignment"])
+
+    @Property(bool, notify=settingsChanged)
+    def dockAutoHide(self) -> bool:
+        return bool(self.desktopLayout.get("dock")["auto_hide"])
+
+    @Property(bool, notify=settingsChanged)
+    def desktopWidgetsEnabled(self) -> bool:
+        return bool(self.desktopLayout.get("widgets_enabled"))
+
     @Slot(bool)
     def setAnimationsEnabled(self, enabled: bool) -> None:
         self.settings.set("animations_enabled", enabled)
@@ -66,6 +92,36 @@ class ControlCenterController(QObject):
     @Slot(str)
     def setPerformanceProfile(self, profile: str) -> None:
         self.settings.set("performance_profile", profile)
+        self.settingsChanged.emit()
+
+    @Slot(str)
+    def applyDesktopLayout(self, profile: str) -> None:
+        self.desktopLayout.apply_profile(profile)
+        self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setDockEnabled(self, enabled: bool) -> None:
+        self.desktopLayout.set_dock(enabled=enabled)
+        self.settingsChanged.emit()
+
+    @Slot(str)
+    def setDockPosition(self, position: str) -> None:
+        self.desktopLayout.set_dock(position=position)
+        self.settingsChanged.emit()
+
+    @Slot(str)
+    def setDockAlignment(self, alignment: str) -> None:
+        self.desktopLayout.set_dock(alignment=alignment)
+        self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setDockAutoHide(self, enabled: bool) -> None:
+        self.desktopLayout.set_dock(auto_hide=enabled)
+        self.settingsChanged.emit()
+
+    @Slot(bool)
+    def setDesktopWidgetsEnabled(self, enabled: bool) -> None:
+        self.desktopLayout.set_widgets_enabled(enabled)
         self.settingsChanged.emit()
 
     @Slot(str, result=bool)
