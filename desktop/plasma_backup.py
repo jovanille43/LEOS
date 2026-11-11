@@ -72,17 +72,22 @@ class PlasmaBackupManager:
         if size <= 0 or size > MAX_BACKUP_BYTES:
             raise ValueError("KDE Plasma configuration has an unsupported size")
 
+        if self.backup_dir.is_symlink():
+            raise ValueError("Symbolic-link backup directories are not accepted")
         self.backup_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.chmod(self.backup_dir, 0o700)
         backup_id = uuid.uuid4().hex
         backup_path = self.backup_dir / f"{backup_id}.bak"
         fd, temporary = tempfile.mkstemp(prefix="plasma.", suffix=".tmp", dir=self.backup_dir)
         try:
-            with source.open("rb") as src, os.fdopen(fd, "wb") as dst:
+            with os.fdopen(fd, "wb") as dst, source.open("rb") as src:
                 shutil.copyfileobj(src, dst)
                 dst.flush()
                 os.fsync(dst.fileno())
             os.chmod(temporary, 0o600)
+            copied_size = Path(temporary).stat().st_size
+            if copied_size <= 0 or copied_size > MAX_BACKUP_BYTES:
+                raise ValueError("KDE Plasma configuration changed to an unsupported size")
             os.replace(temporary, backup_path)
         finally:
             try:
@@ -94,7 +99,7 @@ class PlasmaBackupManager:
             "schema_version": BACKUP_SCHEMA_VERSION,
             "backup_id": backup_id,
             "created_utc": datetime.now(timezone.utc).isoformat(),
-            "size": size,
+            "size": backup_path.stat().st_size,
             "sha256": _sha256(backup_path),
         }
         try:
@@ -118,10 +123,16 @@ class PlasmaBackupManager:
             backup_path = self.backup_dir / f"{manifest_path.stem}.bak"
             if (
                 not isinstance(manifest, dict)
-                or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
+                or type(manifest.get("schema_version")) is not int
+                or type(manifest.get("schema_version")) is not int or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
                 or manifest.get("backup_id") != manifest_path.stem
+                or type(manifest.get("size")) is not int
+                or not isinstance(manifest.get("sha256"), str)
+                or not re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"])
                 or backup_path.is_symlink()
                 or not backup_path.is_file()
+                or backup_path.stat().st_size != manifest["size"]
+                or _sha256(backup_path) != manifest["sha256"]
             ):
                 continue
             entries.append(manifest)
@@ -173,7 +184,7 @@ class PlasmaBackupManager:
         mode = stat.S_IMODE(self.config_path.stat().st_mode) if self.config_path.exists() else 0o600
         fd, temporary = tempfile.mkstemp(prefix="plasma-restore.", suffix=".tmp", dir=self.config_path.parent)
         try:
-            with backup_path.open("rb") as src, os.fdopen(fd, "wb") as dst:
+            with os.fdopen(fd, "wb") as dst, backup_path.open("rb") as src:
                 shutil.copyfileobj(src, dst)
                 dst.flush()
                 os.fsync(dst.fileno())
