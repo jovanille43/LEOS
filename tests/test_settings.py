@@ -16,6 +16,9 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(settings.get("theme"), "leos-original")
             self.assertEqual(settings.get("performance_profile"), "balanced")
             self.assertTrue(settings.get("animations_enabled"))
+            self.assertTrue(settings.get("notifications_enabled"))
+            self.assertEqual(settings.get("notification_duration_seconds"), 5)
+            self.assertTrue(settings.get("silent_notifications_in_gaming"))
             self.assertFalse(path.exists())
 
     def test_values_persist_between_instances(self) -> None:
@@ -44,6 +47,10 @@ class SettingsStoreTests(unittest.TestCase):
                 settings.set("theme", "nonexistent")
             with self.assertRaises(TypeError):
                 settings.set("sounds_enabled", "false")
+            with self.assertRaises(ValueError):
+                settings.set("notification_duration_seconds", 12)
+            with self.assertRaises(ValueError):
+                settings.set("notification_minimum_priority", "low")
 
 
 if __name__ == "__main__":
