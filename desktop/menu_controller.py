@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
@@ -25,6 +25,24 @@ ROLE_NAMES = {
     Qt.ItemDataRole.UserRole + 5: b"description",
     Qt.ItemDataRole.UserRole + 6: b"isPinned",
 }
+
+
+def localized_desktop_value(
+    values: dict[str, str], key: str, locale_name: str
+) -> str:
+    """Choose a locale-specific Desktop Entry value before its generic fallback."""
+    locale = str(locale_name or "").replace("-", "_")
+    candidates = []
+    if locale and locale.casefold() != "c":
+        candidates.append(f"{key}[{locale}]")
+        language = locale.split("_", 1)[0]
+        if language and language != locale:
+            candidates.append(f"{key}[{language}]")
+    for candidate in candidates:
+        value = values.get(candidate, "").strip()
+        if value:
+            return value
+    return values.get(key, "").strip()
 
 
 class ApplicationCatalog(QAbstractListModel):
@@ -92,6 +110,25 @@ class ApplicationCatalog(QAbstractListModel):
             return None
         if values.get("Hidden") == "true" or values.get("Name", "").startswith("_"):
             return None
+        current_desktops = {
+            item.strip().casefold()
+            for item in os.environ.get("XDG_CURRENT_DESKTOP", "KDE").split(":")
+            if item.strip()
+        }
+        only_show_in = {
+            item.strip().casefold()
+            for item in values.get("OnlyShowIn", "").split(";")
+            if item.strip()
+        }
+        not_show_in = {
+            item.strip().casefold()
+            for item in values.get("NotShowIn", "").split(";")
+            if item.strip()
+        }
+        if only_show_in and not (only_show_in & current_desktops):
+            return None
+        if not_show_in & current_desktops:
+            return None
         # This first menu has no terminal emulator integration; do not expose
         # entries whose Desktop Entry explicitly requires a terminal window.
         if values.get("Terminal", "false").casefold() == "true":
@@ -110,12 +147,13 @@ class ApplicationCatalog(QAbstractListModel):
         exec_line = values.get("Exec", "").strip()
         if not exec_line:
             return None
+        locale_name = QLocale.system().name()
         return {
-            "name": values.get("Name", path.stem),
+            "name": localized_desktop_value(values, "Name", locale_name) or path.stem,
             "desktopId": path.name,
             "icon": values.get("Icon", "application-x-executable"),
             "category": values.get("Categories", "Other;").split(";")[0] or "Other",
-            "description": values.get("Comment", ""),
+            "description": localized_desktop_value(values, "Comment", locale_name),
             "exec": exec_line,
             "path": str(path),
             "workingDirectory": working_directory,
