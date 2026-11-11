@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
+from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import GamepadActionMapper
 from leos_core.settings import SettingsStore
 
@@ -26,6 +27,7 @@ class GamingController(QObject):
         self._message = ""
         self._gamepad = GamepadBackend()
         self._gamepad_mapper = GamepadActionMapper()
+        self._controller_profiles = ControllerProfileStore()
         self._gamepad_path = ""
         self._gamepad_status = (
             "Détection des manettes active"
@@ -70,6 +72,19 @@ class GamingController(QObject):
             try:
                 self._gamepad.open(candidate["path"])
                 self._gamepad_path = candidate["path"]
+                profile_id = device_profile_id(
+                    candidate["name"],
+                    candidate["vendor"],
+                    candidate["product"],
+                    candidate["phys"],
+                    candidate["uniq"],
+                    candidate["path"],
+                )
+                preferences = self._controller_profiles.get(profile_id)
+                self._gamepad_mapper = GamepadActionMapper(
+                    preferences["deadzone"],
+                    preferences["axis_centers"],
+                )
                 self._set_gamepad_status(f"Manette : {candidate['name']}")
             except (OSError, ValueError):
                 self._gamepad.close()
