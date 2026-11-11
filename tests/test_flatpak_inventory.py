@@ -2,7 +2,7 @@
 
 import unittest
 
-from shop.flatpak_inventory import parse_flatpak_inventory
+from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
 
 
 class FlatpakInventoryTests(unittest.TestCase):
@@ -28,6 +28,22 @@ class FlatpakInventoryTests(unittest.TestCase):
         user, system = parse_flatpak_inventory(output)
         self.assertEqual(user, {"org.example.Valid"})
         self.assertEqual(system, set())
+
+    def test_uninstall_arguments_match_user_or_system_installation(self):
+        self.assertEqual(
+            flatpak_uninstall_args("org.example.App", "user"),
+            ["uninstall", "--user", "--assumeyes", "org.example.App"],
+        )
+        self.assertEqual(
+            flatpak_uninstall_args("org.example.App", "system"),
+            ["uninstall", "--system", "--assumeyes", "org.example.App"],
+        )
+
+    def test_uninstall_arguments_reject_invalid_ids_and_scopes(self):
+        with self.assertRaises(ValueError):
+            flatpak_uninstall_args("bad-id", "user")
+        with self.assertRaises(ValueError):
+            flatpak_uninstall_args("org.example.App", "external")
 
     def test_named_system_installations_are_system_scope(self):
         user, system = parse_flatpak_inventory(
