@@ -44,7 +44,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
 - Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
 - Centre de contrôle LEOS : vue d'ensemble des ressources système (CPU, RAM, température CPU si exposée, occupation du système de fichiers racine et débits réseau agrégés), pages Apparence, Matériel & connexions, Performances et Paramètres KDE. Les mesures réutilisent le moniteur du Gaming Mode ; les raccourcis matériels ouvrent les modules natifs KDE autorisés (Bluetooth, réseau, audio, écran, énergie, clavier et souris). Les préférences LEOS restent stockées localement.
-- Centre des manettes : détection des contrôleurs Linux, test des entrées, profils locaux, zone morte et enregistrement du neutre des sticks.
+- Centre des notifications LEOS : historique local persistant, notifications natives Plasma pour les événements Desktop, niveaux de priorité et actions de lecture/suppression ; les événements Gaming sont conservés sans popup pour ne pas interrompre une partie.
 - Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak utilisateur/système et opérations d'installation/désinstallation soumises à confirmation explicite.
 - Applications prévues par défaut : Brave, LibreOffice et VLC installées une seule fois en Flatpak utilisateur au premier démarrage ; elles restent librement désinstallables et ne sont pas réinstallées ensuite. Steam est déjà fourni par Bazzite Desktop.
 - Vérifications automatiques du code Python et tests du stockage local via GitHub Actions.
@@ -64,6 +64,7 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 - Fiches de jeux cinématiques et transition animée à chaque lancement ; option de désactivation.
 - Retour à la bibliothèque avec une animation discrète après fermeture d'un jeu.
 - Panneau rapide horizontal en haut de l'écran.
+- Accès direct au Centre de notifications avec compteur des événements non lus ; les erreurs de lancement de jeu sont historisées sans notification intrusive.
 - Tableau de bord technique complet accessible depuis ce panneau.
 - Overlay de performances en jeu discret, facultatif et personnalisable.
 - Intégration des lanceurs et émulateurs compatibles, sans les remplacer.
@@ -73,6 +74,7 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 
 - Bureau KDE personnalisé avec l'identité LEOS.
 - Menu principal LEOS et dock personnalisable avec dispositions prédéfinies.
+- Notifications natives via Plasma et Centre de notifications LEOS pour retrouver l'historique des événements du système et des applications.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
 - Thèmes, fonds d'écran, sons et animations configurables.
 
