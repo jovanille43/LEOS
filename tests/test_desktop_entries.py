@@ -85,6 +85,30 @@ class DesktopEntriesTests(unittest.TestCase):
         )
         self.assertEqual([item["desktopId"] for item in result], ["alpha.desktop"])
 
+    def test_recent_applications_filter_preserves_mru_order(self):
+        items = [
+            {"desktopId": "alpha.desktop", "name": "Alpha", "category": "Utility", "description": ""},
+            {"desktopId": "beta.desktop", "name": "Beta", "category": "Internet", "description": ""},
+            {"desktopId": "gamma.desktop", "name": "Gamma", "category": "Utility", "description": ""},
+        ]
+        result = filter_desktop_applications(
+            items, "Récemment utilisées", [], "", ["gamma.desktop", "alpha.desktop"]
+        )
+        self.assertEqual(
+            [item["desktopId"] for item in result],
+            ["gamma.desktop", "alpha.desktop"],
+        )
+
+    def test_recent_applications_filter_supports_search(self):
+        items = [
+            {"desktopId": "alpha.desktop", "name": "Café", "category": "Utility", "description": ""},
+            {"desktopId": "beta.desktop", "name": "Beta", "category": "Internet", "description": ""},
+        ]
+        result = filter_desktop_applications(
+            items, "Récemment utilisées", [], "cafe", ["beta.desktop", "alpha.desktop"]
+        )
+        self.assertEqual([item["desktopId"] for item in result], ["alpha.desktop"])
+
 
 if __name__ == "__main__":
     unittest.main()
