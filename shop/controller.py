@@ -108,15 +108,16 @@ class StoreController(QObject):
         if (
             not item
             or not APP_ID_RE.fullmatch(item["id"])
-            or item.get("installed_scope") != "user"
+            or item.get("installed_scope") not in {"user", "system"}
         ):
-            self._set_status("Seules les applications installées dans ton profil utilisateur peuvent être désinstallées depuis LEOS.")
+            self._set_status("Cette application n'est pas reconnue comme une installation Flatpak gérable.")
             return
+        scope_flag = "--user" if item["installed_scope"] == "user" else "--system"
         self._start(
             "uninstall",
             item["id"],
             "flatpak",
-            ["uninstall", "--user", "--assumeyes", item["id"]],
+            ["uninstall", scope_flag, "--assumeyes", item["id"]],
         )
 
     @Slot(int)
