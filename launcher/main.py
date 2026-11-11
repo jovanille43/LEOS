@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from leos_core.settings import SettingsStore  # noqa: E402
 from launcher.mode_manager import ModeManager  # noqa: E402
 from launcher.controller import ModeSelectorController  # noqa: E402
+from desktop.notifications import post_notification  # noqa: E402
 
 
 def start_gaming() -> subprocess.Popen[bytes] | None:
@@ -65,6 +66,10 @@ def main() -> int:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
         manager.rememberMode(mode)
+        if mode == "gaming":
+            post_notification("LEOS Gaming Mode", "La session Gaming a été lancée.", "success")
+        else:
+            post_notification("LEOS Desktop Mode", "Le bureau KDE est sélectionné.", "success")
         app.quit()
 
     manager.modeRequested.connect(handle_mode)
