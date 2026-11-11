@@ -1,16 +1,14 @@
 """Best-effort system metrics shared by LEOS Gaming and Control Center.
 
-Only metrics exposed by the host are reported. FPS and GPU telemetry require
-separate game/driver providers and are intentionally not fabricated here.
+Only metrics exposed by the host are reported. GPU usage and VRAM are read from
+DRM sysfs when the active driver exports them; FPS is not fabricated.
 """
 
 from __future__ import annotations
 
 import time
-from pathlib import Path
 
 from .gpu_metrics import read_gpu_metrics
-
 from PySide6.QtCore import QObject, Property, QTimer, Signal
 
 try:
@@ -100,7 +98,6 @@ class SystemMonitor(QObject):
         sent = max(0, current[2] - previous[2]) / elapsed
         return float(received), float(sent)
 
-
     def refresh(self) -> None:
         if psutil is None:
             return
@@ -142,7 +139,6 @@ class SystemMonitor(QObject):
     @Property(float, notify=metricsChanged)
     def networkSendRate(self) -> float:
         return self._network_send_rate
-
 
     @Property(str, notify=metricsChanged)
     def gpuName(self) -> str:
