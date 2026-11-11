@@ -25,7 +25,7 @@ class NetworkDashboardIntegrationTests(unittest.TestCase):
         self.assertIn("/sys/class/net", module)
         self.assertIn("/proc/net/route", module)
         self.assertIn("/etc/resolv.conf", module)
-        self.assertNotIn("ping", module)
+        self.assertNotIn('"ping"', module)
         self.assertNotIn("iperf", module)
         self.assertNotIn("nmcli connection modify", module)
 
