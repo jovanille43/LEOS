@@ -8,6 +8,7 @@ from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
 from leos_core.settings import SettingsStore
+from desktop.notifications import post_notification
 
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
@@ -132,4 +133,5 @@ class GamingController(QObject):
     @Slot()
     def returnToDesktop(self) -> None:
         self.settings.set("last_mode", "desktop")
+        post_notification("Retour à Desktop Mode", "Retour vers le bureau KDE demandé.", "info")
         self.desktopRequested.emit()
