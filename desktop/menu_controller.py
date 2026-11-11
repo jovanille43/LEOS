@@ -194,6 +194,7 @@ class ApplicationCatalog(QAbstractListModel):
             self.launchFailed.emit("Aucune commande de lancement disponible.")
             return False
         program = argv[0]
+        args = argv[1:]
         if not os.path.isabs(program):
             resolved = shutil.which(program)
             if not resolved:
