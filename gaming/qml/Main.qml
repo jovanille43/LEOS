@@ -27,6 +27,81 @@ ApplicationWindow {
         selectedSource = source
     }
 
+    function selectGameAt(row) {
+        const info = gameLibrary.gameInfo(row)
+        if (info && info.title)
+            selectGame(row, info.title, info.platform, info.source)
+    }
+
+    function clearSelection() {
+        selectedIndex = -1
+        selectedTitle = ""
+        selectedPlatform = ""
+        selectedSource = ""
+    }
+
+    function moveSelection(direction) {
+        if (gameGrid.count < 1)
+            return
+        const columns = Math.max(1, Math.floor(gameGrid.width / gameGrid.cellWidth))
+        let next = selectedIndex < 0 ? 0 : selectedIndex
+        if (direction === "left")
+            next -= 1
+        else if (direction === "right")
+            next += 1
+        else if (direction === "up")
+            next -= columns
+        else if (direction === "down")
+            next += columns
+        next = Math.max(0, Math.min(gameGrid.count - 1, next))
+        selectGameAt(next)
+        gameGrid.positionViewAtIndex(next, GridView.Contain)
+    }
+
+    function handleGamepadAction(action) {
+        if (returnDialog.visible) {
+            if (action === "confirm") {
+                returnDialog.close()
+                leos.returnToDesktop()
+            } else if (action === "back") {
+                returnDialog.close()
+            }
+            return
+        }
+        if (addDialog.visible) {
+            if (action === "back")
+                addDialog.close()
+            return
+        }
+        if (action === "menu") {
+            quickPanel.visible = !quickPanel.visible
+            return
+        }
+        if (quickPanel.visible) {
+            if (action === "back")
+                quickPanel.visible = false
+            return
+        }
+        if (action === "up" || action === "down" ||
+                action === "left" || action === "right") {
+            moveSelection(action)
+        } else if (action === "confirm") {
+            if (selectedIndex >= 0) {
+                if (!leos.launchGame(selectedIndex))
+                    statusText.text = "Lancement impossible : vérifie le lanceur associé."
+                else
+                    statusText.text = "Demande de lancement envoyée."
+            } else {
+                moveSelection("right")
+            }
+        } else if (action === "back") {
+            if (selectedIndex >= 0)
+                clearSelection()
+            else
+                returnDialog.open()
+        }
+    }
+
     function metric(value, suffix) {
         return value < 0 ? "—" : Math.round(value) + suffix
     }
@@ -73,6 +148,13 @@ ApplicationWindow {
                 }
 
                 Item { Layout.fillWidth: true }
+
+                Label {
+                    text: leos.gamepadStatus
+                    color: window.muted
+                    font.pixelSize: 10
+                    elide: Text.ElideRight
+                }
 
                 Button {
                     text: "PANNEAU RAPIDE  ☰"
@@ -436,17 +518,36 @@ ApplicationWindow {
         function onMessageChanged(message) {
             statusText.text = message
         }
+        function onGamepadAction(action) {
+            window.handleGamepadAction(action)
+        }
     }
 
     Keys.onPressed: function(event) {
-        if (event.key === Qt.Key_F1) {
-            quickPanel.visible = !quickPanel.visible
+        if (event.key === Qt.Key_Left) {
+            window.moveSelection("left")
+            event.accepted = true
+        } else if (event.key === Qt.Key_Right) {
+            window.moveSelection("right")
+            event.accepted = true
+        } else if (event.key === Qt.Key_Up) {
+            window.moveSelection("up")
+            event.accepted = true
+        } else if (event.key === Qt.Key_Down) {
+            window.moveSelection("down")
+            event.accepted = true
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
+                   event.key === Qt.Key_Space) {
+            window.handleGamepadAction("confirm")
+            event.accepted = true
+        } else if (event.key === Qt.Key_F1) {
+            window.handleGamepadAction("menu")
             event.accepted = true
         } else if (event.key === Qt.Key_F2) {
             addDialog.open()
             event.accepted = true
-        } else if (event.key === Qt.Key_Escape && quickPanel.visible) {
-            quickPanel.visible = false
+        } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
+            window.handleGamepadAction("back")
             event.accepted = true
         }
     }
