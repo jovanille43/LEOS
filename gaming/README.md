@@ -42,7 +42,7 @@ Ne pas présenter ces fonctions comme opérationnelles avant les tests correspon
 
 ### Fiches de jeux
 
-La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : titre, plateforme, source, état d'installation et identifiant du catalogue lorsqu'il est disponible. Les entrées détectées via Steam, Heroic et Lutris sont marquées « Installé » car elles proviennent de leurs catalogues locaux d'éléments installés. Les entrées créées manuellement sont identifiées comme telles ; LEOS ne prétend pas vérifier leur installation. Aucun chemin privé complet ni argument de lancement n'est exposé dans l'interface.
+La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : titre, plateforme, source, état des fichiers locaux et identifiant du catalogue lorsqu'il est disponible. Pour Steam, Heroic et Lutris, LEOS vérifie le dossier d'installation (et, pour Lutris, l'exécutable déclaré lorsqu'il est absolu). Une entrée conservée dans un catalogue mais dont le dossier n'est plus accessible est signalée « Fichiers absents » ; cela permet notamment d'identifier un disque externe déconnecté. Si le catalogue ne fournit aucun chemin exploitable, l'état reste « État inconnu » plutôt que d'affirmer à tort que le jeu est installé. Les entrées manuelles restent identifiées comme telles. Aucun chemin privé complet ni argument de lancement n'est exposé dans l'interface.
 
 
 ### Lancement et retours d'état
