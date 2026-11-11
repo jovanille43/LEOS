@@ -65,11 +65,19 @@ class SettingsStore:
             self._values[key] = value
 
     def get(self, key: str, default: Any = None) -> Any:
+        # Settings are shared by several LEOS processes (Desktop, Gaming and
+        # Control Center). Refresh before reading so a long-lived process does
+        # not keep using a stale in-memory copy.
+        self.load()
         return self._values.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
         if key not in DEFAULTS:
             raise KeyError(f"Unknown LEOS setting: {key}")
+        # Merge with the latest on-disk values before changing one key. This
+        # prevents one LEOS process from overwriting unrelated preferences
+        # saved by another process since this instance was created.
+        self.load()
         if not isinstance(value, type(DEFAULTS[key])):
             raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
         allowed = ALLOWED_VALUES.get(key)
