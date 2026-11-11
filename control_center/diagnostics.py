@@ -108,6 +108,34 @@ def _uptime() -> str:
     return f"{minutes} min"
 
 
+def _top_processes() -> list[dict[str, str]]:
+    output = _run([
+        "ps", "-eo", "pid=,comm=,%cpu=,%mem=,rss=", "--sort=-%cpu",
+    ], timeout=2.0)
+    processes: list[dict[str, str]] = []
+    for line in output.splitlines():
+        columns = line.split(None, 4)
+        if len(columns) < 5:
+            continue
+        pid, name, cpu, memory, rss = columns
+        try:
+            cpu_value = float(cpu)
+            memory_value = float(memory)
+            memory_mib = int(rss) / 1024
+        except ValueError:
+            continue
+        processes.append({
+            "pid": pid,
+            "name": name[:40],
+            "cpu": f"{cpu_value:.1f}%",
+            "memory": f"{memory_value:.1f}%",
+            "resident": f"{memory_mib:.0f} Mio",
+        })
+        if len(processes) >= 8:
+            break
+    return processes
+
+
 def collect_system_diagnostics() -> dict[str, object]:
     """Return a compact health report; never repair or restart anything."""
     findings: list[str] = []
@@ -177,4 +205,5 @@ def collect_system_diagnostics() -> dict[str, object]:
         "recentErrors": recent_errors,
         "uptime": _uptime(),
         "loadAverage": load_text,
+        "topProcesses": _top_processes(),
     }
