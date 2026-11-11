@@ -93,6 +93,7 @@ ApplicationWindow {
                             required property string compatibility
                             required property string operationNote
                             required property bool installed
+                            required property string installedScope
                             required property int index
                             width: ListView.view.width
                             height: visible ? 86 : 0
@@ -125,7 +126,7 @@ ApplicationWindow {
                                     Label { text: category + "  •  " + source; color: window.muted; font.pixelSize: 10 }
                                 }
                                 Label {
-                                    text: installed ? "INSTALLÉE" : "DISPONIBLE"
+                                    text: installedScope === "system" ? "INCLUSE LEOS" : installed ? "INSTALLÉE" : "DISPONIBLE"
                                     color: installed ? window.cyan : window.muted
                                     font.pixelSize: 9
                                 }
@@ -141,6 +142,7 @@ ApplicationWindow {
                                     detailsPane.appCompatibility = compatibility
                                     detailsPane.operationNote = operationNote
                                     detailsPane.isInstalled = installed
+                                    detailsPane.installedScope = installedScope
                                 }
                             }
                         }
@@ -156,6 +158,7 @@ ApplicationWindow {
                     property string appCompatibility: ""
                     property string operationNote: ""
                     property bool isInstalled: false
+                    property string installedScope: ""
                     Layout.preferredWidth: 360
                     Layout.fillHeight: true
                     radius: 14
@@ -198,16 +201,24 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
+                        Label {
+                            Layout.fillWidth: true
+                            visible: detailsPane.installedScope === "system"
+                            text: "Cette application est incluse dans LEOS et installée pour tous les utilisateurs. Elle n'est pas supprimable depuis la boutique."
+                            color: window.cyan
+                            font.pixelSize: 10
+                            wrapMode: Text.WordWrap
+                        }
                         Item { Layout.fillHeight: true }
                         Button {
                             Layout.fillWidth: true
-                            enabled: detailsPane.appId.length > 0 && !store.busy
-                            text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
+                            enabled: detailsPane.appId.length > 0 && !store.busy && detailsPane.installedScope !== "system"
+                            text: detailsPane.installedScope === "system" ? "INCLUSE DANS LEOS" : detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 8
-                                color: detailsPane.isInstalled ? "#33202a" : "#12313b"
-                                border.color: detailsPane.isInstalled ? window.magenta : window.cyan
+                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? "#33202a" : "#12313b"
+                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
                             }
                             contentItem: Label {
                                 text: parent.text
