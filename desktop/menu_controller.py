@@ -10,6 +10,7 @@ from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Pr
 from desktop.desktop_exec import parse_desktop_exec
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
+from leos_core.text import normalize_search_text
 
 
 APP_DIRS = (
@@ -129,12 +130,17 @@ class ApplicationCatalog(QAbstractListModel):
         self._apply_filter()
 
     def _apply_filter(self):
-        query = self._query.casefold()
+        query = normalize_search_text(self._query)
         selected = []
         for item in self._all:
             if self._category != "Tout" and item["category"] != self._category:
                 continue
-            haystack = " ".join((item["name"], item["description"], item["category"])).casefold()
+            haystack = normalize_search_text(
+                " ".join((
+                    item["name"], item["desktopId"], item["description"],
+                    item["category"],
+                ))
+            )
             if query and query not in haystack:
                 continue
             selected.append(item)
