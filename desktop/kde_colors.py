@@ -256,7 +256,11 @@ class KdeColorSchemeManager:
     def _write_state(self, state: dict[str, Any]) -> None:
         if self.state_file.is_symlink():
             raise ValueError("Symbolic-link LEOS theme state files are not accepted")
+        if self.state_file.exists() and not self._read_state():
+            raise ValueError("Existing LEOS KDE theme state is invalid; it was left untouched")
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        if self.state_file.parent.is_symlink():
+            raise ValueError("Symbolic-link LEOS theme state directories are not accepted")
         payload = json.dumps(state, indent=2, ensure_ascii=False) + "\n"
         fd, temporary = tempfile.mkstemp(prefix="kde-theme.", suffix=".tmp", dir=self.state_file.parent)
         try:
@@ -298,6 +302,8 @@ class KdeColorSchemeManager:
         scheme_id = self.scheme_id(theme)
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-colorscheme is unavailable")
+        if self.state_file.is_symlink():
+            raise ValueError("Symbolic-link LEOS theme state files are not accepted")
         self.install_scheme(theme)
         state = self._read_state()
         current = self.current_scheme()
@@ -306,12 +312,22 @@ class KdeColorSchemeManager:
         if current and current not in leos_ids:
             previous = current
 
+        # Persist the rollback target before changing KDE. If the command fails
+        # or the process is interrupted, the previous scheme remains recoverable.
+        self._write_state({
+            "schema_version": SCHEMA_VERSION,
+            "managed_by": MANAGED_BY,
+            "previous_scheme": previous,
+            "last_applied": scheme_id,
+            "apply_pending": True,
+        })
         self._run_apply(scheme_id)
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_scheme": previous,
             "last_applied": scheme_id,
+            "apply_pending": False,
         })
         return f"Schéma KDE « {THEME_NAMES[theme]} » appliqué."
 
