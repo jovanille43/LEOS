@@ -301,6 +301,15 @@ ApplicationWindow {
                 return
             verifyDialog.open()
         }
+        function onCatalogUpdated() {
+            if (window.selectedRow < 0)
+                return
+            const item = store.catalogItem(window.selectedRow)
+            if (!item)
+                return
+            detailsPane.isInstalled = item.installed_scope !== ""
+            detailsPane.installedScope = item.installed_scope
+        }
     }
 
     Dialog {
