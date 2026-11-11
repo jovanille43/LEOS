@@ -27,6 +27,18 @@ ApplicationWindow {
         return (bytesPerSecond / 1024).toFixed(0) + " Ko/s"
     }
 
+    Connections {
+        target: controlCenter
+        function onSettingsChanged() {
+            const layouts = ["leos-default", "minimal", "workspace", "custom"]
+            desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
+            const positions = ["bottom", "top", "left", "right"]
+            dockPositionBox.currentIndex = Math.max(0, positions.indexOf(controlCenter.dockPosition))
+            const alignments = ["left", "center", "right"]
+            dockAlignmentBox.currentIndex = Math.max(0, alignments.indexOf(controlCenter.dockAlignment))
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: window.color
@@ -465,8 +477,9 @@ ApplicationWindow {
                                             currentIndex = Math.max(0, values.indexOf(controlCenter.desktopLayoutProfile))
                                         }
                                         onActivated: {
-                                            const values = ["leos-default", "minimal", "workspace"]
-                                            controlCenter.applyDesktopLayout(values[currentIndex])
+                                            const values = ["leos-default", "minimal", "workspace", "custom"]
+                                            if (values[currentIndex] !== "custom")
+                                                controlCenter.applyDesktopLayout(values[currentIndex])
                                         }
                                     }
                                     RowLayout {
