@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90">
+<g id="normal-topleft"><path d="M8 22 Q8 8 22 8" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-top"><path d="M22 8 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-left"><path d="M8 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#090D18" fill-opacity=".92"/></g>
+<g id="normal-right"><path d="M82 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-bottom"><path d="M22 82 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="normal-bottomright"><path d="M68 82 Q82 82 82 68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
+<g id="hover-topleft"><path d="M8 22 Q8 8 22 8" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-top"><path d="M22 8 H68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-left"><path d="M8 22 V68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#10172A" fill-opacity=".92"/></g>
+<g id="hover-right"><path d="M82 22 V68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-bottom"><path d="M22 82 H68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="hover-bottomright"><path d="M68 82 Q82 82 82 68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
+<g id="pressed-topleft"><path d="M8 22 Q8 8 22 8" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-top"><path d="M22 8 H68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-left"><path d="M8 22 V68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#171026" fill-opacity=".92"/></g>
+<g id="pressed-right"><path d="M82 22 V68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-bottom"><path d="M22 82 H68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+<g id="pressed-bottomright"><path d="M68 82 Q82 82 82 68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
+</svg>
