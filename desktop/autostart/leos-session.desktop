@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=LEOS Session
-Comment=Restaurer le dernier mode LEOS utilisé
-Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py
+Name=LEOS Mode Selector
+Comment=Choisir entre LEOS Desktop et LEOS Gaming au démarrage de la session
+Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select
 Terminal=false
 NoDisplay=true
 X-KDE-autostart-phase=2
