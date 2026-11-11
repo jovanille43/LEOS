@@ -8,6 +8,16 @@ import re
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
 
 
+def flatpak_uninstall_args(app_id: str, scope: str) -> list[str]:
+    """Build a safe Flatpak uninstall argument list for a known installation."""
+    if not APP_ID_RE.fullmatch(app_id):
+        raise ValueError("Invalid Flatpak application ID")
+    if scope not in {"user", "system"}:
+        raise ValueError("Unsupported Flatpak installation scope")
+    scope_flag = "--user" if scope == "user" else "--system"
+    return ["uninstall", scope_flag, "--assumeyes", app_id]
+
+
 def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
     """Return separate user and system app IDs from --columns output.
 
