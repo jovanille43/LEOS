@@ -11,7 +11,7 @@ class HardwareInventoryTests(unittest.TestCase):
         expected = {
             "cpu", "cpuThreads", "memory", "storage", "gpu",
             "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
-            "audioServer", "audioOutput", "audioInputs", "controllers", "battery", "usbDevices",
+            "audioServer", "audioOutput", "audioInputs", "controllers", "battery", "usbDevices", "network",
         }
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
@@ -53,6 +53,20 @@ class HardwareInventoryTests(unittest.TestCase):
                 hardware._audio_details(),
                 ("PipeWire / PulseAudio", "alsa_output.pci-1.analog-stereo", "1 entrée(s) détectée(s)"),
             )
+
+    def test_network_summary_omits_loopback_and_keeps_local_addresses(self):
+        with patch.object(
+            hardware, "_run",
+            return_value="lo UNKNOWN 127.0.0.1/8\nenp4s0 UP 192.168.1.20/24 fe80::1/64\nwlan0 DOWN",
+        ):
+            self.assertEqual(
+                hardware._network_details(),
+                "enp4s0 · up · 192.168.1.20/24, fe80::1/64 | wlan0 · down · Aucune adresse IP",
+            )
+
+    def test_network_summary_handles_missing_ip_tool(self):
+        with patch.object(hardware, "_run", return_value=""):
+            self.assertEqual(hardware._network_details(), "État réseau indisponible")
 
     def test_battery_and_usb_are_reported_as_absent_when_sysfs_has_none(self):
         with patch.object(hardware.Path, "glob", return_value=[]):
