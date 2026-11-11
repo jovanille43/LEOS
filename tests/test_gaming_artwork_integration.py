@@ -54,6 +54,7 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('shutil.which("steam")', backend)
+        self.assertNotIn('bool(self._steam_roots())', backend)
         self.assertIn("com.valvesoftware.Steam", backend)
         self.assertIn('shutil.which("heroic")', backend)
         self.assertIn("com.heroicgameslauncher.hgl", backend)
