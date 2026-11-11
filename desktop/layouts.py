@@ -51,7 +51,7 @@ def _config_path() -> Path:
 def validate_layout(value: object) -> bool:
     if not isinstance(value, dict) or set(value) != set(DEFAULT_LAYOUT):
         return False
-    if value.get("schema_version") != 1 or value.get("profile") not in PROFILES:
+    if value.get("schema_version") != 1 or value.get("profile") not in (set(PROFILES) | {"custom"}):
         return False
     dock = value.get("dock")
     if not isinstance(dock, dict) or set(dock) != {"enabled", "position", "alignment", "auto_hide"}:
@@ -126,17 +126,7 @@ class DesktopLayoutStore:
         self.save(allow_custom=True)
 
     def save(self, *, allow_custom: bool = False) -> None:
-        if allow_custom:
-            valid_profiles = set(PROFILES) | {"custom"}
-            candidate = dict(self._layout)
-            if candidate.get("profile") == "custom":
-                candidate_for_validation = dict(candidate)
-                candidate_for_validation["profile"] = "leos-default"
-            else:
-                candidate_for_validation = candidate
-            if candidate.get("profile") not in valid_profiles or not validate_layout(candidate_for_validation):
-                raise ValueError("Refusing to save invalid LEOS desktop layout")
-        elif not validate_layout(self._layout):
+        if not validate_layout(self._layout):
             raise ValueError("Refusing to save invalid LEOS desktop layout")
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
