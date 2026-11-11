@@ -1,5 +1,4 @@
 """Tests for safe LEOS desktop layout preference storage."""
-import json
 import os
 import tempfile
 import unittest
@@ -54,6 +53,20 @@ class DesktopLayoutTests(unittest.TestCase):
 
     def test_invalid_layout_schema_is_rejected(self):
         self.assertFalse(validate_layout({"schema_version": 2, "profile": "leos-default"}))
+
+    def test_malformed_layout_types_are_rejected_without_crashing(self):
+        malformed = {
+            "schema_version": 1,
+            "profile": [],
+            "dock": {
+                "enabled": True,
+                "position": [],
+                "alignment": "center",
+                "auto_hide": False,
+            },
+            "widgets_enabled": False,
+        }
+        self.assertFalse(validate_layout(malformed))
 
     def test_invalid_profile_and_dock_values_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
