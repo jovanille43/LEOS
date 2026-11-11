@@ -38,3 +38,8 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 - Les profils d'énergie sont limités aux modes natifs détectés (Performance, Équilibré, Économie d'énergie). LEOS ne simule pas de profil silencieux distinct et ne pilote pas directement les ventilateurs ; si le service système est absent, les commandes sont désactivées.
 - Les tests automatisés vérifient les fonctions Python et les contrats d'intégration QML ; l'exécution réelle de l'interface et la validation matérielle sur Bazzite restent à effectuer.
 Ne pas présenter ces fonctions comme opérationnelles avant les tests correspondants.
+
+
+### Fiches de jeux
+
+La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : titre, plateforme, source, état d'installation et identifiant du catalogue lorsqu'il est disponible. Les entrées détectées via Steam, Heroic et Lutris sont marquées « Installé » car elles proviennent de leurs catalogues locaux d'éléments installés. Les entrées créées manuellement sont identifiées comme telles ; LEOS ne prétend pas vérifier leur installation. Aucun chemin privé complet ni argument de lancement n'est exposé dans l'interface.
