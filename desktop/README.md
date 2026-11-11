@@ -185,3 +185,15 @@ Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
 Références KDE : [création d'un Plasma Style](https://develop.kde.org/docs/plasma/theme/quickstart/),
 [structure et emplacements](https://develop.kde.org/docs/plasma/theme/theme-details/)
 et [référence des éléments SVG](https://develop.kde.org/docs/plasma/theme/theme-elements/).
+
+
+### Favoris du dock
+
+Le module `desktop/dock_favourites.py` ajoute un stockage local des applications
+épinglées dans `~/.config/leos/dock-favourites.json`. Il conserve uniquement
+des identifiants de fichiers `.desktop`, jamais des commandes arbitraires ou
+des chemins d'exécution. Les favoris peuvent être ajoutés, retirés et réordonnés.
+La liste est bornée à 32 entrées, validée, écrite atomiquement et protégée en
+permissions privées. Les identifiants ne sont pas encore résolus en icônes ni
+appliqués au panneau Plasma : cette étape attend l'intégration visuelle et les
+tests sur une session Bazzite KDE.
