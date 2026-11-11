@@ -36,6 +36,7 @@ class ApplicationCatalog(QAbstractListModel):
 
     launchFailed = Signal(str)
     notificationCountChanged = Signal()
+    categoryChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -164,10 +165,19 @@ class ApplicationCatalog(QAbstractListModel):
         self._query = query.strip()
         self._apply_filter()
 
+    @Property(str, notify=categoryChanged)
+    def currentCategory(self) -> str:
+        return self._category
+
     @Slot(str)
     def setCategory(self, category: str):
+        if category not in self.categories():
+            return
+        if self._category == category:
+            return
         self._category = category
         self._apply_filter()
+        self.categoryChanged.emit()
 
     @Slot(result="QVariantList")
     def categories(self):
