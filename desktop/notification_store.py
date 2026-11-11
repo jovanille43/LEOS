@@ -30,7 +30,8 @@ def _valid_record(item: object) -> bool:
     return (
         isinstance(item["title"], str) and 0 < len(item["title"]) <= MAX_TITLE
         and isinstance(item["body"], str) and len(item["body"]) <= MAX_BODY
-        and item["level"] in LEVELS and type(item["read"]) is bool
+        and isinstance(item["level"], str) and item["level"] in LEVELS
+        and type(item["read"]) is bool
     )
 
 
@@ -42,17 +43,22 @@ class NotificationStore:
         self._items: list[dict] = []
         self.load()
 
-    def load(self) -> None:
+    def load(self) -> bool:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            self._items = []
+            return True
         except (OSError, json.JSONDecodeError):
-            return
+            return False
         if (isinstance(data, dict) and data.get("schema_version") == 1
                 and isinstance(data.get("items"), list)
                 and len(data["items"]) <= MAX_NOTIFICATIONS
                 and all(_valid_record(x) for x in data["items"])
                 and len({x["id"] for x in data["items"]}) == len(data["items"])):
             self._items = list(data["items"])
+            return True
+        return False
 
     def items(self, unread_only: bool = False) -> list[dict]:
         records = self._items
@@ -64,6 +70,8 @@ class NotificationStore:
         return sum(not x["read"] for x in self._items)
 
     def add(self, title: str, body: str = "", level: str = "info") -> str:
+        if not self.load():
+            raise OSError("Notification history is invalid or inaccessible")
         if not isinstance(title, str) or not title.strip() or len(title.strip()) > MAX_TITLE:
             raise ValueError("Invalid notification title")
         if not isinstance(body, str) or len(body) > MAX_BODY:
@@ -81,6 +89,8 @@ class NotificationStore:
         return record["id"]
 
     def mark_read(self, notification_id: str) -> bool:
+        if not self.load():
+            return False
         for item in self._items:
             if item["id"] == notification_id:
                 item["read"] = True
@@ -89,6 +99,8 @@ class NotificationStore:
         return False
 
     def dismiss(self, notification_id: str) -> bool:
+        if not self.load():
+            return False
         before = len(self._items)
         self._items = [x for x in self._items if x["id"] != notification_id]
         if len(self._items) == before:
@@ -97,6 +109,8 @@ class NotificationStore:
         return True
 
     def mark_all_read(self) -> None:
+        if not self.load():
+            return
         changed = False
         for item in self._items:
             if not item["read"]:
@@ -106,6 +120,8 @@ class NotificationStore:
             self.save()
 
     def clear(self) -> None:
+        if not self.load():
+            return
         if self._items:
             self._items = []
             self.save()
