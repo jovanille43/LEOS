@@ -44,8 +44,8 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("function normalizedSearchText(value)", qml)
         self.assertIn('.normalize("NFKD")', qml)
-        self.assertIn('.replace(/[\\\\u0300-\\\\u036f]/g, "")', qml)
-        self.assertIn(".replace(/\\\\s+/g, \" \")", qml)
+        self.assertIn('.replace(/[\\u0300-\\u036f]/g, "")', qml)
+        self.assertIn(".replace(/\\s+/g, \" \")", qml)
         self.assertIn("[name, appId, category, description, source].join", qml)
         self.assertIn("window.matchesSearch(name, appId, category, description, source)", qml)
 
