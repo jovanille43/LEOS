@@ -168,10 +168,8 @@ ApplicationWindow {
                 if (gameGrid.count > 0)
                     selectGameAt(0)
             } else if (selectedIndex >= 0) {
-                if (!leos.launchGame(selectedIndex, leos.mangoHudEnabled))
-                    statusText.text = "Lancement impossible : vérifie le lanceur associé."
-                else
-                    statusText.text = "Demande de lancement envoyée."
+                leos.launchGame(selectedIndex, leos.mangoHudEnabled)
+                statusText.text = leos.lastLaunchStatus
             } else {
                 moveSelection("right")
             }
@@ -790,10 +788,8 @@ ApplicationWindow {
                                     enabled: window.selectedIndex >= 0
                                     text: "JOUER"
                                     onClicked: {
-                                        if (!leos.launchGame(window.selectedIndex, leos.mangoHudEnabled))
-                                            statusText.text = "Lancement impossible : vérifie le lanceur associé."
-                                        else
-                                            statusText.text = "Demande de lancement envoyée."
+                                        leos.launchGame(window.selectedIndex, leos.mangoHudEnabled)
+                                        statusText.text = leos.lastLaunchStatus
                                     }
                                     background: Rectangle {
                                         radius: 10
