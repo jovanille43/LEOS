@@ -6,6 +6,8 @@ from typing import Any
 import re
 import unicodedata
 
+from leos_core.text import normalize_search_text
+
 
 CATEGORIES = (
     "Accueil",
@@ -100,15 +102,6 @@ def duplicate_title_metadata(games: list[dict[str, Any]]) -> dict[str, dict[str,
                 "sources": sources,
             }
     return metadata
-
-
-
-def normalize_search_text(value: str) -> str:
-    """Normalize a search string for accent-insensitive, whitespace-tolerant matching."""
-    if not isinstance(value, str):
-        return ""
-    decomposed = unicodedata.normalize("NFKD", normalize_display_title(value)).casefold()
-    return "".join(character for character in decomposed if not unicodedata.combining(character))
 
 
 
