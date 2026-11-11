@@ -422,7 +422,13 @@ ApplicationWindow {
                                 visible: gameGrid.count === 0
                                 horizontalAlignment: Text.AlignHCenter
                                 wrapMode: Text.WordWrap
-                                text: "Aucun jeu détecté pour le moment.\n\nSteam sera analysé automatiquement. Tu peux aussi ajouter un jeu manuellement."
+                                text: searchField.text.length > 0
+                                    ? "Aucun résultat pour « " + searchField.text + " »."
+                                    : window.selectedCategory === "Favoris"
+                                        ? "Aucun favori pour le moment. Sélectionne un jeu et ajoute-le à tes favoris."
+                                        : window.selectedCategory === "Récemment joués"
+                                            ? "Aucun jeu lancé récemment."
+                                            : "Aucun jeu détecté dans cette catégorie.\\n\\nSteam sera analysé automatiquement. Tu peux aussi ajouter un jeu manuellement."
                                 color: window.muted
                                 font.pixelSize: 14
                             }
