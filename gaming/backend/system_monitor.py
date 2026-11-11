@@ -7,6 +7,7 @@ separate game/driver providers and are intentionally not fabricated here.
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 from PySide6.QtCore import QObject, Property, QTimer, Signal
 
@@ -27,6 +28,10 @@ class SystemMonitor(QObject):
         self._disk_usage = -1.0
         self._network_receive_rate = -1.0
         self._network_send_rate = -1.0
+        self._gpu_name = "GPU non détecté"
+        self._gpu_usage = -1.0
+        self._gpu_memory_used = -1
+        self._gpu_memory_total = -1
         self._last_network_sample: tuple[float, int, int] | None = None
         self._timer = QTimer(self)
         self._timer.setInterval(2000)
@@ -93,6 +98,49 @@ class SystemMonitor(QObject):
         sent = max(0, current[2] - previous[2]) / elapsed
         return float(received), float(sent)
 
+
+    @staticmethod
+    def _read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
+        """Read conservative GPU telemetry from Linux DRM sysfs (read-only)."""
+        vendor_names = {"0x1002": "AMD", "0x8086": "Intel", "0x10de": "NVIDIA"}
+        try:
+            cards = sorted((sys_root / "class" / "drm").glob("card[0-9]*"))
+        except OSError:
+            cards = []
+        for card in cards:
+            device = card / "device"
+            try:
+                if not device.exists():
+                    continue
+                vendor_id = (device / "vendor").read_text(encoding="ascii").strip().lower()
+                device_id = (device / "device").read_text(encoding="ascii").strip().lower()
+            except (OSError, UnicodeError):
+                continue
+            vendor = vendor_names.get(vendor_id, "GPU")
+            name = f"{vendor} · PCI {device_id}" if device_id else vendor
+            usage = -1.0
+            used = total = -1
+            try:
+                value = float((device / "gpu_busy_percent").read_text(encoding="ascii").strip())
+                if 0 <= value <= 100:
+                    usage = value
+            except (OSError, ValueError, UnicodeError):
+                pass
+            try:
+                value = int((device / "mem_info_vram_used").read_text(encoding="ascii").strip())
+                if value >= 0:
+                    used = value
+            except (OSError, ValueError, UnicodeError):
+                pass
+            try:
+                value = int((device / "mem_info_vram_total").read_text(encoding="ascii").strip())
+                if value > 0:
+                    total = value
+            except (OSError, ValueError, UnicodeError):
+                pass
+            return {"name": name, "usage": usage, "memory_used": used, "memory_total": total}
+        return {"name": "GPU non détecté", "usage": -1.0, "memory_used": -1, "memory_total": -1}
+
     def refresh(self) -> None:
         if psutil is None:
             return
@@ -102,6 +150,11 @@ class SystemMonitor(QObject):
             self._cpu_temp = self._read_cpu_temperature()
             self._disk_usage = self._read_disk_usage()
             self._network_receive_rate, self._network_send_rate = self._read_network_rates()
+            gpu = self._read_gpu_metrics()
+            self._gpu_name = str(gpu["name"])
+            self._gpu_usage = float(gpu["usage"])
+            self._gpu_memory_used = int(gpu["memory_used"])
+            self._gpu_memory_total = int(gpu["memory_total"])
         except (OSError, RuntimeError):
             return
         self.metricsChanged.emit()
@@ -129,6 +182,23 @@ class SystemMonitor(QObject):
     @Property(float, notify=metricsChanged)
     def networkSendRate(self) -> float:
         return self._network_send_rate
+
+
+    @Property(str, notify=metricsChanged)
+    def gpuName(self) -> str:
+        return self._gpu_name
+
+    @Property(float, notify=metricsChanged)
+    def gpuUsage(self) -> float:
+        return self._gpu_usage
+
+    @Property(int, notify=metricsChanged)
+    def gpuMemoryUsed(self) -> int:
+        return self._gpu_memory_used
+
+    @Property(int, notify=metricsChanged)
+    def gpuMemoryTotal(self) -> int:
+        return self._gpu_memory_total
 
     @Property(bool, constant=True)
     def available(self) -> bool:
