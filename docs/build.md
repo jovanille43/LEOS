@@ -44,6 +44,15 @@ La documentation BlueBuild recommande de valider/générer la recette avec son C
 
 Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module systemd](https://blue-build.org/reference/modules/systemd/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
+## Prérequis encore bloquants
+
+- Le dépôt ne contient pas encore le fichier public `cosign.pub`. Il faudra ajouter la clé publique correspondant au secret Actions `SIGNING_SECRET`.
+- L'existence et la validité du secret privé `SIGNING_SECRET` ne sont pas vérifiables depuis les fichiers du dépôt. La clé privée doit être créée et conservée sur un poste de confiance ; ne jamais la transmettre dans une conversation ni la committer.
+- Le manifeste [branding/ASSET_MANIFEST.md](../branding/ASSET_MANIFEST.md) décrit les fichiers officiels attendus (logos séparés Desktop/Gaming, animations, sons et fonds d'écran), mais ils ne figurent pas encore dans le dépôt. L'interface conserve des replis propres tant que ces fichiers ne sont pas disponibles.
+- Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
+
+Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles nécessaires et la machine de test ne sont pas prêts.
+
 ## Construction ISO
 
 L'ISO installable est une étape ultérieure. La priorité est d'abord de produire une image bootable signée, de la tester et de vérifier les mises à jour/rollback. La procédure ISO sera choisie après validation de l'image de base, en suivant le processus BlueBuild pour les images Fedora Atomic.
