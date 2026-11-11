@@ -631,15 +631,6 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                             }
                                             Label {
-                                    Layout.fillWidth: true
-                                    visible: window.selectedDuplicateCount > 1
-                                    text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"
-                                    color: "#d5a45d"
-                                    font.pixelSize: 9
-                                    wrapMode: Text.WordWrap
-                                }
-                                Item { Layout.fillHeight: true }
-                                            Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
                                                 color: window.magenta
                                                 font.pixelSize: 9
@@ -778,6 +769,14 @@ ApplicationWindow {
                                     color: "#697789"
                                     font.pixelSize: 9
                                     elide: Text.ElideMiddle
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    visible: window.selectedDuplicateCount > 1
+                                    text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"
+                                    color: "#d5a45d"
+                                    font.pixelSize: 9
+                                    wrapMode: Text.WordWrap
                                 }
                                 Item { Layout.fillHeight: true }
                                 Button {
