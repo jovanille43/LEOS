@@ -68,9 +68,15 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("systemMonitor.cpuUsage", qml)
         self.assertIn("systemMonitor.memoryUsage", qml)
         self.assertIn("systemMonitor.cpuTemperature >= 0", qml)
+        self.assertIn("systemMonitor.diskUsage >= 0", qml)
+        self.assertIn("systemMonitor.networkReceiveRate", qml)
+        self.assertIn("systemMonitor.networkSendRate", qml)
         self.assertIn("from gaming.backend.system_monitor import SystemMonitor", controller)
         self.assertIn('context.setContextProperty("systemMonitor", controller.monitor)', main)
         self.assertIn("self._timer.setInterval(2000)", monitor)
+        self.assertIn("psutil.disk_usage(\"/\")", monitor)
+        self.assertIn("psutil.net_io_counters()", monitor)
+        self.assertIn("time.monotonic()", monitor)
 
 
 if __name__ == "__main__":
