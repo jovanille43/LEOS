@@ -46,6 +46,21 @@ class PlasmaInspectorTests(unittest.TestCase):
             ["org.kde.plasma.digitalclock", "org.kde.plasma.systemtray"],
         )
 
+    def test_detects_leos_owned_panel_marker(self):
+        self.path.write_text(
+            PLASMA_CONFIG + "\n[Containments][1][LEOS]\nmanagedBy=leos-panel-v1\n",
+            encoding="utf-8",
+        )
+        result = inspect_plasma_config(self.path)
+        self.assertTrue(result["panels"][0]["leos_managed"])
+
+    def test_unmarked_existing_panel_is_reported_as_personal(self):
+        result = inspect_plasma_config(self.path)
+        self.assertFalse(result["panels"][0]["leos_managed"])
+        store = DesktopLayoutStore(self.path.parent / "desktop-layout.json")
+        plan = build_layout_plan(store.get(), result)
+        self.assertTrue(any("panneau(x) KDE personnel(s)" in item for item in plan["observations"]))
+
     def test_inspection_is_read_only(self):
         before = self.path.read_bytes()
         inspect_plasma_config(self.path)
