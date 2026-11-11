@@ -107,6 +107,7 @@ ApplicationWindow {
                             required property string icon
                             required property string category
                             required property string description
+                            required property bool isPinned
                             width: appGrid.cellWidth - 8
                             height: appGrid.cellHeight - 8
                             Rectangle {
@@ -119,7 +120,22 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 spacing: 5
-                                Label { text: "◇"; color: window.cyan; font.pixelSize: 23 }
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    Label { text: "◇"; color: window.cyan; font.pixelSize: 23 }
+                                    Item { Layout.fillWidth: true }
+                                    ToolButton {
+                                        text: isPinned ? "★" : "☆"
+                                        onClicked: {
+                                            if (!applicationCatalog.toggleFavourite(desktopId))
+                                                status.text = "Impossible de modifier les favoris du dock."
+                                            else
+                                                status.text = isPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
+                                        }
+                                        contentItem: Label { text: parent.text; color: window.magenta; font.pixelSize: 18 }
+                                        background: Rectangle { color: "transparent" }
+                                    }
+                                }
                                 Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
                                 Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
