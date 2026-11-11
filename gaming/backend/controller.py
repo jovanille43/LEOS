@@ -32,6 +32,7 @@ class GamingController(QObject):
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
         self._power_profiles = inspect_power_profiles()
+        self._power_profile_message = self._power_profiles.message
         self._power_profile_refresh_timer = QTimer(self)
         self._power_profile_refresh_timer.setInterval(10000)
         self._power_profile_refresh_timer.timeout.connect(self.refreshPowerProfiles)
@@ -75,17 +76,19 @@ class GamingController(QObject):
 
     @Property(str, notify=powerProfilesChanged)
     def powerProfileStatus(self) -> str:
-        return self._power_profiles.message
+        return self._power_profile_message
 
     @Slot()
     def refreshPowerProfiles(self) -> None:
         self._power_profiles = inspect_power_profiles()
+        self._power_profile_message = self._power_profiles.message
         self.powerProfilesChanged.emit()
 
     @Slot(str, result=bool)
     def applyPowerProfile(self, profile: str) -> bool:
         success, message = set_power_profile(profile)
         self._power_profiles = inspect_power_profiles()
+        self._power_profile_message = message
         self._message = message
         self.messageChanged.emit(message)
         self.powerProfilesChanged.emit()
