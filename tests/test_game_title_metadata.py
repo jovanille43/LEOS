@@ -8,6 +8,7 @@ from gaming.backend.library_state import (
     normalize_display_title,
     normalize_search_text,
     title_identity_key,
+    upsert_manual_game,
 )
 
 
@@ -43,6 +44,21 @@ class GameTitleMetadataTests(unittest.TestCase):
             [game["id"] for game in filter_games(games, "Accueil", set(), [], "CAFE RACER")],
             ["steam:1"],
         )
+
+    def test_manual_upsert_replaces_spacing_and_case_variants_only(self):
+        existing = [
+            {"id": "manual:space game", "title": "Space  Game", "launch": ["old"]},
+            {"id": "manual:space game deluxe", "title": "Space Game Deluxe", "launch": ["deluxe"]},
+        ]
+        replacement = {
+            "id": "manual:space game",
+            "title": "space game",
+            "launch": ["new"],
+        }
+        result = upsert_manual_game(existing, replacement)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[-1]["launch"], ["new"])
+        self.assertEqual(result[0]["title"], "Space Game Deluxe")
 
 
 if __name__ == "__main__":
