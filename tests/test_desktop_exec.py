@@ -21,8 +21,14 @@ class DesktopExecTests(unittest.TestCase):
             ],
         )
 
-    def test_omits_file_and_url_placeholders_without_launch_targets(self):
-        self.assertEqual(parse_desktop_exec("viewer %f %F %u %U"), ["viewer"])
+    def test_omits_each_file_and_url_placeholder_without_launch_targets(self):
+        for code in ("%f", "%F", "%u", "%U"):
+            with self.subTest(code=code):
+                self.assertEqual(parse_desktop_exec("viewer " + code), ["viewer"])
+
+    def test_rejects_more_than_one_file_or_url_placeholder(self):
+        with self.assertRaises(ValueError):
+            parse_desktop_exec("viewer %f %u")
 
     def test_omits_deprecated_field_codes(self):
         self.assertEqual(parse_desktop_exec("legacy %d %D %n %N %v %m"), ["legacy"])
