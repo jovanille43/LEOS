@@ -14,7 +14,8 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 - Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
-- Menu LEOS donnant accès aux applications, à la recherche, aux modes et au Centre de contrôle.
+- Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
+- Historique local borné à 20 identifiants `.desktop` ; aucune commande de lancement ni chemin privé n’est conservé.
 
 ## Règles de personnalisation
 
