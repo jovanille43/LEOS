@@ -420,7 +420,10 @@ class GameLibraryModel(QAbstractListModel):
         if not launch:
             return False
 
-        command = build_launch_command(launch, bool(mango_hud))
+        launch_command = list(launch)
+        if launch_command[0].startswith("~/"):
+            launch_command[0] = str(Path(launch_command[0]).expanduser())
+        command = build_launch_command(launch_command, bool(mango_hud))
         target = command[0]
         if "://" in target:
             launched = QDesktopServices.openUrl(QUrl(target))
