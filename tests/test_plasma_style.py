@@ -42,6 +42,20 @@ class PlasmaStylePackageTests(unittest.TestCase):
                 ):
                     self.assertIn(required, ids)
 
+    def test_button_svg_contains_all_standard_nine_slice_states(self):
+        root = ET.parse(THEME / "widgets" / "button.svg").getroot()
+        ids = {node.attrib.get("id") for node in root.iter()}
+        positions = (
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        )
+        for state in ("normal", "hover", "pressed", "focus"):
+            for position in positions:
+                self.assertIn(f"{state}-{position}", ids)
+        for state in ("toolbutton-hover", "toolbutton-pressed", "toolbutton-focus"):
+            for position in positions:
+                self.assertIn(f"{state}-{position}", ids)
+
     def test_theme_uses_official_kde_svg_element_names(self):
         # These are the standard nine-slice IDs consumed by Plasma's
         # background SVG renderer; unimplemented assets fall back to Breeze.
