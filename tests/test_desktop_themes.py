@@ -44,9 +44,9 @@ class DesktopThemeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
-        self.assertIn("property var palette: controlCenter.themePalette", qml)
+        self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: palette.background", qml)
-        self.assertIn("window.palette.accent_primary", qml)
+        self.assertIn("window.themeColors.accent_primary", qml)
         self.assertIn("def themePalette(self)", controller)
         self.assertIn("palette_for_theme(self.theme)", controller)
         self.assertNotIn("#121720", qml)
