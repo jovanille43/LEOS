@@ -69,8 +69,6 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
         if not isinstance(install_path, str) or not install_path.strip():
             continue
         install_dir = Path(install_path).expanduser()
-        if not install_dir.is_dir():
-            continue
 
         title = (
             record.get("title")
