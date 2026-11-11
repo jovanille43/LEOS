@@ -42,3 +42,14 @@ La page **Notifications** du Centre de contrôle permet d'activer/désactiver le
 Les sons reposent sur le service de notifications KDE et sa configuration sonore : LEOS ne joue pas encore de fichier audio propriétaire. Le mode silencieux en jeu est activé par défaut. Les préférences sont stockées dans le fichier utilisateur `settings.json`.
 En Gaming Mode, un bouton permanent dans la barre supérieure permet de basculer immédiatement le mode silencieux. L’état est partagé avec le Centre de contrôle et persiste après fermeture du mode Gaming. À l’entrée dans Gaming Mode, LEOS enregistre le mode actif ; le retour au bureau restaure l’état Desktop.
 Les préférences partagées sont relues depuis le fichier utilisateur par les processus LEOS. Le Centre de contrôle détecte les changements effectués par Gaming Mode et les autres composants toutes les 1,5 secondes, sans redémarrage de l’interface.
+
+
+## Inventaire matériel et périphériques
+
+La page **Matériel & connexions** affiche un inventaire en lecture seule : modèle CPU et threads logiques, mémoire disponible/utilisée, occupation du système de fichiers racine, GPU et pilote lorsqu'ils sont exposés par sysfs, distribution, noyau, état Bluetooth et appareils connectés, serveur audio, sortie/entrées audio et contrôleurs de jeu reconnus dans la liste des périphériques Linux.
+
+Les informations sont actualisées à l'ouverture du Centre de contrôle puis toutes les dix secondes, avec un bouton de rafraîchissement manuel. Les sondes utilisent les interfaces locales Linux (/proc, /sys), `pactl`, `bluetoothctl` et `systemctl` lorsqu'ils sont disponibles. Les appels externes sont bornés par un délai maximal et les outils absents ou les autorisations insuffisantes affichent un état indisponible plutôt qu'une valeur inventée.
+
+Cette page ne modifie ni les appareils, ni les pilotes, ni la configuration Bluetooth/audio. Les cartes de raccourci ouvrent les modules natifs KDE pour toute action de configuration. La détection des manettes dépend des noms exposés dans `/proc/bus/input/devices` et peut ne pas identifier certains modèles ; l'état de batterie et les fonctions avancées par contrôleur restent à intégrer.
+
+**Validation restante :** les tests automatisés couvrent les réponses disponibles/indisponibles et les délais d'expiration. La détection réelle doit encore être vérifiée sur différentes machines Bazzite, notamment avec GPU hybrides, périphériques Bluetooth et PipeWire.
