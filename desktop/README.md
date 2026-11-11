@@ -45,3 +45,22 @@ les couleurs, le thème Plasma ou les fichiers de configuration KDE déjà prés
 dans le profil utilisateur. L'application des thèmes à l'ensemble du bureau
 Plasma et la gestion du dock restent des étapes distinctes, qui devront être
 réversibles et activées explicitement.
+
+
+## Profils de disposition et dock
+
+Le module `desktop/layouts.py` enregistre les préférences de disposition dans
+`~/.config/leos/desktop-layout.json` (ou sous `XDG_CONFIG_HOME`). Il propose
+les profils LEOS par défaut, Minimal et Espace de travail, ainsi que des réglages
+personnalisés pour la visibilité, la position, l'alignement et le masquage
+automatique du dock. Les widgets sont désactivés par défaut.
+
+Les données sont validées, écrites atomiquement et protégées par des permissions
+utilisateur privées. Un fichier invalide est ignoré sans être écrasé. Le Centre
+de contrôle expose ces préférences et les conserve entre les sessions.
+
+**Limite actuelle :** ces réglages décrivent la disposition souhaitée, mais ne
+reconfigurent pas encore le panneau Plasma. L'intégration Plasma devra détecter
+la configuration active, créer une sauvegarde restaurable, vérifier les
+applications épinglées et demander une confirmation explicite avant toute
+modification. Aucune commande de configuration KDE n'est exécutée par ce module.
