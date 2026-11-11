@@ -13,6 +13,7 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
+from desktop.notifications import post_notification
 
 
 class ControlCenterController(QObject):
@@ -139,12 +140,19 @@ class ControlCenterController(QObject):
         try:
             message = self.kdeColorSchemes.apply_theme(self.theme)
         except FileNotFoundError:
-            return "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
+            message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
+            post_notification("Thème KDE non appliqué", message, "error")
+            return message
         except FileExistsError:
-            return "Un fichier de thème portant ce nom existe déjà ; il a été conservé."
+            message = "Un fichier de thème portant ce nom existe déjà ; il a été conservé."
+            post_notification("Thème KDE non appliqué", message, "warning")
+            return message
         except (OSError, RuntimeError, ValueError):
-            return "KDE n'a pas pu appliquer le thème. Le thème précédent reste récupérable."
+            message = "KDE n'a pas pu appliquer le thème. Le thème précédent reste récupérable."
+            post_notification("Thème KDE non appliqué", message, "error")
+            return message
         self.settingsChanged.emit()
+        post_notification("Thème KDE appliqué", message, "success")
         return message
 
     @Slot(result=str)
@@ -153,10 +161,15 @@ class ControlCenterController(QObject):
         try:
             message = self.kdeColorSchemes.restore_previous_theme()
         except FileNotFoundError:
-            return "Aucun thème KDE précédent n'est enregistré."
+            message = "Aucun thème KDE précédent n'est enregistré."
+            post_notification("Restauration du thème KDE impossible", message, "warning")
+            return message
         except (OSError, RuntimeError, ValueError):
-            return "La restauration du thème KDE a échoué."
+            message = "La restauration du thème KDE a échoué."
+            post_notification("Restauration du thème KDE échouée", message, "error")
+            return message
         self.settingsChanged.emit()
+        post_notification("Thème KDE restauré", message, "success")
         return message
 
     @Slot(result=str)
@@ -165,10 +178,15 @@ class ControlCenterController(QObject):
         try:
             message = self.plasmaStyle.apply_style()
         except FileNotFoundError:
-            return "Style LEOS ou outil KDE introuvable : aucun changement appliqué."
+            message = "Style LEOS ou outil KDE introuvable : aucun changement appliqué."
+            post_notification("Style Plasma non appliqué", message, "error")
+            return message
         except (OSError, RuntimeError, ValueError):
-            return "Le style Plasma LEOS n'a pas pu être appliqué. Le thème précédent reste récupérable."
+            message = "Le style Plasma LEOS n'a pas pu être appliqué. Le thème précédent reste récupérable."
+            post_notification("Style Plasma non appliqué", message, "error")
+            return message
         self.settingsChanged.emit()
+        post_notification("Style Plasma appliqué", message, "success")
         return message
 
     @Slot(result=str)
@@ -177,10 +195,15 @@ class ControlCenterController(QObject):
         try:
             message = self.plasmaStyle.restore_previous_style()
         except FileNotFoundError:
-            return "Aucun style Plasma précédent n'est enregistré."
+            message = "Aucun style Plasma précédent n'est enregistré."
+            post_notification("Restauration du style Plasma impossible", message, "warning")
+            return message
         except (OSError, RuntimeError, ValueError):
-            return "La restauration du style Plasma a échoué."
+            message = "La restauration du style Plasma a échoué."
+            post_notification("Restauration du style Plasma échouée", message, "error")
+            return message
         self.settingsChanged.emit()
+        post_notification("Style Plasma restauré", message, "success")
         return message
 
     @Slot(str)
@@ -223,11 +246,17 @@ class ControlCenterController(QObject):
         try:
             backup_id = self.plasmaBackups.create_backup()
         except FileNotFoundError:
-            return "Le fichier de disposition KDE est introuvable sur cette session."
+            message = "Le fichier de disposition KDE est introuvable sur cette session."
+            post_notification("Sauvegarde Plasma impossible", message, "warning")
+            return message
         except (OSError, ValueError):
-            return "La sauvegarde Plasma n'a pas pu être créée."
+            message = "La sauvegarde Plasma n'a pas pu être créée."
+            post_notification("Sauvegarde Plasma échouée", message, "error")
+            return message
         self.settingsChanged.emit()
-        return f"Sauvegarde Plasma créée ({backup_id[:8]})."
+        message = f"Sauvegarde Plasma créée ({backup_id[:8]})."
+        post_notification("Sauvegarde Plasma créée", message, "success")
+        return message
 
     @Slot(result=str)
     def inspectPlasmaLayout(self) -> str:
