@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS — Applications
+Comment=Rechercher et lancer les applications installées
+Exec=/usr/bin/python3 /usr/share/leos/desktop/menu_main.py
+Icon=leos-search
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true
