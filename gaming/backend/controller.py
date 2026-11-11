@@ -34,6 +34,11 @@ class GamingController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
+        self._launcher_statuses = self.library.launcherStatuses()
+        self._launcher_refresh_timer = QTimer(self)
+        self._launcher_refresh_timer.setInterval(15000)
+        self._launcher_refresh_timer.timeout.connect(self.refreshLauncherStatuses)
+        self._launcher_refresh_timer.start()
         self.monitor = SystemMonitor()
         self._power_profiles = inspect_power_profiles()
         self._power_profile_message = self._power_profiles.message
@@ -108,7 +113,14 @@ class GamingController(QObject):
 
     @Property("QStringList", notify=launcherStatusChanged)
     def launcherStatuses(self) -> list[str]:
-        return self.library.launcherStatuses()
+        return list(self._launcher_statuses)
+
+    @Slot()
+    def refreshLauncherStatuses(self) -> None:
+        statuses = self.library.launcherStatuses()
+        if statuses != self._launcher_statuses:
+            self._launcher_statuses = statuses
+            self.launcherStatusChanged.emit()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
@@ -236,7 +248,7 @@ class GamingController(QObject):
         if not launched:
             post_notification(
                 "Lancement de jeu impossible",
-                "Vérifie le lanceur associé et la disponibilité du jeu.",
+                self.library.lastLaunchStatus,
                 "error",
                 native=False,
             )
@@ -244,6 +256,7 @@ class GamingController(QObject):
 
     def shutdown(self) -> None:
         self._notification_refresh_timer.stop()
+        self._launcher_refresh_timer.stop()
         self._power_profile_refresh_timer.stop()
         self._gamepad_poll_timer.stop()
         self._gamepad_refresh_timer.stop()
