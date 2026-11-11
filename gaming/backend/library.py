@@ -1,8 +1,4 @@
-"""Unified game library model with initial Steam manifest discovery.
-
-Other launchers will be added through provider modules after their current
-Linux data formats have been tested against real installations.
-"""
+"""Unified game library with Steam discovery and local categories."""
 
 from __future__ import annotations
 
@@ -14,10 +10,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
+
+from .library_state import CATEGORIES, filter_games
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -25,12 +22,20 @@ class GameLibraryModel(QAbstractListModel):
     PlatformRole = TitleRole + 1
     SourceRole = TitleRole + 2
     AppIdRole = TitleRole + 3
+    FavoriteRole = TitleRole + 4
 
     def __init__(self) -> None:
         super().__init__()
         data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
-        self._manual_file = data_home / "leos" / "library.json"
+        data_dir = data_home / "leos"
+        self._manual_file = data_dir / "library.json"
+        self._favorites_file = data_dir / "favorites.json"
+        self._recent_file = data_dir / "recent.json"
         self._games: list[dict[str, Any]] = []
+        self._visible_games: list[dict[str, Any]] = []
+        self._favorites: set[str] = set()
+        self._recent: list[str] = []
+        self._category = "Accueil"
         self.refresh()
 
     def roleNames(self) -> dict[int, QByteArray]:
@@ -39,15 +44,16 @@ class GameLibraryModel(QAbstractListModel):
             self.PlatformRole: QByteArray(b"platform"),
             self.SourceRole: QByteArray(b"source"),
             self.AppIdRole: QByteArray(b"appId"),
+            self.FavoriteRole: QByteArray(b"favorite"),
         }
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        return 0 if parent.isValid() else len(self._games)
+        return 0 if parent.isValid() else len(self._visible_games)
 
     def data(self, index: QModelIndex, role: int = int(Qt.ItemDataRole.DisplayRole)) -> Any:
-        if not index.isValid() or not 0 <= index.row() < len(self._games):
+        if not index.isValid() or not 0 <= index.row() < len(self._visible_games):
             return None
-        game = self._games[index.row()]
+        game = self._visible_games[index.row()]
         mapping = {
             self.TitleRole: "title",
             self.PlatformRole: "platform",
@@ -55,6 +61,8 @@ class GameLibraryModel(QAbstractListModel):
             self.AppIdRole: "app_id",
             int(Qt.ItemDataRole.DisplayRole): "title",
         }
+        if role == self.FavoriteRole:
+            return game["id"] in self._favorites
         key = mapping.get(role)
         return game.get(key) if key else None
 
@@ -120,6 +128,39 @@ class GameLibraryModel(QAbstractListModel):
                 })
         return valid
 
+    @staticmethod
+    def _read_id_list(path: Path) -> list[str]:
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+        if not isinstance(raw, list):
+            return []
+        return list(dict.fromkeys(
+            item.strip() for item in raw
+            if isinstance(item, str) and item.strip()
+        ))
+
+    @staticmethod
+    def _write_id_list(path: Path, values: list[str]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp_name = tempfile.mkstemp(
+            prefix=f"{path.stem}.", suffix=".tmp", dir=path.parent
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                json.dump(values, stream, indent=2, ensure_ascii=False)
+                stream.write("\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.chmod(temp_name, 0o600)
+            os.replace(temp_name, path)
+        finally:
+            try:
+                os.unlink(temp_name)
+            except FileNotFoundError:
+                pass
+
     def refresh(self) -> None:
         discovered: dict[str, dict[str, Any]] = {}
         for directory in self._steam_directories():
@@ -130,19 +171,63 @@ class GameLibraryModel(QAbstractListModel):
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
-        self.beginResetModel()
         self._games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
+        available_ids = {game["id"] for game in self._games}
+        self._favorites = set(self._read_id_list(self._favorites_file)) & available_ids
+        self._recent = [
+            game_id for game_id in self._read_id_list(self._recent_file)
+            if game_id in available_ids
+        ][:50]
+        self._apply_filter()
+
+    def _apply_filter(self) -> None:
+        self.beginResetModel()
+        self._visible_games = filter_games(
+            self._games, self._category, self._favorites, self._recent
+        )
         self.endResetModel()
 
+    @Slot(str)
+    def setCategory(self, category: str) -> None:
+        if category not in CATEGORIES or category == self._category:
+            return
+        self._category = category
+        self._apply_filter()
+
+    @Slot(int, result=bool)
+    def toggleFavorite(self, row: int) -> bool:
+        if not 0 <= row < len(self._visible_games):
+            return False
+        game_id = self._visible_games[row]["id"]
+        if game_id in self._favorites:
+            self._favorites.remove(game_id)
+            is_favorite = False
+        else:
+            self._favorites.add(game_id)
+            is_favorite = True
+        self._write_id_list(self._favorites_file, sorted(self._favorites))
+        self._apply_filter()
+        return is_favorite
+
+    def _record_recent(self, game_id: str) -> None:
+        self._recent = [game_id] + [
+            item for item in self._recent if item != game_id
+        ]
+        self._recent = self._recent[:50]
+        self._write_id_list(self._recent_file, self._recent)
+        if self._category == "Récemment joués":
+            self._apply_filter()
+
     @Slot(int, result="QVariantMap")
-    def gameInfo(self, row: int) -> dict[str, str]:
-        if not 0 <= row < len(self._games):
+    def gameInfo(self, row: int) -> dict[str, Any]:
+        if not 0 <= row < len(self._visible_games):
             return {}
-        game = self._games[row]
+        game = self._visible_games[row]
         return {
             "title": str(game.get("title", "")),
             "platform": str(game.get("platform", "")),
             "source": str(game.get("source", "")),
+            "favorite": game["id"] in self._favorites,
         }
 
     @Slot(str, str, str, result=bool)
@@ -193,18 +278,23 @@ class GameLibraryModel(QAbstractListModel):
 
     @Slot(int, result=bool)
     def launchGame(self, row: int) -> bool:
-        if not 0 <= row < len(self._games):
+        if not 0 <= row < len(self._visible_games):
             return False
-        launch = self._games[row].get("launch", [])
+        game = self._visible_games[row]
+        launch = game.get("launch", [])
         if not launch:
             return False
 
         target = launch[0]
         if "://" in target:
-            return QDesktopServices.openUrl(QUrl(target))
-        if target.startswith("~/"):
-            target = str(Path(target).expanduser())
-        process = QProcess()
-        process.setProgram(target)
-        process.setArguments(launch[1:])
-        return process.startDetached()
+            launched = QDesktopServices.openUrl(QUrl(target))
+        else:
+            if target.startswith("~/"):
+                target = str(Path(target).expanduser())
+            process = QProcess()
+            process.setProgram(target)
+            process.setArguments(launch[1:])
+            launched = process.startDetached()
+        if launched:
+            self._record_recent(str(game["id"]))
+        return bool(launched)
