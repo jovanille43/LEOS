@@ -211,9 +211,11 @@ def format_layout_report(inspection: dict[str, Any], plan: dict[str, Any]) -> st
             lines.append(f"Empreinte SHA-256 : {digest[:16]}…")
         for panel in inspection.get("panels", []):
             applets = ", ".join(item["plugin"] for item in panel.get("applets", [])) or "aucun applet identifié"
+            ownership = "géré par LEOS" if panel.get("leos_managed") else "panneau KDE personnel"
             lines.append(
-                f"Panneau {panel['id']} — emplacement KDE brut : {panel.get('location') or 'inconnu'} ; "
-                f"formfactor : {panel.get('formfactor') or 'inconnu'} ; applets : {applets}."
+                f"Panneau {panel['id']} ({ownership}) — emplacement KDE brut : "
+                f"{panel.get('location') or 'inconnu'} ; formfactor : "
+                f"{panel.get('formfactor') or 'inconnu'} ; applets : {applets}."
             )
     else:
         warning = (inspection.get("warnings") or ["État indisponible."])[0]
