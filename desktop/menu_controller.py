@@ -197,9 +197,7 @@ class ApplicationCatalog(QAbstractListModel):
                 self.favourites.pin(desktop_id)
         except (OSError, ValueError):
             return False
-        if self._visible:
-            self.dataChanged.emit(self.index(0, 0), self.index(len(self._visible) - 1, 0),
-                                   [Qt.ItemDataRole.UserRole + 6])
+        self._apply_filter()
         return True
 
     @Slot(str, result=bool)
