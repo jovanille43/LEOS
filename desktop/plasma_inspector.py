@@ -1,0 +1,217 @@
+"""Read-only inspection and preview planning for KDE Plasma layouts.
+
+This module never writes to Plasma configuration. It inventories panel
+containments, records the source fingerprint, and prepares a human-readable
+LEOS layout preview. Applying a plan is intentionally not implemented until
+it has been validated on a real Bazzite KDE session.
+"""
+from __future__ import annotations
+
+import configparser
+import hashlib
+import os
+import re
+import stat
+from pathlib import Path
+from typing import Any
+
+from desktop.layouts import validate_layout
+from desktop.plasma_backup import MAX_BACKUP_BYTES, _config_root
+
+_SECTION = re.compile(r"^Containments\]\[(?P<id>\d+)(?:\]\[(?P<nested>.*))?$")
+_APPLET = re.compile(r"^Applets\]\[(?P<id>\d+)(?:\]|$)")
+
+
+def _default_config_path() -> Path:
+    return _config_root() / "plasma-org.kde.plasma.desktop-appletsrc"
+
+
+def _read_config_snapshot(path: Path) -> tuple[bytes, str | None]:
+    """Read a bounded regular file without following a symlink where supported."""
+    if path.is_symlink():
+        return b"", "unsafe"
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode):
+            return b"", "unsafe"
+        if info.st_size <= 0 or info.st_size > MAX_BACKUP_BYTES:
+            return b"", "unsupported-size"
+        chunks: list[bytes] = []
+        remaining = MAX_BACKUP_BYTES + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(1024 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        data = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(data) > MAX_BACKUP_BYTES
+            or len(data) != info.st_size
+            or info.st_ino != after.st_ino
+            or info.st_size != after.st_size
+            or info.st_mtime_ns != after.st_mtime_ns
+        ):
+            return b"", "changed-during-read"
+        return data, None
+    finally:
+        os.close(descriptor)
+
+
+def inspect_plasma_config(path: Path | None = None) -> dict[str, Any]:
+    """Inspect the current Plasma applet configuration without modifying it."""
+    source = path or _default_config_path()
+    try:
+        data, failure = _read_config_snapshot(source)
+    except FileNotFoundError:
+        return {"status": "missing", "available": False, "panels": [], "containments": [],
+                "warnings": ["Fichier de configuration Plasma absent."]}
+    except PermissionError:
+        return {"status": "unreadable", "available": False, "panels": [], "containments": [],
+                "warnings": ["Accès en lecture refusé."]}
+    except OSError:
+        return {"status": "unreadable", "available": False, "panels": [], "containments": [],
+                "warnings": ["Impossible de lire la configuration Plasma."]}
+
+    if failure:
+        messages = {
+            "unsafe": "Le fichier n'est pas un fichier régulier sûr à inspecter.",
+            "unsupported-size": "La taille du fichier n'est pas prise en charge.",
+            "changed-during-read": "La configuration a changé pendant l'inspection ; recommencer.",
+        }
+        return {"status": failure, "available": False, "panels": [], "containments": [],
+                "warnings": [messages.get(failure, "Inspection impossible.")]}
+
+    try:
+        text = data.decode("utf-8")
+        parser = configparser.ConfigParser(interpolation=None, strict=False, allow_no_value=True)
+        parser.optionxform = str
+        parser.read_string(text)
+    except (UnicodeDecodeError, configparser.Error):
+        return {"status": "invalid", "available": False, "panels": [], "containments": [],
+                "warnings": ["Le fichier n'est pas un fichier INI Plasma valide ou lisible en UTF-8."]}
+
+    grouped: dict[str, dict[str, Any]] = {}
+    for section in parser.sections():
+        match = _SECTION.fullmatch(section)
+        if not match:
+            continue
+        containment_id = match.group("id")
+        nested = match.group("nested")
+        item = grouped.setdefault(containment_id, {"id": containment_id, "plugin": None,
+                                                    "location": None, "formfactor": None,
+                                                    "applets": []})
+        values = parser[section]
+        if nested is None:
+            item["plugin"] = values.get("plugin")
+            item["location"] = values.get("location")
+            item["formfactor"] = values.get("formfactor")
+        else:
+            applet_match = _APPLET.match(nested)
+            if applet_match and values.get("plugin"):
+                item["applets"].append({
+                    "id": applet_match.group("id"),
+                    "plugin": values.get("plugin"),
+                })
+
+    containments = sorted(grouped.values(), key=lambda value: int(value["id"]))
+    panels = [
+        item for item in containments
+        if isinstance(item.get("plugin"), str)
+        and item["plugin"].strip().lower() in {
+            "org.kde.plasma.panel",
+            "org.kde.plasma.pagerpanel",
+        }
+    ]
+    for item in containments:
+        item["applets"].sort(key=lambda value: int(value["id"]))
+
+    return {
+        "status": "ready",
+        "available": True,
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "containment_count": len(containments),
+        "panel_count": len(panels),
+        "panels": panels,
+        "containments": containments,
+        "warnings": [] if panels else ["Aucun panneau Plasma standard n'a été identifié."],
+    }
+
+
+def build_layout_plan(layout: object, inspection: dict[str, Any]) -> dict[str, Any]:
+    """Build a safe preview; this version deliberately contains no write steps."""
+    if not validate_layout(layout):
+        raise ValueError("Invalid LEOS desktop layout")
+    assert isinstance(layout, dict)
+    dock = dict(layout["dock"])
+    panels = inspection.get("panels", []) if inspection.get("available") else []
+    observations: list[str] = []
+
+    if not inspection.get("available"):
+        observations.append("La configuration Plasma n'a pas pu être inspectée ; sauvegarde et contrôle manuel requis.")
+    elif dock["enabled"] and panels:
+        observations.append(
+            f"{len(panels)} panneau(x) Plasma existant(s) détecté(s) : aucun ne sera remplacé automatiquement."
+        )
+    elif dock["enabled"]:
+        observations.append("Aucun panneau Plasma standard détecté ; une création serait nécessaire.")
+    else:
+        observations.append(
+            "Le dock LEOS est désactivé dans les préférences ; les panneaux KDE existants ne seront pas supprimés."
+        )
+
+    observations.append(
+        "L'alignement et le masquage automatique demandés sont enregistrés, "
+        "mais leur traduction en paramètres Plasma reste à valider."
+    )
+    return {
+        "schema_version": 1,
+        "mode": "preview-only",
+        "can_apply": False,
+        "requires_backup": True,
+        "desired": {
+            "profile": layout["profile"],
+            "dock": dock,
+            "widgets_enabled": layout["widgets_enabled"],
+        },
+        "detected_panel_count": len(panels),
+        "observations": observations,
+        "blocked_reason": (
+            "L'application automatique est volontairement désactivée jusqu'à validation "
+            "sur une vraie session Bazzite KDE."
+        ),
+    }
+
+
+def format_layout_report(inspection: dict[str, Any], plan: dict[str, Any]) -> str:
+    """Create a compact French report suitable for the Control Center."""
+    lines = ["ANALYSE KDE — LECTURE SEULE"]
+    status = inspection.get("status")
+    if status == "ready":
+        lines.append(
+            f"Configuration lue : {inspection.get('containment_count', 0)} conteneur(s), "
+            f"{inspection.get('panel_count', 0)} panneau(x)."
+        )
+        digest = inspection.get("sha256", "")
+        if digest:
+            lines.append(f"Empreinte SHA-256 : {digest[:16]}…")
+        for panel in inspection.get("panels", []):
+            applets = ", ".join(item["plugin"] for item in panel.get("applets", [])) or "aucun applet identifié"
+            lines.append(
+                f"Panneau {panel['id']} — emplacement KDE brut : {panel.get('location') or 'inconnu'} ; "
+                f"formfactor : {panel.get('formfactor') or 'inconnu'} ; applets : {applets}."
+            )
+    else:
+        warning = (inspection.get("warnings") or ["État indisponible."])[0]
+        lines.append(f"Inspection indisponible ({status}) : {warning}")
+
+    lines.append("")
+    lines.append("APERÇU DU PROFIL LEOS")
+    lines.extend(f"• {item}" for item in plan["observations"])
+    lines.append(plan["blocked_reason"])
+    lines.append("Aucune modification du bureau n'a été effectuée.")
+    return "\n".join(lines)
