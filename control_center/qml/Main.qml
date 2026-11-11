@@ -1469,6 +1469,44 @@ ApplicationWindow {
                                 }
                             }
                             Label {
+                                text: "PROCESSUS LES PLUS ACTIFS"
+                                color: window.cyan
+                                font.pixelSize: 11
+                                font.letterSpacing: 1.4
+                            }
+                            Repeater {
+                                model: controlCenter.diagnosticsSnapshot.topProcesses || []
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 66
+                                    radius: 10
+                                    color: window.themeColors.surface
+                                    border.color: window.themeColors.border
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 3
+                                            Label {
+                                                text: modelData.name + " · PID " + modelData.pid
+                                                color: window.themeColors.text
+                                                font.pixelSize: 12
+                                                font.weight: Font.DemiBold
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+                                            Label {
+                                                text: "CPU " + modelData.cpu + "  ·  RAM " + modelData.memory + "  ·  " + modelData.resident
+                                                color: window.muted
+                                                font.pixelSize: 10
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
                                 text: "Les journaux ne sont pas affichés dans LEOS : seule une quantité d’entrées d’erreur est indiquée. Les contrôles peuvent être incomplets si les outils ou permissions système ne sont pas disponibles."
                                 color: window.muted
                                 font.pixelSize: 10
