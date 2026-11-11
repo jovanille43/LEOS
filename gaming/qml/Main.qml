@@ -28,7 +28,7 @@ ApplicationWindow {
     property string pendingPowerProfile: ""
 
     function gameMonogram(title) {
-        const words = String(title || "").trim().split(/\\s+/).filter(Boolean)
+        const words = String(title || "").trim().split(/\s+/).filter(Boolean)
         if (words.length === 0)
             return "LE"
         return words.slice(0, 2).map(word => word.charAt(0)).join("").toUpperCase()
