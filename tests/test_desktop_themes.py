@@ -60,6 +60,21 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]', qml)
         self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
 
+    def test_all_shared_combo_selectors_refresh_after_external_settings_changes(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        for expression in (
+            "themeBox.currentIndex =",
+            "desktopLayoutBox.currentIndex =",
+            "dockPositionBox.currentIndex =",
+            "dockAlignmentBox.currentIndex =",
+            "profileBox.currentIndex =",
+            "notificationDurationBox.currentIndex =",
+            "notificationPriorityBox.currentIndex =",
+        ):
+            with self.subTest(expression=expression):
+                self.assertIn(expression, qml)
+
 
 if __name__ == "__main__":
     unittest.main()
