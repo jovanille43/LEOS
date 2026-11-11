@@ -80,7 +80,7 @@ Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs
 
 Le Centre des manettes propose une vue des contrôleurs détectés par Linux, un test des boutons et axes analogiques, des profils locaux par appareil, le réglage d'une zone morte et l'enregistrement de la position neutre des axes.
 
-Les préférences sont enregistrées dans le compte Linux de l'utilisateur. Le prototype ne modifie pas les mappings du système ou des jeux : les configurations Steam et des lanceurs restent prioritaires jusqu'à la mise en place de leurs intégrations LEOS.
+Les préférences sont enregistrées dans le compte Linux de l'utilisateur et appliquées à la navigation de l'interface Gaming LEOS (profil, zone morte et calibration des sticks). Le prototype ne modifie pas les mappings du système ou des jeux externes : les configurations Steam et des lanceurs restent prioritaires.
 
 ## Applications fournies et boutique LEOS
 
