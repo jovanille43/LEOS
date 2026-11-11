@@ -6,7 +6,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 
 - Catalogue initial maintenu dans `catalog.json`.
 - Recherche par nom ou identifiant et filtrage par catégorie.
-- Détection des applications Flatpak installées dans le profil utilisateur.
+- Détection des applications Flatpak installées dans le profil utilisateur uniquement ; les applications système fournies par Bazzite ne sont pas proposées à la désinstallation par ce prototype.
 - Fiches indiquant identifiant, source, compatibilité et information sur les dépendances.
 - Vérification de disponibilité d'une application sur Flathub avant installation.
 - Confirmation explicite avant installation et désinstallation.
