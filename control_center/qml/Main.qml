@@ -459,9 +459,9 @@ ApplicationWindow {
                                     ComboBox {
                                         id: desktopLayoutBox
                                         Layout.fillWidth: true
-                                        model: ["LEOS par défaut", "Minimal", "Espace de travail"]
+                                        model: ["LEOS par défaut", "Minimal", "Espace de travail", "Personnalisé"]
                                         Component.onCompleted: {
-                                            const values = ["leos-default", "minimal", "workspace"]
+                                            const values = ["leos-default", "minimal", "workspace", "custom"]
                                             currentIndex = Math.max(0, values.indexOf(controlCenter.desktopLayoutProfile))
                                         }
                                         onActivated: {
@@ -474,13 +474,14 @@ ApplicationWindow {
                                         Label { text: "Afficher le dock"; color: window.themeColors.text; Layout.fillWidth: true }
                                         Switch {
                                             checked: controlCenter.dockEnabled
-                                            onToggled: controlCenter.setDockEnabled(checked)
+                                            onToggled: { controlCenter.setDockEnabled(checked); desktopLayoutBox.currentIndex = 3 }
                                         }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
                                         Label { text: "Position du dock"; color: window.themeColors.text; Layout.fillWidth: true }
                                         ComboBox {
+                                            id: dockPositionBox
                                             Layout.preferredWidth: 150
                                             model: ["Bas", "Haut", "Gauche", "Droite"]
                                             Component.onCompleted: {
@@ -489,7 +490,7 @@ ApplicationWindow {
                                             }
                                             onActivated: {
                                                 const values = ["bottom", "top", "left", "right"]
-                                                controlCenter.setDockPosition(values[currentIndex])
+                                                controlCenter.setDockPosition(values[currentIndex]); desktopLayoutBox.currentIndex = 3
                                             }
                                         }
                                     }
@@ -497,6 +498,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Label { text: "Alignement"; color: window.themeColors.text; Layout.fillWidth: true }
                                         ComboBox {
+                                            id: dockAlignmentBox
                                             Layout.preferredWidth: 150
                                             model: ["Gauche", "Centre", "Droite"]
                                             Component.onCompleted: {
@@ -505,7 +507,7 @@ ApplicationWindow {
                                             }
                                             onActivated: {
                                                 const values = ["left", "center", "right"]
-                                                controlCenter.setDockAlignment(values[currentIndex])
+                                                controlCenter.setDockAlignment(values[currentIndex]); desktopLayoutBox.currentIndex = 3
                                             }
                                         }
                                     }
@@ -514,7 +516,7 @@ ApplicationWindow {
                                         Label { text: "Masquer automatiquement"; color: window.themeColors.text; Layout.fillWidth: true }
                                         Switch {
                                             checked: controlCenter.dockAutoHide
-                                            onToggled: controlCenter.setDockAutoHide(checked)
+                                            onToggled: { controlCenter.setDockAutoHide(checked); desktopLayoutBox.currentIndex = 3 }
                                         }
                                     }
                                     RowLayout {
@@ -522,7 +524,7 @@ ApplicationWindow {
                                         Label { text: "Widgets du bureau"; color: window.themeColors.text; Layout.fillWidth: true }
                                         Switch {
                                             checked: controlCenter.desktopWidgetsEnabled
-                                            onToggled: controlCenter.setDesktopWidgetsEnabled(checked)
+                                            onToggled: { controlCenter.setDesktopWidgetsEnabled(checked); desktopLayoutBox.currentIndex = 3 }
                                         }
                                     }
                                     Label {
