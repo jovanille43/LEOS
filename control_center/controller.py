@@ -15,6 +15,7 @@ from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
+from control_center.network import collect_network_snapshot
 from control_center.diagnostics import collect_system_diagnostics
 from control_center.cleanup import collect_cleanup_preview
 from control_center.system_updates import (
@@ -38,6 +39,22 @@ class _HardwareScanTask(QRunnable):
     @Slot()
     def run(self) -> None:
         self.signals.completed.emit(collect_hardware_snapshot())
+
+
+class _NetworkScanSignals(QObject):
+    completed = Signal(dict)
+
+
+class _NetworkScanTask(QRunnable):
+    def __init__(self, previous: dict[str, tuple[int, int]], elapsed: float) -> None:
+        super().__init__()
+        self.previous = previous
+        self.elapsed = elapsed
+        self.signals = _NetworkScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        self.signals.completed.emit(collect_network_snapshot(self.previous, self.elapsed))
 
 
 class _DiagnosticsScanTask(QRunnable):
@@ -64,6 +81,7 @@ class ControlCenterController(QObject):
     settingsChanged = Signal()
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
+    networkChanged = Signal()
     diagnosticsChanged = Signal()
     cleanupChanged = Signal()
 
@@ -95,6 +113,19 @@ class ControlCenterController(QObject):
         self._hardware_timer.timeout.connect(self.refreshHardware)
         self._hardware_timer.start()
         QTimer.singleShot(0, self.scanHardwareNow)
+        self._network_snapshot = {
+            "status": "Analyse en cours…", "defaultInterface": "—",
+            "gateway": "—", "dns": "—", "wifiSsid": "—",
+            "wifiSignal": "—", "interfaces": [], "counters": {},
+        }
+        self._network_previous_counters: dict[str, tuple[int, int]] = {}
+        self._network_last_scan = 0.0
+        self._network_task = None
+        self._network_timer = QTimer(self)
+        self._network_timer.setInterval(3000)
+        self._network_timer.timeout.connect(self.scanNetwork)
+        self._network_timer.start()
+        QTimer.singleShot(1000, self.scanNetwork)
         self._diagnostics_snapshot = {
             "severity": "Analyse en cours…",
             "summary": "Lecture des indicateurs système…",
@@ -185,6 +216,40 @@ class ControlCenterController(QObject):
         if snapshot != self._hardware_snapshot:
             self._hardware_snapshot = snapshot
             self.hardwareChanged.emit()
+
+    @Property("QVariantMap", notify=networkChanged)
+    def networkSnapshot(self) -> dict:
+        snapshot = dict(self._network_snapshot)
+        snapshot.pop("counters", None)
+        return snapshot
+
+    @Slot()
+    def scanNetwork(self) -> None:
+        """Sample network counters off the UI thread without generating traffic."""
+        if self._network_task is not None:
+            return
+        import time
+        now = time.monotonic()
+        elapsed = now - self._network_last_scan if self._network_last_scan else 0.0
+        self._network_last_scan = now
+        task = _NetworkScanTask(dict(self._network_previous_counters), elapsed)
+        task.signals.completed.connect(self._on_network_scan_completed)
+        self._network_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(dict)
+    def _on_network_scan_completed(self, snapshot: dict) -> None:
+        self._network_task = None
+        counters = snapshot.get("counters", {})
+        if isinstance(counters, dict):
+            self._network_previous_counters = {
+                str(name): (int(values[0]), int(values[1]))
+                for name, values in counters.items()
+                if isinstance(values, (tuple, list)) and len(values) == 2
+            }
+        if snapshot != self._network_snapshot:
+            self._network_snapshot = snapshot
+            self.networkChanged.emit()
 
     @Property("QVariantMap", notify=cleanupChanged)
     def cleanupPreview(self) -> dict:
