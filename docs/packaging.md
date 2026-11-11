@@ -31,4 +31,4 @@ Les noms de profils sont pour l'instant des préférences LEOS locales ; leur ap
 
 ## Prudence
 
-La recette référence les paquets Fedora et copie les sources du dépôt dans l'image. Elle doit néanmoins être validée avec la version exacte du CLI BlueBuild et de Bazzite avant la première compilation. Les entrées menu/autostart ne seront actives qu'après installation effective du code par le workflow.
+La recette de référence se trouve dans `recipes/recipe.yml`. L'action officielle BlueBuild recherche le fichier dans `recipes/` ou `config/`. La recette référence les paquets Fedora et copie les sources du dépôt dans l'image. Elle doit néanmoins être validée avec la version exacte du CLI BlueBuild et de Bazzite avant la première compilation. Les entrées menu/autostart ne seront actives qu'après installation effective du code par le workflow.
