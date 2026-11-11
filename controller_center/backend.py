@@ -58,7 +58,7 @@ class GamepadBackend:
                     "uniq": str(device.uniq or ""),
                     "axes": self._axis_names(device),
                 })
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, ValueError):
                 continue
             finally:
                 if device is not None:
@@ -77,23 +77,38 @@ class GamepadBackend:
         self.close()
         if not backend_available() or not path.startswith("/dev/input/event"):
             raise ValueError("Invalid input device")
-        self.device = InputDevice(path, readonly=True)
-        if not _is_gamepad(self.device):
-            self.close()
-            raise ValueError("This input device is not a game controller")
-        self.axes = {}
-        self.axis_ranges = {}
-        for code in self.device.capabilities().get(ecodes.EV_ABS, []):
-            name = ecodes.ABS.get(code, f"AXIS_{code}")
-            if isinstance(name, list):
-                name = name[0]
-            info = self.device.absinfo(code)
-            axis_name = str(name)
-            self.axes[axis_name] = int(info.value)
-            self.axis_ranges[axis_name] = {
-                "minimum": int(info.min),
-                "maximum": int(info.max),
-            }
+
+        device = InputDevice(path, readonly=True)
+        try:
+            # QTimer polls this descriptor on the Qt UI thread. Non-blocking mode
+            # prevents an idle controller from freezing the whole interface.
+            device.set_nonblocking(True)
+            if not _is_gamepad(device):
+                raise ValueError("This input device is not a game controller")
+
+            axes: dict[str, int] = {}
+            axis_ranges: dict[str, dict[str, int]] = {}
+            for code in device.capabilities().get(ecodes.EV_ABS, []):
+                name = ecodes.ABS.get(code, f"AXIS_{code}")
+                if isinstance(name, list):
+                    name = name[0]
+                info = device.absinfo(code)
+                axis_name = str(name)
+                axes[axis_name] = int(info.value)
+                axis_ranges[axis_name] = {
+                    "minimum": int(info.min),
+                    "maximum": int(info.max),
+                }
+        except Exception:
+            try:
+                device.close()
+            except OSError:
+                pass
+            raise
+
+        self.device = device
+        self.axes = axes
+        self.axis_ranges = axis_ranges
 
     def poll(self) -> list[dict[str, Any]]:
         if self.device is None:
