@@ -1,8 +1,11 @@
 """Unit tests for app-local controller navigation mapping."""
 
+import tempfile
 import unittest
+from pathlib import Path
 
-from gaming.backend.gamepad import GamepadActionMapper
+from controller_center.profiles import ControllerProfileStore
+from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
 
 
 class GamepadActionTests(unittest.TestCase):
@@ -70,6 +73,33 @@ class GamepadActionTests(unittest.TestCase):
         self.assertIsNone(mapper.feed(event))
         event["value"] = 700
         self.assertEqual(mapper.feed(event), "down")
+
+    def test_saved_controller_profile_is_applied_to_gaming_navigation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = ControllerProfileStore(Path(directory) / "controllers.json")
+            store.update(
+                "test-controller",
+                profile="nintendo",
+                deadzone=15,
+                axis_centers={"ABS_X": 100},
+            )
+
+            mapper = mapper_from_preferences(store.get("test-controller"))
+            self.assertEqual(
+                mapper.feed({"kind": "button", "name": "BTN_EAST", "value": 1}),
+                "confirm",
+            )
+            self.assertEqual(
+                mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+                "back",
+            )
+            event = {
+                "kind": "axis", "name": "ABS_X", "minimum": -900,
+                "maximum": 1100, "value": 220,
+            }
+            self.assertIsNone(mapper.feed(event))
+            event["value"] = 600
+            self.assertEqual(mapper.feed(event), "right")
 
     def test_unknown_events_are_ignored(self):
         self.assertIsNone(
