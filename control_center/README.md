@@ -53,3 +53,5 @@ Les informations sont actualisées à l'ouverture du Centre de contrôle puis to
 Cette page ne modifie ni les appareils, ni les pilotes, ni la configuration Bluetooth/audio. Les cartes de raccourci ouvrent les modules natifs KDE pour toute action de configuration. La détection des manettes dépend des noms exposés dans `/proc/bus/input/devices` et peut ne pas identifier certains modèles ; l'état de batterie et les fonctions avancées par contrôleur restent à intégrer.
 
 **Validation restante :** les tests automatisés couvrent les réponses disponibles/indisponibles et les délais d'expiration. La détection réelle doit encore être vérifiée sur différentes machines Bazzite, notamment avec GPU hybrides, périphériques Bluetooth et PipeWire.
+
+L'inventaire inclut également le niveau et l'état de la batterie lorsque le noyau expose une alimentation de type batterie, ainsi que les périphériques USB dont les noms fabricant/produit sont publiés dans sysfs. Les machines fixes affichent explicitement qu'aucune batterie n'a été détectée.
