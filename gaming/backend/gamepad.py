@@ -25,19 +25,29 @@ class GamepadActionMapper:
         self,
         deadzone_percent: int = 8,
         axis_centers: dict[str, int] | None = None,
+        profile: str = "standard",
     ) -> None:
         self._hat_x = 0
         self._hat_y = 0
         self.deadzone_percent = max(0, min(40, int(deadzone_percent)))
         self.axis_centers = dict(axis_centers or {})
+        self.profile = profile if profile in {"standard", "xbox", "playstation", "nintendo", "custom"} else "standard"
         self._stick_states = {"ABS_X": 0, "ABS_Y": 0}
+
+    def _button_action(self, name: str) -> str | None:
+        if self.profile == "nintendo":
+            if name == "BTN_SOUTH":
+                return "back"
+            if name == "BTN_EAST":
+                return "confirm"
+        return BUTTON_ACTIONS.get(name)
 
     def feed(self, event: dict[str, Any]) -> str | None:
         kind = event.get("kind")
         name = event.get("name")
         value = event.get("value")
         if kind == "button" and value == 1:
-            return BUTTON_ACTIONS.get(str(name))
+            return self._button_action(str(name))
         if kind != "axis":
             return None
 
