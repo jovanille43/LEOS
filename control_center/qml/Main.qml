@@ -18,6 +18,14 @@ ApplicationWindow {
     property int selectedPage: 0
     property string launchNotice: ""
 
+    function formatRate(bytesPerSecond) {
+        if (bytesPerSecond < 0)
+            return "—"
+        if (bytesPerSecond >= 1048576)
+            return (bytesPerSecond / 1048576).toFixed(1) + " Mo/s"
+        return (bytesPerSecond / 1024).toFixed(0) + " Ko/s"
+    }
+
     Rectangle {
         anchors.fill: parent
         color: window.color
@@ -231,6 +239,70 @@ ApplicationWindow {
                                             wrapMode: Text.WordWrap
                                             Layout.fillWidth: true
                                         }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 132
+                                radius: 13
+                                color: "#121720"
+                                border.color: "#293342"
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 10
+                                    Label {
+                                        text: "STOCKAGE SYSTÈME"
+                                        color: window.cyan
+                                        font.pixelSize: 10
+                                        font.letterSpacing: 1
+                                    }
+                                    Label {
+                                        text: systemMonitor.diskUsage >= 0
+                                            ? Math.round(systemMonitor.diskUsage) + "%"
+                                            : "Indisponible"
+                                        color: "white"
+                                        font.pixelSize: systemMonitor.diskUsage >= 0 ? 26 : 16
+                                        font.weight: Font.Bold
+                                    }
+                                    Label {
+                                        text: "Occupation de la racine /"
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 132
+                                radius: 13
+                                color: "#121720"
+                                border.color: "#293342"
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 8
+                                    Label {
+                                        text: "RÉSEAU"
+                                        color: window.cyan
+                                        font.pixelSize: 10
+                                        font.letterSpacing: 1
+                                    }
+                                    Label {
+                                        text: "↓  " + window.formatRate(systemMonitor.networkReceiveRate)
+                                            + "    ↑  " + window.formatRate(systemMonitor.networkSendRate)
+                                        color: "white"
+                                        font.pixelSize: 16
+                                        font.weight: Font.Bold
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        text: "Débits agrégés des interfaces"
+                                        color: window.muted
+                                        font.pixelSize: 10
                                     }
                                 }
                             }
