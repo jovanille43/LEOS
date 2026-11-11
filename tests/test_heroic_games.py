@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 from gaming.backend.heroic import find_heroic_artwork, load_heroic_games
+from gaming.backend.install_state import installation_status
 
 
 class HeroicGameImportTests(unittest.TestCase):
@@ -39,7 +40,7 @@ class HeroicGameImportTests(unittest.TestCase):
             "heroic://launch?appName=APP_NAME_123&runner=legendary&gui=false",
         )
 
-    def test_skips_dlc_and_missing_install_paths(self):
+    def test_keeps_missing_install_paths_and_skips_dlc(self):
         missing = self.root / "not-installed"
         self.write_manifest({
             "BASE": {
@@ -60,7 +61,9 @@ class HeroicGameImportTests(unittest.TestCase):
             },
         })
         games = load_heroic_games(self.manifest, "legendary")
-        self.assertEqual([game["app_id"] for game in games], ["BASE"])
+        self.assertEqual([game["app_id"] for game in games], ["BASE", "MISSING"])
+        self.assertEqual(installation_status(games[0]), "Installé")
+        self.assertEqual(installation_status(games[1]), "Fichiers absents")
 
     def test_supports_gog_runner_and_url_encodes_identifier(self):
         self.write_manifest([{
