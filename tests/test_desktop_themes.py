@@ -53,6 +53,13 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertNotIn("#121720", qml)
         self.assertNotIn("#293342", qml)
 
+    def test_theme_selector_refreshes_when_shared_settings_change(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function onSettingsChanged()", qml)
+        self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]', qml)
+        self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
