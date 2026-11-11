@@ -11,6 +11,8 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home
 
+from leos_core.paths import config_home as xdg_config_home
+
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
