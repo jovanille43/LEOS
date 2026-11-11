@@ -11,11 +11,15 @@ class FakeGamepad:
     def __init__(self, path, readonly=False):
         self.path = path
         self.readonly = readonly
+        self.nonblocking = False
         self.name = "Test Gamepad"
         self.phys = "usb-test"
         self.uniq = "test-serial"
         self.info = SimpleNamespace(vendor=1, product=2)
         self.closed = False
+
+    def set_nonblocking(self, value=True):
+        self.nonblocking = value
 
     def capabilities(self):
         return {
@@ -59,7 +63,7 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
         self.patches = [
             patch.object(backend, "InputDevice", factory),
             patch.object(backend, "ecodes", self.ecodes),
-            patch.object(backend, "list_devices", lambda: ["/dev/input/event-test"]),
+            patch.object(backend, "list_devices", lambda: ["/dev/input/event0"]),
         ]
         for item in self.patches:
             item.start()
@@ -76,10 +80,11 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
         self.assertTrue(self.devices[0].readonly)
         self.assertTrue(self.devices[0].closed)
 
-    def test_monitor_opens_controller_read_only_and_supports_empty_poll(self):
+    def test_monitor_opens_read_only_and_sets_nonblocking_mode(self):
         monitor = backend.GamepadBackend()
-        monitor.open("/dev/input/event-test")
+        monitor.open("/dev/input/event0")
         self.assertTrue(self.devices[-1].readonly)
+        self.assertTrue(self.devices[-1].nonblocking)
         self.assertEqual(monitor.poll(), [])
         monitor.close()
         self.assertTrue(self.devices[-1].closed)
@@ -89,6 +94,17 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             monitor.open("/dev/input/js0")
         self.assertEqual(self.devices, [])
+
+    def test_invalid_device_is_closed_after_open_failure(self):
+        class NotAGamepad(FakeGamepad):
+            def capabilities(self):
+                return {backend.ecodes.EV_KEY: [], backend.ecodes.EV_ABS: []}
+
+        with patch.object(backend, "InputDevice", NotAGamepad):
+            monitor = backend.GamepadBackend()
+            with self.assertRaises(ValueError):
+                monitor.open("/dev/input/event0")
+        self.assertTrue(monitor.device is None)
 
 
 if __name__ == "__main__":
