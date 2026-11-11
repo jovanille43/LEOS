@@ -99,7 +99,7 @@ class StoreController(QObject):
             "verify-install",
             item["id"],
             "flatpak",
-            ["remote-info", "--show-metadata", "flathub", item["id"]],
+            ["remote-info", "--user", "--show-metadata", "flathub", item["id"]],
         )
 
     @Slot(int)
