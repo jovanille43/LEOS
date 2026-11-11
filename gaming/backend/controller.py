@@ -15,6 +15,7 @@ from desktop.notifications import post_notification
 
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
+from .power_profiles import inspect_power_profiles, set_power_profile
 
 
 class GamingController(QObject):
@@ -24,11 +25,13 @@ class GamingController(QObject):
     gamepadStatusChanged = Signal()
     notificationCountChanged = Signal()
     notificationSettingsChanged = Signal()
+    powerProfilesChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
+        self._power_profiles = inspect_power_profiles()
         self.settings = SettingsStore()
         self.settings.set("last_mode", "gaming")
         self.notifications = NotificationStore()
@@ -56,6 +59,33 @@ class GamingController(QObject):
         self._refresh_gamepad()
         self._gamepad_poll_timer.start()
         self._gamepad_refresh_timer.start()
+
+
+    @Property(str, notify=powerProfilesChanged)
+    def activePowerProfile(self) -> str:
+        return self._power_profiles.active
+
+    @Property("QStringList", notify=powerProfilesChanged)
+    def availablePowerProfiles(self) -> list[str]:
+        return list(self._power_profiles.profiles)
+
+    @Property(str, notify=powerProfilesChanged)
+    def powerProfileStatus(self) -> str:
+        return self._power_profiles.message
+
+    @Slot()
+    def refreshPowerProfiles(self) -> None:
+        self._power_profiles = inspect_power_profiles()
+        self.powerProfilesChanged.emit()
+
+    @Slot(str, result=bool)
+    def applyPowerProfile(self, profile: str) -> bool:
+        success, message = set_power_profile(profile)
+        self._power_profiles = inspect_power_profiles()
+        self._message = message
+        self.messageChanged.emit(message)
+        self.powerProfilesChanged.emit()
+        return success
 
     @Property(int, notify=notificationCountChanged)
     def unreadNotificationCount(self) -> int:
