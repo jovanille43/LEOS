@@ -24,9 +24,9 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
 
     def test_profile_backend_uses_only_native_powerprofilesctl(self):
         module = (ROOT / "gaming/backend/power_profiles.py").read_text(encoding="utf-8")
-        self.assertIn('["get"]', module)
-        self.assertIn('["list"]', module)
-        self.assertIn('"set", profile', module)
+        self.assertIn('[executable, "get"]', module)
+        self.assertIn('[executable, "list"]', module)
+        self.assertIn('[executable, "set", profile]', module)
         self.assertNotIn("fancontrol", module)
         self.assertNotIn("sysfs", module)
 
