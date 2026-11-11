@@ -147,6 +147,12 @@ class StoreController(QObject):
         self._set_busy(False)
 
         if action == "list":
+            if exit_code != 0:
+                lines = stderr.strip().splitlines()
+                reason = lines[-1] if lines else "Inventaire Flatpak indisponible."
+                self._set_status(f"Impossible d'actualiser la boutique : {reason}")
+                self.operationFinished.emit(False, self._status)
+                return
             user_apps, system_apps = parse_flatpak_inventory(stdout)
             self.catalog.setInstalled(user_apps, system_apps)
             total = len(user_apps | system_apps)
@@ -154,7 +160,7 @@ class StoreController(QObject):
                 f"{total} application(s) Flatpak détectée(s) "
                 f"({len(user_apps)} utilisateur, {len(system_apps)} système)."
             )
-            self.operationFinished.emit(exit_code == 0, self._status)
+            self.operationFinished.emit(True, self._status)
             return
 
         if action == "verify-install":
