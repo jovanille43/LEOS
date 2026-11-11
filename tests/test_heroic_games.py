@@ -65,6 +65,18 @@ class HeroicGameImportTests(unittest.TestCase):
         self.assertEqual(installation_status(games[0]), "Installé")
         self.assertEqual(installation_status(games[1]), "Fichiers absents")
 
+    def test_retains_catalog_entry_when_install_path_is_missing(self):
+        self.write_manifest({
+            "UNKNOWN": {
+                "app_name": "UNKNOWN",
+                "title": "Metadata Incomplete",
+            }
+        })
+        games = load_heroic_games(self.manifest, "legendary")
+        self.assertEqual(len(games), 1)
+        self.assertEqual(games[0]["install_path"], "")
+        self.assertEqual(installation_status(games[0]), "État inconnu")
+
     def test_supports_gog_runner_and_url_encodes_identifier(self):
         self.write_manifest([{
             "appName": "my game 42",
