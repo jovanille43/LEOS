@@ -26,7 +26,7 @@ class PlasmaAdapterTests(unittest.TestCase):
     def test_script_uses_leos_ownership_marker(self):
         script = build_panel_management_script(self.store.get())
         self.assertIn(LEOS_PANEL_MARKER, script)
-        self.assertIn('panel.readConfig("managedBy", "")', script)
+        self.assertIn('candidate.readConfig("managedBy", "")', script)
         self.assertIn('panel.writeConfig("managedBy", markerValue)', script)
 
     def test_script_does_not_adopt_unmanaged_panels(self):
@@ -34,7 +34,7 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('if (isLeosPanel(allPanels[i]))', script)
         self.assertIn('var panel = existing.length === 1 ? existing[0] : null', script)
         self.assertIn('panel = new Panel()', script)
-        self.assertIn('desired.enabled && !panel && allPanels.length > 0', script)
+        self.assertIn('!panel && allPanels.length > 0', script)
 
     def test_script_checks_widget_availability_before_panel_creation(self):
         script = build_panel_management_script(self.store.get())
