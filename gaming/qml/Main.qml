@@ -233,6 +233,24 @@ ApplicationWindow {
                 }
 
                 Button {
+                    text: leos.silentNotificationsInGaming ? "SILENCE ACTIVÉ" : "ALERTES AUTORISÉES"
+                    onClicked: leos.toggleSilentNotifications()
+                    background: Rectangle {
+                        radius: 10
+                        color: parent.down ? "#26313e" : "#171d28"
+                        border.color: leos.silentNotificationsInGaming ? window.cyan : "#344052"
+                    }
+                    contentItem: Label {
+                        text: parent.text
+                        color: leos.silentNotificationsInGaming ? window.cyan : "white"
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Button {
                     text: "PANNEAU RAPIDE  ☰"
                     onClicked: quickPanel.visible = !quickPanel.visible
                     background: Rectangle {
