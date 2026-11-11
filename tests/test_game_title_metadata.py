@@ -59,7 +59,20 @@ class GameTitleMetadataTests(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[-1]["launch"], ["new"])
         self.assertEqual(result[0]["title"], "Space Game Deluxe")
+        self.assertEqual(result[-1]["id"], "manual:space game")
 
+    def test_manual_upsert_preserves_legacy_id_for_favorites_and_history(self):
+        existing = [
+            {"id": "manual:odd  spacing", "title": "Odd  Spacing", "launch": ["old"]}
+        ]
+        replacement = {
+            "id": "manual:odd spacing",
+            "title": "odd spacing",
+            "launch": ["new"],
+        }
+        result = upsert_manual_game(existing, replacement)
+        self.assertEqual(result[0]["id"], "manual:odd  spacing")
+        self.assertEqual(result[0]["launch"], ["new"])
 
 if __name__ == "__main__":
     unittest.main()
