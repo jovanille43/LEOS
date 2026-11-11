@@ -22,8 +22,8 @@ class SessionFlowTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("property date currentDate: new Date()", qml)
-        self.assertIn('Qt.formatDateTime(window.currentDate, "HH:mm")', qml)
-        self.assertIn('Qt.formatDateTime(window.currentDate, "dddd d MMMM yyyy")', qml)
+        self.assertIn('toLocaleTimeString(Qt.locale("fr_FR"), "HH:mm")', qml)
+        self.assertIn('toLocaleDateString(Qt.locale("fr_FR"), "dddd d MMMM yyyy")', qml)
         self.assertIn("modeManager.lastMode", qml)
         self.assertIn("LEOS DESKTOP", qml)
         self.assertIn("LEOS GAMING", qml)
