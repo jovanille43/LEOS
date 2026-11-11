@@ -74,5 +74,20 @@ class GameTitleMetadataTests(unittest.TestCase):
         self.assertEqual(result[0]["id"], "manual:odd  spacing")
         self.assertEqual(result[0]["launch"], ["new"])
 
+    def test_manual_upsert_never_removes_imported_provider_entries(self):
+        existing = [
+            {"id": "steam:42", "title": "Same Game", "launch": ["steam"]},
+            {"id": "heroic:epic:same", "title": "Same Game", "launch": ["heroic"]},
+            {"id": "manual:old", "title": "Same Game", "launch": ["old"]},
+        ]
+        replacement = {
+            "id": "manual:same game",
+            "title": "same game",
+            "launch": ["new"],
+        }
+        result = upsert_manual_game(existing, replacement)
+        self.assertEqual([game["id"] for game in result], ["steam:42", "heroic:epic:same", "manual:old"])
+        self.assertEqual(result[-1]["launch"], ["new"])
+
 if __name__ == "__main__":
     unittest.main()
