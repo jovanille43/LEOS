@@ -72,7 +72,7 @@ class PlasmaStyleManager:
             value = parser.get("Theme", "name", fallback="").strip()
         except (OSError, configparser.Error):
             return None
-        if not value or len(value) > 80 or any(ch in value for ch in ("/", "\", "\n", "\r")):
+        if not value or len(value) > 80 or any(ch in value for ch in ("/", chr(92), chr(10), chr(13))):
             return None
         return value
 
@@ -112,7 +112,7 @@ class PlasmaStyleManager:
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
         if self.state_file.parent.is_symlink():
             raise ValueError("Symbolic-link Plasma style state directories are not accepted")
-        payload = json.dumps(state, indent=2, ensure_ascii=False) + "\\n"
+        payload = json.dumps(state, indent=2, ensure_ascii=False) + chr(10)
         fd, temporary = tempfile.mkstemp(prefix="plasma-style.", suffix=".tmp", dir=self.state_file.parent)
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
