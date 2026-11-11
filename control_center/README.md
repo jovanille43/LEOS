@@ -34,3 +34,9 @@ Les résultats sont affichés dans la page et les événements importants sont e
 
 
 Le suivi périodique se limite à l’observation des déploiements en attente, via l’API JSON locale de rpm-ostree. Il n’interroge pas le réseau et ne lance aucune transaction. Le contrôle périodique fonctionne lorsque le Centre de contrôle est ouvert ; les vérifications et opérations automatiques de Bazzite restent gérées par les services natifs du système.
+
+## Préférences de notifications
+
+La page **Notifications** du Centre de contrôle permet d'activer/désactiver les fenêtres système, de choisir une durée de 3, 5 ou 8 secondes, de filtrer les notifications par priorité, de couper leur son via l'indication standard `suppress-sound` et d'activer le silence automatique en Gaming Mode. Les événements continuent d'être enregistrés dans l'historique local même lorsqu'une fenêtre est filtrée ou désactivée.
+
+Les sons reposent sur le service de notifications KDE et sa configuration sonore : LEOS ne joue pas encore de fichier audio propriétaire. Le mode silencieux en jeu est activé par défaut. Les préférences sont stockées dans le fichier utilisateur `settings.json`.
