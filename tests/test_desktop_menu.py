@@ -27,6 +27,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertNotIn("shell=True", source)
         self.assertNotIn("os.system(", source)
 
+    def test_favourites_are_exposed_and_toggleable_from_the_menu(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("DockFavourites()", source)
+        self.assertIn("def toggleFavourite", source)
+        self.assertIn("applicationCatalog.toggleFavourite(desktopId)", qml)
+        self.assertIn("required property bool isPinned", qml)
+
     def test_menu_qml_exposes_search_categories_and_empty_state(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         for feature in ("Rechercher une application", "applicationCatalog.categories()",
