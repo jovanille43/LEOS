@@ -142,7 +142,8 @@ ApplicationWindow {
                             { label: "Performances", page: 3 },
                             { label: "Paramètres KDE", page: 4 },
                             { label: "Mises à jour", page: 5 },
-                            { label: "Notifications", page: 6 }
+                            { label: "Notifications", page: 6 },
+                            { label: "Diagnostic système", page: 7 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -1340,6 +1341,139 @@ ApplicationWindow {
                                         onToggled: controlCenter.setSilentNotificationsInGaming(checked)
                                     }
                                 }
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+                            Label {
+                                text: "DIAGNOSTIC SYSTÈME"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "Contrôles de santé en lecture seule. LEOS signale les anomalies détectables sans réparer, redémarrer ou modifier les services."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 112
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.cyan : window.themeColors.border)
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Label {
+                                            text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : window.cyan
+                                            font.pixelSize: 11
+                                            font.letterSpacing: 1.4
+                                        }
+                                        Label {
+                                            text: controlCenter.diagnosticsSnapshot.summary || "Analyse en cours…"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 12
+                                            wrapMode: Text.WordWrap
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+                                    Button {
+                                        text: "ANALYSER"
+                                        onClicked: controlCenter.scanDiagnostics()
+                                    }
+                                }
+                            }
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2
+                                columnSpacing: 12
+                                rowSpacing: 12
+                                Repeater {
+                                    model: [
+                                        { title: "STOCKAGE", value: controlCenter.diagnosticsSnapshot.storage, detail: "Occupation de /" },
+                                        { title: "MÉMOIRE", value: controlCenter.diagnosticsSnapshot.memory, detail: "Mémoire utilisée" },
+                                        { title: "TEMPÉRATURE", value: controlCenter.diagnosticsSnapshot.temperature, detail: "Maximum des capteurs exposés" },
+                                        { title: "SERVICES", value: controlCenter.diagnosticsSnapshot.failedServices, detail: "Unités systemd en échec" },
+                                        { title: "CHARGE CPU", value: controlCenter.diagnosticsSnapshot.loadAverage, detail: "Charge système moyenne" },
+                                        { title: "TEMPS DE FONCTIONNEMENT", value: controlCenter.diagnosticsSnapshot.uptime, detail: "Depuis le dernier démarrage" },
+                                        { title: "JOURNAUX", value: controlCenter.diagnosticsSnapshot.recentErrors, detail: "Erreurs sur la dernière heure, aperçu limité" }
+                                    ]
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 108
+                                        radius: 13
+                                        color: window.themeColors.surface
+                                        border.color: window.themeColors.border
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 14
+                                            spacing: 6
+                                            Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1 }
+                                            Label {
+                                                text: modelData.value || "Indisponible"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 12
+                                                font.weight: Font.DemiBold
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                            }
+                                            Label {
+                                                text: modelData.detail
+                                                color: window.muted
+                                                font.pixelSize: 10
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "POINTS À VÉRIFIER"
+                                color: window.cyan
+                                font.pixelSize: 11
+                                font.letterSpacing: 1.4
+                            }
+                            Repeater {
+                                model: controlCenter.diagnosticsSnapshot.findings || []
+                                delegate: Rectangle {
+                                    required property string modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: findingText.implicitHeight + 28
+                                    radius: 10
+                                    color: window.themeColors.surface
+                                    border.color: window.themeColors.border
+                                    Label {
+                                        id: findingText
+                                        anchors.fill: parent
+                                        anchors.margins: 14
+                                        text: modelData
+                                        color: window.themeColors.text
+                                        font.pixelSize: 12
+                                        wrapMode: Text.WordWrap
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "Les journaux ne sont pas affichés dans LEOS : seule une quantité d’entrées d’erreur est indiquée. Les contrôles peuvent être incomplets si les outils ou permissions système ne sont pas disponibles."
+                                color: window.muted
+                                font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
                             }
                             Item { Layout.fillHeight: true }
                         }
