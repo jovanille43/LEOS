@@ -9,6 +9,8 @@ Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image
 - `/usr/share/leos/control_center` : Centre de contrôle LEOS et raccourcis allowlistés vers les modules KDE natifs.
 
 Le fichier `control_center/settings_modules.py` contient l'association entre les clés de l'interface et les modules KCM KDE. La construction de commande est testée sans dépendre d'une session Plasma ; le lancement utilise `QProcess` avec une liste d'arguments explicite, jamais un shell. Les modules sont ouverts via `kcmshell6` lorsque disponible, sinon via `systemsettings`. La disponibilité exacte des modules KCM sera contrôlée sur la première image LEOS.
+
+La vue d'ensemble du Centre de contrôle réutilise `gaming.backend.system_monitor.SystemMonitor` au lieu de lancer un deuxième collecteur. Elle affiche l'utilisation CPU, l'utilisation mémoire et la température CPU lorsque le capteur est exposé par Linux. Le moniteur actualise ses données toutes les deux secondes et reste strictement en lecture seule. Les valeurs indisponibles ne sont pas estimées.
 - `/usr/share/leos/controller_center` : détection, test et préférences locales des manettes.
 - `/usr/share/leos/shop` : catalogue et interface de la boutique LEOS.
 - `/usr/share/leos/leos_core` : préférences partagées.
