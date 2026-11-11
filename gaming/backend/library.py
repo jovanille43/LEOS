@@ -273,20 +273,46 @@ class GameLibraryModel(QAbstractListModel):
 
     def refresh(self) -> None:
         discovered: dict[str, dict[str, Any]] = {}
-        for directory in self._steam_directories():
-            for manifest in directory.glob("appmanifest_*.acf"):
+        # Each provider is isolated: a damaged or temporarily unavailable
+        # catalogue must not prevent the remaining sources from loading.
+        try:
+            steam_directories = self._steam_directories()
+        except OSError:
+            steam_directories = []
+        for directory in steam_directories:
+            try:
+                manifests = list(directory.glob("appmanifest_*.acf"))
+            except OSError:
+                continue
+            for manifest in manifests:
                 game = read_steam_manifest(manifest)
                 if game:
-                    game["artwork"] = self._steam_artwork(game["app_id"], directory)
+                    try:
+                        game["artwork"] = self._steam_artwork(game["app_id"], directory)
+                    except OSError:
+                        game["artwork"] = ""
                     discovered[game["id"]] = game
-        for installed_file, runner in self._heroic_installed_files():
+
+        try:
+            heroic_files = self._heroic_installed_files()
+        except OSError:
+            heroic_files = []
+        for installed_file, runner in heroic_files:
             for game in load_heroic_games(installed_file, runner):
                 discovered.setdefault(game["id"], game)
+
         data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
-        for database in self._lutris_databases():
+        try:
+            lutris_databases = self._lutris_databases()
+        except OSError:
+            lutris_databases = []
+        for database in lutris_databases:
             for game in load_lutris_games(database):
-                artwork = find_lutris_artwork(data_home, str(game.get("slug", "")))
-                game["artwork"] = artwork.as_uri() if artwork else ""
+                try:
+                    artwork = find_lutris_artwork(data_home, str(game.get("slug", "")))
+                    game["artwork"] = artwork.as_uri() if artwork else ""
+                except OSError:
+                    game["artwork"] = ""
                 discovered.setdefault(game["id"], game)
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
