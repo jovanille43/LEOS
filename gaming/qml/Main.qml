@@ -336,6 +336,17 @@ ApplicationWindow {
                             font.weight: Font.Bold
                         }
                         Item { Layout.fillWidth: true }
+                        TextField {
+                            id: searchField
+                            Layout.preferredWidth: 270
+                            placeholderText: "Rechercher un jeu…"
+                            color: "white"
+                            selectByMouse: true
+                            onTextChanged: {
+                                gameLibrary.setSearchQuery(text)
+                                window.clearSelection()
+                            }
+                        }
                         Button {
                             text: "ACTUALISER"
                             onClicked: leos.refreshLibrary()
