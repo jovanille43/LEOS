@@ -36,6 +36,7 @@ def main() -> int:
         return 1
 
     controller.monitor.start()
+    app.aboutToQuit.connect(controller.shutdown)
     exit_code = app.exec()
     controller.monitor.stop()
     return exit_code
