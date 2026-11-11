@@ -1,0 +1,14 @@
+[Unit]
+Description=Install LEOS starter applications once for this user
+Documentation=https://github.com/jovanille43/LEOS
+After=graphical-session.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/leos-default-apps-setup
+Restart=on-failure
+RestartSec=5min
+
+[Install]
+WantedBy=default.target
