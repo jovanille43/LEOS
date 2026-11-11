@@ -44,5 +44,12 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)
 
 
+    def test_control_centre_refreshes_cross_process_preferences(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("_settings_sync_timer", controller)
+        self.assertIn("refreshSharedSettings", controller)
+        self.assertIn("_read_shared_settings_snapshot", controller)
+        self.assertIn("self.settingsChanged.emit()", controller)
+
 if __name__ == "__main__":
     unittest.main()
