@@ -8,6 +8,27 @@ from urllib.parse import quote
 from typing import Any
 
 
+_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def find_heroic_artwork(record: dict[str, Any]) -> str:
+    """Return a verified local artwork file from a Heroic manifest record."""
+    keys = ("art_cover", "artCover", "art_square", "artSquare", "cover", "icon")
+    for key in keys:
+        value = record.get(key)
+        if not isinstance(value, str) or not value.strip():
+            continue
+        candidate = Path(value.strip()).expanduser()
+        if not candidate.is_absolute() or candidate.suffix.lower() not in _IMAGE_SUFFIXES:
+            continue
+        try:
+            if candidate.is_file():
+                return candidate.resolve().as_uri()
+        except OSError:
+            continue
+    return ""
+
+
 def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]:
     """Parse a local Heroic installed.json file into LEOS game records."""
     if runner not in {"legendary", "gog", "nile"}:
@@ -81,6 +102,7 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
             "app_id": app_name,
             "launch": [launch_url],
             "install_path": str(install_dir),
+            "artwork": find_heroic_artwork(record),
         })
         seen.add(normalized_id)
     return games
