@@ -235,6 +235,6 @@ Le stockage recharge l'historique avant chaque modification afin de tenir compte
 
 ## Lancement des applications
 
-Le menu lit les champs `Exec` des fichiers Desktop Entry et développe explicitement les codes freedesktop pris en charge (`%c`, `%i`, `%k`, `%%`). Les placeholders de fichiers/URL sont omis lorsqu'aucun document n'est associé au lancement. Les codes inconnus ou mal placés sont refusés. Les arguments sont transmis à `QProcess.startDetached` sans interprétation par un shell.
+Le menu lit les champs `Exec` des fichiers Desktop Entry et développe explicitement les codes freedesktop pris en charge (`%c`, `%i`, `%k`, `%%`). Les placeholders de fichiers/URL sont omis lorsqu'aucun document n'est associé au lancement. Les codes inconnus ou mal placés sont refusés. Le champ `Path` est résolu vers un dossier absolu existant ; les entrées avec un dossier de travail invalide sont ignorées. Les arguments sont transmis à `QProcess.startDetached` sans interprétation par un shell.
 
 Le menu masque aussi les entrées `Terminal=true` tant qu'aucun terminal n'est intégré à son flux de lancement, et respecte `TryExec` lorsqu'il est défini.
