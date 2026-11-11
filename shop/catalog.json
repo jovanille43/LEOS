@@ -6,7 +6,16 @@
     "description": "Lecteur multimédia polyvalent pour les fichiers audio et vidéo.",
     "source": "Flathub",
     "compatibility": "Application Flatpak ; compatibilité dépendante de l'environnement graphique et des codecs disponibles.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Cette application est incluse dans l'image LEOS comme Flatpak système."
+  },
+  {
+    "id": "com.brave.Browser",
+    "name": "Brave",
+    "category": "Internet",
+    "description": "Navigateur web Brave avec blocage intégré des publicités et traqueurs.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak pour Linux. Les fonctions de navigation web sont disponibles sur Desktop Mode.",
+    "operation_note": "Brave est inclus dans l'image LEOS comme application système ; il ne sera pas dupliqué dans le profil utilisateur."
   },
   {
     "id": "org.mozilla.firefox",
@@ -24,7 +33,7 @@
     "description": "Suite bureautique complète.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Cette application est incluse dans l'image LEOS comme Flatpak système."
   },
   {
     "id": "org.gimp.GIMP",
