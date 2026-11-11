@@ -94,7 +94,7 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 10
                                 color: window.selectedPage === modelData.page ? window.palette.surface_elevated : window.palette.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : "#293342"
+                                border.color: window.selectedPage === modelData.page ? window.cyan : window.palette.border
                             }
                             contentItem: Label {
                                 text: parent.text
