@@ -80,9 +80,8 @@ class GamepadBackend:
 
         device = InputDevice(path, readonly=True)
         try:
-            # QTimer polls this descriptor on the Qt UI thread. Non-blocking mode
-            # prevents an idle controller from freezing the whole interface.
-            device.set_nonblocking(True)
+            # python-evdev opens its file descriptor in non-blocking mode;
+            # QTimer can therefore poll read() without waiting for input.
             if not _is_gamepad(device):
                 raise ValueError("This input device is not a game controller")
 
