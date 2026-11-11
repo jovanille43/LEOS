@@ -1,9 +1,9 @@
-"""Generate safe Plasma scripting commands for LEOS-owned panels.
+"""Generate guarded Plasma scripting commands for LEOS-owned panels.
 
-The returned JavaScript is not executed by this module. It uses KDE's
-documented Plasma scripting API and only updates panels carrying the
-LEOS-specific ownership marker. Existing user panels and their applets are
-never adopted, moved, or removed.
+The returned JavaScript is never executed by this module. It uses KDE's
+documented Plasma 6 scripting API and only updates panels carrying the
+LEOS-specific ownership marker. Existing user panels are never adopted,
+moved, or removed.
 """
 from __future__ import annotations
 
@@ -43,6 +43,11 @@ def build_panel_management_script(layout: object) -> str:
 
 _SCRIPT = r'''(function () {
     "use strict";
+    var versionMajor = parseInt(String(applicationVersion).split(".")[0], 10);
+    if (!versionMajor || versionMajor < 6) {
+        throw new Error("Cet adaptateur exige Plasma 6 ou une version ultérieure.");
+    }
+
     var desired = __LEOS_CONFIG__;
     var widgetTypes = __LEOS_WIDGETS__;
     var markerGroup = "LEOS";
@@ -50,9 +55,9 @@ _SCRIPT = r'''(function () {
     var existing = [];
     var allPanels = panels();
 
-    function isLeosPanel(panel) {
-        panel.currentConfigGroup = [markerGroup];
-        return panel.readConfig("managedBy", "") === markerValue;
+    function isLeosPanel(candidate) {
+        candidate.currentConfigGroup = [markerGroup];
+        return candidate.readConfig("managedBy", "") === markerValue;
     }
 
     for (var i = 0; i < allPanels.length; i++) {
@@ -68,18 +73,41 @@ _SCRIPT = r'''(function () {
     var panel = existing.length === 1 ? existing[0] : null;
 
     if (!desired.enabled) {
-        if (panel) {
-            panel.remove();
-            print("LEOS_PANEL_REMOVED");
-        } else {
-            print("LEOS_PANEL_ALREADY_ABSENT");
-        }
+        print("LEOS_PANEL_DISABLE_NOT_IMPLEMENTED=1");
+        print("Le panneau KDE est conservé ; aucune suppression n'est effectuée.");
         return;
     }
 
+    if (!panel && allPanels.length > 0) {
+        throw new Error(
+            "Un panneau KDE non géré existe déjà. LEOS refuse de créer un doublon ou de l'adopter automatiquement."
+        );
+    }
+
     var created = false;
-    var addedWidgets = [];
     var before = null;
+    var newPanelWidgets = [];
+
+    if (panel) {
+        before = {
+            location: panel.location,
+            alignment: panel.alignment,
+            hiding: panel.hiding,
+            height: panel.height,
+            lengthMode: panel.lengthMode,
+            length: panel.length
+        };
+    } else {
+        var availableTypes = knownWidgetTypes;
+        for (var a = 0; a < widgetTypes.length; a++) {
+            if (availableTypes.indexOf(widgetTypes[a]) !== -1) {
+                newPanelWidgets.push(widgetTypes[a]);
+            }
+        }
+        if (newPanelWidgets.length < 2) {
+            throw new Error("Pas assez de widgets KDE sont disponibles pour créer le dock LEOS.");
+        }
+    }
 
     try {
         if (!panel) {
@@ -88,15 +116,6 @@ _SCRIPT = r'''(function () {
                 throw new Error("KDE n'a pas pu créer un panneau Plasma.");
             }
             created = true;
-        } else {
-            before = {
-                location: panel.location,
-                alignment: panel.alignment,
-                hiding: panel.hiding,
-                height: panel.height,
-                lengthMode: panel.lengthMode,
-                length: panel.length
-            };
         }
 
         panel.location = desired.position;
@@ -105,31 +124,13 @@ _SCRIPT = r'''(function () {
         panel.height = 52;
         panel.lengthMode = "fit";
 
-        var currentTypes = [];
-        var currentWidgets = panel.widgets();
-        for (var w = 0; w < currentWidgets.length; w++) {
-            currentTypes.push(currentWidgets[w].type);
-        }
-
-        var availableTypes = knownWidgetTypes;
-        for (var a = 0; a < widgetTypes.length; a++) {
-            var widgetType = widgetTypes[a];
-            if (currentTypes.indexOf(widgetType) !== -1) {
-                continue;
+        if (created) {
+            for (var w = 0; w < newPanelWidgets.length; w++) {
+                var added = panel.addWidget(newPanelWidgets[w]);
+                if (!added) {
+                    throw new Error("Échec de l'ajout du widget " + newPanelWidgets[w]);
+                }
             }
-            if (availableTypes.indexOf(widgetType) === -1) {
-                print("LEOS_WIDGET_UNAVAILABLE=" + widgetType);
-                continue;
-            }
-            var added = panel.addWidget(widgetType);
-            if (!added) {
-                throw new Error("Échec de l'ajout du widget " + widgetType);
-            }
-            addedWidgets.push(added);
-        }
-
-        if (created && addedWidgets.length < 2) {
-            throw new Error("Pas assez de widgets KDE sont disponibles pour créer le dock LEOS.");
         }
 
         panel.currentConfigGroup = [markerGroup];
@@ -143,11 +144,10 @@ _SCRIPT = r'''(function () {
     } catch (error) {
         try {
             if (created && panel) {
-                panel.remove();
+                panel.hiding = "autohide";
+                panel.height = 1;
+                print("LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1");
             } else if (panel && before) {
-                for (var r = addedWidgets.length - 1; r >= 0; r--) {
-                    addedWidgets[r].remove();
-                }
                 panel.location = before.location;
                 panel.alignment = before.alignment;
                 panel.hiding = before.hiding;
@@ -170,7 +170,7 @@ def adapter_capabilities() -> dict[str, Any]:
         "target_major_version": 6,
         "can_create_dock": True,
         "can_update_leos_owned_dock": True,
-        "can_remove_leos_owned_dock": True,
+        "can_remove_leos_owned_dock": False,
         "touches_unmanaged_panels": False,
         "desktop_widgets_applied": False,
         "runtime_validated_on_bazzite": False,
