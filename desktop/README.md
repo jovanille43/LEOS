@@ -157,3 +157,31 @@ compte les nouvelles couleurs.
 
 Références : [documentation KDE sur les schémas de couleurs](https://docs.kde.org/stable_kf6/en/plasma-workspace/kcontrol/colors/)
 et [format des couleurs Plasma](https://develop.kde.org/docs/plasma/theme/theme-details/).
+
+
+## Plasma Style LEOS — première version
+
+Le paquet source `plasma-theme/leos/` fournit un Plasma Style natif pour Plasma 6,
+installé par BlueBuild dans `/usr/share/plasma/desktoptheme/leos/`. Il comprend
+les métadonnées Plasma 6, un réglage discret du contraste/flou et trois fonds
+SVG : panneau, fenêtre contextuelle et widget de bureau. Les autres éléments
+utilisent le repli Breeze de Plasma afin de préserver la compatibilité.
+
+Le Centre de contrôle vérifie la présence du paquet et de
+`plasma-apply-desktoptheme`. L'application du style et sa restauration sont
+protégées par une confirmation distincte. Le style précédent est enregistré
+dans `$XDG_STATE_HOME/leos/plasma-style.json` avec des permissions privées.
+La commande native de KDE est appelée sans shell ; aucun fichier système ou
+`plasmarc` n'est modifié directement par LEOS.
+
+**Limites alpha :** les trois SVG sont des premières formes originales et ne
+constituent pas encore un habillage exhaustif. Les icônes, boutons et contrôles
+Qt continuent d'utiliser leurs styles existants. L'emblème officiel du lion
+n'est pas encore intégré, car les ressources graphiques originales ne sont
+pas présentes dans le dépôt. Le style est installé mais n'est pas sélectionné
+automatiquement. Son rendu doit encore être contrôlé sur une vraie session
+Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
+
+Références KDE : [création d'un Plasma Style](https://develop.kde.org/docs/plasma/theme/quickstart/),
+[structure et emplacements](https://develop.kde.org/docs/plasma/theme/theme-details/)
+et [référence des éléments SVG](https://develop.kde.org/docs/plasma/theme/theme-elements/).
