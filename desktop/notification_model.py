@@ -59,8 +59,8 @@ class NotificationModel(QAbstractListModel):
         self.store.load()
         self._reload()
 
-    @Slot(result=int)
-    def unreadCount(self):
+    @Property(int, notify=changed)
+    def unreadCount(self) -> int:
         return self.store.unread_count()
 
     @Slot(str, str, str, result=str)
