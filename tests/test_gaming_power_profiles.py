@@ -8,7 +8,7 @@ from gaming.backend import power_profiles
 
 class PowerProfileTests(unittest.TestCase):
     @patch("gaming.backend.power_profiles.shutil.which", return_value="/usr/bin/powerprofilesctl")
-    @patch("gaming.backend.power_profiles._run", side_effect=["balanced", "* balanced\n  power-saver\n  performance"])
+    @patch("gaming.backend.power_profiles._run", side_effect=["balanced", "* balanced:\n  power-saver:\n  performance:"])
     def test_discovers_only_profiles_advertised_by_daemon(self, _run, _which):
         state = power_profiles.inspect_power_profiles()
         self.assertTrue(state.available)
