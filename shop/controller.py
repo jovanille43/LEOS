@@ -12,6 +12,7 @@ import shutil
 from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 
 from shop.catalog import CatalogModel
+from shop.flatpak_inventory import parse_flatpak_inventory
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -74,7 +75,7 @@ class StoreController(QObject):
 
     @Slot()
     def refreshInstalled(self) -> None:
-        self._start("list", "", "flatpak", ["list", "--user", "--app", "--columns=application"])
+        self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
 
     @Slot(int)
     def requestInstall(self, row: int) -> None:
@@ -84,6 +85,9 @@ class StoreController(QObject):
             return
         if not APP_ID_RE.fullmatch(item["id"]):
             self._set_status("Identifiant d'application invalide.")
+            return
+        if item.get("installed_scope"):
+            self._set_status("Cette application est déjà installée.")
             return
         self._start(
             "verify-install",
@@ -95,8 +99,12 @@ class StoreController(QObject):
     @Slot(int)
     def requestUninstall(self, row: int) -> None:
         item = self.catalog.itemAt(row)
-        if not item or not APP_ID_RE.fullmatch(item["id"]) or item["id"] not in self.catalog._installed:
-            self._set_status("Cette application n'est pas marquée comme installée ou son identifiant est invalide.")
+        if (
+            not item
+            or not APP_ID_RE.fullmatch(item["id"])
+            or item.get("installed_scope") != "user"
+        ):
+            self._set_status("Seules les applications installées dans ton profil utilisateur peuvent être désinstallées depuis LEOS.")
             return
         self._start(
             "uninstall",
@@ -108,8 +116,13 @@ class StoreController(QObject):
     @Slot(int)
     def confirmInstall(self, row: int) -> None:
         item = self.catalog.itemAt(row)
-        if not item or item["id"] != self._target or self._action != "verified":
-            self._set_status("La vérification de la source doit réussir avant l'installation.")
+        if (
+            not item
+            or item["id"] != self._target
+            or self._action != "verified"
+            or item.get("installed_scope")
+        ):
+            self._set_status("La vérification doit réussir et l'application ne doit pas déjà être installée.")
             return
         self._start(
             "install",
@@ -134,9 +147,13 @@ class StoreController(QObject):
         self._set_busy(False)
 
         if action == "list":
-            installed = {line.strip() for line in stdout.splitlines() if line.strip()}
-            self.catalog.setInstalled(installed)
-            self._set_status(f"{len(installed)} application(s) Flatpak détectée(s).")
+            user_apps, system_apps = parse_flatpak_inventory(stdout)
+            self.catalog.setInstalled(user_apps, system_apps)
+            total = len(user_apps | system_apps)
+            self._set_status(
+                f"{total} application(s) Flatpak détectée(s) "
+                f"({len(user_apps)} utilisateur, {len(system_apps)} système)."
+            )
             self.operationFinished.emit(exit_code == 0, self._status)
             return
 
