@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.system_monitor import SystemMonitor
+from gaming.backend.gpu_metrics import read_gpu_metrics
 
 
 class GpuTelemetryTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class GpuTelemetryTests(unittest.TestCase):
             (device / "mem_info_vram_used").write_text("536870912")
             (device / "mem_info_vram_total").write_text("2147483648")
 
-            metrics = SystemMonitor._read_gpu_metrics(root)
+            metrics = read_gpu_metrics(root)
 
         self.assertEqual(metrics["name"], "AMD · PCI 0x164e")
         self.assertEqual(metrics["usage"], 47.0)
