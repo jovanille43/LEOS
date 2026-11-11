@@ -121,6 +121,9 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
+                        keyNavigationEnabled: true
+                        keyNavigationWraps: false
+                        activeFocusOnTab: true
                         cellWidth: 180
                         cellHeight: 112
                         model: applicationCatalog
@@ -133,6 +136,17 @@ ApplicationWindow {
                             required property bool isPinned
                             width: appGrid.cellWidth - 8
                             height: appGrid.cellHeight - 8
+                            activeFocusOnTab: true
+                            focus: GridView.isCurrentItem
+                            Keys.onReturnPressed: {
+                                if (!applicationCatalog.launch(desktopId))
+                                    status.text = "Lancement impossible. Vérifie l’installation de l’application."
+                                else
+                                    status.text = name + " : lancement demandé."
+                                event.accepted = true
+                            }
+                            Keys.onEnterPressed: Keys.onReturnPressed(event)
+                            Keys.onSpacePressed: Keys.onReturnPressed(event)
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
