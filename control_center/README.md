@@ -57,3 +57,12 @@ Cette page ne modifie ni les appareils, ni les pilotes, ni la configuration Blue
 L'inventaire inclut également le niveau et l'état de la batterie lorsque le noyau expose une alimentation de type batterie, ainsi que les périphériques USB dont les noms fabricant/produit sont publiés dans sysfs. Les machines fixes affichent explicitement qu'aucune batterie n'a été détectée.
 
 Le tableau inclut enfin les interfaces réseau locales et leurs adresses IPv4/IPv6 à partir de `ip -brief address`. L'interface de boucle locale est masquée ; aucun service distant ni test de débit n'est lancé par cette détection.
+
+
+## Diagnostic système
+
+La page **Diagnostic système** fournit un bilan en lecture seule actualisé toutes les 30 secondes, avec analyse manuelle à la demande. Elle contrôle l'occupation du système de fichiers racine, la mémoire disponible, les températures publiées par les zones thermiques du noyau, les unités systemd en échec, la charge moyenne, le temps de fonctionnement et le nombre d'entrées d'erreur récentes du journal système.
+
+Les seuils d'attention sont explicites : stockage à partir de 80 % (critique à 90 %), mémoire à partir de 85 % (critique à 92 %) et température exposée à partir de 80 °C (critique à 90 °C). La température affichée est le maximum des capteurs accessibles, pas une mesure garantie du CPU seul. Les journaux ne sont jamais reproduits dans l'interface ; seule une quantité d'entrées est indiquée. Les sondes sont bornées dans le temps et s'exécutent hors du thread graphique pour préserver la réactivité du Centre de contrôle.
+
+Le diagnostic ne lance aucune réparation, aucun redémarrage de service, aucune suppression et aucune modification de configuration. Les résultats peuvent être partiels si systemd, journalctl, les capteurs ou les permissions ne sont pas disponibles. Une anomalie signalée est une piste à examiner, pas une preuve de panne matérielle.
