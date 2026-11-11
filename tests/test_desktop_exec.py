@@ -49,6 +49,14 @@ class DesktopExecTests(unittest.TestCase):
             ["app", "--title", "A; rm -rf /"],
         )
 
+    def test_rejects_multiple_file_or_url_placeholders(self):
+        with self.assertRaises(ValueError):
+            parse_desktop_exec("viewer %f %u")
+
+    def test_rejects_field_code_as_executable(self):
+        with self.assertRaises(ValueError):
+            parse_desktop_exec("%k --option")
+
 
 if __name__ == "__main__":
     unittest.main()
