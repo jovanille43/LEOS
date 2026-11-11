@@ -34,7 +34,7 @@ def detect_controller_profile(name: str, vendor: int = 0, product: int = 0) -> s
         return "playstation"
 
     # Microsoft Xbox controllers; unknown devices keep the neutral layout.
-    if vendor == 0x045E and product in {0x028E, 0x02EA, 0x0B12, 0x0B13}:
+    if vendor == 0x045E and product in {0x028E, 0x02EA, 0x0B00, 0x0B12}:
         return "xbox"
     if "xbox" in label:
         return "xbox"
@@ -56,7 +56,7 @@ def device_profile_id(
     fallback_path: str = "",
 ) -> str:
     """Return a stable, non-reversible identifier for a connected controller."""
-    stable_location = phys or uniq or fallback_path
+    stable_location = uniq or phys or fallback_path
     raw = f"{name}|{vendor:04x}|{product:04x}|{stable_location}"
     return hashlib.sha256(raw.encode("utf-8", errors="replace")).hexdigest()[:24]
 
