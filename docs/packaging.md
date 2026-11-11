@@ -36,4 +36,4 @@ La recette de référence se trouve dans `recipes/recipe.yml`. L'action officiel
 
 ## Bibliothèque multi-lanceurs
 
-Le backend Gaming détecte Steam, puis importe les manifestes locaux de Heroic/Legendary pour Epic, GOG et Amazon Games (installation native ou Flatpak). Les jeux sont ouverts via le protocole Heroic afin de conserver ses paramètres Wine/Proton par titre. LEOS ne lit ni ne modifie les jetons de connexion ou les données d'authentification.
+Le backend Gaming détecte Steam, puis importe les manifestes locaux de Heroic/Legendary pour Epic, GOG et Amazon Games (installation native ou Flatpak). Les jeux sont ouverts via le protocole Heroic afin de conserver ses paramètres Wine/Proton par titre. LEOS ne lit ni ne modifie les jetons de connexion ou les données d'authentification. Lutris est également importé depuis sa base locale `pga.db`, ouverte avec SQLite en mode lecture seule (`mode=ro` et `query_only`). Les jeux sont lancés via `lutris:rungameid/<id>`, ce qui laisse Lutris gérer ses runners et ses réglages.
