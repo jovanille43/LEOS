@@ -83,7 +83,6 @@ class GamepadBackend:
             raise ValueError("This input device is not a game controller")
         self.axes = {}
         self.axis_ranges = {}
-        self.axis_ranges = {}
         for code in self.device.capabilities().get(ecodes.EV_ABS, []):
             name = ecodes.ABS.get(code, f"AXIS_{code}")
             if isinstance(name, list):
@@ -136,3 +135,4 @@ class GamepadBackend:
             self.device.close()
             self.device = None
         self.axes = {}
+        self.axis_ranges = {}
