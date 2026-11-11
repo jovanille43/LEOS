@@ -64,3 +64,18 @@ reconfigurent pas encore le panneau Plasma. L'intégration Plasma devra détecte
 la configuration active, créer une sauvegarde restaurable, vérifier les
 applications épinglées et demander une confirmation explicite avant toute
 modification. Aucune commande de configuration KDE n'est exécutée par ce module.
+
+
+## Sauvegarde et restauration Plasma
+
+Le module `desktop/plasma_backup.py` sait sauvegarder le fichier de disposition
+des panneaux Plasma de l'utilisateur, vérifier l'intégrité SHA-256 des copies
+et restaurer une sauvegarde. Les copies et manifestes sont privés (répertoire
+0700, fichiers 0600). Les sauvegardes sont stockées sous
+`~/.local/state/leos/plasma-backups` ou sous `XDG_STATE_HOME`.
+
+La restauration exige un indicateur de confirmation explicite fourni par
+l'interface appelante. Avant de restaurer, le module sauvegarde également la
+configuration courante afin de permettre un retour arrière. Aucun changement
+n'est appliqué automatiquement à Plasma ; cette brique prépare la future
+intégration du dock et des dispositions LEOS.
