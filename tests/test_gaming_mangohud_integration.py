@@ -18,7 +18,8 @@ class MangoHudIntegrationTests(unittest.TestCase):
     def test_direct_launch_wrapper_is_used_without_shell(self):
         source = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         self.assertIn("build_launch_command(launch_command, bool(mango_hud))", source)
-        self.assertIn("process.setProgram(target)", source)
+        self.assertIn("process.setProgram(executable)", source)
+        self.assertIn("process.setArguments(command[1:])", source)
         self.assertNotIn("shell=True", source)
 
     def test_quick_panel_explains_steam_manual_configuration(self):
