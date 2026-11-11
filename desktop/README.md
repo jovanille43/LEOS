@@ -251,3 +251,15 @@ Le catalogue respecte aussi les listes `OnlyShowIn` et `NotShowIn` pour
 l'environnement actif (`XDG_CURRENT_DESKTOP`, KDE par défaut) et privilégie
 les entrées localisées `Name[fr_FR]` / `Name[fr]` et `Comment[fr_FR]` /
 `Comment[fr]` selon la locale système.
+
+
+### Applications récemment utilisées
+
+Le menu conserve jusqu'à 20 identifiants de fichiers `.desktop` dans
+`$XDG_STATE_HOME/leos/recent-applications.json` (par défaut
+`~/.local/state/leos/recent-applications.json`). L'historique est écrit
+atomiquement, protégé par un verrou et des permissions privées. Il ne contient
+ni commandes de lancement ni chemins privés. Seuls les lancements confirmés
+par `QProcess.startDetached` sont enregistrés ; un échec d'écriture n'empêche
+pas l'application de démarrer. Les entrées supprimées du système disparaissent
+simplement de la vue, sans effacer les autres éléments de l'historique.
