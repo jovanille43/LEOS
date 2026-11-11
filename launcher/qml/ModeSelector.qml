@@ -64,7 +64,7 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                 }
                 Label {
-                    text: Qt.formatDateTime(window.currentDate, "HH:mm")
+                    text: window.currentDate.toLocaleTimeString(Qt.locale("fr_FR"), "HH:mm")
                     color: "white"
                     font.pixelSize: 48
                     font.weight: Font.Light
@@ -73,7 +73,7 @@ ApplicationWindow {
                     topPadding: 5
                 }
                 Label {
-                    text: Qt.formatDateTime(window.currentDate, "dddd d MMMM yyyy")
+                    text: window.currentDate.toLocaleDateString(Qt.locale("fr_FR"), "dddd d MMMM yyyy")
                     color: window.muted
                     font.pixelSize: 13
                     Layout.alignment: Qt.AlignHCenter
