@@ -21,7 +21,8 @@ class GamingLibraryVisualTests(unittest.TestCase):
 
     def test_missing_or_broken_artwork_has_a_fallback(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("gameArtwork.status === Image.Error", source)
+        self.assertIn("gameArtwork.status !== Image.Ready", source)
+        self.assertIn("selectedGameArtwork.status !== Image.Ready", source)
         self.assertIn("window.selectedArtworkFailed", source)
         self.assertIn("onStatusChanged: window.selectedArtworkFailed = status === Image.Error", source)
 
