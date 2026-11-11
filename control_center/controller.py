@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
+from desktop.themes import palette_for_theme
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 
@@ -32,6 +33,11 @@ class ControlCenterController(QObject):
     @Property(str, notify=settingsChanged)
     def theme(self) -> str:
         return str(self.settings.get("theme"))
+
+    @Property("QVariantMap", notify=settingsChanged)
+    def themePalette(self) -> dict[str, str]:
+        """Expose the selected palette to LEOS-owned QML without changing KDE."""
+        return palette_for_theme(self.theme)
 
     @Property(str, notify=settingsChanged)
     def performanceProfile(self) -> str:
