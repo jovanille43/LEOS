@@ -197,3 +197,20 @@ La liste est bornée à 32 entrées, validée, écrite atomiquement et protégé
 permissions privées. Les identifiants ne sont pas encore résolus en icônes ni
 appliqués au panneau Plasma : cette étape attend l'intégration visuelle et les
 tests sur une session Bazzite KDE.
+
+
+## Menu principal LEOS — première alpha
+
+`menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une
+première interface de recherche et de lancement d'applications. Le catalogue
+lit les fichiers `.desktop` système et utilisateur, filtre par nom, description
+et catégorie, et lance le programme sans shell via `QProcess.startDetached`.
+Les commandes non résolues et les entrées invalides sont refusées. Le menu est
+accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
+cyan/bleu/violet/magenta.
+
+Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
+du menu Plasma ni un dock intégré. Les favoris du dock, les raccourcis globaux,
+les applications récemment utilisées et l'intégration des deux modes seront
+raccordés dans les prochaines étapes. Le rendu et le lancement doivent encore
+être validés sur une session Bazzite KDE réelle.
