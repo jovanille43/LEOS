@@ -101,6 +101,36 @@ class GamepadActionTests(unittest.TestCase):
             event["value"] = 600
             self.assertEqual(mapper.feed(event), "right")
 
+    def test_auto_profile_detects_nintendo_controller(self):
+        mapper = mapper_from_preferences(
+            {"profile": "auto", "deadzone": 8, "axis_centers": {}},
+            {"name": "Switch Pro Controller", "vendor": 0x057E, "product": 0x2009},
+        )
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "back",
+        )
+
+    def test_auto_profile_uses_standard_layout_for_unknown_controller(self):
+        mapper = mapper_from_preferences(
+            {"profile": "auto"},
+            {"name": "Generic Gamepad", "vendor": 0x1234, "product": 0x5678},
+        )
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "confirm",
+        )
+
+    def test_manual_profile_overrides_auto_detection(self):
+        mapper = mapper_from_preferences(
+            {"profile": "nintendo"},
+            {"name": "DualSense", "vendor": 0x054C, "product": 0x0CE6},
+        )
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "back",
+        )
+
     def test_unknown_events_are_ignored(self):
         self.assertIsNone(
             self.mapper.feed({"kind": "button", "name": "BTN_TRIGGER", "value": 1})
