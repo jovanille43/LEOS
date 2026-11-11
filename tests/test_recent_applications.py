@@ -105,5 +105,15 @@ class RecentApplicationsTests(unittest.TestCase):
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
 
+    def test_relative_xdg_state_home_falls_back_to_user_state_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            with patch.dict("os.environ", {"HOME": str(home), "XDG_STATE_HOME": "relative/state"}):
+                history = RecentApplications()
+            self.assertEqual(
+                history.path,
+                home / ".local" / "state" / "leos" / "recent-applications.json",
+            )
+
 if __name__ == "__main__":
     unittest.main()
