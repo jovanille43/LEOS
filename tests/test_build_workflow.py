@@ -15,7 +15,9 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("Check out repository", source)
         self.assertIn("Check signing prerequisites", source)
+        self.assertLess(source.index("Check out repository"), source.index("Check signing prerequisites"))
         self.assertIn("SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}", source)
         self.assertIn('[[ -z "${SIGNING_SECRET}" ]]', source)
         self.assertIn("[[ ! -s cosign.pub ]]", source)
