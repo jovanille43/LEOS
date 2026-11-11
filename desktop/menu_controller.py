@@ -6,9 +6,10 @@ import shlex
 import shutil
 from pathlib import Path
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer
 
 from desktop.dock_favourites import DockFavourites
+from desktop.notification_store import NotificationStore
 
 
 APP_DIRS = (
@@ -29,6 +30,7 @@ class ApplicationCatalog(QAbstractListModel):
     """Read installed .desktop entries and launch them without a shell."""
 
     launchFailed = Signal(str)
+    notificationCountChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -37,6 +39,11 @@ class ApplicationCatalog(QAbstractListModel):
         self._query = ""
         self._category = "Tout"
         self.favourites = DockFavourites()
+        self.notifications = NotificationStore()
+        self._notification_timer = QTimer(self)
+        self._notification_timer.setInterval(3000)
+        self._notification_timer.timeout.connect(self.refreshNotificationCount)
+        self._notification_timer.start()
         self.refresh()
 
     def roleNames(self):
@@ -136,6 +143,15 @@ class ApplicationCatalog(QAbstractListModel):
     @Slot(result="QVariantList")
     def categories(self):
         return ["Tout"] + sorted({item["category"] for item in self._all})
+
+    @Property(int, notify=notificationCountChanged)
+    def unreadNotificationCount(self) -> int:
+        return self.notifications.unread_count()
+
+    @Slot()
+    def refreshNotificationCount(self) -> None:
+        if self.notifications.load():
+            self.notificationCountChanged.emit()
 
     @Slot(result=int)
     def applicationCount(self):
