@@ -14,10 +14,16 @@ from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, f
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
+from control_center.system_updates import (
+    interpret_update_check_exit_code,
+    system_update_check_command,
+    system_updater_command,
+)
 
 
 class ControlCenterController(QObject):
     settingsChanged = Signal()
+    systemUpdatesChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -27,6 +33,79 @@ class ControlCenterController(QObject):
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.monitor = SystemMonitor(self)
+        self._system_update_status = "Aucune vérification lancée."
+        self._system_update_check_running = False
+        self._system_update_process = QProcess(self)
+        self._system_update_process.finished.connect(self._on_system_update_check_finished)
+        self._system_update_process.errorOccurred.connect(self._on_system_update_check_error)
+
+    @Property(str, notify=systemUpdatesChanged)
+    def systemUpdateStatus(self) -> str:
+        return self._system_update_status
+
+    @Property(bool, notify=systemUpdatesChanged)
+    def systemUpdateCheckRunning(self) -> bool:
+        return self._system_update_check_running
+
+    @Property(bool, notify=systemUpdatesChanged)
+    def systemUpdaterAvailable(self) -> bool:
+        return system_updater_command() is not None
+
+    def _set_system_update_status(self, message: str) -> None:
+        self._system_update_status = message
+        self.systemUpdatesChanged.emit()
+
+    @Slot()
+    def checkForSystemUpdates(self) -> None:
+        if self._system_update_check_running:
+            return
+        command = system_update_check_command()
+        if not command:
+            message = "Vérification indisponible : uupd ou pkexec est introuvable."
+            self._set_system_update_status(message)
+            post_notification("Vérification des mises à jour indisponible", message, "warning")
+            return
+        self._system_update_process.setProgram(command[0])
+        self._system_update_process.setArguments(command[1:])
+        self._system_update_check_running = True
+        self._set_system_update_status("Vérification en cours… Une autorisation système peut être demandée.")
+        self._system_update_process.start()
+
+    def _on_system_update_check_finished(self, exit_code: int, _exit_status) -> None:
+        self._system_update_check_running = False
+        result = interpret_update_check_exit_code(exit_code)
+        if result == "available":
+            message = "Une mise à jour système est disponible. Ouvre Bazzite Updater pour la consulter et choisir de l’installer."
+            self._set_system_update_status(message)
+            post_notification("Mise à jour système disponible", message, "warning")
+        elif result == "up_to_date":
+            self._set_system_update_status("Aucune mise à jour système disponible. Ton image est à jour.")
+        elif result == "cancelled":
+            self._set_system_update_status("Vérification annulée ou autorisation refusée.")
+        else:
+            detail = bytes(self._system_update_process.readAllStandardError()).decode("utf-8", errors="replace").strip()
+            reason = detail.splitlines()[-1] if detail else "uupd a signalé une erreur."
+            message = f"Impossible de vérifier les mises à jour : {reason}"
+            self._set_system_update_status(message)
+            post_notification("Échec de vérification des mises à jour", message, "error")
+        self.systemUpdatesChanged.emit()
+
+    def _on_system_update_check_error(self, _error) -> None:
+        self._system_update_check_running = False
+        message = "Impossible de démarrer uupd. Vérifie que Bazzite est correctement installé."
+        self._set_system_update_status(message)
+        post_notification("Vérification des mises à jour impossible", message, "error")
+
+    @Slot(result=bool)
+    def openSystemUpdater(self) -> bool:
+        command = system_updater_command()
+        if not command:
+            self._set_system_update_status("Bazzite Updater n’est pas installé sur cette image.")
+            return False
+        opened = self._start_detached(command)
+        if not opened:
+            self._set_system_update_status("Impossible d’ouvrir Bazzite Updater.")
+        return opened
 
     @Property(bool, notify=settingsChanged)
     def animationsEnabled(self) -> bool:
