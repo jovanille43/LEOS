@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from leos_core.paths import data_home as xdg_data_home
+
 from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
@@ -37,7 +39,7 @@ class GameLibraryModel(QAbstractListModel):
 
     def __init__(self) -> None:
         super().__init__()
-        data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+        data_home = xdg_data_home()
         data_dir = data_home / "leos"
         self._manual_file = data_dir / "library.json"
         self._favorites_file = data_dir / "favorites.json"
@@ -165,7 +167,7 @@ class GameLibraryModel(QAbstractListModel):
 
     def _lutris_databases(self) -> list[Path]:
         home = Path.home()
-        data_home = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
+        data_home = xdg_data_home()
         candidates = [
             data_home / "lutris/pga.db",
             home / ".local/share/lutris/pga.db",
