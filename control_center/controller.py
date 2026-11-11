@@ -14,6 +14,7 @@ from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, f
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
+from control_center.hardware import collect_hardware_snapshot
 from control_center.system_updates import (
     interpret_update_check_exit_code,
     system_update_check_command,
@@ -26,6 +27,7 @@ from control_center.system_updates import (
 class ControlCenterController(QObject):
     settingsChanged = Signal()
     systemUpdatesChanged = Signal()
+    hardwareChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -40,6 +42,11 @@ class ControlCenterController(QObject):
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.monitor = SystemMonitor(self)
+        self._hardware_snapshot = collect_hardware_snapshot()
+        self._hardware_timer = QTimer(self)
+        self._hardware_timer.setInterval(10_000)
+        self._hardware_timer.timeout.connect(self.refreshHardware)
+        self._hardware_timer.start()
         self._system_update_status = "Aucune vérification lancée."
         self._system_update_check_running = False
         self._system_update_process = QProcess(self)
@@ -71,6 +78,22 @@ class ControlCenterController(QObject):
         if snapshot != self._shared_settings_snapshot:
             self._shared_settings_snapshot = snapshot
             self.settingsChanged.emit()
+
+    @Property("QVariantMap", notify=hardwareChanged)
+    def hardwareSnapshot(self) -> dict[str, str]:
+        return dict(self._hardware_snapshot)
+
+    @Slot()
+    def refreshHardware(self) -> None:
+        """Refresh read-only CPU, memory, storage, GPU and peripheral inventory."""
+        snapshot = collect_hardware_snapshot()
+        if snapshot != self._hardware_snapshot:
+            self._hardware_snapshot = snapshot
+            self.hardwareChanged.emit()
+
+    @Slot()
+    def scanHardwareNow(self) -> None:
+        self.refreshHardware()
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
