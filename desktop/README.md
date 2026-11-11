@@ -31,3 +31,17 @@ Aucune configuration Plasma existante ne sera écrasée silencieusement.
 - Tests de session sur une vraie installation Bazzite KDE.
 
 Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les personnalisations Plasma avancées seront appliquées au profil utilisateur uniquement après validation explicite.
+
+
+## Moteur de thèmes LEOS
+
+Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
+Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
+actualise son apparence dès le changement de thème. Les préférences sont
+conservées par `leos_core.SettingsStore`.
+
+Cette première intégration concerne les interfaces LEOS. Elle ne modifie pas
+les couleurs, le thème Plasma ou les fichiers de configuration KDE déjà présents
+dans le profil utilisateur. L'application des thèmes à l'ensemble du bureau
+Plasma et la gestion du dock restent des étapes distinctes, qui devront être
+réversibles et activées explicitement.
