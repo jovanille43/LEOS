@@ -57,6 +57,27 @@ class LutrisImportTests(unittest.TestCase):
         games = load_lutris_games(self.database)
         self.assertEqual(games[0]["launch"], ["lutris:rungameid/12"])
 
+    def test_rejects_non_numeric_or_non_positive_catalog_ids(self):
+        database = Path(self.temp_dir.name) / "invalid-ids.db"
+        connection = sqlite3.connect(database)
+        connection.execute(
+            "CREATE TABLE games (id TEXT, name TEXT, slug TEXT, runner TEXT, installed INTEGER)"
+        )
+        connection.executemany(
+            "INSERT INTO games VALUES (?, ?, ?, ?, ?)",
+            [
+                ("not-a-number", "Invalid ID", "invalid-id", "wine", 1),
+                ("0", "Zero ID", "zero-id", "wine", 1),
+                ("-4", "Negative ID", "negative-id", "wine", 1),
+                ("42", "Valid ID", "valid-id", "wine", 1),
+            ],
+        )
+        connection.commit()
+        connection.close()
+        games = load_lutris_games(database)
+        self.assertEqual([game["app_id"] for game in games], ["42"])
+        self.assertEqual(games[0]["launch"], ["lutris:rungameid/42"])
+
     def test_finds_existing_local_cover_art(self):
         data_home = Path(self.temp_dir.name) / "data"
         cover_dir = data_home / "lutris" / "coverart"
