@@ -108,7 +108,7 @@ LEOS/
 ├── docs/                # Architecture et documentation
 ├── gaming/              # Application Gaming LEOS
 ├── shop/                # Boutique LEOS et opérations Flatpak confirmées
-├── recipe.yml           # Recette BlueBuild
+├── recipes/             # Recette BlueBuild
 └── README.md
 ```
 
@@ -125,7 +125,7 @@ LEOS/
 ## État actuel
 
 - [x] Dépôt GitHub créé.
-- [x] Première recette BlueBuild ajoutée (squelette à valider).
+- [x] Recette BlueBuild structurée dans `recipes/recipe.yml`.
 - [x] Premier workflow GitHub Actions ajouté (provisoire, à valider).
 - [x] Architecture générale des deux modes définie.
 - [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
