@@ -2,7 +2,7 @@
 
 import unittest
 
-from desktop.desktop_exec import parse_desktop_exec
+from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 
 
 class DesktopExecTests(unittest.TestCase):
@@ -62,6 +62,31 @@ class DesktopExecTests(unittest.TestCase):
     def test_rejects_field_code_as_executable(self):
         with self.assertRaises(ValueError):
             parse_desktop_exec("%k --option")
+
+    def test_working_directory_defaults_to_user_home(self):
+        from pathlib import Path
+        self.assertEqual(
+            resolve_desktop_working_directory("", Path.home()),
+            str(Path.home().resolve()),
+        )
+
+    def test_working_directory_requires_absolute_existing_directory(self):
+        from pathlib import Path
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(
+                resolve_desktop_working_directory(directory),
+                str(Path(directory).resolve()),
+            )
+            with self.assertRaises(ValueError):
+                resolve_desktop_working_directory("relative/path")
+            with self.assertRaises(ValueError):
+                resolve_desktop_working_directory(str(Path(directory) / "missing"))
+            file_path = Path(directory) / "not-a-directory"
+            file_path.write_text("file", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                resolve_desktop_working_directory(str(file_path))
 
 
 if __name__ == "__main__":
