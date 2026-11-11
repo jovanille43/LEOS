@@ -51,6 +51,11 @@ LEOS vérifie qu'un exécutable direct est trouvable et exécutable avant de dem
 
 ### Détection des lanceurs
 
-Le panneau rapide indique la disponibilité de Steam, Heroic et Lutris à partir des exécutables natifs trouvés dans le PATH, des emplacements Steam connus et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
+Le panneau rapide indique la disponibilité de Steam, Heroic et Lutris à partir des exécutables natifs trouvés dans le PATH et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
 
 La disponibilité des lanceurs est réévaluée périodiquement pendant Gaming Mode (toutes les 15 secondes) ; l'interface n'affiche un changement que si l'état détecté diffère. En cas d'échec de lancement, la notification reprend le motif précis présenté dans l'interface, plutôt qu'un message générique.
+
+
+### Cohérence des catalogues et chemins
+
+Les manifestes Steam ne peuvent fournir un chemin d'installation que si le nom de dossier est un simple composant sûr (sans séparateur ni référence au dossier parent). Les entrées Heroic dont le chemin est absent restent visibles avec un état « État inconnu ». LEOS ne fusionne pas deux entrées provenant de lanceurs différents sur la seule base d'un titre identique : des éditions ou installations distinctes peuvent porter le même nom. Les doublons d'identifiant au sein d'une même source sont, eux, neutralisés par l'identifiant stable du catalogue.
