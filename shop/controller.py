@@ -22,6 +22,7 @@ class StoreController(QObject):
     statusChanged = Signal(str)
     busyChanged = Signal(bool)
     operationFinished = Signal(bool, str)
+    catalogUpdated = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -76,6 +77,11 @@ class StoreController(QObject):
     @Slot()
     def refreshInstalled(self) -> None:
         self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
+
+    @Slot(int, result="QVariant")
+    def catalogItem(self, row: int):
+        """Expose one catalogue record to QML for synchronizing the details pane."""
+        return self.catalog.itemAt(row)
 
     @Slot(int)
     def requestInstall(self, row: int) -> None:
@@ -155,6 +161,7 @@ class StoreController(QObject):
                 return
             user_apps, system_apps = parse_flatpak_inventory(stdout)
             self.catalog.setInstalled(user_apps, system_apps)
+            self.catalogUpdated.emit()
             total = len(user_apps | system_apps)
             self._set_status(
                 f"{total} application(s) Flatpak détectée(s) "
