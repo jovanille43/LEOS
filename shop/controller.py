@@ -69,10 +69,14 @@ class StoreController(QObject):
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
         if self._busy:
+            if action == "verify-install":
+                self._set_verification_details("Une autre opération Flatpak est déjà en cours.")
             self._set_status("Une opération est déjà en cours.")
             return
         executable = shutil.which(program)
         if not executable:
+            if action == "verify-install":
+                self._set_verification_details("Flatpak n'est pas disponible : les dépendances n'ont pas pu être vérifiées.")
             self._set_status(f"{program} n'est pas disponible sur ce système.")
             post_notification("Opération impossible", self._status, "error")
             self.operationFinished.emit(False, self._status)
@@ -82,6 +86,8 @@ class StoreController(QObject):
         self._stderr.clear()
         self._process.start(executable, args)
         if not self._process.waitForStarted(1500):
+            if action == "verify-install":
+                self._set_verification_details("Impossible de lire les métadonnées Flathub ; les dépendances n'ont pas été vérifiées.")
             self._set_status(f"Impossible de démarrer {program}.")
             self.operationFinished.emit(False, self._status)
             return
@@ -220,7 +226,10 @@ class StoreController(QObject):
 
     def _on_error(self, _error) -> None:
         if self._busy:
+            failed_action = self._action
             self._set_busy(False)
+            if failed_action == "verify-install":
+                self._set_verification_details("Erreur pendant la lecture des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
