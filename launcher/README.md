@@ -17,6 +17,8 @@ Ce dossier contient le sélecteur Desktop/Gaming et le point d'entrée de sessio
 
 Le sélecteur est un écran de choix **après l'ouverture de session KDE**. Il ne remplace pas l'écran de connexion SDDM et ne modifie pas la séquence de démarrage système.
 
+La navigation fonctionne à la souris, au clavier et avec les manettes reconnues par le backend evdev en lecture seule. Les profils et zones mortes enregistrés dans LEOS Controller Center sont réutilisés ; aucun remappage global des entrées Linux n'est effectué.
+
 ## Sécurité des transitions
 
 - Les applications KDE ne sont jamais terminées automatiquement.
