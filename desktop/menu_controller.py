@@ -146,19 +146,27 @@ class ApplicationCatalog(QAbstractListModel):
 
     def _apply_filter(self):
         query = normalize_search_text(self._query)
+        pinned_order = self.favourites.items()
+        pinned_ids = set(pinned_order)
         selected = []
         for item in self._all:
-            if self._category != "Tout" and item["category"] != self._category:
+            desktop_id = item["desktopId"]
+            if self._category == "Favoris":
+                if desktop_id not in pinned_ids:
+                    continue
+            elif self._category != "Tout" and item["category"] != self._category:
                 continue
             haystack = normalize_search_text(
                 " ".join((
-                    item["name"], item["desktopId"], item["description"],
+                    item["name"], desktop_id, item["description"],
                     item["category"],
                 ))
             )
             if query and query not in haystack:
                 continue
             selected.append(item)
+        if self._category == "Favoris":
+            selected.sort(key=lambda item: pinned_order.index(item["desktopId"]))
         self.beginResetModel()
         self._visible = selected
         self.endResetModel()
@@ -175,7 +183,7 @@ class ApplicationCatalog(QAbstractListModel):
 
     @Slot(result="QVariantList")
     def categories(self):
-        return ["Tout"] + sorted({item["category"] for item in self._all})
+        return ["Tout", "Favoris"] + sorted({item["category"] for item in self._all})
 
     @Property(int, notify=notificationCountChanged)
     def unreadNotificationCount(self) -> int:
