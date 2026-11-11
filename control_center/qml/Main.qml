@@ -549,6 +549,44 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 150
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "SAUVEGARDE PLASMA"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Crée une copie privée de la disposition actuelle avant toute future personnalisation du bureau."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Créer une sauvegarde"
+                                        enabled: controlCenter.plasmaConfigAvailable
+                                        onClicked: plasmaBackupNotice.text = controlCenter.createPlasmaBackup()
+                                    }
+                                    Label {
+                                        id: plasmaBackupNotice
+                                        text: controlCenter.hasPlasmaBackup ? "Une sauvegarde LEOS existe déjà." : "Aucune sauvegarde LEOS pour le moment."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
                             Item { Layout.fillHeight: true }
                         }
                     }
