@@ -82,6 +82,16 @@ class ControllerProfileTests(unittest.TestCase):
         second = device_profile_id("Gamepad", 1, 2, phys="usb-port-1")
         self.assertEqual(first, second)
 
+    def test_hardware_serial_keeps_profile_when_usb_port_changes(self):
+        first = device_profile_id("Gamepad", 1, 2, phys="usb-port-1", uniq="serial-123")
+        second = device_profile_id("Gamepad", 1, 2, phys="usb-port-2", uniq="serial-123")
+        self.assertEqual(first, second)
+
+    def test_physical_path_is_fallback_when_serial_is_unavailable(self):
+        first = device_profile_id("Gamepad", 1, 2, phys="usb-port-1")
+        second = device_profile_id("Gamepad", 1, 2, phys="usb-port-2")
+        self.assertNotEqual(first, second)
+
 
 if __name__ == "__main__":
     unittest.main()
