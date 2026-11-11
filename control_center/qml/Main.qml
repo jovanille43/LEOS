@@ -52,7 +52,7 @@ ApplicationWindow {
                 : "LEOS va réappliquer le schéma de couleurs KDE enregistré avant le premier changement LEOS."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
-            Layout.preferredWidth: 420
+            width: 420
             padding: 12
         }
         onAccepted: {
