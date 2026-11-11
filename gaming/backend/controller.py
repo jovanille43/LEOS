@@ -23,12 +23,14 @@ class GamingController(QObject):
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
     notificationCountChanged = Signal()
+    notificationSettingsChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
         self.monitor = SystemMonitor()
         self.settings = SettingsStore()
+        self.settings.set("last_mode", "gaming")
         self.notifications = NotificationStore()
         self._notification_refresh_timer = QTimer(self)
         self._notification_refresh_timer.setInterval(3000)
@@ -58,6 +60,17 @@ class GamingController(QObject):
     @Property(int, notify=notificationCountChanged)
     def unreadNotificationCount(self) -> int:
         return self.notifications.unread_count()
+
+    @Property(bool, notify=notificationSettingsChanged)
+    def silentNotificationsInGaming(self) -> bool:
+        return bool(self.settings.get("silent_notifications_in_gaming", True))
+
+    @Slot(result=bool)
+    def toggleSilentNotifications(self) -> bool:
+        enabled = not self.silentNotificationsInGaming
+        self.settings.set("silent_notifications_in_gaming", enabled)
+        self.notificationSettingsChanged.emit()
+        return enabled
 
     @Slot()
     def refreshNotificationCount(self) -> None:
