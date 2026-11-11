@@ -71,3 +71,27 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         return []
     finally:
         connection.close()
+
+
+
+def find_lutris_artwork(data_home: Path, slug: str) -> Path | None:
+    """Find existing local Lutris cover art without downloading or changing files."""
+    if not isinstance(slug, str) or not slug or slug in {".", ".."}:
+        return None
+    if any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for character in slug):
+        return None
+
+    roots = (
+        data_home / "lutris" / "coverart",
+        data_home / "lutris" / "icons",
+    )
+    extensions = (".jpg", ".jpeg", ".png", ".webp")
+    for root in roots:
+        for extension in extensions:
+            candidate = root / f"{slug}{extension}"
+            try:
+                if candidate.is_file():
+                    return candidate.resolve()
+            except OSError:
+                continue
+    return None
