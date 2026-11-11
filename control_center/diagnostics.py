@@ -66,8 +66,14 @@ def _failed_services() -> tuple[str, list[str]]:
     services = []
     for line in output.splitlines():
         columns = line.split()
-        if columns and columns[0].endswith((".service", ".mount", ".socket", ".timer", ".target")):
-            services.append(columns[0])
+        if len(columns) < 4:
+            continue
+        unit, _load, active, sub = columns[:4]
+        if (
+            unit.endswith((".service", ".mount", ".socket", ".timer", ".target"))
+            and (active == "failed" or sub == "failed")
+        ):
+            services.append(unit)
     if services:
         return f"{len(services)} unité(s) en échec", services[:8]
     return "Aucune unité en échec", []
