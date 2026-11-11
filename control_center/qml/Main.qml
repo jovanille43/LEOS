@@ -587,6 +587,43 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 300
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "INSPECTION DU BUREAU KDE"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Analyse les panneaux et les composants Plasma existants. Cette opération est strictement en lecture seule."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Analyser la configuration Plasma"
+                                        onClicked: plasmaInspectionReport.text = controlCenter.inspectPlasmaLayout()
+                                    }
+                                    Label {
+                                        id: plasmaInspectionReport
+                                        text: "Aucune analyse effectuée. LEOS ne modifiera pas ton bureau pendant cette inspection."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
                             Item { Layout.fillHeight: true }
                         }
                     }
