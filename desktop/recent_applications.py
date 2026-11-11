@@ -85,6 +85,22 @@ class RecentApplications:
             except FileNotFoundError:
                 pass
 
+    def clear(self) -> None:
+        """Clear the recent list after an explicit user request."""
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink():
+            raise ValueError("Recent application history directory cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise ValueError("Recent application lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                self._write([])
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
     def record(self, desktop_id: str) -> None:
         """Move a successfully launched id to the front of the bounded list."""
         if not self._valid_id(desktop_id):
