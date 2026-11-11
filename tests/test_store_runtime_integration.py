@@ -28,6 +28,11 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn('operationDialog.open()', qml)
         self.assertIn('verifyDialog.open()', qml)
 
+    def test_catalog_selection_and_filters_are_locked_during_flatpak_operations(self):
+        qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("enabled: !store.busy", qml)
+        self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
