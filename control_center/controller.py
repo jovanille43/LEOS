@@ -1,11 +1,10 @@
-"""QML bridge for LEOS appearance and experience preferences."""
+"""QML bridge for LEOS preferences and native KDE settings."""
 
 from __future__ import annotations
 
-import shutil
+from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
 
-from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
-
+from control_center.settings_modules import general_settings_command, settings_module_command
 from leos_core.settings import SettingsStore
 
 
@@ -61,11 +60,21 @@ class ControlCenterController(QObject):
         self.settings.set("performance_profile", profile)
         self.settingsChanged.emit()
 
+    @Slot(str, result=bool)
+    def openSettingsModule(self, section: str) -> bool:
+        """Open one allowlisted KDE settings module without running a shell."""
+        return self._start_detached(settings_module_command(section))
+
     @Slot(result=bool)
     def openAdvancedSettings(self) -> bool:
-        executable = shutil.which("systemsettings")
-        if not executable:
+        """Open the complete KDE System Settings application."""
+        return self._start_detached(general_settings_command())
+
+    @staticmethod
+    def _start_detached(command: list[str] | None) -> bool:
+        if not command:
             return False
         process = QProcess()
-        process.setProgram(executable)
-        return process.startDetached()
+        process.setProgram(command[0])
+        process.setArguments(command[1:])
+        return bool(process.startDetached())
