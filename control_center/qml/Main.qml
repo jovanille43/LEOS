@@ -816,7 +816,7 @@ ApplicationWindow {
                                 font.weight: Font.Bold
                             }
                             Label {
-                                text: "Accède directement aux réglages KDE. LEOS ne modifie aucun périphérique sans ton action."
+                                text: "Inventaire réel du matériel et des périphériques connectés. Les détections sont en lecture seule ; les réglages avancés restent accessibles dans KDE."
                                 color: window.muted
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
@@ -843,6 +843,126 @@ ApplicationWindow {
                                         required property var modelData
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: 132
+                                        radius: 12
+                                        color: window.themeColors.surface
+                                        border.color: window.themeColors.border
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 14
+                                            spacing: 7
+                                            Label {
+                                                text: modelData.title
+                                                color: window.themeColors.text
+                                                font.pixelSize: 14
+                                                font.weight: Font.DemiBold
+                                            }
+                                            Label {
+                                                text: modelData.description
+                                                color: window.muted
+                                                font.pixelSize: 10
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                                Layout.fillHeight: true
+                                            }
+                                            Button {
+                                                text: "Ouvrir les réglages"
+                                                onClicked: {
+                                                    window.launchNotice = controlCenter.openSettingsModule(modelData.section)
+                                                        ? ""
+                                                        : "Impossible d'ouvrir ce module KDE sur cette session."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Button {
+                                    text: "ACTUALISER LE MATÉRIEL"
+                                    onClicked: controlCenter.scanHardwareNow()
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: "Actualisation automatique · 10 s"
+                                    color: window.muted
+                                    font.pixelSize: 10
+                                }
+                            }
+
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2
+                                columnSpacing: 12
+                                rowSpacing: 12
+                                Repeater {
+                                    model: [
+                                        { title: "PROCESSEUR", value: controlCenter.hardwareSnapshot.cpu, detail: controlCenter.hardwareSnapshot.cpuThreads },
+                                        { title: "MÉMOIRE VIVE", value: controlCenter.hardwareSnapshot.memory, detail: "RAM détectée par Linux" },
+                                        { title: "CARTE GRAPHIQUE", value: controlCenter.hardwareSnapshot.gpu, detail: "Contrôleur graphique détecté" },
+                                        { title: "STOCKAGE", value: controlCenter.hardwareSnapshot.storage, detail: "Système de fichiers racine /" },
+                                        { title: "SYSTÈME", value: controlCenter.hardwareSnapshot.operatingSystem, detail: "Noyau " + controlCenter.hardwareSnapshot.kernel },
+                                        { title: "BLUETOOTH", value: controlCenter.hardwareSnapshot.bluetooth, detail: controlCenter.hardwareSnapshot.bluetoothDevices },
+                                        { title: "SERVEUR AUDIO", value: controlCenter.hardwareSnapshot.audioServer, detail: "Sortie : " + controlCenter.hardwareSnapshot.audioOutput },
+                                        { title: "ENTRÉES AUDIO", value: controlCenter.hardwareSnapshot.audioInputs, detail: "Sources exposées par PipeWire / PulseAudio" },
+                                        { title: "MANETTES", value: controlCenter.hardwareSnapshot.controllers, detail: "Périphériques d’entrée reconnus comme contrôleurs" }
+                                    ]
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 116
+                                        radius: 13
+                                        color: window.themeColors.surface
+                                        border.color: window.themeColors.border
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 14
+                                            spacing: 6
+                                            Label {
+                                                text: modelData.title
+                                                color: window.cyan
+                                                font.pixelSize: 10
+                                                font.letterSpacing: 1
+                                            }
+                                            Label {
+                                                text: modelData.value || "Indisponible"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 13
+                                                font.weight: Font.DemiBold
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                            }
+                                            Label {
+                                                text: modelData.detail || ""
+                                                color: window.muted
+                                                font.pixelSize: 10
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2
+                                columnSpacing: 12
+                                rowSpacing: 12
+                                Repeater {
+                                    model: [
+                                        { title: "Bluetooth", description: "Appairage et gestion des appareils", section: "bluetooth" },
+                                        { title: "Réseau", description: "Wi-Fi, Ethernet et connexions", section: "network" },
+                                        { title: "Audio", description: "Sortie, entrée et périphériques audio", section: "audio" },
+                                        { title: "Écrans", description: "Résolution, fréquence et disposition", section: "display" },
+                                        { title: "Énergie", description: "Gestion de l'alimentation et autonomie", section: "power" },
+                                        { title: "Clavier", description: "Disposition et comportement du clavier", section: "keyboard" },
+                                        { title: "Souris & pavé tactile", description: "Vitesse, clics et défilement", section: "mouse" }
+                                    ]
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 118
                                         radius: 12
                                         color: window.themeColors.surface
                                         border.color: window.themeColors.border
