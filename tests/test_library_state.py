@@ -38,6 +38,32 @@ class LibraryStateTests(unittest.TestCase):
         )
         self.assertEqual([item["id"] for item in result], ["manual:sega", "steam:1"])
 
+    def test_search_matches_title_platform_and_source_case_insensitively(self):
+        self.assertEqual(
+            [game["id"] for game in filter_games(
+                self.games, "Accueil", set(), [], "SONIC"
+            )],
+            ["manual:sega"],
+        )
+        self.assertEqual(
+            [game["id"] for game in filter_games(
+                self.games, "PC Gaming", set(), [], "pc"
+            )],
+            ["steam:1"],
+        )
+        self.assertEqual(
+            [game["id"] for game in filter_games(
+                self.games, "Accueil", set(), [], "playstation"
+            )],
+            ["manual:ps"],
+        )
+
+    def test_search_is_applied_after_category_filtering(self):
+        result = filter_games(
+            self.games, "Nintendo", set(), [], "racer"
+        )
+        self.assertEqual(result, [])
+
     def test_unknown_category_falls_back_to_all_games(self):
         self.assertEqual(len(filter_games(self.games, "Unknown", set(), [])), 5)
 
