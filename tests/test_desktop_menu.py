@@ -104,6 +104,12 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
         self.assertIn('localized_desktop_value(values, "Comment", locale_name)', source)
 
+    def test_menu_exposes_a_favourites_category_in_addition_to_app_categories(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn('return ["Tout", "Favoris"] + sorted', source)
+        self.assertIn('if self._category == "Favoris":', source)
+        self.assertIn("selected.sort(key=lambda item: pinned_order.index(item[\"desktopId\"]))", source)
+
 
 if __name__ == "__main__":
     unittest.main()
