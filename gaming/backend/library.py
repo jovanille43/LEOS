@@ -85,7 +85,7 @@ class GameLibraryModel(QAbstractListModel):
 
     def launcherStatuses(self) -> list[str]:
         launchers = [
-            ("STEAM", bool(shutil.which("steam")) or bool(self._steam_roots())
+            ("STEAM", bool(shutil.which("steam"))
              or self._flatpak_app_available("com.valvesoftware.Steam")),
             ("HEROIC", bool(shutil.which("heroic"))
              or self._flatpak_app_available("com.heroicgameslauncher.hgl")),
