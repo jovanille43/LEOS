@@ -22,7 +22,7 @@ Le prototype n'a pas encore été exécuté dans une session Bazzite/KDE.
 
 Le Centre de contrôle peut lancer `uupd update-check` via `pkexec` (uniquement pour vérifier si une mise à jour d'image existe). Les codes retour de uupd sont interprétés sans déclencher l'installation : 0 signifie qu'une mise à jour est disponible, 77 que l'image est à jour. Quand `bazzite-updater` est présent sur l'image, le bouton dédié ouvre son interface pour que l'utilisateur consulte les détails et choisisse l'installation.
 
-Aucune commande d'installation, de déploiement ou de redémarrage n'est appelée par cette page. Le timer automatique livré par Bazzite et la politique rpm-ostree de l'image de base ne sont pas modifiés à ce stade. Cette intégration ne prétend donc pas encore désactiver les installations automatiques héritées de Bazzite.
+Aucune commande d'installation, de déploiement ou de redémarrage n'est appelée par cette page. Le timer automatique livré par Bazzite et la politique rpm-ostree de l'image de base ne sont pas modifiés à ce stade. Cette intégration ne désactive pas les mécanismes automatiques hérités de Bazzite. Sur les images Desktop, Bazzite vérifie quotidiennement les mises à jour et peut préparer un déploiement en arrière-plan lorsque la machine est inactive. LEOS observe ensuite, toutes les dix minutes pendant que le Centre de contrôle est ouvert, l’état local en lecture seule (`rpm-ostree status --json`). Lorsqu’un déploiement est effectivement préparé, LEOS affiche son état et envoie une notification unique par identifiant de déploiement. LEOS ne lance pas lui-même la recherche réseau ni le téléchargement en arrière-plan.
 
 ## Mises à jour système
 
@@ -31,3 +31,6 @@ La page **Mises à jour** est accessible dans la navigation latérale. La vérif
 Les résultats sont affichés dans la page et les événements importants sont enregistrés dans l'historique de notifications LEOS. La disponibilité de l'outil est détectée à l'exécution ; aucun exécutable factice n'est fourni.
 
 **Validation restante :** exécuter la vérification dans une image Bazzite réelle et confirmer la disponibilité des commandes sur les variantes d'image ciblées. Le projet ne modifie pas les timers ni les politiques de mise à jour Bazzite.
+
+
+Le suivi périodique se limite à l’observation des déploiements en attente, via l’API JSON locale de rpm-ostree. Il n’interroge pas le réseau et ne lance aucune transaction. Le contrôle périodique fonctionne lorsque le Centre de contrôle est ouvert ; les vérifications et opérations automatiques de Bazzite restent gérées par les services natifs du système.
