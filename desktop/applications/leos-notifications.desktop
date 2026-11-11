@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS — Notifications
+Comment=Consulter les notifications des composants LEOS
+Exec=/usr/bin/python3 /usr/share/leos/desktop/notifications_main.py
+Icon=leos-updates
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true
