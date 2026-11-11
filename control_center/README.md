@@ -77,3 +77,12 @@ Un raccourci ouvre également **Moniteur système KDE** lorsqu'il est présent, 
 La page **Nettoyage** inspecte uniquement le cache de miniatures KDE (`~/.cache/thumbnails`) et les fichiers déjà placés dans la corbeille utilisateur (`~/.local/share/Trash/files`). Elle affiche le nombre de fichiers et l'espace occupé, actualisés à la demande ou toutes les 60 secondes. Les liens symboliques ne sont pas suivis ; les erreurs d'accès sont ignorées sans interrompre l'analyse.
 
 Cette première version est strictement en prévisualisation : aucun fichier n'est déplacé, vidé ou supprimé. Elle exclut volontairement le cache global des applications, les données personnelles, les journaux système et les composants immuables de Bazzite. La stratégie d'action (mise à la corbeille ou suppression définitive, avec confirmation explicite et aperçu exact des éléments) reste à définir avant d'activer toute opération destructive.
+
+
+## Tableau réseau
+
+La page **Réseau** présente l'état des interfaces, l'interface portant la route par défaut, la passerelle IPv4, les serveurs DNS configurés, ainsi que le SSID et le niveau radio Wi-Fi lorsque `iw` expose ces informations. Les débits entrants et sortants sont calculés à partir des compteurs d'octets locaux de sysfs entre deux relevés espacés de trois secondes.
+
+Le relevé s'exécute hors du thread graphique, sans générer de trafic de test et sans modifier NetworkManager, les routes, le DNS ou les interfaces. Les adresses affichées sont celles publiées par `ip` pour chaque interface. Les interfaces absentes, les compteurs inaccessibles et les informations Wi-Fi non exposées sont signalés comme indisponibles plutôt que supposés.
+
+**Limites connues :** la passerelle est actuellement lue dans la table de routage IPv4 du noyau ; les routes IPv6, les VPN détaillés, les statistiques par application et les tests de débit ne sont pas encore intégrés. Le débit initial reste « — » jusqu'au deuxième relevé. La validation matérielle doit être réalisée sur une session Bazzite avec Ethernet, Wi-Fi et VPN.
