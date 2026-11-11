@@ -6,7 +6,7 @@
     "description": "Lecteur multimédia polyvalent pour les fichiers audio et vidéo.",
     "source": "Flathub",
     "compatibility": "Application Flatpak ; compatibilité dépendante de l'environnement graphique et des codecs disponibles.",
-    "operation_note": "Cette application est incluse dans l'image LEOS comme Flatpak système.",
+    "operation_note": "Préinstallée par LEOS dans le profil utilisateur au premier démarrage. Tu peux la désinstaller à tout moment depuis la boutique ; LEOS ne la réinstallera pas ensuite.",
     "bundled": true
   },
   {
@@ -16,7 +16,7 @@
     "description": "Navigateur web Brave avec blocage intégré des publicités et traqueurs.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux. Les fonctions de navigation web sont disponibles sur Desktop Mode.",
-    "operation_note": "Brave est inclus dans l'image LEOS comme application système ; il ne sera pas dupliqué dans le profil utilisateur.",
+    "operation_note": "Préinstallée par LEOS dans le profil utilisateur au premier démarrage. Tu peux la désinstaller à tout moment depuis la boutique ; LEOS ne la réinstallera pas ensuite.",
     "bundled": true
   },
   {
@@ -35,7 +35,7 @@
     "description": "Suite bureautique complète.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
-    "operation_note": "Cette application est incluse dans l'image LEOS comme Flatpak système.",
+    "operation_note": "Préinstallée par LEOS dans le profil utilisateur au premier démarrage. Tu peux la désinstaller à tout moment depuis la boutique ; LEOS ne la réinstallera pas ensuite.",
     "bundled": true
   },
   {
