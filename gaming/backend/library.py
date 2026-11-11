@@ -228,7 +228,13 @@ class GameLibraryModel(QAbstractListModel):
         )
         install_path = (
             str(path.parent / "common" / install_dir)
-            if install_dir and Path(install_dir).name == install_dir
+            if (
+                install_dir
+                and install_dir not in {".", ".."}
+                and Path(install_dir).name == install_dir
+                and "/" not in install_dir
+                and "\\" not in install_dir
+            )
             else ""
         )
         return {
