@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QProcess, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
@@ -24,6 +24,20 @@ from control_center.system_updates import (
 )
 
 
+class _HardwareScanSignals(QObject):
+    completed = Signal(dict)
+
+
+class _HardwareScanTask(QRunnable):
+    def __init__(self) -> None:
+        super().__init__()
+        self.signals = _HardwareScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        self.signals.completed.emit(collect_hardware_snapshot())
+
+
 class ControlCenterController(QObject):
     settingsChanged = Signal()
     systemUpdatesChanged = Signal()
@@ -42,11 +56,21 @@ class ControlCenterController(QObject):
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.monitor = SystemMonitor(self)
-        self._hardware_snapshot = collect_hardware_snapshot()
+        self._hardware_snapshot = {
+            key: "Analyse en cours…"
+            for key in (
+                "cpu", "cpuThreads", "memory", "storage", "gpu",
+                "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
+                "audioServer", "audioOutput", "audioInputs", "controllers",
+                "battery", "usbDevices", "network",
+            )
+        }
+        self._hardware_task = None
         self._hardware_timer = QTimer(self)
         self._hardware_timer.setInterval(10_000)
         self._hardware_timer.timeout.connect(self.refreshHardware)
         self._hardware_timer.start()
+        QTimer.singleShot(0, self.scanHardwareNow)
         self._system_update_status = "Aucune vérification lancée."
         self._system_update_check_running = False
         self._system_update_process = QProcess(self)
@@ -86,14 +110,24 @@ class ControlCenterController(QObject):
     @Slot()
     def refreshHardware(self) -> None:
         """Refresh read-only CPU, memory, storage, GPU and peripheral inventory."""
-        snapshot = collect_hardware_snapshot()
-        if snapshot != self._hardware_snapshot:
-            self._hardware_snapshot = snapshot
-            self.hardwareChanged.emit()
+        self.scanHardwareNow()
 
     @Slot()
     def scanHardwareNow(self) -> None:
-        self.refreshHardware()
+        """Run hardware probes off the UI thread and coalesce overlapping scans."""
+        if self._hardware_task is not None:
+            return
+        task = _HardwareScanTask()
+        task.signals.completed.connect(self._on_hardware_scan_completed)
+        self._hardware_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(dict)
+    def _on_hardware_scan_completed(self, snapshot: dict) -> None:
+        self._hardware_task = None
+        if snapshot != self._hardware_snapshot:
+            self._hardware_snapshot = snapshot
+            self.hardwareChanged.emit()
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
