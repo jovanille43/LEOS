@@ -151,7 +151,7 @@ ApplicationWindow {
                 if (gameGrid.count > 0)
                     selectGameAt(0)
             } else if (selectedIndex >= 0) {
-                if (!leos.launchGame(selectedIndex))
+                if (!leos.launchGame(selectedIndex, leos.mangoHudEnabled))
                     statusText.text = "Lancement impossible : vérifie le lanceur associé."
                 else
                     statusText.text = "Demande de lancement envoyée."
