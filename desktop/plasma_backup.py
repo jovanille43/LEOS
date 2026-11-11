@@ -151,11 +151,18 @@ class PlasmaBackupManager:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise FileNotFoundError("Plasma backup manifest is unavailable") from exc
-        if not isinstance(manifest, dict) or manifest.get("backup_id") != backup_id:
+        if (
+            not isinstance(manifest, dict)
+            or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
+            or manifest.get("backup_id") != backup_id
+            or type(manifest.get("size")) is not int
+            or not isinstance(manifest.get("sha256"), str)
+            or not re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"])
+        ):
             raise ValueError("Invalid Plasma backup manifest")
         if not backup_path.is_file() or backup_path.stat().st_size > MAX_BACKUP_BYTES:
             raise ValueError("Plasma backup file is missing or too large")
-        if backup_path.stat().st_size != manifest.get("size") or _sha256(backup_path) != manifest.get("sha256"):
+        if backup_path.stat().st_size != manifest["size"] or _sha256(backup_path) != manifest["sha256"]:
             raise ValueError("Plasma backup integrity check failed")
 
         previous_backup: str | None = None
