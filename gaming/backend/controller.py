@@ -29,6 +29,7 @@ class GamingController(QObject):
     powerProfilesChanged = Signal()
     mangoHudChanged = Signal()
     launchStatusChanged = Signal()
+    launcherStatusChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -104,6 +105,10 @@ class GamingController(QObject):
     @Property(str, notify=launchStatusChanged)
     def lastLaunchStatus(self) -> str:
         return self.library.lastLaunchStatus
+
+    @Property("QStringList", notify=launcherStatusChanged)
+    def launcherStatuses(self) -> list[str]:
+        return self.library.launcherStatuses()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
