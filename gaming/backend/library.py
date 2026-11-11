@@ -36,6 +36,7 @@ class GameLibraryModel(QAbstractListModel):
         self._favorites: set[str] = set()
         self._recent: list[str] = []
         self._category = "Accueil"
+        self._search_query = ""
         self.refresh()
 
     def roleNames(self) -> dict[int, QByteArray]:
@@ -183,9 +184,21 @@ class GameLibraryModel(QAbstractListModel):
     def _apply_filter(self) -> None:
         self.beginResetModel()
         self._visible_games = filter_games(
-            self._games, self._category, self._favorites, self._recent
+            self._games,
+            self._category,
+            self._favorites,
+            self._recent,
+            self._search_query,
         )
         self.endResetModel()
+
+    @Slot(str)
+    def setSearchQuery(self, query: str) -> None:
+        query = str(query)[:120]
+        if query == self._search_query:
+            return
+        self._search_query = query
+        self._apply_filter()
 
     @Slot(str)
     def setCategory(self, category: str) -> None:
