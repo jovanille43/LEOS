@@ -22,23 +22,27 @@ Le choix d'une couche C++ dédiée pourra être réévalué si un composant néc
 
 ## 4. Bibliothèque Gaming
 
-La bibliothèque centralise les entrées provenant des lanceurs PC et des émulateurs compatibles.
+La bibliothèque unifie les catalogues locaux exposés par les lanceurs intégrés, sans remplacer ces lanceurs.
 
-- Détection automatique lorsque les lanceurs exposent les informations nécessaires.
-- Ajout manuel pour les jeux non détectés.
-- Jaquettes et métadonnées récupérées depuis des sources disponibles ; édition manuelle possible.
-- Catégories prévues : PC Gaming, Nintendo, PlayStation, SEGA, Arcade, Favoris et Récemment joués.
-- Les fiches sont cinématiques ; une transition est jouée à chaque lancement et peut être désactivée.
-- À la fermeture d'un jeu, retour à la bibliothèque avec une animation discrète.
+- Imports automatiques actuellement présents : manifestes Steam, Heroic (Epic/Legendary, GOG et Amazon Games) et Lutris.
+- Ajout manuel de jeux avec commande d'arguments séparés ; aucun shell n'est utilisé.
+- Jaquettes lues uniquement dans les caches locaux Steam/Lutris ou les chemins d'images locaux référencés par les manifestes Heroic. Aucune image distante n'est téléchargée.
+- Catégories de navigation : PC Gaming, Nintendo, PlayStation, SEGA, Arcade, Favoris et Récemment joués. Les catégories console/arcade sont des emplacements de navigation, pas la preuve d'une intégration d'émulateur.
+- Fiche de jeu : titre, plateforme, source, identifiant de catalogue, état des fichiers locaux et jaquette disponible. Les chemins privés et arguments de lancement ne sont pas exposés à QML.
+- Les titres sont harmonisés sans réécrire leur présentation ; la recherche ignore casse et accents. Les correspondances exactes sont signalées comme doublons potentiels sans fusion ni suppression.
+- Les imports sont isolés par fournisseur : une erreur d'accès à un catalogue ou à une jaquette ne bloque pas les autres fournisseurs.
+- Les jeux dont les fichiers sont absents peuvent rester affichés pour les disques externes déconnectés ; l'état est présenté comme absent ou inconnu plutôt que supposé installé.
 
-Les capacités de détection et de lancement dépendent de chaque lanceur, émulateur et format de jeu. Ne jamais présenter une intégration comme universelle sans l'avoir testée.
+Les fiches cinématiques, métadonnées en ligne, import d'émulateurs/consoles, transitions animées et jaquettes distantes ne sont pas encore intégrés. Les capacités de détection et de lancement dépendent de chaque lanceur et format ; aucune compatibilité universelle n'est revendiquée.
 
 ## 5. Contrôles et performances
 
 - Panneau rapide horizontal en haut de l'interface Gaming.
-- Tableau de bord technique complet accessible depuis ce panneau.
-- Overlay de performances en jeu discret, facultatif et personnalisable.
-- Affichage des seules données réellement disponibles : FPS, températures, charge CPU/GPU, mémoire et autres capteurs compatibles.
+- Inventaire CPU/RAM et télémétrie GPU/VRAM/température lorsqu'elles sont exposées par les interfaces DRM/hwmon du pilote.
+- Les valeurs indisponibles restent absentes ; aucun capteur ni FPS n'est simulé.
+- L'overlay FPS s'appuie sur MangoHud uniquement lorsqu'il est installé et activé. Il n'existe pas encore de compteur FPS interne LEOS.
+- Les profils d'énergie sont ceux réellement proposés par `power-profiles-daemon` ; LEOS ne pilote pas directement les ventilateurs.
+- Les données matérielles et profils nécessitent une validation sur les matériels ciblés ; les capacités varient selon pilotes et services présents.
 
 ## 6. Boutique et opérations sensibles
 
@@ -56,10 +60,10 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 
 - Après l'ouverture de la session KDE, le sélecteur LEOS s'affiche à chaque démarrage de session.
 - Il présente l'heure, la date, le dernier mode utilisé et deux grandes cartes Desktop/Gaming.
-- Desktop laisse apparaître KDE ; Gaming lance l'application LEOS plein écran au-dessus de la même session KDE.
+- Desktop ferme uniquement le sélecteur et laisse apparaître le bureau KDE déjà actif ; Gaming lance l'application LEOS plein écran au-dessus de la même session.
 - Le dernier mode choisi est mémorisé et présenté au prochain démarrage, sans imposer de lancement automatique.
-- Depuis Gaming, l'action de retour ferme uniquement l'application Gaming et réaffiche le bureau déjà actif.
-- Les applications du bureau ne sont jamais fermées automatiquement. Leur maintien en arrière-plan dépend de leur propre comportement et devra être validé en test.
+- L'entrée vers Gaming demande une confirmation ; le retour vers Desktop demande également une confirmation depuis Gaming.
+- Aucune application ouverte n'est terminée automatiquement. Les applications KDE restent en arrière-plan pendant Gaming, sous réserve de leur propre comportement.
 - Le sélecteur ne remplace pas SDDM : il apparaît après l'authentification de l'utilisateur.
 - Il accepte la souris, le clavier et les manettes reconnues via evdev en lecture seule ; il réutilise les profils contrôleur LEOS sans modifier globalement les entrées Linux.
 - Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
