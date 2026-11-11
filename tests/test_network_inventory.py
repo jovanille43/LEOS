@@ -39,7 +39,7 @@ class NetworkTests(unittest.TestCase):
             patch.object(network, "_wireless_details", return_value={"ssid": "Non connecté", "signal": "—"}),
             patch.object(network, "_run", return_value="eth0 UP 192.168.1.5/24"),
         ):
-            result = network.collect_network_snapshot({"eth0": (1000, 2000)}, 2.0)
+            result = network.collect_network_snapshot({"eth0": (952, 2000)}, 2.0)
         self.assertEqual(result["interfaces"][0]["downloadRate"], "1.0 Ko/s")
         self.assertEqual(result["interfaces"][0]["uploadRate"], "0 o/s")
 
