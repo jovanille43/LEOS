@@ -25,6 +25,14 @@ ApplicationWindow {
     property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
     property int selectedCategoryIndex: 0
     property string navigationArea: "categories"
+    property string pendingPowerProfile: ""
+
+    function powerProfileLabel(profile) {
+        if (profile === "performance") return "PERFORMANCE"
+        if (profile === "balanced") return "ÉQUILIBRÉ"
+        if (profile === "power-saver") return "ÉCONOMIE D’ÉNERGIE"
+        return profile.toUpperCase()
+    }
 
     function selectGame(row, title, platform, source, favorite, artwork) {
         navigationArea = "games"
@@ -276,7 +284,7 @@ ApplicationWindow {
                 id: quickPanel
                 Layout.fillWidth: true
                 visible: false
-                implicitHeight: 104
+                implicitHeight: 176
                 radius: 15
                 color: "#ee111722"
                 border.color: "#354052"
@@ -306,6 +314,52 @@ ApplicationWindow {
                         Label { text: "FPS  —"; color: window.muted; font.pixelSize: 15 }
                         Label { text: "Les métriques avancées seront ajoutées par intégration."; color: window.muted; font.pixelSize: 11 }
                     }
+                    ColumnLayout {
+                        Layout.preferredWidth: 220
+                        spacing: 6
+                        Label { text: "PROFIL ÉNERGIE"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label {
+                            text: leos.powerProfileStatus
+                            color: window.muted
+                            font.pixelSize: 9
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+                        Label {
+                            text: leos.activePowerProfile.length > 0
+                                  ? "ACTIF · " + window.powerProfileLabel(leos.activePowerProfile)
+                                  : "Aucun profil actif identifié"
+                            color: "white"
+                            font.pixelSize: 10
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+                            Repeater {
+                                model: leos.availablePowerProfiles
+                                delegate: Button {
+                                    required property string modelData
+                                    text: window.powerProfileLabel(modelData)
+                                    onClicked: {
+                                        window.pendingPowerProfile = modelData
+                                        powerProfileDialog.open()
+                                    }
+                                    background: Rectangle {
+                                        radius: 6
+                                        color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
+                                        border.color: leos.activePowerProfile === modelData ? window.cyan : "#344052"
+                                    }
+                                    contentItem: Label {
+                                        text: parent.text
+                                        color: "white"
+                                        font.pixelSize: 8
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
                     Item { Layout.fillWidth: true }
                     Button {
                         text: "RETOUR DESKTOP"
@@ -665,6 +719,45 @@ ApplicationWindow {
                 onClicked: {
                     returnDialog.close()
                     leos.returnToDesktop()
+                }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                contentItem: Label {
+                    text: parent.text
+                    color: "white"
+                    font.weight: Font.Bold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+
+    Dialog {
+        id: powerProfileDialog
+        title: "Confirmer le profil d’énergie"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 440
+        ColumnLayout {
+            width: parent.width
+            spacing: 12
+            Label {
+                text: "LEOS va demander au service natif de gestion d’énergie de passer sur « " +
+                      window.powerProfileLabel(window.pendingPowerProfile) + " ». Ce réglage peut modifier la consommation et les performances selon le matériel. Il ne contrôle pas directement les ventilateurs."
+                color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                text: "CONFIRMER LE CHANGEMENT"
+                Layout.fillWidth: true
+                onClicked: {
+                    powerProfileDialog.close()
+                    if (!leos.applyPowerProfile(window.pendingPowerProfile))
+                        statusText.text = leos.powerProfileStatus
+                    else
+                        statusText.text = "Profil énergie mis à jour."
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
