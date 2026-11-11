@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild décrit une image basée sur Bazzite KDE Desktop. Le workflow de publication existe, mais une image LEOS n'a pas encore été compilée. Ne pas lancer de publication avant d'avoir configuré la signature et validé la recette.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Le workflow de publication existe, mais une image LEOS n'a pas encore été compilée. Ne pas lancer de publication avant d'avoir configuré la signature et validé la recette.
 
 ## Base retenue
 
@@ -30,7 +30,7 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 ## Avant la première compilation
 
 - Vérifier le contenu du workflow `.github/workflows/build.yml`.
-- Vérifier la recette avec la version courante du CLI BlueBuild.
+- Vérifier `recipes/recipe.yml` avec la version courante du CLI BlueBuild (`bluebuild validate recipes/recipe.yml` puis `bluebuild generate recipes/recipe.yml`).
 - Confirmer que le secret `SIGNING_SECRET` est configuré et que la clé publique correspondante est disponible.
 - Déclencher le workflow manuellement seulement après ces contrôles.
 
