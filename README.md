@@ -42,6 +42,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - Préférences communes : enregistrement local du dernier mode et des options LEOS dans le profil utilisateur.
 - Sélecteur de modes Desktop/Gaming, restauration du dernier mode et entrée de menu KDE préparés.
 - Premier Centre de contrôle LEOS : préférences de thème, animations, sons, overlay et profil de performances enregistrées localement.
+- Première boutique LEOS : catalogue initial, recherche, catégories, détection des Flatpak installés et opérations soumises à confirmation explicite.
 - Vérifications automatiques du code Python via GitHub Actions.
 
 Ces éléments sont des prototypes source. Leur intégration dans Bazzite, leurs dépendances QML, les raccourcis globaux, les contrôles manette et les transitions réelles restent à tester et compléter.
@@ -92,6 +93,7 @@ LEOS/
 ├── desktop/             # Personnalisation du Desktop Mode
 ├── docs/                # Architecture et documentation
 ├── gaming/              # Application Gaming LEOS
+├── shop/                # Boutique LEOS et opérations Flatpak confirmées
 ├── recipe.yml           # Recette BlueBuild
 └── README.md
 ```
