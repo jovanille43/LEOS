@@ -2,6 +2,7 @@
 import os
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from desktop.notification_store import NotificationStore, MAX_NOTIFICATIONS
@@ -62,6 +63,32 @@ class NotificationStoreTests(unittest.TestCase):
             NotificationStore(path).add("Privé")
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
             self.assertEqual(path.parent.stat().st_mode & 0o777, 0o700)
+
+    def test_concurrent_process_style_writes_do_not_lose_notifications(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "notifications.json"
+
+            def add_event(index):
+                return NotificationStore(path).add(f"Événement {index}")
+
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                identifiers = list(executor.map(add_event, range(50)))
+
+            restored = NotificationStore(path)
+            records = restored.items()
+            self.assertEqual(len(records), 50)
+            self.assertEqual(restored.unread_count(), 50)
+            self.assertEqual(len({item["id"] for item in records}), 50)
+            self.assertEqual(set(identifiers), {item["id"] for item in records})
+
+    def test_notification_lock_file_is_private(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "notifications.json"
+            NotificationStore(path).add("Verrouillé")
+            lock_path = path.with_name(path.name + ".lock")
+            self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
 
 if __name__ == "__main__":
