@@ -69,7 +69,7 @@ class PlasmaBackupTests(unittest.TestCase):
         backup_id = self.manager.create_backup()
         (self.backups / f"{backup_id}.json").write_text("{broken", encoding="utf-8")
         self.assertIsNone(self.manager.latest_backup_id())
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(ValueError):
             self.manager.restore_backup(backup_id, confirmed=True)
 
 
