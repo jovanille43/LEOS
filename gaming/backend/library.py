@@ -358,6 +358,7 @@ class GameLibraryModel(QAbstractListModel):
             "platform": str(game.get("platform", "")),
             "source": str(game.get("source", "")),
             "favorite": game["id"] in self._favorites,
+            "artwork": str(game.get("artwork", "")),
         }
 
     @Slot(str, str, str, result=bool)
