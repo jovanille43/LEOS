@@ -137,6 +137,42 @@ def _controller_details() -> str:
     return " · ".join(names) if names else "Aucune manette détectée"
 
 
+def _battery_details() -> str:
+    try:
+        batteries = sorted(Path("/sys/class/power_supply").glob("*/capacity"))
+    except OSError:
+        batteries = []
+    for capacity_path in batteries:
+        if not capacity_path.parent.name.lower().startswith("bat"):
+            continue
+        raw = _read(capacity_path).strip()
+        try:
+            percentage = max(0, min(100, int(raw)))
+        except ValueError:
+            continue
+        status = _read(capacity_path.parent / "status").strip()
+        suffix = f" · {status.lower()}" if status else ""
+        return f"{percentage}%{suffix}"
+    return "Aucune batterie détectée"
+
+
+def _usb_details() -> str:
+    try:
+        devices = sorted(Path("/sys/bus/usb/devices").glob("*"))
+    except OSError:
+        devices = []
+    names: list[str] = []
+    for device in devices:
+        product = _read(device / "product").strip()
+        if not product:
+            continue
+        manufacturer = _read(device / "manufacturer").strip()
+        label = f"{manufacturer} {product}".strip() if manufacturer else product
+        if label not in names:
+            names.append(label)
+    return " · ".join(names[:8]) if names else "Aucun périphérique USB listé"
+
+
 def collect_hardware_snapshot() -> dict[str, str]:
     """Collect one consistent UI snapshot without changing system state."""
     cpu, threads = _cpu_details()
@@ -164,4 +200,6 @@ def collect_hardware_snapshot() -> dict[str, str]:
         "audioOutput": audio_output,
         "audioInputs": audio_inputs,
         "controllers": _controller_details(),
+        "battery": _battery_details(),
+        "usbDevices": _usb_details(),
     }
