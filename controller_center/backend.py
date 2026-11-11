@@ -2,18 +2,66 @@
 
 from __future__ import annotations
 
+import inspect
+import os
 from typing import Any
 
 try:
-    from evdev import InputDevice, ecodes, list_devices
+    from evdev import InputDevice, _input, ecodes, list_devices
+    from evdev.device import DeviceInfo
 except ImportError:  # Keep the UI launchable when the optional backend is missing.
     InputDevice = None  # type: ignore[assignment,misc]
+    _input = None  # type: ignore[assignment]
+    DeviceInfo = None  # type: ignore[assignment,misc]
     ecodes = None  # type: ignore[assignment]
     list_devices = None  # type: ignore[assignment]
 
 
 def backend_available() -> bool:
     return InputDevice is not None and ecodes is not None and list_devices is not None
+
+
+def _supports_readonly_open() -> bool:
+    if not backend_available():
+        return False
+    try:
+        return "readonly" in inspect.signature(InputDevice).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _open_readonly_input_device(path: str) -> Any:
+    """Open an input event node with O_RDONLY across python-evdev versions.
+
+    python-evdev 2.0 added InputDevice(readonly=True). Fedora's packaged
+    1.9.x API does not expose that argument, so use its low-level ioctl helpers
+    with an explicitly O_RDONLY descriptor rather than silently opening O_RDWR.
+    """
+    if _supports_readonly_open():
+        return InputDevice(path, readonly=True)
+
+    if _input is None or DeviceInfo is None:
+        raise RuntimeError("Read-only evdev support is unavailable")
+
+    device = InputDevice.__new__(InputDevice)
+    device.path = path
+    device.fd = -1
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    device.fd = fd
+    try:
+        info = _input.ioctl_devinfo(fd)
+        device.info = DeviceInfo(*info[:4])
+        device.name = info[4]
+        device.phys = info[5]
+        device.uniq = info[6]
+        device.version = _input.ioctl_EVIOCGVERSION(fd)
+        device._rawcapabilities = _input.ioctl_capabilities(fd)
+        device.ff_effects_count = _input.ioctl_EVIOCGEFFECTS(fd)
+    except Exception:
+        os.close(fd)
+        device.fd = -1
+        raise
+    return device
 
 
 def _is_gamepad(device: Any) -> bool:
@@ -45,7 +93,7 @@ class GamepadBackend:
         for path in list_devices():
             device = None
             try:
-                device = InputDevice(path, readonly=True)
+                device = _open_readonly_input_device(str(path))
                 if not _is_gamepad(device):
                     continue
                 info = device.info
@@ -58,7 +106,7 @@ class GamepadBackend:
                     "uniq": str(device.uniq or ""),
                     "axes": self._axis_names(device),
                 })
-            except (OSError, PermissionError, ValueError):
+            except (OSError, PermissionError, ValueError, RuntimeError):
                 continue
             finally:
                 if device is not None:
@@ -78,10 +126,10 @@ class GamepadBackend:
         if not backend_available() or not path.startswith("/dev/input/event"):
             raise ValueError("Invalid input device")
 
-        device = InputDevice(path, readonly=True)
+        device = _open_readonly_input_device(path)
         try:
-            # python-evdev opens its file descriptor in non-blocking mode;
-            # QTimer can therefore poll read() without waiting for input.
+            # python-evdev supplies a non-blocking descriptor; the Qt timer can
+            # poll read() without freezing the interface while the controller is idle.
             if not _is_gamepad(device):
                 raise ValueError("This input device is not a game controller")
 
