@@ -207,7 +207,7 @@ ApplicationWindow {
                         Label {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
-                            text: detailsPane.bundled ? "Cette application est fournie avec LEOS pour tous les utilisateurs. Elle n'est pas supprimable depuis la boutique." : "Cette application est installée au niveau système. Elle n'est pas supprimable depuis la boutique utilisateur."
+                            text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
                             color: window.cyan
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
@@ -215,7 +215,7 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
                         Button {
                             Layout.fillWidth: true
-                            enabled: detailsPane.appId.length > 0 && !store.busy && detailsPane.installedScope !== "system"
+                            enabled: detailsPane.appId.length > 0 && !store.busy
                             text: detailsPane.installedScope === "system" ? "INCLUSE DANS LEOS" : detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
                             onClicked: operationDialog.open()
                             background: Rectangle {
@@ -274,7 +274,7 @@ ApplicationWindow {
             }
             Label {
                 text: detailsPane.isInstalled
-                    ? "L'application sera retirée du profil utilisateur. Les données personnelles de l'application ne sont pas supprimées automatiquement par LEOS."
+                    ? (detailsPane.installedScope === "system" ? "L'application sera retirée de l'installation système. Une autorisation administrateur peut être demandée. Les données personnelles ne sont pas supprimées automatiquement." : "L'application sera retirée du profil utilisateur. Les données personnelles ne sont pas supprimées automatiquement.")
                     : "LEOS vérifiera d'abord la disponibilité sur Flathub. Flatpak pourra installer les dépendances et runtimes nécessaires."
                 color: window.muted
                 wrapMode: Text.WordWrap
