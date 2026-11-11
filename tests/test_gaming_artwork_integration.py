@@ -33,6 +33,21 @@ class GamingArtworkIntegrationTests(unittest.TestCase):
         self.assertIn('ARTWORK NON DISPONIBLE', source)
         self.assertIn('SÉLECTIONNE UN JEU', source)
 
+    def test_launch_feedback_distinguishes_protocol_and_process_requests(self):
+        source = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        self.assertIn("QDesktopServices.openUrl(QUrl(target))", source)
+        self.assertIn("le démarrage du jeu n'est pas confirmé", source)
+        self.assertIn("le chargement du jeu n'est pas confirmé", source)
+        self.assertIn("shutil.which(target)", source)
+        self.assertIn("Lanceur ou exécutable introuvable", source)
+
+    def test_controller_exposes_precise_launch_status(self):
+        source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def lastLaunchStatus(self) -> str:", source)
+        self.assertIn("self.library.lastLaunchStatus", source)
+        self.assertIn("statusText.text = leos.lastLaunchStatus", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
