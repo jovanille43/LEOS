@@ -17,7 +17,7 @@ from PySide6.QtCore import QProcess
 from .library_state import CATEGORIES, filter_games
 from .steam_artwork import find_steam_artwork
 from .heroic import load_heroic_games
-from .lutris import load_lutris_games
+from .lutris import find_lutris_artwork, load_lutris_games
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -282,8 +282,11 @@ class GameLibraryModel(QAbstractListModel):
             for game in load_heroic_games(installed_file, runner):
                 game["artwork"] = ""
                 discovered.setdefault(game["id"], game)
+        data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
         for database in self._lutris_databases():
             for game in load_lutris_games(database):
+                artwork = find_lutris_artwork(data_home, str(game.get("slug", "")))
+                game["artwork"] = artwork.as_uri() if artwork else ""
                 discovered.setdefault(game["id"], game)
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
