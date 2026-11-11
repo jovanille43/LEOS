@@ -387,6 +387,7 @@ ApplicationWindow {
                                 required property string platform
                                 required property string source
                                 required property bool favorite
+                                required property string artwork
                                 width: gameGrid.cellWidth - 12
                                 height: gameGrid.cellHeight - 12
                                 onClicked: window.selectGame(index, title, platform, source, favorite)
@@ -398,16 +399,42 @@ ApplicationWindow {
                                 }
                                 contentItem: ColumnLayout {
                                     spacing: 7
-                                    Label {
-                                        text: gameCard.title
-                                        color: "white"
-                                        font.pixelSize: 15
-                                        font.weight: Font.DemiBold
-                                        wrapMode: Text.WordWrap
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        Layout.alignment: Qt.AlignVCenter
+                                        Layout.fillHeight: true
+                                        spacing: 10
+                                        Image {
+                                            Layout.preferredWidth: gameCard.artwork.length > 0 ? 70 : 0
+                                            Layout.fillHeight: true
+                                            source: gameCard.artwork
+                                            visible: gameCard.artwork.length > 0
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                            cache: true
+                                            sourceSize.width: 140
+                                            sourceSize.height: 210
+                                        }
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
+                                            spacing: 5
+                                            Label {
+                                                text: gameCard.title
+                                                color: "white"
+                                                font.pixelSize: 15
+                                                font.weight: Font.DemiBold
+                                                wrapMode: Text.WordWrap
+                                                Layout.fillWidth: true
+                                            }
+                                            Item { Layout.fillHeight: true }
+                                            Label {
+                                                text: gameCard.favorite ? "★ FAVORI" : ""
+                                                color: window.magenta
+                                                font.pixelSize: 9
+                                                font.weight: Font.Bold
+                                            }
+                                        }
                                     }
-                                    Item { Layout.fillHeight: true }
                                     Label {
                                         text: gameCard.platform + "  •  " + gameCard.source
                                         color: window.muted
