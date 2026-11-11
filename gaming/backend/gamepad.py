@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from controller_center.profiles import detect_controller_profile
+
 
 BUTTON_ACTIONS = {
     "BTN_DPAD_UP": "up",
@@ -18,12 +20,23 @@ BUTTON_ACTIONS = {
 }
 
 
-def mapper_from_preferences(preferences: dict[str, Any]) -> "GamepadActionMapper":
-    """Build the Gaming Mode mapper from a stored per-controller profile."""
+def mapper_from_preferences(
+    preferences: dict[str, Any],
+    device: dict[str, Any] | None = None,
+) -> "GamepadActionMapper":
+    """Build Gaming navigation using saved preferences and optional auto-detection."""
+    profile = preferences.get("profile", "auto")
+    if profile == "auto":
+        device = device or {}
+        profile = detect_controller_profile(
+            str(device.get("name", "")),
+            int(device.get("vendor", 0)),
+            int(device.get("product", 0)),
+        ) or "standard"
     return GamepadActionMapper(
         deadzone_percent=preferences.get("deadzone", 8),
         axis_centers=preferences.get("axis_centers", {}),
-        profile=preferences.get("profile", "standard"),
+        profile=profile,
     )
 
 
