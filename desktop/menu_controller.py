@@ -210,6 +210,16 @@ class ApplicationCatalog(QAbstractListModel):
         self._apply_filter()
         return True
 
+
+    @Slot(result=bool)
+    def clearRecentApplications(self) -> bool:
+        try:
+            self.recentApplications.clear()
+        except (OSError, ValueError):
+            return False
+        self._apply_filter()
+        return True
+
     @Slot(str, result=bool)
     def launch(self, desktop_id: str) -> bool:
         item = next((entry for entry in self._all if entry["desktopId"] == desktop_id), None)
