@@ -34,7 +34,7 @@ class SystemDiagnosticsTests(unittest.TestCase):
 
     def test_uptime_formats_days_and_handles_missing_file(self):
         with patch.object(diagnostics, "_read", return_value="176461.0 123456.0"):
-            self.assertEqual(diagnostics._uptime(), "2 j 0 h")
+            self.assertEqual(diagnostics._uptime(), "2 j 1 h")
         with patch.object(diagnostics, "_read", return_value=""):
             self.assertEqual(diagnostics._uptime(), "Indisponible")
 
