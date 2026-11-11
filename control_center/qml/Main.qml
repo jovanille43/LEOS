@@ -142,7 +142,7 @@ ApplicationWindow {
                             { label: "Performances", page: 3 },
                             { label: "Paramètres KDE", page: 4 },
                             { label: "Mises à jour", page: 5 },
-                            { label: "Mises à jour", page: 5 }
+                            { label: "Notifications", page: 6 }
                         ]
                         delegate: Button {
                             required property var modelData
@@ -1097,6 +1097,126 @@ ApplicationWindow {
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 16
+                            Label {
+                                text: "NOTIFICATIONS"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "Choisis comment LEOS te prévient. Les événements restent dans l’historique même si les fenêtres contextuelles sont désactivées ou filtrées."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 82
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Notifications système"; color: window.themeColors.text; font.weight: Font.DemiBold }
+                                        Label { text: "Autoriser les fenêtres natives du bureau"; color: window.muted; font.pixelSize: 11 }
+                                    }
+                                    Switch {
+                                        checked: controlCenter.notificationsEnabled
+                                        onToggled: controlCenter.setNotificationsEnabled(checked)
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 112
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    ComboBox {
+                                        id: notificationDurationBox
+                                        Layout.fillWidth: true
+                                        model: ["Courte — 3 secondes", "Normale — 5 secondes", "Longue — 8 secondes"]
+                                        Component.onCompleted: currentIndex = controlCenter.notificationDuration === 3 ? 0 : (controlCenter.notificationDuration === 8 ? 2 : 1)
+                                        onActivated: controlCenter.setNotificationDuration([3, 5, 8][currentIndex])
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 112
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    ComboBox {
+                                        id: notificationPriorityBox
+                                        Layout.fillWidth: true
+                                        model: ["Toutes les notifications", "Importantes et critiques", "Critiques uniquement"]
+                                        Component.onCompleted: currentIndex = ["all", "important", "critical"].indexOf(controlCenter.notificationMinimumPriority)
+                                        onActivated: controlCenter.setNotificationMinimumPriority(["all", "important", "critical"][currentIndex])
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 82
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Sons de notification"; color: window.themeColors.text; font.weight: Font.DemiBold }
+                                        Label { text: "Utilise le son configuré par KDE lorsqu’il est pris en charge"; color: window.muted; font.pixelSize: 11; wrapMode: Text.WordWrap }
+                                    }
+                                    Switch {
+                                        checked: controlCenter.notificationSoundsEnabled
+                                        onToggled: controlCenter.setNotificationSoundsEnabled(checked)
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 82
+                                radius: 14
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Label { text: "Mode silencieux en Gaming Mode"; color: window.themeColors.text; font.weight: Font.DemiBold }
+                                        Label { text: "Conserve les événements dans l’historique sans interrompre le jeu"; color: window.muted; font.pixelSize: 11; wrapMode: Text.WordWrap }
+                                    }
+                                    Switch {
+                                        checked: controlCenter.silentNotificationsInGaming
+                                        onToggled: controlCenter.setSilentNotificationsInGaming(checked)
+                                    }
+                                }
                             }
                             Item { Layout.fillHeight: true }
                         }
