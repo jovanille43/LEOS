@@ -21,8 +21,12 @@ ApplicationWindow {
     property string selectedSource: ""
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
+    property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
+    property int selectedCategoryIndex: 0
+    property string navigationArea: "categories"
 
     function selectGame(row, title, platform, source, favorite) {
+        navigationArea = "games"
         selectedIndex = row
         selectedTitle = title
         selectedPlatform = platform
@@ -44,6 +48,25 @@ ApplicationWindow {
         selectedIsFavorite = false
     }
 
+    function chooseCategory(index) {
+        if (index < 0 || index >= categoryNames.length)
+            return
+        selectedCategoryIndex = index
+        selectedCategory = categoryNames[index]
+        gameLibrary.setCategory(selectedCategory)
+        clearSelection()
+        navigationArea = "games"
+    }
+
+    function moveCategory(direction) {
+        let next = selectedCategoryIndex
+        if (direction === "up")
+            next -= 1
+        else if (direction === "down")
+            next += 1
+        selectedCategoryIndex = Math.max(0, Math.min(categoryNames.length - 1, next))
+    }
+
     function moveSelection(direction) {
         if (gameGrid.count < 1)
             return
@@ -60,6 +83,28 @@ ApplicationWindow {
         next = Math.max(0, Math.min(gameGrid.count - 1, next))
         selectGameAt(next)
         gameGrid.positionViewAtIndex(next, GridView.Contain)
+    }
+
+    function navigateDirection(action) {
+        if (navigationArea === "categories") {
+            if (action === "up" || action === "down")
+                moveCategory(action)
+            else if (action === "right") {
+                chooseCategory(selectedCategoryIndex)
+                if (gameGrid.count > 0)
+                    selectGameAt(0)
+            }
+            return
+        }
+        if (action === "left") {
+            const columns = Math.max(1, Math.floor(gameGrid.width / gameGrid.cellWidth))
+            if (selectedIndex < 0 || selectedIndex % columns === 0) {
+                navigationArea = "categories"
+                selectedCategoryIndex = categoryNames.indexOf(selectedCategory)
+                return
+            }
+        }
+        moveSelection(action)
     }
 
     function handleGamepadAction(action) {
@@ -88,9 +133,13 @@ ApplicationWindow {
         }
         if (action === "up" || action === "down" ||
                 action === "left" || action === "right") {
-            moveSelection(action)
+            navigateDirection(action)
         } else if (action === "confirm") {
-            if (selectedIndex >= 0) {
+            if (navigationArea === "categories") {
+                chooseCategory(selectedCategoryIndex)
+                if (gameGrid.count > 0)
+                    selectGameAt(0)
+            } else if (selectedIndex >= 0) {
                 if (!leos.launchGame(selectedIndex))
                     statusText.text = "Lancement impossible : vérifie le lanceur associé."
                 else
@@ -99,7 +148,7 @@ ApplicationWindow {
                 moveSelection("right")
             }
         } else if (action === "back") {
-            if (selectedIndex >= 0)
+            if (navigationArea === "games" && selectedIndex >= 0)
                 clearSelection()
             else
                 returnDialog.open()
@@ -240,7 +289,7 @@ ApplicationWindow {
                     }
 
                     Repeater {
-                        model: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
+                        model: window.categoryNames
                         delegate: Button {
                             required property string modelData
                             Layout.fillWidth: true
@@ -248,7 +297,8 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 9
                                 color: modelData === window.selectedCategory ? "#202b38" : "transparent"
-                                border.color: modelData === window.selectedCategory ? window.cyan : "transparent"
+                                border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
+                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.magenta : (modelData === window.selectedCategory ? window.cyan : "transparent")
                             }
                             contentItem: Label {
                                 text: parent.text
@@ -258,9 +308,7 @@ ApplicationWindow {
                                 font.pixelSize: 13
                             }
                             onClicked: {
-                                window.selectedCategory = modelData
-                                gameLibrary.setCategory(modelData)
-                                window.clearSelection()
+                                window.chooseCategory(window.categoryNames.indexOf(modelData))
                             }
                         }
                     }
@@ -561,16 +609,16 @@ ApplicationWindow {
 
     Keys.onPressed: function(event) {
         if (event.key === Qt.Key_Left) {
-            window.moveSelection("left")
+            window.navigateDirection("left")
             event.accepted = true
         } else if (event.key === Qt.Key_Right) {
-            window.moveSelection("right")
+            window.navigateDirection("right")
             event.accepted = true
         } else if (event.key === Qt.Key_Up) {
-            window.moveSelection("up")
+            window.navigateDirection("up")
             event.accepted = true
         } else if (event.key === Qt.Key_Down) {
-            window.moveSelection("down")
+            window.navigateDirection("down")
             event.accepted = true
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
                    event.key === Qt.Key_Space) {
