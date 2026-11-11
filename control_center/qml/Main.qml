@@ -907,7 +907,8 @@ ApplicationWindow {
                                         { title: "ENTRÉES AUDIO", value: controlCenter.hardwareSnapshot.audioInputs, detail: "Sources exposées par PipeWire / PulseAudio" },
                                         { title: "MANETTES", value: controlCenter.hardwareSnapshot.controllers, detail: "Périphériques d’entrée reconnus comme contrôleurs" },
                                         { title: "BATTERIE", value: controlCenter.hardwareSnapshot.battery, detail: "État exposé par le noyau Linux" },
-                                        { title: "PÉRIPHÉRIQUES USB", value: controlCenter.hardwareSnapshot.usbDevices, detail: "Liste des périphériques USB identifiés" }
+                                        { title: "PÉRIPHÉRIQUES USB", value: controlCenter.hardwareSnapshot.usbDevices, detail: "Liste des périphériques USB identifiés" },
+                                        { title: "RÉSEAU", value: controlCenter.hardwareSnapshot.network, detail: "Interfaces locales et adresses IP" }
                                     ]
                                     delegate: Rectangle {
                                         required property var modelData
