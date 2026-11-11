@@ -17,6 +17,8 @@ class SystemDiagnosticsIntegrationTests(unittest.TestCase):
         self.assertIn("controlCenter.diagnosticsSnapshot.findings", qml)
         self.assertIn("controlCenter.scanDiagnostics()", qml)
         self.assertIn("controlCenter.diagnosticsSnapshot.topProcesses", qml)
+        self.assertIn("controlCenter.openSystemMonitor()", qml)
+        self.assertIn("def openSystemMonitor", controller)
 
     def test_diagnostics_module_does_not_define_repair_or_restart_actions(self):
         module = (ROOT / "control_center/diagnostics.py").read_text(encoding="utf-8")
