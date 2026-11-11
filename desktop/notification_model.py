@@ -54,6 +54,11 @@ class NotificationModel(QAbstractListModel):
         self.endResetModel()
         self.changed.emit()
 
+    @Slot()
+    def refresh(self):
+        self.store.load()
+        self._reload()
+
     @Slot(result=int)
     def unreadCount(self):
         return self.store.unread_count()
