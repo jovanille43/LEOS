@@ -17,6 +17,7 @@ from PySide6.QtCore import QProcess
 from .library_state import CATEGORIES, filter_games
 from .steam_artwork import find_steam_artwork
 from .heroic import load_heroic_games
+from .lutris import load_lutris_games
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -133,6 +134,25 @@ class GameLibraryModel(QAbstractListModel):
             if artwork:
                 return artwork.as_uri()
         return ""
+
+    def _lutris_databases(self) -> list[Path]:
+        home = Path.home()
+        data_home = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
+        candidates = [
+            data_home / "lutris/pga.db",
+            home / ".local/share/lutris/pga.db",
+            home / ".var/app/net.lutris.Lutris/data/lutris/pga.db",
+        ]
+        found: list[Path] = []
+        seen: set[str] = set()
+        for path in candidates:
+            if path.is_file():
+                resolved = path.resolve()
+                key = str(resolved)
+                if key not in seen:
+                    seen.add(key)
+                    found.append(resolved)
+        return found
 
     def _heroic_installed_files(self) -> list[tuple[Path, str]]:
         home = Path.home()
@@ -261,6 +281,9 @@ class GameLibraryModel(QAbstractListModel):
         for installed_file, runner in self._heroic_installed_files():
             for game in load_heroic_games(installed_file, runner):
                 game["artwork"] = ""
+                discovered.setdefault(game["id"], game)
+        for database in self._lutris_databases():
+            for game in load_lutris_games(database):
                 discovered.setdefault(game["id"], game)
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
