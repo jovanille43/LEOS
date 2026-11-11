@@ -51,6 +51,13 @@ ApplicationWindow {
                 }
             }
             Button {
+                text: "NOTIFICATIONS"
+                onClicked: {
+                    if (!applicationCatalog.launch("leos-notifications.desktop"))
+                        status.text = "Centre de notifications indisponible."
+                }
+            }
+            Button {
                 text: "ACTUALISER"
                 onClicked: applicationCatalog.refresh()
             }
