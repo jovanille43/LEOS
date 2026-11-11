@@ -2,7 +2,7 @@
 
 **LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État du projet :** conception et structuration. Les fonctionnalités décrites sont des objectifs de développement, pas des fonctions déjà intégrées.
+> **État du projet :** prototype en développement. Le dépôt contient des premières applications sources (Gaming, sélecteur de modes, Centre de contrôle et boutique), mais elles ne sont pas encore validées sur une session Bazzite réelle ni intégrées dans une ISO installable.
 
 ## Vision
 
