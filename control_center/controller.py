@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QProcess, Signal, Slot
+from PySide6.QtCore import QObject, Property, QProcess, QTimer, Signal, Slot
 
 from control_center.settings_modules import general_settings_command, settings_module_command
 from desktop.themes import palette_for_theme
@@ -18,6 +18,8 @@ from control_center.system_updates import (
     interpret_update_check_exit_code,
     system_update_check_command,
     system_updater_command,
+    pending_deployment_from_status,
+    rpm_ostree_status_command,
 )
 
 
@@ -38,6 +40,15 @@ class ControlCenterController(QObject):
         self._system_update_process = QProcess(self)
         self._system_update_process.finished.connect(self._on_system_update_check_finished)
         self._system_update_process.errorOccurred.connect(self._on_system_update_check_error)
+        self._deployment_process = QProcess(self)
+        self._deployment_process.finished.connect(self._on_deployment_status_finished)
+        self._deployment_process.errorOccurred.connect(self._on_deployment_status_error)
+        self._deployment_check_running = False
+        self._deployment_timer = QTimer(self)
+        self._deployment_timer.setInterval(10 * 60 * 1000)
+        self._deployment_timer.timeout.connect(self.refreshPendingSystemUpdate)
+        self._deployment_timer.start()
+        QTimer.singleShot(2500, self.refreshPendingSystemUpdate)
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
@@ -54,6 +65,43 @@ class ControlCenterController(QObject):
     def _set_system_update_status(self, message: str) -> None:
         self._system_update_status = message
         self.systemUpdatesChanged.emit()
+
+    @Slot()
+    def refreshPendingSystemUpdate(self) -> None:
+        """Observe Bazzite's staged deployment without starting an update."""
+        if self._deployment_check_running:
+            return
+        command = rpm_ostree_status_command()
+        if not command:
+            return
+        self._deployment_process.setProgram(command[0])
+        self._deployment_process.setArguments(command[1:])
+        self._deployment_check_running = True
+        self._deployment_process.start()
+
+    def _on_deployment_status_finished(self, exit_code: int, _exit_status) -> None:
+        self._deployment_check_running = False
+        if exit_code != 0:
+            return
+        payload = bytes(self._deployment_process.readAllStandardOutput()).decode("utf-8", errors="replace")
+        pending = pending_deployment_from_status(payload)
+        previous = str(self.settings.get("last_notified_system_update", ""))
+        if pending is None:
+            if previous:
+                self.settings.set("last_notified_system_update", "")
+            return
+        checksum = pending["checksum"]
+        message = (
+            f"La version {pending['version']} est préparée par le mécanisme de mise à jour Bazzite. "
+            "Redémarre lorsque tu le souhaites pour l'appliquer."
+        )
+        self._set_system_update_status(message)
+        if checksum != previous:
+            self.settings.set("last_notified_system_update", checksum)
+            post_notification("Mise à jour système prête", message, "success")
+
+    def _on_deployment_status_error(self, _error) -> None:
+        self._deployment_check_running = False
 
     @Slot()
     def checkForSystemUpdates(self) -> None:
