@@ -128,6 +128,18 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("self._apply_filter()", block)
         self.assertNotIn("self.dataChanged.emit", block)
 
+    def test_menu_exposes_current_category_for_the_results_heading(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("@Property(str, notify=categoryChanged)", source)
+        self.assertIn("def currentCategory(self)", source)
+        self.assertIn("if category not in self.categories():", source)
+        self.assertIn("applicationCatalog.currentCategory", qml)
+
+    def test_menu_rejects_unknown_category_filter_values(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("if category not in self.categories():", source)
+
 
 if __name__ == "__main__":
     unittest.main()
