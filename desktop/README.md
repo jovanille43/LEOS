@@ -230,3 +230,8 @@ L'intégration graphique au véritable panneau Plasma reste une étape distincte
 La boutique publie désormais les résultats des opérations Flatpak (installation, désinstallation, vérification échouée, inventaire indisponible et erreurs d'exécution). Le Centre de contrôle publie les résultats d'application/restauration des schémas de couleurs KDE, des Plasma Styles et de création des sauvegardes Plasma. Les préférences ordinaires ne génèrent pas de notification afin d'éviter le bruit.
 
 Le stockage recharge l'historique avant chaque modification afin de tenir compte des événements écrits par d'autres processus LEOS. Un fichier invalide ou inaccessible n'est pas écrasé lors de l'ajout d'un événement. Les composants restent fonctionnels même si l'historique est indisponible : l'échec d'enregistrement ne bloque jamais une installation ou un réglage.
+
+
+## Lancement des applications
+
+Le menu lit les champs `Exec` des fichiers Desktop Entry et développe explicitement les codes freedesktop pris en charge (`%c`, `%i`, `%k`, `%%`). Les placeholders de fichiers/URL sont omis lorsqu'aucun document n'est associé au lancement. Les codes inconnus ou mal placés sont refusés. Les arguments sont transmis à `QProcess.startDetached` sans interprétation par un shell.
