@@ -1,0 +1,103 @@
+"""Private, bounded storage for recently launched Desktop Entry identifiers."""
+
+from __future__ import annotations
+
+import fcntl
+import json
+import os
+import re
+import tempfile
+from pathlib import Path
+
+
+DESKTOP_ID_RE = re.compile(r"^[A-Za-z0-9_.+-]{1,240}\.desktop$")
+
+
+class RecentApplications:
+    """Persist an MRU list of .desktop ids without storing commands or paths."""
+
+    def __init__(
+        self,
+        path: Path | None = None,
+        limit: int = 20,
+    ) -> None:
+        if path is None:
+            state_home = Path(
+                os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state")
+            )
+            path = state_home / "leos" / "recent-applications.json"
+        self.path = path
+        self.limit = max(1, min(int(limit), 100))
+
+    @staticmethod
+    def _valid_id(value: object) -> bool:
+        return isinstance(value, str) and bool(DESKTOP_ID_RE.fullmatch(value))
+
+    def _read(self) -> list[str]:
+        if self.path.is_symlink():
+            raise ValueError("Recent application history cannot be a symbolic link")
+        if not self.path.exists():
+            return []
+        if not self.path.is_file():
+            raise ValueError("Recent application history is not a regular file")
+        try:
+            payload = json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError("Recent application history is unreadable") from exc
+        if not isinstance(payload, list) or any(not self._valid_id(item) for item in payload):
+            raise ValueError("Recent application history has an invalid format")
+        result: list[str] = []
+        for item in payload:
+            if item not in result:
+                result.append(item)
+        return result[: self.limit]
+
+    def items(self) -> list[str]:
+        """Read history defensively; a corrupt file is left untouched."""
+        try:
+            return self._read()
+        except (OSError, ValueError):
+            return []
+
+    def _write(self, items: list[str]) -> None:
+        if self.path.is_symlink():
+            raise ValueError("Recent application history cannot be a symbolic link")
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink():
+            raise ValueError("Recent application history directory cannot be a symbolic link")
+        payload = json.dumps(items[: self.limit], indent=2, ensure_ascii=False) + "\n"
+        descriptor, temporary = tempfile.mkstemp(
+            prefix="recent-apps.", suffix=".tmp", dir=self.path.parent
+        )
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.chmod(temporary, 0o600)
+            os.replace(temporary, self.path)
+        finally:
+            try:
+                os.unlink(temporary)
+            except FileNotFoundError:
+                pass
+
+    def record(self, desktop_id: str) -> None:
+        """Move a successfully launched id to the front of the bounded list."""
+        if not self._valid_id(desktop_id):
+            raise ValueError("Invalid Desktop Entry identifier")
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink():
+            raise ValueError("Recent application history directory cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise ValueError("Recent application lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                items = self._read()
+                updated = [desktop_id] + [item for item in items if item != desktop_id]
+                self._write(updated)
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
