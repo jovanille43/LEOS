@@ -15,6 +15,14 @@ ApplicationWindow {
     property color cyan: "#00d9ff"
     property color magenta: "#e33bff"
     property color muted: "#929bad"
+    property date currentDate: new Date()
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: window.currentDate = new Date()
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -33,16 +41,17 @@ ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 54
-            spacing: 28
+            anchors.margins: 48
+            spacing: 20
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 8
+                spacing: 5
+
                 Label {
                     text: "LEOS"
                     color: "white"
-                    font.pixelSize: 40
+                    font.pixelSize: 39
                     font.weight: Font.Black
                     font.letterSpacing: 9
                     Layout.alignment: Qt.AlignHCenter
@@ -50,16 +59,40 @@ ApplicationWindow {
                 Label {
                     text: "CHOISISSEZ VOTRE EXPÉRIENCE"
                     color: window.muted
-                    font.pixelSize: 12
+                    font.pixelSize: 11
                     font.letterSpacing: 3
                     Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: Qt.formatDateTime(window.currentDate, "HH:mm")
+                    color: "white"
+                    font.pixelSize: 48
+                    font.weight: Font.Light
+                    font.letterSpacing: 2
+                    Layout.alignment: Qt.AlignHCenter
+                    topPadding: 5
+                }
+                Label {
+                    text: Qt.formatDateTime(window.currentDate, "dddd d MMMM yyyy")
+                    color: window.muted
+                    font.pixelSize: 13
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: "DERNIÈRE SESSION : " +
+                          (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
+                    color: window.cyan
+                    font.pixelSize: 10
+                    font.letterSpacing: 1.5
+                    Layout.alignment: Qt.AlignHCenter
+                    topPadding: 4
                 }
             }
 
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 26
+                spacing: 24
 
                 Button {
                     id: desktopCard
@@ -74,20 +107,20 @@ ApplicationWindow {
                         border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
                     }
                     contentItem: ColumnLayout {
-                        spacing: 18
+                        spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
                             source: "../../branding/desktop-logo.png"
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 190
-                            Layout.preferredHeight: 190
+                            Layout.preferredWidth: 185
+                            Layout.preferredHeight: 175
                             visible: status === Image.Ready
                         }
                         Label {
                             text: "LEOS DESKTOP"
                             color: "white"
-                            font.pixelSize: 24
+                            font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
                             Layout.alignment: Qt.AlignHCenter
@@ -95,7 +128,13 @@ ApplicationWindow {
                         Label {
                             text: "Bureau, création et quotidien"
                             color: window.muted
-                            font.pixelSize: 14
+                            font.pixelSize: 13
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+                        Label {
+                            text: "Une expérience KDE personnalisée"
+                            color: "#687487"
+                            font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Item { Layout.fillHeight: true }
@@ -114,20 +153,20 @@ ApplicationWindow {
                         border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
                     }
                     contentItem: ColumnLayout {
-                        spacing: 18
+                        spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
                             source: "../../branding/gaming-logo.png"
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 190
-                            Layout.preferredHeight: 190
+                            Layout.preferredWidth: 185
+                            Layout.preferredHeight: 175
                             visible: status === Image.Ready
                         }
                         Label {
                             text: "LEOS GAMING"
                             color: "white"
-                            font.pixelSize: 24
+                            font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
                             Layout.alignment: Qt.AlignHCenter
@@ -135,7 +174,13 @@ ApplicationWindow {
                         Label {
                             text: "Bibliothèque et expérience manette"
                             color: window.muted
-                            font.pixelSize: 14
+                            font.pixelSize: 13
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+                        Label {
+                            text: "Vos jeux et lanceurs réunis au même endroit"
+                            color: "#687487"
+                            font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Item { Layout.fillHeight: true }
@@ -150,7 +195,7 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
-                text: "Les applications du bureau resteront ouvertes en arrière-plan lors du passage vers Gaming."
+                text: "Bazzite KDE · Une seule session · Aucune application ne sera fermée automatiquement"
                 color: "#667184"
                 font.pixelSize: 10
                 Layout.alignment: Qt.AlignHCenter
@@ -199,6 +244,15 @@ ApplicationWindow {
             event.accepted = true
         } else if (event.key === Qt.Key_D) {
             modeManager.requestMode("desktop")
+            event.accepted = true
+        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+            if (desktopCard.activeFocus)
+                gamingCard.forceActiveFocus()
+            else
+                desktopCard.forceActiveFocus()
+            event.accepted = true
+        } else if (event.key === Qt.Key_Escape && transitionDialog.visible) {
+            transitionDialog.close()
             event.accepted = true
         }
     }
