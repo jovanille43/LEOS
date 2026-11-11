@@ -11,6 +11,7 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
         self.assertIn("notifications_main.py", entry)
         self.assertIn("src: desktop/applications/leos-notifications.desktop", recipe)
+        self.assertIn("- libnotify", recipe)
 
     def test_qt_model_exposes_inbox_actions(self):
         source = (ROOT / "desktop/notification_model.py").read_text(encoding="utf-8")
@@ -31,6 +32,8 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("openNotificationCentre", controller)
         self.assertIn("NOTIFICATIONS", qml)
         self.assertIn("leos.openNotificationCentre()", qml)
+        self.assertIn("native=False", controller)
+        self.assertIn("Lancement de jeu impossible", controller)
 
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
