@@ -145,8 +145,11 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("keyNavigationEnabled: true", qml)
         self.assertIn("keyNavigationWraps: false", qml)
         self.assertIn("activeFocusOnTab: true", qml)
-        self.assertIn("Keys.onReturnPressed", qml)
-        self.assertIn("Keys.onSpacePressed", qml)
+        self.assertIn("Keys.onPressed", qml)
+        self.assertIn("Qt.Key_Return", qml)
+        self.assertIn("Qt.Key_Enter", qml)
+        self.assertIn("Qt.Key_Space", qml)
+        self.assertIn("function activateApplication()", qml)
 
 
 if __name__ == "__main__":
