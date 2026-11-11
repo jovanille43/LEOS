@@ -39,3 +39,36 @@ def interpret_update_check_exit_code(exit_code: int) -> str:
     if exit_code in {126, 127}:
         return "cancelled"
     return "error"
+
+
+def rpm_ostree_status_command(
+    find_executable: Callable[[str], str | None] = shutil.which,
+) -> list[str] | None:
+    """Return a read-only query for current and pending deployments."""
+    executable = find_executable("rpm-ostree")
+    return [executable, "status", "--json"] if executable else None
+
+
+def pending_deployment_from_status(payload: str) -> dict[str, str] | None:
+    """Extract an actually staged/pending deployment from rpm-ostree JSON."""
+    import json
+
+    try:
+        status = json.loads(payload)
+    except (TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(status, dict) or not isinstance(status.get("deployments"), list):
+        return None
+    for deployment in status["deployments"]:
+        if not isinstance(deployment, dict) or deployment.get("booted") is True:
+            continue
+        if deployment.get("pending") is True or deployment.get("staged") is True:
+            checksum = deployment.get("checksum")
+            if not isinstance(checksum, str) or not checksum:
+                continue
+            version = deployment.get("version")
+            return {
+                "checksum": checksum,
+                "version": version if isinstance(version, str) and version else "Nouvelle version",
+            }
+    return None
