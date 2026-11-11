@@ -17,6 +17,7 @@ DEFAULTS: dict[str, Any] = {
     "gaming_overlay_enabled": True,
     "onboarding_complete": False,
     "transition_app_policy": "ask",
+    "last_notified_system_update": "",
 }
 
 ALLOWED_VALUES = {
