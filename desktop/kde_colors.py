@@ -307,10 +307,18 @@ class KdeColorSchemeManager:
         self.install_scheme(theme)
         state = self._read_state()
         current = self.current_scheme()
+        if current is None:
+            raise RuntimeError(
+                "The active KDE color scheme cannot be identified; no theme was applied."
+            )
         leos_ids = {self.scheme_id(key) for key in THEME_NAMES}
         previous = state.get("previous_scheme")
-        if current and current not in leos_ids:
+        if current not in leos_ids:
             previous = current
+        elif not previous:
+            raise RuntimeError(
+                "A LEOS color scheme is active but its previous KDE scheme is unavailable."
+            )
 
         # Persist the rollback target before changing KDE. If the command fails
         # or the process is interrupted, the previous scheme remains recoverable.
