@@ -12,6 +12,7 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertLess(source.index("manager.rememberMode(mode)"), source.index('post_notification("LEOS Gaming Mode"'))
         self.assertIn('post_notification("LEOS Desktop Mode"', source)
         self.assertIn('post_notification("LEOS Gaming Mode"', source)
+        self.assertIn('"success", native=False)', source)
 
     def test_gaming_return_to_desktop_is_recorded(self):
         source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
