@@ -80,5 +80,17 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(final.get("sounds_enabled"))
 
 
+    def test_snapshot_refreshes_all_requested_keys_together(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            first = SettingsStore(path)
+            second = SettingsStore(path)
+            first.set("theme", "magenta")
+            first.set("notification_duration_seconds", 3)
+            self.assertEqual(
+                second.snapshot(("theme", "notification_duration_seconds")),
+                ("magenta", 3),
+            )
+
 if __name__ == "__main__":
     unittest.main()
