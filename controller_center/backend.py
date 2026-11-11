@@ -36,6 +36,7 @@ class GamepadBackend:
     def __init__(self) -> None:
         self.device = None
         self.axes: dict[str, int] = {}
+        self.axis_ranges: dict[str, dict[str, int]] = {}
 
     def scan(self) -> list[dict[str, Any]]:
         if not backend_available():
@@ -81,12 +82,18 @@ class GamepadBackend:
             self.close()
             raise ValueError("This input device is not a game controller")
         self.axes = {}
+        self.axis_ranges = {}
         for code in self.device.capabilities().get(ecodes.EV_ABS, []):
             name = ecodes.ABS.get(code, f"AXIS_{code}")
             if isinstance(name, list):
                 name = name[0]
             info = self.device.absinfo(code)
-            self.axes[str(name)] = int(info.value)
+            axis_name = str(name)
+            self.axes[axis_name] = int(info.value)
+            self.axis_ranges[axis_name] = {
+                "minimum": int(info.min),
+                "maximum": int(info.max),
+            }
 
     def poll(self) -> list[dict[str, Any]]:
         if self.device is None:
@@ -99,7 +106,14 @@ class GamepadBackend:
                     if isinstance(name, list):
                         name = name[0]
                     self.axes[str(name)] = int(event.value)
-                    events.append({"kind": "axis", "name": str(name), "value": int(event.value)})
+                    limits = self.axis_ranges.get(str(name), {})
+                    events.append({
+                        "kind": "axis",
+                        "name": str(name),
+                        "value": int(event.value),
+                        "minimum": limits.get("minimum", -32768),
+                        "maximum": limits.get("maximum", 32767),
+                    })
                 elif event.type == ecodes.EV_KEY:
                     name = ecodes.BTN.get(event.code, f"BUTTON_{event.code}")
                     if isinstance(name, list):
