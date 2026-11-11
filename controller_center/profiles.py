@@ -9,12 +9,37 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-PROFILE_NAMES = ("standard", "xbox", "playstation", "nintendo", "custom")
+PROFILE_NAMES = ("auto", "standard", "xbox", "playstation", "nintendo", "custom")
 DEFAULT_PROFILE = {
-    "profile": "standard",
+    "profile": "auto",
     "deadzone": 8,
     "axis_centers": {},
 }
+
+
+def detect_controller_profile(name: str, vendor: int = 0, product: int = 0) -> str | None:
+    """Identify common controller families without guessing unknown devices."""
+    label = name.casefold()
+
+    # Nintendo USB IDs for Switch Joy-Con and Pro controllers.
+    if vendor == 0x057E and product in {0x2000, 0x2006, 0x2007, 0x2008, 0x2009}:
+        return "nintendo"
+    if any(token in label for token in ("nintendo", "joy-con", "joycon", "switch pro")):
+        return "nintendo"
+
+    # Sony: DualShock 3/4 and DualSense device IDs.
+    if vendor == 0x054C and product in {0x0268, 0x05C4, 0x09CC, 0x0CE6, 0x0DF2}:
+        return "playstation"
+    if any(token in label for token in ("dualsense", "dualshock", "playstation", "ps3", "ps4", "ps5")):
+        return "playstation"
+
+    # Microsoft Xbox controllers; unknown devices keep the neutral layout.
+    if vendor == 0x045E and product in {0x028E, 0x02EA, 0x0B12, 0x0B13}:
+        return "xbox"
+    if "xbox" in label:
+        return "xbox"
+
+    return None
 
 
 def config_path() -> Path:
