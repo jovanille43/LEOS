@@ -1393,6 +1393,12 @@ ApplicationWindow {
                                         text: "ANALYSER"
                                         onClicked: controlCenter.scanDiagnostics()
                                     }
+                                    Button {
+                                        text: "MONITEUR SYSTÈME"
+                                        onClicked: window.launchNotice = controlCenter.openSystemMonitor()
+                                            ? ""
+                                            : "Le Moniteur système KDE n'est pas disponible sur cette image."
+                                    }
                                 }
                             }
                             GridLayout {
