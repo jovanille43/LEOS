@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from desktop.layouts import validate_layout
+from desktop.plasma_adapter import LEOS_PANEL_MARKER
 from desktop.plasma_backup import MAX_BACKUP_BYTES, _config_root
 
 _SECTION = re.compile(r"^Containments\]\[(?P<id>\d+)(?:\]\[(?P<nested>.*))?$")
@@ -103,13 +104,15 @@ def inspect_plasma_config(path: Path | None = None) -> dict[str, Any]:
         nested = match.group("nested")
         item = grouped.setdefault(containment_id, {"id": containment_id, "plugin": None,
                                                     "location": None, "formfactor": None,
-                                                    "applets": []})
+                                                    "applets": [], "leos_managed": False})
         values = parser[section]
         if nested is None:
             item["plugin"] = values.get("plugin")
             item["location"] = values.get("location")
             item["formfactor"] = values.get("formfactor")
         else:
+            if nested == "LEOS":
+                item["leos_managed"] = values.get("managedBy") == LEOS_PANEL_MARKER
             applet_match = _APPLET.match(nested)
             if applet_match and values.get("plugin"):
                 item["applets"].append({
@@ -154,9 +157,16 @@ def build_layout_plan(layout: object, inspection: dict[str, Any]) -> dict[str, A
     if not inspection.get("available"):
         observations.append("La configuration Plasma n'a pas pu être inspectée ; sauvegarde et contrôle manuel requis.")
     elif dock["enabled"] and panels:
-        observations.append(
-            f"{len(panels)} panneau(x) Plasma existant(s) détecté(s) : aucun ne sera remplacé automatiquement."
-        )
+        managed_count = sum(1 for panel in panels if panel.get("leos_managed"))
+        unmanaged_count = len(panels) - managed_count
+        if managed_count:
+            observations.append(
+                f"{managed_count} panneau(x) LEOS géré(s) détecté(s) ; seuls ces panneaux pourront être actualisés."
+            )
+        if unmanaged_count:
+            observations.append(
+                f"{unmanaged_count} panneau(x) KDE personnel(s) détecté(s) ; ils resteront intacts."
+            )
     elif dock["enabled"]:
         observations.append("Aucun panneau Plasma standard détecté ; une création serait nécessaire.")
     else:
