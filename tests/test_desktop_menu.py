@@ -66,6 +66,8 @@ class DesktopMenuTests(unittest.TestCase):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("from desktop.desktop_exec import parse_desktop_exec", source)
         self.assertIn('desktop_file=item["path"]', source)
+        self.assertIn("args = argv[1:]", source)
+        self.assertIn("QProcess.startDetached(program, args", source)
         self.assertNotIn("shlex.split(item[", source)
 
 
