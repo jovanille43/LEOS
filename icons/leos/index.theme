@@ -5,7 +5,7 @@ Inherits=breeze,hicolor
 Directories=scalable/actions,scalable/apps,scalable/devices,scalable/status
 
 [scalable/actions]
-Size= scalable
+Size=48
 Context=Actions
 Type=Scalable
 MinSize=16
@@ -13,7 +13,7 @@ MaxSize=256
 Threshold=0
 
 [scalable/apps]
-Size= scalable
+Size=48
 Context=Applications
 Type=Scalable
 MinSize=16
@@ -21,7 +21,7 @@ MaxSize=256
 Threshold=0
 
 [scalable/devices]
-Size= scalable
+Size=48
 Context=Devices
 Type=Scalable
 MinSize=16
@@ -29,7 +29,7 @@ MaxSize=256
 Threshold=0
 
 [scalable/status]
-Size= scalable
+Size=48
 Context=Status
 Type=Scalable
 MinSize=16
