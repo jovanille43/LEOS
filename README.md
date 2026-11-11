@@ -11,7 +11,7 @@ LEOS propose deux expériences au sein d'une seule installation :
 - **Desktop Mode** — bureau KDE personnalisé, avec l'emblème LEOS représentant le lion seul.
 - **Gaming Mode** — application LEOS plein écran au-dessus de KDE, pensée pour la manette, avec l'emblème du lion tenant une manette.
 
-Les deux modes partagent le même système, les mêmes fichiers, applications, pilotes et services. Le passage d'un mode à l'autre se fait sans redémarrage. Avant une transition, LEOS demande quoi faire des applications ouvertes.
+Les deux modes partagent le même système, les mêmes fichiers, applications, pilotes et services. Le passage d'un mode à l'autre se fait sans redémarrage. À chaque transition vers Gaming ou retour vers Desktop, LEOS demande une confirmation ; les applications ouvertes restent en arrière-plan et ne sont jamais fermées automatiquement.
 
 ## Identité visuelle
 
