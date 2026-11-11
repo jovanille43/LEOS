@@ -68,3 +68,5 @@ Les seuils d'attention sont explicites : stockage à partir de 80 % (critique à
 Le diagnostic ne lance aucune réparation, aucun redémarrage de service, aucune suppression et aucune modification de configuration. Les résultats peuvent être partiels si systemd, journalctl, les capteurs ou les permissions ne sont pas disponibles. Une anomalie signalée est une piste à examiner, pas une preuve de panne matérielle.
 
 La page affiche également les huit processus les plus consommateurs en CPU, avec PID, mémoire résidente et pourcentages CPU/RAM, à partir de `ps`. Cette liste est informative et en lecture seule : LEOS ne termine aucun processus automatiquement.
+
+Un raccourci ouvre également **Moniteur système KDE** lorsqu'il est présent, sans élévation de privilèges. Il sert d'outil natif pour approfondir l'inspection ou gérer manuellement les processus ; LEOS ne termine aucun processus depuis son propre diagnostic.
