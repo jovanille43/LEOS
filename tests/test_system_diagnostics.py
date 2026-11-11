@@ -70,6 +70,19 @@ class SystemDiagnosticsTests(unittest.TestCase):
         self.assertEqual(result["severity"], "OK")
         self.assertEqual(result["findings"], ["Aucune anomalie détectée par les contrôles disponibles."])
 
+    def test_top_processes_are_parsed_and_limited_to_eight(self):
+        rows = [
+            f"{pid} process{pid} 12.5 3.2 2048"
+            for pid in range(1, 11)
+        ]
+        with patch.object(diagnostics, "_run", return_value="\n".join(rows)):
+            result = diagnostics._top_processes()
+        self.assertEqual(len(result), 8)
+        self.assertEqual(result[0], {
+            "pid": "1", "name": "process1", "cpu": "12.5%",
+            "memory": "3.2%", "resident": "2 Mio",
+        })
+
     def test_missing_commands_and_timeouts_are_safe(self):
         with patch.object(diagnostics.subprocess, "run", side_effect=FileNotFoundError):
             self.assertEqual(diagnostics._run(["systemctl"]), "")
