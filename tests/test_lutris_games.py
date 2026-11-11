@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.lutris import load_lutris_games
+from gaming.backend.lutris import find_lutris_artwork, load_lutris_games
 
 
 class LutrisImportTests(unittest.TestCase):
@@ -56,6 +56,22 @@ class LutrisImportTests(unittest.TestCase):
     def test_launch_uses_lutris_numeric_game_identifier(self):
         games = load_lutris_games(self.database)
         self.assertEqual(games[0]["launch"], ["lutris:rungameid/12"])
+
+    def test_finds_existing_local_cover_art(self):
+        data_home = Path(self.temp_dir.name) / "data"
+        cover_dir = data_home / "lutris" / "coverart"
+        cover_dir.mkdir(parents=True)
+        cover = cover_dir / "installed-wine-game.webp"
+        cover.write_bytes(b"local-art")
+        self.assertEqual(
+            find_lutris_artwork(data_home, "installed-wine-game"),
+            cover.resolve(),
+        )
+
+    def test_artwork_lookup_rejects_path_traversal_and_missing_files(self):
+        data_home = Path(self.temp_dir.name) / "data"
+        self.assertIsNone(find_lutris_artwork(data_home, "../secret"))
+        self.assertIsNone(find_lutris_artwork(data_home, "unknown-game"))
 
     def test_import_is_read_only(self):
         before = self.database.read_bytes()
