@@ -94,6 +94,16 @@ class RecentApplicationsTests(unittest.TestCase):
                 home / ".local" / "state" / "leos" / "recent-applications.json",
             )
 
+    def test_clear_removes_history_atomically_and_keeps_private_permissions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "recent.json"
+            history = RecentApplications(path)
+            history.record("org.example.Editor.desktop")
+            history.clear()
+            self.assertEqual(history.items(), [])
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8")), [])
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+
 
 if __name__ == "__main__":
     unittest.main()
