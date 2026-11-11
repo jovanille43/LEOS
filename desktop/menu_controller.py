@@ -13,6 +13,7 @@ from desktop.desktop_entries import (
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
+from desktop.recent_applications import RecentApplications
 
 
 APP_DIRS = (
@@ -44,6 +45,7 @@ class ApplicationCatalog(QAbstractListModel):
         self._category = "Tout"
         self.favourites = DockFavourites()
         self.notifications = NotificationStore()
+        self.recentApplications = RecentApplications()
         self._notification_timer = QTimer(self)
         self._notification_timer.setInterval(3000)
         self._notification_timer.timeout.connect(self.refreshNotificationCount)
@@ -151,6 +153,7 @@ class ApplicationCatalog(QAbstractListModel):
             self._category,
             self.favourites.items(),
             self._query,
+            self.recentApplications.items(),
         )
         self.beginResetModel()
         self._visible = selected
@@ -168,7 +171,7 @@ class ApplicationCatalog(QAbstractListModel):
 
     @Slot(result="QVariantList")
     def categories(self):
-        return ["Tout", "Favoris"] + sorted({item["category"] for item in self._all})
+        return ["Tout", "Favoris", "Récemment utilisées"] + sorted({item["category"] for item in self._all})
 
     @Property(int, notify=notificationCountChanged)
     def unreadNotificationCount(self) -> int:
@@ -231,4 +234,11 @@ class ApplicationCatalog(QAbstractListModel):
         ok = result[0] if isinstance(result, tuple) else result
         if not ok:
             self.launchFailed.emit("Impossible de démarrer cette application.")
-        return bool(ok)
+            return False
+        try:
+            self.recentApplications.record(desktop_id)
+        except (OSError, ValueError):
+            # A history write failure must never turn a successful launch into a failure.
+            pass
+        self._apply_filter()
+        return True
