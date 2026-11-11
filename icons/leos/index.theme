@@ -1,0 +1,37 @@
+[Icon Theme]
+Name=LEOS
+Comment=Minimal neon symbolic icon theme for LEOS
+Inherits=breeze,hicolor
+Directories=scalable/actions,scalable/apps,scalable/devices,scalable/status
+
+[scalable/actions]
+Size= scalable
+Context=Actions
+Type=Scalable
+MinSize=16
+MaxSize=256
+Threshold=0
+
+[scalable/apps]
+Size= scalable
+Context=Applications
+Type=Scalable
+MinSize=16
+MaxSize=256
+Threshold=0
+
+[scalable/devices]
+Size= scalable
+Context=Devices
+Type=Scalable
+MinSize=16
+MaxSize=256
+Threshold=0
+
+[scalable/status]
+Size= scalable
+Context=Status
+Type=Scalable
+MinSize=16
+MaxSize=256
+Threshold=0
