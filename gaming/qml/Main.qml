@@ -752,7 +752,8 @@ ApplicationWindow {
                                     Item { Layout.fillWidth: true }
                                     Label {
                                         text: window.selectedInstallStatus || "—"
-                                        color: window.selectedInstallStatus === "Installé" ? window.cyan : "white"
+                                        color: window.selectedInstallStatus === "Installé" ? window.cyan :
+                                               window.selectedInstallStatus === "Fichiers absents" ? window.magenta : "white"
                                         font.pixelSize: 10
                                         font.weight: Font.DemiBold
                                     }
