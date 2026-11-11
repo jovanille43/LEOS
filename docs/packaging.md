@@ -19,7 +19,9 @@ Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image
 
 ## Dépendances système prévues
 
-Le prototype utilise les paquets Fedora `python3-pyside6`, `python3-psutil` et `python3-evdev`. Ils seront intégrés via le module DNF de BlueBuild. Le paquet `python3-evdev` fournit les bindings Linux permettant d'identifier les périphériques d'entrée et de lire leurs événements depuis `/dev/input`. La lecture des entrées est utilisée sans envoyer d'événements ni modifier les mappings système.
+Le prototype utilise les paquets Fedora `python3-pyside6`, `python3-psutil` et `python3-evdev`. Ils seront intégrés via le module DNF de BlueBuild. Le paquet `python3-evdev` fournit les bindings Linux permettant d'identifier les périphériques d'entrée et de lire leurs événements depuis `/dev/input`.
+
+Le backend ouvre les périphériques en lecture seule et utilise leur descripteur non bloquant pour que la surveillance périodique ne bloque pas l'interface Qt. Lorsque `InputDevice(readonly=True)` est disponible (python-evdev 2.0+), il utilise l'API publique. Pour la branche Fedora 1.9.x, qui ne propose pas encore cet argument, un adaptateur ouvre explicitement le fichier avec `O_RDONLY | O_NONBLOCK` et initialise les métadonnées nécessaires à partir des helpers ioctl de python-evdev. LEOS n'envoie aucun événement, ne saisit pas le périphérique avec `EVIOCGRAB` et ne modifie ni permissions udev ni mappings système.
 
 La base KDE fournit déjà le framework Qt et les composants QML habituels, mais les modules QML réellement nécessaires seront confirmés pendant les tests de l'image.
 
@@ -27,7 +29,7 @@ La base KDE fournit déjà le framework Qt et les composants QML habituels, mais
 
 Le Centre des manettes enregistre les profils, zones mortes et centres d'axes dans `~/.config/leos/controllers.json`, avec des permissions utilisateur restrictives. Il ne modifie ni les permissions udev, ni les règles système, ni les réglages Steam/Lutris. L'accès à un périphérique dépend donc des permissions de session Linux existantes.
 
-Les noms de profils sont pour l'instant des préférences LEOS locales ; leur application aux jeux et aux lanceurs sera développée via les intégrations correspondantes, sans remappage global caché.
+Les profils enregistrés sont chargés par le Gaming Mode pour sa propre navigation (notamment l'inversion confirmer/retour Nintendo, la zone morte et le centre des sticks). Ils ne remappent pas les commandes des jeux externes : Steam et les lanceurs conservent leur configuration, sans remappage global caché.
 
 ## Prudence
 
