@@ -102,20 +102,21 @@ préalable et une confirmation explicite resteront obligatoires.
 ## Adaptateur de panneaux LEOS (préparé, non activé)
 
 Le module `desktop/plasma_adapter.py` génère un script utilisant l'API officielle
-de scripting Plasma 6 pour créer, mettre à jour ou retirer un panneau LEOS.
-Chaque panneau créé reçoit un marqueur privé `LEOS/managedBy=leos-panel-v1`.
-Les opérations suivantes ne ciblent que ce marqueur : un panneau KDE personnel
-ne peut pas être adopté ou supprimé implicitement.
+de scripting Plasma 6 pour créer un panneau LEOS ou actualiser un panneau déjà
+marqué comme appartenant à LEOS. Chaque panneau créé reçoit un marqueur privé
+`LEOS/managedBy=leos-panel-v1`.
 
-L'adaptateur refuse de créer un second dock lorsqu'un panneau non géré existe
-déjà, et refuse les versions antérieures à Plasma 6. Il préserve les widgets
-déjà présents sur un panneau LEOS et n'ajoute que les widgets KDE disponibles.
-Une tentative de mise à jour comporte un retour arrière en cas d'erreur.
+L'adaptateur refuse de toucher à un panneau KDE personnel et refuse de créer
+un second dock lorsqu'un panneau non géré existe déjà. Il refuse également les
+versions antérieures à Plasma 6. Lors de la création, il vérifie la disponibilité
+des widgets KDE ; lors d'une mise à jour, il ne cible que le panneau marqué LEOS.
 
-**Cet adaptateur n'est pas encore exécuté par le Centre de contrôle.** Il n'a
-pas été validé sur une vraie session Bazzite KDE ; aucune action d'application
-n'est donc proposée dans l'interface. Les widgets de bureau restent hors du
-périmètre de cette première version.
+**Limites de sécurité actuelles :** l'adaptateur n'est pas exécuté par le Centre
+de contrôle et n'a pas été validé sur une vraie session Bazzite KDE. La
+désactivation/suppression d'un panneau LEOS n'est pas encore implémentée ; les
+panneaux existants restent intacts. Les widgets de bureau ne sont pas encore
+appliqués. Toute future activation exigera une sauvegarde et une confirmation
+explicite.
 
 Références techniques : [API de scripting Plasma](https://develop.kde.org/docs/plasma/scripting/api/)
 et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting/).
