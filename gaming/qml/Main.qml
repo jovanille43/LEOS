@@ -284,7 +284,7 @@ ApplicationWindow {
                 id: quickPanel
                 Layout.fillWidth: true
                 visible: false
-                implicitHeight: 176
+                implicitHeight: 204
                 radius: 15
                 color: "#ee111722"
                 border.color: "#354052"
@@ -311,8 +311,29 @@ ApplicationWindow {
                     Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
                         Label { text: "JEUX"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
-                        Label { text: "FPS  —"; color: window.muted; font.pixelSize: 15 }
-                        Label { text: "Les métriques avancées seront ajoutées par intégration."; color: window.muted; font.pixelSize: 11 }
+                        CheckBox {
+                            text: "Overlay FPS · MangoHud"
+                            checked: leos.mangoHudEnabled
+                            enabled: leos.mangoHudAvailable
+                            onToggled: leos.setMangoHudEnabled(checked)
+                            palette.text: "white"
+                        }
+                        Label {
+                            text: leos.mangoHudAvailable
+                                  ? "Actif sur les lancements directs compatibles."
+                                  : "MangoHud n'est pas installé sur cet hôte."
+                            color: window.muted
+                            font.pixelSize: 10
+                            wrapMode: Text.WordWrap
+                            Layout.maximumWidth: 190
+                        }
+                        Label {
+                            text: "Steam : ajouter « mangohud %command% » aux options de lancement du jeu."
+                            color: window.muted
+                            font.pixelSize: 9
+                            wrapMode: Text.WordWrap
+                            Layout.maximumWidth: 190
+                        }
                     }
                     ColumnLayout {
                         Layout.preferredWidth: 220
@@ -664,7 +685,7 @@ ApplicationWindow {
                                     enabled: window.selectedIndex >= 0
                                     text: "JOUER"
                                     onClicked: {
-                                        if (!leos.launchGame(window.selectedIndex))
+                                        if (!leos.launchGame(window.selectedIndex, leos.mangoHudEnabled))
                                             statusText.text = "Lancement impossible : vérifie le lanceur associé."
                                         else
                                             statusText.text = "Demande de lancement envoyée."
