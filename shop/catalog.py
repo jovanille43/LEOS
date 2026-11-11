@@ -18,6 +18,7 @@ class CatalogModel(QAbstractListModel):
     OperationNoteRole = AppIdRole + 6
     InstalledRole = AppIdRole + 7
     InstalledScopeRole = AppIdRole + 8
+    BundledRole = AppIdRole + 9
 
     ROLE_NAMES = {
         AppIdRole: QByteArray(b"appId"),
@@ -29,6 +30,7 @@ class CatalogModel(QAbstractListModel):
         OperationNoteRole: QByteArray(b"operationNote"),
         InstalledRole: QByteArray(b"installed"),
         InstalledScopeRole: QByteArray(b"installedScope"),
+        BundledRole: QByteArray(b"bundled"),
     }
 
     def __init__(self, parent=None) -> None:
@@ -65,6 +67,7 @@ class CatalogModel(QAbstractListModel):
             self.SourceRole: item["source"],
             self.CompatibilityRole: item["compatibility"],
             self.OperationNoteRole: item["operation_note"],
+            self.BundledRole: bool(item.get("bundled", False)),
         }
         return values.get(role)
 
@@ -79,7 +82,7 @@ class CatalogModel(QAbstractListModel):
             self.dataChanged.emit(
                 self.index(0, 0),
                 self.index(len(self._items) - 1, 0),
-                [self.InstalledRole, self.InstalledScopeRole],
+                [self.InstalledRole, self.InstalledScopeRole, self.BundledRole],
             )
 
     def itemAt(self, row: int) -> dict | None:
