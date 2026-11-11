@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "recipes/**"
+      - "packaging/**"
       - "gaming/**"
       - "launcher/**"
       - "control_center/**"
@@ -37,6 +38,9 @@ jobs:
           docker rm bluebuild-cli
           chmod +x "$RUNNER_TEMP/bluebuild"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Check LEOS first-run shell script
+        run: bash -n packaging/leos-default-apps-setup
 
       - name: Validate BlueBuild recipe
         run: bluebuild validate recipes/recipe.yml
