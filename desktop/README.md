@@ -40,11 +40,24 @@ Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
 actualise son apparence dès le changement de thème. Les préférences sont
 conservées par `leos_core.SettingsStore`.
 
-Cette première intégration concerne les interfaces LEOS. Elle ne modifie pas
-les couleurs, le thème Plasma ou les fichiers de configuration KDE déjà présents
-dans le profil utilisateur. L'application des thèmes à l'ensemble du bureau
-Plasma et la gestion du dock restent des étapes distinctes, qui devront être
-réversibles et activées explicitement.
+Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
+Une action distincte dans le Centre de contrôle permet, après confirmation,
+d'exporter le thème sous forme de schéma KDE `.colors` dans l'espace utilisateur
+`$XDG_DATA_HOME/color-schemes` (par défaut `~/.local/share/color-schemes`),
+puis d'appeler `plasma-apply-colorscheme` sans shell.
+
+L'application est limitée au schéma de couleurs KDE : elle ne remplace pas le
+Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
+écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
+respectent le schéma global changent. Le système immuable Bazzite n'est pas
+modifié.
+
+Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
+permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
+peut pas être identifié, si le fichier LEOS existe déjà sous une forme
+différente, ou si l'état de restauration est absent alors qu'un thème LEOS est
+déjà actif, l'application est refusée. Les fichiers .colors existants ne sont
+jamais écrasés s'ils diffèrent du contenu généré par LEOS.
 
 
 ## Profils de disposition et dock
@@ -120,3 +133,27 @@ explicite.
 
 Références techniques : [API de scripting Plasma](https://develop.kde.org/docs/plasma/scripting/api/)
 et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting/).
+
+
+
+## Schémas de couleurs KDE
+
+Le module `desktop/kde_colors.py` convertit les cinq palettes LEOS en schémas
+KDE au format INI standard. Les schémas sont créés dans l'espace de données de
+l'utilisateur et identifiés comme gérés par LEOS. Une collision avec un fichier
+différent n'est jamais écrasée.
+
+Le Centre de contrôle présente l'action **Appliquer à KDE** et demande une
+confirmation explicite. Il appelle ensuite l'outil natif
+`plasma-apply-colorscheme` avec un argument fixe, sans shell. La commande
+modifie la configuration de couleurs du profil utilisateur, pas l'image
+système Bazzite. Le nom du schéma non-LEOS actif est enregistré avant
+l'application ; une seconde confirmation permet de restaurer ce schéma.
+
+Cette intégration ne constitue pas encore un Plasma Style complet. Les effets
+sur les applications GTK dépendent de l'intégration KDE/GTK installée et les
+applications déjà ouvertes peuvent nécessiter un redémarrage pour prendre en
+compte les nouvelles couleurs.
+
+Références : [documentation KDE sur les schémas de couleurs](https://docs.kde.org/stable_kf6/en/plasma-workspace/kcontrol/colors/)
+et [format des couleurs Plasma](https://develop.kde.org/docs/plasma/theme/theme-details/).
