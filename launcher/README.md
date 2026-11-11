@@ -32,3 +32,7 @@ La navigation fonctionne à la souris, au clavier et avec les manettes reconnues
 - Les animations officielles Desktop/Gaming et les sons ne sont pas intégrés à ce parcours tant que les fichiers média officiels ne sont pas présents dans le dépôt.
 - Les logos individuels sont attendus dans `branding/desktop-logo.png` et `branding/gaming-logo.png`. En leur absence, les noms des modes restent lisibles.
 - Le sélecteur et les transitions doivent encore être testés dans une session Bazzite KDE réelle.
+
+## Notifications des modes LEOS
+
+Le sélecteur enregistre un événement dans l'historique LEOS après le lancement réussi de Gaming ou la sélection de Desktop. Le contrôleur Gaming enregistre également la demande de retour vers Desktop. Ces événements sont persistants et non intrusifs : ils ne déclenchent pas de fenêtre au-dessus d'un jeu.
