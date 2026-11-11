@@ -37,3 +37,14 @@ La recette de référence se trouve dans `recipes/recipe.yml`. L'action officiel
 ## Bibliothèque multi-lanceurs
 
 Le backend Gaming détecte Steam, puis importe les manifestes locaux de Heroic/Legendary pour Epic, GOG et Amazon Games (installation native ou Flatpak). Les jeux sont ouverts via le protocole Heroic afin de conserver ses paramètres Wine/Proton par titre. LEOS ne lit ni ne modifie les jetons de connexion ou les données d'authentification. Lutris est également importé depuis sa base locale `pga.db`, ouverte avec SQLite en mode lecture seule (`mode=ro` et `query_only`). Les jeux sont lancés via `lutris:rungameid/<id>`, ce qui laisse Lutris gérer ses runners et ses réglages.
+
+
+## Applications par défaut et désinstallation
+
+Brave, LibreOffice et VLC sont installées une seule fois dans le profil Flatpak de l'utilisateur par le service `leos-default-apps.service`. Le service écrit le marqueur `~/.local/state/leos/default-apps-seeded` après réussite. Ce marqueur évite de réinstaller une application que l'utilisateur a ensuite choisi de désinstaller. Si le réseau ou Flathub est indisponible, le service réessaie plus tard ; les applications déjà installées sont détectées et ne sont pas dupliquées.
+
+La boutique gère les désinstallations Flatpak dans les deux portées :
+- `--user` pour une application installée dans le profil utilisateur ;
+- `--system` pour une application installée pour tout le système, avec authentification administrateur si nécessaire.
+
+La suppression des données personnelles d'une application n'est jamais forcée par la boutique. Les paquets RPM/OSTree qui composent Bazzite ne sont pas supprimés par cette interface : ils relèvent des mécanismes système de Bazzite.
