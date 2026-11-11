@@ -62,7 +62,7 @@ class ControlCenterController(QObject):
             "notification_duration_seconds", "notification_minimum_priority",
             "notification_sounds_enabled", "silent_notifications_in_gaming",
         )
-        return tuple(self.settings.get(key) for key in keys)
+        return self.settings.snapshot(keys)
 
     @Slot()
     def refreshSharedSettings(self) -> None:
