@@ -34,7 +34,7 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
     def test_update_installation_remains_user_controlled(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("OUVRIR BAZZITE UPDATER", qml)
-        self.assertIn("sans installer ni préparer de nouvelle version", qml)
+        self.assertIn("sans lancer de téléchargement ni d’installation", qml)
         self.assertIn('{ label: "Mises à jour", page: 5 }', qml)
 
 
