@@ -86,7 +86,7 @@ def _gpu_details() -> str:
 
 
 def _bluetooth_details() -> tuple[str, str]:
-    service = _run(["systemctl", "is-active", "bluetooth"])
+    service = _run(["systemctl", "show", "-p", "ActiveState", "--value", "bluetooth"])
     if service != "active":
         return ("Inactif" if service else "État indisponible", "Aucun périphérique connecté détecté")
     info = _run(["bluetoothctl", "show"])
