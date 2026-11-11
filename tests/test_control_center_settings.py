@@ -1,6 +1,8 @@
 """Tests for safe shortcuts to native KDE settings modules."""
 
+import re
 import unittest
+from pathlib import Path
 
 from control_center.settings_modules import (
     SETTINGS_MODULES,
@@ -50,6 +52,12 @@ class SettingsModuleCommandTests(unittest.TestCase):
             ),
             ["/usr/bin/systemsettings"],
         )
+
+    def test_qml_hardware_sections_match_the_allowlist(self):
+        qml_path = Path(__file__).resolve().parents[1] / "control_center" / "qml" / "Main.qml"
+        qml = qml_path.read_text(encoding="utf-8")
+        sections = set(re.findall(r'section: "([a-z-]+)"', qml))
+        self.assertEqual(sections, set(SETTINGS_MODULES))
 
 
 if __name__ == "__main__":
