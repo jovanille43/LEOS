@@ -33,6 +33,28 @@ class DesktopLayoutTests(unittest.TestCase):
             self.assertEqual(saved.get("dock")["alignment"], "right")
             self.assertTrue(saved.get("dock")["auto_hide"])
 
+    def test_custom_profile_survives_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            store.set_dock(position="right", auto_hide=True)
+            store.set_widgets_enabled(True)
+            restored = DesktopLayoutStore(path)
+            self.assertEqual(restored.get("profile"), "custom")
+            self.assertEqual(restored.get("dock")["position"], "right")
+            self.assertTrue(restored.get("dock")["auto_hide"])
+            self.assertTrue(restored.get("widgets_enabled"))
+
+    def test_layout_store_returns_a_copy_of_dock_preferences(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = DesktopLayoutStore(Path(directory) / "desktop-layout.json")
+            dock = store.get("dock")
+            dock["position"] = "left"
+            self.assertEqual(store.get("dock")["position"], "bottom")
+
+    def test_invalid_layout_schema_is_rejected(self):
+        self.assertFalse(validate_layout({"schema_version": 2, "profile": "leos-default"}))
+
     def test_invalid_profile_and_dock_values_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             store = DesktopLayoutStore(Path(directory) / "desktop-layout.json")
@@ -68,6 +90,17 @@ class DesktopLayoutTests(unittest.TestCase):
                 "widgets_enabled": preset["widgets_enabled"],
             }
             self.assertTrue(validate_layout(layout), name)
+
+    def test_control_center_exposes_saved_desktop_layout_preferences(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("DesktopLayoutStore()", controller)
+        self.assertIn("def applyDesktopLayout(self, profile: str)", controller)
+        self.assertIn("def setDockPosition(self, position: str)", controller)
+        self.assertIn("controlCenter.desktopLayoutProfile", qml)
+        self.assertIn("Préférences enregistrées localement", qml)
+        self.assertIn("KDE Plasma ne sera pas modifié", qml)
 
 
 if __name__ == "__main__":
