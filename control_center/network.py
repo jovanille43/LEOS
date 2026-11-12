@@ -9,11 +9,18 @@ from pathlib import Path
 from typing import Mapping
 
 
+MAX_NETWORK_TEXT_BYTES = 256 * 1024
+
+
 def _read(path: str | Path) -> str:
     try:
-        return Path(path).read_text(encoding="utf-8", errors="replace")
+        with Path(path).open("rb") as stream:
+            raw = stream.read(MAX_NETWORK_TEXT_BYTES + 1)
     except OSError:
         return ""
+    if len(raw) > MAX_NETWORK_TEXT_BYTES:
+        return ""
+    return raw.decode("utf-8", errors="replace")
 
 
 def _run(command: list[str], timeout: float = 2.0) -> str:
