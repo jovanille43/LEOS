@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home, state_home as xdg_state_home
+from leos_core.json_utils import json_nesting_within_limit
 
 BACKUP_SCHEMA_VERSION = 1
 _BACKUP_ID = re.compile(r"^[0-9a-f]{32}$")
@@ -51,8 +52,11 @@ def _read_manifest(path: Path) -> Any | None:
             raw = stream.read(MAX_BACKUP_MANIFEST_BYTES + 1)
         if len(raw) > MAX_BACKUP_MANIFEST_BYTES:
             return None
-        return json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+        text = raw.decode("utf-8")
+        if not json_nesting_within_limit(text):
+            return None
+        return json.loads(text)
+    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
         return None
 
 
