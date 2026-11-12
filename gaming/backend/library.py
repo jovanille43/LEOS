@@ -6,7 +6,6 @@ import json
 from itertools import islice
 import os
 import re
-import shlex
 import shutil
 import tempfile
 from pathlib import Path
@@ -21,7 +20,9 @@ from PySide6.QtCore import QProcess
 from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
-    MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, validate_manual_game_input,
+    MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH,
+    validate_manual_game_input,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -242,11 +243,11 @@ class GameLibraryModel(QAbstractListModel):
             platform = item.get("platform", "PC")
             if (
                 isinstance(title, str)
-                and 0 < len(title.strip()) <= 256
+                and 0 < len(title.strip()) <= MAX_MANUAL_TITLE_LENGTH
                 and isinstance(platform, str)
-                and len(platform.strip()) <= 64
+                and len(platform.strip()) <= MAX_MANUAL_PLATFORM_LENGTH
                 and isinstance(launch, list)
-                and 0 < len(launch) <= 32
+                and 0 < len(launch) <= MAX_MANUAL_ARGUMENTS
                 and all(
                     isinstance(part, str) and 0 < len(part) <= 2048 and "\\x00" not in part
                     for part in launch
