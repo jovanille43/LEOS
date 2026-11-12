@@ -121,6 +121,15 @@ class GamepadActionMapper:
             return current if action is not None else None
         return None
 
+    def reset(self) -> None:
+        """Clear held inputs after disconnect or device replacement."""
+        self._hat_x = 0
+        self._hat_y = 0
+        self._stick_states = {"ABS_X": 0, "ABS_Y": 0}
+        self._held_directions.clear()
+        self._repeat_started_at = 0.0
+        self._repeat_last_at = 0.0
+
     def repeat_action(self, now: float | None = None) -> str | None:
         """Return a held direction after the initial delay and at a steady rate."""
         current = self._current_held_direction()
