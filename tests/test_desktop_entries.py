@@ -1,6 +1,10 @@
 """Tests for pure Desktop Entry visibility and localization helpers."""
 
+import os
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from desktop.desktop_entries import (
     desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value,
@@ -108,6 +112,55 @@ class DesktopEntriesTests(unittest.TestCase):
             items, "Récemment utilisées", [], "cafe", ["beta.desktop", "alpha.desktop"]
         )
         self.assertEqual([item["desktopId"] for item in result], ["alpha.desktop"])
+
+    def test_application_directories_follow_xdg_data_dirs_and_user_override(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            user_data = root / "my-user-data"
+            system_one = root / "system-one"
+            system_two = root / "system-two"
+            with patch.dict(os.environ, {
+                "HOME": str(root / "home"),
+                "XDG_DATA_HOME": str(user_data),
+                "XDG_DATA_DIRS": f"{system_one}{os.pathsep}{system_two}",
+            }, clear=True):
+                directories = desktop_application_dirs()
+            self.assertEqual(
+                directories,
+                (
+                    system_one / "applications",
+                    system_two / "applications",
+                    user_data / "applications",
+                ),
+            )
+
+    def test_application_directories_ignore_relative_xdg_data_dirs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.dict(os.environ, {
+                "HOME": str(root / "home"),
+                "XDG_DATA_HOME": str(root / "user-data"),
+                "XDG_DATA_DIRS": f"relative{os.pathsep}{root / 'system'}",
+            }, clear=True):
+                directories = desktop_application_dirs()
+            self.assertEqual(
+                directories,
+                (root / "system" / "applications", root / "user-data" / "applications"),
+            )
+
+    def test_application_directories_use_freedesktop_defaults(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.dict(os.environ, {"HOME": str(root)}, clear=True):
+                directories = desktop_application_dirs()
+            self.assertEqual(
+                directories,
+                (
+                    Path("/usr/local/share/applications"),
+                    Path("/usr/share/applications"),
+                    root / ".local" / "share" / "applications",
+                ),
+            )
 
 
 if __name__ == "__main__":
