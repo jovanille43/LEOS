@@ -72,8 +72,14 @@ def _dns_servers() -> list[str]:
     servers: list[str] = []
     for line in _read("/etc/resolv.conf").splitlines():
         match = re.match(r"\s*nameserver\s+(\S+)", line)
-        if match and match.group(1) not in servers:
-            servers.append(match.group(1))
+        if not match:
+            continue
+        try:
+            server = str(ipaddress.ip_address(match.group(1)))
+        except ValueError:
+            continue
+        if server not in servers:
+            servers.append(server)
     return servers[:4]
 
 
