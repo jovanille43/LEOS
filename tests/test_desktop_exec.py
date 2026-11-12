@@ -45,6 +45,26 @@ class DesktopExecTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     parse_desktop_exec(command)
 
+    def test_rejects_control_characters_and_oversized_exec_fields(self):
+        from desktop.desktop_exec import MAX_EXEC_FIELD_LENGTH
+
+        for command in ("app bad\\x00arg", "app bad\\x01arg", "app " + "x" * (MAX_EXEC_FIELD_LENGTH + 1)):
+            with self.subTest(command=command[:30]), self.assertRaises(ValueError):
+                parse_desktop_exec(command)
+
+    def test_rejects_oversized_or_controlled_metadata(self):
+        for kwargs in (
+            {"name": "x" * 4097},
+            {"icon": "icon\\x00bad"},
+            {"desktop_file": "/tmp/app\\x01.desktop"},
+        ):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                parse_desktop_exec("app", **kwargs)
+
+    def test_rejects_excessive_argument_count(self):
+        with self.assertRaises(ValueError):
+            parse_desktop_exec("app " + " ".join(f"--arg{i}" for i in range(130)))
+
     def test_rejects_invalid_quoting(self):
         with self.assertRaises(ValueError):
             parse_desktop_exec('app "unclosed')
