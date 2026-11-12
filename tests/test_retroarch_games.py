@@ -65,7 +65,7 @@ class RetroArchPlaylistTests(unittest.TestCase):
             directory.mkdir(parents=True)
 
         (native / "retroarch.cfg").write_text(
-            f'playlist_directory = "{custom}"\\n',
+            f'playlist_directory = "{custom}"\n',
             encoding="utf-8",
         )
         found = find_retroarch_playlist_directories(home, xdg)
