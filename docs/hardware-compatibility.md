@@ -44,7 +44,7 @@ La détection matérielle doit rester non bloquante et tolérante aux fonctions 
 - les fonctions spécifiques à un fournisseur ne sont activées que si leur outil ou leur interface est réellement disponible ;
 - la configuration matérielle ne doit pas déclencher silencieusement l'installation ou la suppression d'un pilote.
 
-Le précontrôle affiché dans **Centre de contrôle → Matériel & connexions** vérifie uniquement l'architecture, le mode de démarrage et la quantité de RAM. Il ne certifie ni le processeur, ni Vulkan, ni la compatibilité d'un pilote, du Wi-Fi, du Bluetooth, de l'audio ou des périphériques.
+Le précontrôle affiché dans **Centre de contrôle → Matériel & connexions** vérifie l'architecture, le mode de démarrage, la quantité de RAM, une estimation des cœurs physiques, l'espace libre sur la racine / et, lorsque l'outil vulkaninfo est disponible, la version Vulkan exposée par chaque GPU. Il compare ces informations aux repères Gaming Bazzite (4 cœurs, 8 Go, 50 Go libres et Vulkan 1.3+). Il reste indicatif : la fréquence CPU de référence, le type et l'emplacement physique du SSD, la table GPT, la compatibilité réelle des pilotes, du Wi-Fi, du Bluetooth, de l'audio et des périphériques ne sont pas certifiés. L'absence d'une donnée ou de l'outil vulkaninfo est signalée comme « non vérifiable » et ne bloque jamais Desktop Mode.
 
 ## Matrice de validation avant publication
 
@@ -62,6 +62,6 @@ Une image qui compile ou passe les tests automatisés n'est pas pour autant cert
 
 - Cible actuelle : x86_64 + UEFI.
 - Les recettes standard, NVIDIA legacy et NVIDIA open existent dans le dépôt ; leur construction, la signature et les essais matériels restent à réaliser.
-- La détection Vulkan et le précontrôle de compatibilité restent partiels.
+- Le précontrôle Gaming mesure les capacités exposées par Linux, mais ne remplace pas l'inspection du support cible ni les essais physiques.
 - Aucune liste exhaustive de PC compatibles n'est revendiquée.
 - La construction d'une ISO installable et la validation sur plusieurs ordinateurs restent à effectuer.
