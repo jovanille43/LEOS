@@ -158,6 +158,26 @@ class RetroArchPlaylistTests(unittest.TestCase):
         self.assertIn((flatpak / "playlists").resolve(), found)
         self.assertIn(custom.resolve(), found)
 
+    def test_oversized_retroarch_config_is_ignored(self):
+        from gaming.backend.retroarch import MAX_RETROARCH_CONFIG_BYTES
+
+        home = self.root / "home"
+        config_home = self.root / "xdg-config"
+        root = config_home / "retroarch"
+        root.mkdir(parents=True)
+        custom = self.root / "custom-playlists"
+        custom.mkdir()
+        config = root / "retroarch.cfg"
+        with config.open("wb") as stream:
+            stream.write(
+                f'playlist_directory = "{custom}"\\n'.encode("utf-8")
+            )
+            stream.truncate(MAX_RETROARCH_CONFIG_BYTES + 1)
+        self.assertNotIn(
+            custom.resolve(),
+            find_retroarch_playlist_directories(home, config_home),
+        )
+
     def test_relative_xdg_config_home_falls_back_to_home_config(self):
         home = self.root / "home"
         default = home / ".config/retroarch/playlists"
