@@ -76,7 +76,7 @@ class StoreController(QObject):
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
         if self._busy:
-            if action in {"verify-remote", "verify-install"}:
+            if action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Une autre opération Flatpak est déjà en cours ; la vérification est annulée.")
             self._set_status("Une opération est déjà en cours.")
             return
@@ -91,15 +91,11 @@ class StoreController(QObject):
         self._action, self._target = action, target
         self._stdout.clear()
         self._stderr.clear()
-        self._process.start(executable, args)
-        if not self._process.waitForStarted(1500):
-            if action in {"verify-remote", "verify-install"}:
-                self._set_verification_details("Impossible de vérifier la source Flathub et ses métadonnées.")
-            self._set_status(f"Impossible de démarrer {program}.")
-            self.operationFinished.emit(False, self._status)
-            return
+        # QProcess reports startup failures through errorOccurred. Do not
+        # block the GUI thread with waitForStarted while Flatpak initializes.
         self._set_busy(True)
         self._set_status("Vérification ou opération Flatpak en cours…")
+        self._process.start(executable, args)
 
     @Slot()
     def refreshInstalled(self) -> None:
@@ -282,7 +278,7 @@ class StoreController(QObject):
         if self._busy:
             failed_action = self._action
             self._set_busy(False)
-            if failed_action in {"verify-remote", "verify-install"}:
+            if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
