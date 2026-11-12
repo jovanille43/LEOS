@@ -22,6 +22,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_catalog_uses_desktop_entries_and_never_a_shell(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("APP_DIRS = desktop_application_dirs()", source)
+        self.assertIn("desktop_entry_paths(APP_DIRS)", source)
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
         self.assertIn('["/usr/local/share", "/usr/share"]', entries)
         self.assertIn('xdg_data_home() / "applications"', entries)
@@ -105,7 +106,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_catalog_uses_pure_desktop_entry_helpers(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("from desktop.desktop_entries import (", source)
-        self.assertIn("desktop_application_dirs, desktop_entry_is_visible,", source)
+        self.assertIn("desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,", source)
         self.assertIn("filter_desktop_applications, localized_desktop_value,", source)
         self.assertIn("desktop_entry_is_visible(values, current_desktops)", source)
         self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
