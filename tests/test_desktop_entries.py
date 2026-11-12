@@ -128,8 +128,8 @@ class DesktopEntriesTests(unittest.TestCase):
             self.assertEqual(
                 directories,
                 (
-                    system_one / "applications",
                     system_two / "applications",
+                    system_one / "applications",
                     user_data / "applications",
                 ),
             )
@@ -156,8 +156,8 @@ class DesktopEntriesTests(unittest.TestCase):
             self.assertEqual(
                 directories,
                 (
-                    Path("/usr/local/share/applications"),
                     Path("/usr/share/applications"),
+                    Path("/usr/local/share/applications"),
                     root / ".local" / "share" / "applications",
                 ),
             )
