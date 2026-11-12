@@ -21,6 +21,7 @@ from PySide6.QtCore import QProcess
 from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
+    MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, validate_manual_game_input,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -233,22 +234,36 @@ class GameLibraryModel(QAbstractListModel):
         if not isinstance(raw, list):
             return []
         valid: list[dict[str, Any]] = []
-        for item in raw[:5000]:
+        for item in raw[:MAX_MANUAL_GAMES]:
             if not isinstance(item, dict):
                 continue
             title = item.get("title")
             launch = item.get("launch")
+            platform = item.get("platform", "PC")
             if (
                 isinstance(title, str)
                 and 0 < len(title.strip()) <= 256
+                and isinstance(platform, str)
+                and len(platform.strip()) <= 64
                 and isinstance(launch, list)
                 and 0 < len(launch) <= 32
-                and all(isinstance(part, str) and len(part) <= 2048 for part in launch)
+                and all(
+                    isinstance(part, str) and 0 < len(part) <= 2048 and "\\x00" not in part
+                    for part in launch
+                )
             ):
+                candidate_id = item.get("id")
+                game_id = (
+                    candidate_id
+                    if isinstance(candidate_id, str)
+                    and candidate_id.startswith("manual:")
+                    and len(candidate_id) <= 512
+                    else f"manual:{title_identity_key(title)}"
+                )
                 valid.append({
-                    "id": str(item.get("id", f"manual:{title}")),
+                    "id": game_id,
                     "title": title.strip(),
-                    "platform": str(item.get("platform", "PC")),
+                    "platform": platform.strip() or "PC",
                     "source": "Ajout manuel",
                     "app_id": "",
                     "launch": launch,
@@ -446,40 +461,60 @@ class GameLibraryModel(QAbstractListModel):
         }
 
     @Slot(str, str, str, result=bool)
+    @Slot(str, str, str, result=bool)
     def addManualGame(self, title: str, platform: str, command: str) -> bool:
-        title = title.strip()
-        platform = platform.strip() or "PC"
-        if not title or not command.strip():
+        validated = validate_manual_game_input(title, platform, command)
+        if validated is None:
             return False
+        title, platform, launch = validated
 
-        try:
-            launch = shlex.split(command, posix=True)
-        except ValueError:
+        # Never replace a corrupt, oversized, linked, or unsupported file with
+        # a partial list just because the loader fell back to an empty result.
+        if self._manual_file.is_symlink() or self._manual_file.parent.is_symlink():
             return False
-        if not launch:
-            return False
+        if self._manual_file.exists():
+            existing = read_bounded_json(self._manual_file)
+            if not isinstance(existing, list) or len(existing) > MAX_MANUAL_GAMES:
+                return False
 
         games = self._load_manual_games()
         game_id = f"manual:{title_identity_key(title)}"
+        identity = title_identity_key(title)
+        replacing = any(
+            str(game.get("id", "")).startswith("manual:")
+            and title_identity_key(str(game.get("title", ""))) == identity
+            for game in games
+        )
+        if len(games) >= MAX_MANUAL_GAMES and not replacing:
+            return False
         games = upsert_manual_game(games, {
             "id": game_id,
             "title": title,
             "platform": platform,
             "launch": launch,
         })
-        self._write_manual_games(games)
+        try:
+            self._write_manual_games(games)
+        except (OSError, ValueError):
+            return False
         self.refresh()
         return True
 
     def _write_manual_games(self, games: list[dict[str, Any]]) -> None:
-        self._manual_file.parent.mkdir(parents=True, exist_ok=True)
+        if len(games) > MAX_MANUAL_GAMES:
+            raise ValueError("Too many manual games")
+        self._manual_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self._manual_file.parent.is_symlink() or self._manual_file.is_symlink():
+            raise OSError("Manual game library path cannot be a symbolic link")
+        payload = json.dumps(games, indent=2, ensure_ascii=False) + "\n"
+        if len(payload.encode("utf-8")) > MAX_LIBRARY_STATE_FILE_BYTES:
+            raise ValueError("Manual game library exceeds its storage limit")
         fd, temp_name = tempfile.mkstemp(
             prefix="library.", suffix=".tmp", dir=self._manual_file.parent
         )
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
-                json.dump(games, stream, indent=2, ensure_ascii=False)
-                stream.write("\n")
+                stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
             os.chmod(temp_name, 0o600)
