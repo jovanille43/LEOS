@@ -33,6 +33,7 @@ ApplicationWindow {
     property string navigationArea: "categories"
     property string pendingPowerProfile: ""
     property bool returningToDesktop: false
+    property int quickPanelFocusIndex: 0
 
     function requestDesktopReturn() {
         if (returningToDesktop)
@@ -169,6 +170,35 @@ ApplicationWindow {
         moveSelection(action)
     }
 
+    function quickPanelActionCount() {
+        return leos.availablePowerProfiles.length + 3
+    }
+
+    function moveQuickPanelFocus(direction) {
+        const count = quickPanelActionCount()
+        if (count < 1)
+            return
+        const delta = (direction === "left" || direction === "up") ? -1 : 1
+        quickPanelFocusIndex = (quickPanelFocusIndex + delta + count) % count
+    }
+
+    function activateQuickPanelFocus() {
+        const profileCount = leos.availablePowerProfiles.length
+        if (quickPanelFocusIndex === 0) {
+            if (leos.mangoHudAvailable)
+                leos.setMangoHudEnabled(!leos.mangoHudEnabled)
+            else
+                statusText.text = "MangoHud n'est pas installé sur cet hôte."
+        } else if (quickPanelFocusIndex <= profileCount) {
+            pendingPowerProfile = leos.availablePowerProfiles[quickPanelFocusIndex - 1]
+            powerProfileDialog.open()
+        } else if (quickPanelFocusIndex === profileCount + 1) {
+            returnDialog.open()
+        } else {
+            quickPanel.visible = false
+        }
+    }
+
     function handleGamepadAction(action) {
         if (returningToDesktop)
             return
@@ -191,8 +221,14 @@ ApplicationWindow {
             return
         }
         if (quickPanel.visible) {
-            if (action === "back")
+            if (action === "back") {
                 quickPanel.visible = false
+            } else if (action === "up" || action === "down" ||
+                       action === "left" || action === "right") {
+                moveQuickPanelFocus(action)
+            } else if (action === "confirm") {
+                activateQuickPanelFocus()
+            }
             return
         }
         if (action === "up" || action === "down" ||
@@ -325,7 +361,10 @@ ApplicationWindow {
 
                 Button {
                     text: "PANNEAU RAPIDE  ☰"
-                    onClicked: quickPanel.visible = !quickPanel.visible
+                    onClicked: {
+                        quickPanel.visible = !quickPanel.visible
+                        quickPanelFocusIndex = 0
+                    }
                     background: Rectangle {
                         radius: 10
                         color: parent.down ? "#26313e" : "#171d28"
@@ -379,6 +418,12 @@ ApplicationWindow {
                             enabled: leos.mangoHudAvailable
                             onToggled: leos.setMangoHudEnabled(checked)
                             palette.text: "white"
+                            background: Rectangle {
+                                radius: 6
+                                color: "transparent"
+                                border.width: quickPanel.visible && window.quickPanelFocusIndex === 0 ? 2 : 0
+                                border.color: window.cyan
+                            }
                         }
                         Label {
                             text: leos.mangoHudAvailable
@@ -433,13 +478,15 @@ ApplicationWindow {
                                     required property string modelData
                                     text: window.powerProfileLabel(modelData)
                                     onClicked: {
+                                        window.quickPanelFocusIndex = index + 1
                                         window.pendingPowerProfile = modelData
                                         powerProfileDialog.open()
                                     }
                                     background: Rectangle {
                                         radius: 6
                                         color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
-                                        border.color: leos.activePowerProfile === modelData ? window.cyan : "#344052"
+                                        border.width: window.quickPanelFocusIndex === index + 1 ? 2 : 1
+                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.cyan : (leos.activePowerProfile === modelData ? window.cyan : "#344052")
                                     }
                                     contentItem: Label {
                                         text: parent.text
@@ -455,11 +502,26 @@ ApplicationWindow {
                     Item { Layout.fillWidth: true }
                     Button {
                         text: "RETOUR DESKTOP"
-                        onClicked: returnDialog.open()
+                        onClicked: {
+                            window.quickPanelFocusIndex = leos.availablePowerProfiles.length + 1
+                            returnDialog.open()
+                        }
+                        background: Rectangle {
+                            radius: 7
+                            color: "#202630"
+                            border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? 2 : 1
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? window.cyan : "#344052"
+                        }
                     }
                     Button {
                         text: "FERMER"
                         onClicked: quickPanel.visible = false
+                        background: Rectangle {
+                            radius: 7
+                            color: "#202630"
+                            border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? 2 : 1
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.cyan : "#344052"
+                        }
                     }
                 }
             }
