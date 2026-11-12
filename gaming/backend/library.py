@@ -7,7 +7,6 @@ from itertools import islice
 import os
 import re
 import shutil
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +21,7 @@ from .library_state import (
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
     MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
     MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH,
-    validate_manual_game_input,
+    validate_manual_game_input, write_bounded_json,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -283,23 +282,12 @@ class GameLibraryModel(QAbstractListModel):
 
     @staticmethod
     def _write_id_list(path: Path, values: list[str]) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        fd, temp_name = tempfile.mkstemp(
-            prefix=f"{path.stem}.", suffix=".tmp", dir=path.parent
-        )
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
-                json.dump(values, stream, indent=2, ensure_ascii=False)
-                stream.write("\n")
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.chmod(temp_name, 0o600)
-            os.replace(temp_name, path)
-        finally:
-            try:
-                os.unlink(temp_name)
-            except FileNotFoundError:
-                pass
+        if len(values) > 5000 or any(
+            not isinstance(item, str) or not item or len(item) > 512 or chr(0) in item
+            for item in values
+        ):
+            raise ValueError("Invalid game library state identifiers")
+        write_bounded_json(path, values)
 
     def refresh(self) -> None:
         discovered: dict[str, dict[str, Any]] = {}
@@ -508,27 +496,10 @@ class GameLibraryModel(QAbstractListModel):
     def _write_manual_games(self, games: list[dict[str, Any]]) -> None:
         if len(games) > MAX_MANUAL_GAMES:
             raise ValueError("Too many manual games")
-        self._manual_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self._manual_file.parent.is_symlink() or self._manual_file.is_symlink():
-            raise OSError("Manual game library path cannot be a symbolic link")
-        payload = json.dumps(games, indent=2, ensure_ascii=False) + "\n"
-        if len(payload.encode("utf-8")) > MAX_LIBRARY_STATE_FILE_BYTES:
-            raise ValueError("Manual game library exceeds its storage limit")
-        fd, temp_name = tempfile.mkstemp(
-            prefix="library.", suffix=".tmp", dir=self._manual_file.parent
+        write_bounded_json(
+            self._manual_file, games, max_bytes=MAX_LIBRARY_STATE_FILE_BYTES
         )
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
-                stream.write(payload)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.chmod(temp_name, 0o600)
-            os.replace(temp_name, self._manual_file)
-        finally:
-            try:
-                os.unlink(temp_name)
-            except FileNotFoundError:
-                pass
+
 
     @property
     def lastLaunchStatus(self) -> str:
