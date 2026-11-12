@@ -18,6 +18,35 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
+    def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
+        self.assertIn("import QtMultimedia", qml)
+        self.assertIn("gaming-intro.mp4", qml)
+        self.assertIn("desktop-intro.mp4", qml)
+        self.assertIn("MediaPlayer.EndOfMedia", qml)
+        self.assertIn("onErrorOccurred", qml)
+        self.assertIn("interval: 9000", qml)
+        self.assertIn("muted: !modeSelectorController.soundsEnabled", qml)
+        self.assertIn("def animationsEnabled(self)", controller)
+        self.assertIn("def soundsEnabled(self)", controller)
+        self.assertIn("window.requestModeWithIntro(\"gaming\")", qml)
+        self.assertIn("window.requestModeWithIntro(\"desktop\")", qml)
+
+    def test_gaming_return_plays_desktop_intro_before_closing(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        self.assertIn("import QtMultimedia", qml)
+        self.assertIn("desktop-intro.mp4", qml)
+        self.assertIn("function requestDesktopReturn()", qml)
+        self.assertIn("function finishDesktopReturn()", qml)
+        self.assertIn("window.requestDesktopReturn()", qml)
+        self.assertIn("MediaPlayer.EndOfMedia", qml)
+        self.assertIn("onErrorOccurred", qml)
+        self.assertIn("muted: !leos.soundsEnabled", qml)
+        self.assertIn("def animationsEnabled(self)", controller)
+        self.assertIn("def soundsEnabled(self)", controller)
+
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(
             encoding="utf-8"
