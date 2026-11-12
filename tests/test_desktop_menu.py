@@ -42,13 +42,13 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_menu_has_quick_access_to_modes_and_control_centre(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
-        self.assertIn('applicationCatalog.launch("leos-mode-selector.desktop")', qml)
-        self.assertIn('applicationCatalog.launch("leos-control-center.desktop")', qml)
+        self.assertIn('window.launchApplication("leos-mode-selector.desktop"', qml)
+        self.assertIn('window.launchApplication("leos-control-center.desktop"', qml)
 
     def test_menu_has_quick_access_to_notification_centre(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
-        self.assertIn('applicationCatalog.launch("leos-notifications.desktop")', qml)
+        self.assertIn('window.launchApplication("leos-notifications.desktop"', qml)
         self.assertIn("def unreadNotificationCount", source)
         self.assertIn("def refreshNotificationCount", source)
         self.assertIn("self._notification_timer.start()", source)
