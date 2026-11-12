@@ -104,6 +104,15 @@ class DockFavouritesTests(unittest.TestCase):
                 store.pin("org.example.Safe.desktop")
             self.assertEqual(path.read_text(encoding="utf-8"), invalid)
 
+    def test_deeply_nested_json_is_ignored_without_crashing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            path.write_text("[" * 2000 + "]" * 2000, encoding="utf-8")
+            store = DockFavourites(path)
+            self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
+            with self.assertRaises(ValueError):
+                store.pin("org.example.Safe.desktop")
+
     def test_lock_file_is_private(self):
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
