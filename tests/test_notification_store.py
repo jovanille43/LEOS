@@ -69,6 +69,20 @@ class NotificationStoreTests(unittest.TestCase):
                 store.add("Ne pas écraser")
             self.assertEqual(path.read_bytes(), oversized)
 
+    def test_maximum_unicode_notification_history_fits_storage_limit(self):
+        from desktop.notification_store import MAX_NOTIFICATION_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            store = NotificationStore(path)
+            body = "😀" * 2000
+            for index in range(MAX_NOTIFICATIONS):
+                store.add(f"Événement {index}", body)
+            self.assertLessEqual(path.stat().st_size, MAX_NOTIFICATION_FILE_BYTES)
+            restored = NotificationStore(path)
+            self.assertEqual(len(restored.items()), MAX_NOTIFICATIONS)
+            self.assertEqual(restored.items()[0]["body"], body)
+
     def test_reload_clears_stale_events_after_external_corruption(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "inbox.json"
