@@ -26,7 +26,9 @@ class MangoHudIntegrationTests(unittest.TestCase):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: "Overlay FPS · MangoHud"', source)
         self.assertIn("mangohud %command%", source)
-        self.assertIn("leos.launchGame(window.selectedIndex, leos.mangoHudEnabled)", source)
+        self.assertIn("function launchSelectedGame()", source)
+        self.assertIn("leos.launchGame(selectedIndex, leos.mangoHudEnabled)", source)
+        self.assertIn("window.launchSelectedGame()", source)
 
 
 if __name__ == "__main__":
