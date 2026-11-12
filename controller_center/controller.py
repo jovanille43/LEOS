@@ -182,7 +182,7 @@ class ControllerCenterController(QObject):
             self.changed.emit()
         if not events:
             return
-        for event in events[-12:]:
+        for event in events:
             description = self.input_state.consume(event)
             if description:
                 self.last_event = description
