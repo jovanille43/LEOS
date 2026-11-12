@@ -59,6 +59,13 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("window.detailsActionIndex === 0", self.qml)
         self.assertIn("window.detailsActionIndex === 1", self.qml)
 
+    def test_keyboard_focus_keeps_toolbar_category_and_detail_state_synchronized(self):
+        self.assertIn('window.selectedCategoryIndex = window.categoryNames.indexOf(modelData)', self.qml)
+        self.assertIn('window.toolbarFocusIndex = 1', self.qml)
+        self.assertIn('window.toolbarFocusIndex = 2', self.qml)
+        self.assertIn('window.detailsActionIndex = 0', self.qml)
+        self.assertIn('window.detailsActionIndex = 1', self.qml)
+
     def test_gamepad_can_accept_the_manual_add_dialog(self):
         self.assertIn("if (addDialog.visible)", self.qml)
         self.assertIn("addDialog.accept()", self.qml)

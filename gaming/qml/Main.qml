@@ -685,6 +685,12 @@ ApplicationWindow {
                             required property string modelData
                             Layout.fillWidth: true
                             text: modelData
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "categories"
+                                    window.selectedCategoryIndex = window.categoryNames.indexOf(modelData)
+                                }
+                            }
                             background: Rectangle {
                                 radius: 9
                                 color: modelData === window.selectedCategory ? "#202b38" : "transparent"
@@ -761,6 +767,12 @@ ApplicationWindow {
                         Button {
                             id: refreshLibraryButton
                             text: "ACTUALISER"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 1
+                                }
+                            }
                             onClicked: {
                                 window.clearSelection()
                                 leos.refreshLibrary()
@@ -784,6 +796,12 @@ ApplicationWindow {
                         Button {
                             id: addGameButton
                             text: "+ AJOUTER UN JEU"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 2
+                                }
+                            }
                             onClicked: {
                                 window.navigationArea = "toolbar"
                                 window.toolbarFocusIndex = 2
@@ -1064,6 +1082,12 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: window.selectedIsFavorite ? "RETIRER DES FAVORIS" : "AJOUTER AUX FAVORIS"
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) {
+                                            window.navigationArea = "details"
+                                            window.detailsActionIndex = 0
+                                        }
+                                    }
                                     onClicked: window.toggleSelectedFavorite()
                                     background: Rectangle {
                                         radius: 9
@@ -1084,6 +1108,12 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: "JOUER"
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) {
+                                            window.navigationArea = "details"
+                                            window.detailsActionIndex = 1
+                                        }
+                                    }
                                     onClicked: window.launchSelectedGame()
                                     background: Rectangle {
                                         radius: 10
