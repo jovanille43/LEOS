@@ -114,6 +114,17 @@ class NotificationStoreTests(unittest.TestCase):
             self.assertEqual(len({item["id"] for item in records}), 50)
             self.assertEqual(set(identifiers), {item["id"] for item in records})
 
+    def test_existing_history_directory_is_restricted_before_write(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory) / "history"
+            parent.mkdir(mode=0o755)
+            parent.chmod(0o755)
+            path = parent / "notifications.json"
+            NotificationStore(path).add("Privé")
+            self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
+
     def test_notification_lock_file_is_private(self):
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
