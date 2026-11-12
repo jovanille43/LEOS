@@ -148,6 +148,28 @@ class HardwareInventoryTests(unittest.TestCase):
                 (root / f"cpu{cpu_id}" / "topology").mkdir(parents=True)
             self.assertEqual(hardware._cpu_topology_from_sysfs(root), (None, 2))
 
+    def test_sysfs_topology_does_not_under_count_mixed_partial_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "online").write_text("0-2", encoding="utf-8")
+
+            first = root / "cpu0" / "topology"
+            first.mkdir(parents=True)
+            (first / "physical_package_id").write_text("0", encoding="utf-8")
+            (first / "core_id").write_text("0", encoding="utf-8")
+
+            second = root / "cpu1" / "topology"
+            second.mkdir(parents=True)
+            (second / "physical_package_id").write_text("0", encoding="utf-8")
+            (second / "core_id").write_text("1", encoding="utf-8")
+
+            # A third online CPU exposes a core ID but no package/cluster ID.
+            third = root / "cpu2" / "topology"
+            third.mkdir(parents=True)
+            (third / "core_id").write_text("0", encoding="utf-8")
+
+            self.assertEqual(hardware._cpu_topology_from_sysfs(root), (None, 3))
+
     def test_memory_total_parser_and_gaming_baseline_are_conservative(self):
         with patch.object(
             hardware, "_read",
