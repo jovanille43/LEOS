@@ -458,8 +458,8 @@ def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
 
     # KScreen colors the active mode in interactive terminals. Strip ANSI
     # sequences before parsing so output remains predictable in all sessions.
-    output = re.sub(r"\\x1b\\[[0-?]*[ -/]*[@-~]", "", output)
-    headers = list(re.finditer(r"(?m)^Output:\\s*\\d+\\s+(\\S+)(.*)$", output))
+    output = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", output)
+    headers = list(re.finditer(r"(?m)^Output:\s*\d+\s+(\S+)(.*)$", output))
     if not headers:
         return None
 
@@ -469,33 +469,33 @@ def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
         block = output[header.start():end]
         name = header.group(1)
         header_state = header.group(2).lower()
-        if not re.search(r"\\bconnected\\b", header_state):
+        if not re.search(r"\bconnected\b", header_state):
             continue
 
-        enabled = bool(re.search(r"\\benabled\\b", header_state))
+        enabled = bool(re.search(r"\benabled\b", header_state))
         state = "actif" if enabled else "connecté, inactif"
         details = [name, state]
 
         current_mode = re.search(
-            r"(?m)^\\s*Modes:.*?\\b(\\d{2,5}x\\d{2,5}@\\d+(?:\\.\\d+)?)\\*",
+            r"(?m)^\s*Modes:.*?\b(\d{2,5}x\d{2,5}@\d+(?:\.\d+)?)\*",
             block,
         )
         if current_mode:
             mode = current_mode.group(1)
-            if "@" in mode:
-                resolution, refresh = mode.split("@", 1)
-                refresh = refresh.rstrip("0").rstrip(".")
-                details.append(f"{resolution} à {refresh} Hz")
-            else:
-                details.append(mode)
+            resolution, refresh = mode.split("@", 1)
+            refresh = refresh.rstrip("0").rstrip(".")
+            details.append(f"{resolution} à {refresh} Hz")
         else:
             details.append("mode actif non exposé")
 
-        geometry = re.search(r"(?m)^\\s*Geometry:\\s*(-?\\d+,-?\\d+\\s+\\d{2,5}x\\d{2,5})", block)
+        geometry = re.search(
+            r"(?m)^\s*Geometry:\s*(-?\d+,-?\d+\s+\d{2,5}x\d{2,5})",
+            block,
+        )
         if geometry:
             details.append(f"géométrie {geometry.group(1)}")
 
-        scale = re.search(r"(?m)^\\s*Scale:\\s*([0-9]+(?:\\.[0-9]+)?)", block)
+        scale = re.search(r"(?m)^\s*Scale:\s*([0-9]+(?:\.[0-9]+)?)", block)
         if scale:
             scale_value = scale.group(1).rstrip("0").rstrip(".")
             details.append(f"échelle {scale_value}")
@@ -509,11 +509,12 @@ def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
 
 def _display_details(
     drm_root: Path = Path("/sys/class/drm"),
+    kscreen_output: str | None = None,
 ) -> tuple[str, str]:
     """Inventory displays using KScreen when available, then read-only DRM fallback."""
-    kscreen = _parse_kscreen_displays(
-        _run(["kscreen-doctor", "-o"], timeout=2.0)
-    )
+    if kscreen_output is None:
+        kscreen_output = _run(["kscreen-doctor", "-o"], timeout=2.0)
+    kscreen = _parse_kscreen_displays(kscreen_output)
     if kscreen is not None:
         return kscreen
 
