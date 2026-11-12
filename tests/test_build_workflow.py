@@ -151,6 +151,27 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("/cosign.pub", source)
 
 
+    def test_recipe_ci_reports_hashes_for_all_deployed_branding_assets(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("Report deployed branding SHA-256 fingerprints", source)
+        self.assertIn("sha256sum", source)
+        expected = (
+            "branding/desktop-logo.jpeg",
+            "branding/gaming-logo.jpeg",
+            "branding/reference-comparison.jpeg",
+            "branding/animations/desktop-intro.mov",
+            "branding/animations/gaming-intro.mp4",
+            "branding/animations/gaming-roar-reference.mp4",
+            "branding/wallpapers/desktop-leos.svg",
+            "branding/wallpapers/gaming-leos.svg",
+        )
+        start = source.index("Report deployed branding SHA-256 fingerprints")
+        end = source.index("Validate wallpaper SVG", start)
+        block = source[start:end]
+        for path in expected:
+            with self.subTest(path=path):
+                self.assertIn(path, block)
+
     def test_recipe_ci_validates_both_wallpaper_svg_emblem_links(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
