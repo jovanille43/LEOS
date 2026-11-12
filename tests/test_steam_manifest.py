@@ -29,6 +29,14 @@ class SteamManifestTests(unittest.TestCase):
         )
         return read_steam_manifest(manifest)
 
+    def test_rejects_oversized_manifest_before_parsing(self):
+        from gaming.backend.steam_manifest import MAX_STEAM_MANIFEST_BYTES
+
+        manifest = self.steamapps / "appmanifest_oversized.acf"
+        with manifest.open("wb") as stream:
+            stream.truncate(MAX_STEAM_MANIFEST_BYTES + 1)
+        self.assertIsNone(read_steam_manifest(manifest))
+
     def test_reads_safe_install_directory(self):
         game = self.read_manifest("Example Game")
         self.assertEqual(game["app_id"], "123")
