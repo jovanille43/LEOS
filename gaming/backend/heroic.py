@@ -9,6 +9,8 @@ from typing import Any
 
 
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_HEROIC_MANIFEST_BYTES = 16 * 1024 * 1024
+MAX_HEROIC_GAMES = 20_000
 
 
 def find_heroic_artwork(record: dict[str, Any]) -> str:
@@ -34,7 +36,13 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
     if runner not in {"legendary", "gog", "nile"}:
         return []
     try:
-        payload = json.loads(installed_file.read_text(encoding="utf-8-sig"))
+        # Installed manifests are local data, but bound reads so a corrupt or
+        # unexpectedly large file cannot stall library discovery indefinitely.
+        with installed_file.open("rb") as stream:
+            raw = stream.read(MAX_HEROIC_MANIFEST_BYTES + 1)
+        if len(raw) > MAX_HEROIC_MANIFEST_BYTES:
+            return []
+        payload = json.loads(raw.decode("utf-8-sig"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return []
 
@@ -47,7 +55,9 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
 
     games: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for key, record in records:
+    for index, (key, record) in enumerate(records):
+        if index >= MAX_HEROIC_GAMES:
+            break
         if not isinstance(record, dict):
             continue
         if record.get("is_dlc") or record.get("isDLC"):
