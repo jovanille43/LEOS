@@ -54,6 +54,17 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("enabled: !store.busy", qml)
         self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
 
+    def test_flatpak_process_start_does_not_block_the_gui_thread(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn("self._set_busy(True)", source)
+        self.assertIn("self._process.start(executable, args)", source)
+        self.assertNotIn("waitForStarted", source)
+
+    def test_recheck_startup_errors_update_source_verification_details(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn('"verify-remote", "verify-install", "recheck-remote"', source)
+        self.assertIn("failed_action in", source)
+
     def test_qprocess_streams_stdout_and_stderr_while_flatpak_runs(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("readyReadStandardOutput.connect(self._read_output)", source)
