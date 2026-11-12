@@ -57,7 +57,7 @@ def _cpu_details() -> tuple[str, str]:
 
     logical = sum(
         1 for line in data.splitlines()
-        if line.lower().startswith("processor") and ":" in line
+        if ":" in line and line.split(":", 1)[0].strip().lower() == "processor"
     )
     if not logical:
         online = _read("/sys/devices/system/cpu/online")
