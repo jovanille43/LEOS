@@ -49,8 +49,8 @@ class GamingLibraryVisualTests(unittest.TestCase):
 
     def test_gamepad_confirm_activates_the_empty_state_primary_action(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('emptyStatePrimaryButton.click()', source)
-        self.assertIn('gameGrid.count === 0', source)
+        self.assertIn('window.activateEmptyStatePrimaryAction()', source)
+        self.assertIn('else if (gameGrid.count === 0)', source)
 
     def test_library_shows_filtered_game_count(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
