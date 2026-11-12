@@ -31,6 +31,21 @@ class RetroArchPlaylistTests(unittest.TestCase):
         payload = {"version": "1.0", "items": items, **extra}
         self.playlist.write_text(json.dumps(payload), encoding="utf-8")
 
+    def test_classifies_playstation_and_sega_playlist_databases(self):
+        playstation = self.playlists / "Sony - PlayStation.lpl"
+        playstation.write_text(json.dumps({"items": [{
+            "path": str(self.rom), "label": "PlayStation Game",
+            "db_name": "Sony - PlayStation.lpl",
+        }]}), encoding="utf-8")
+        sega = self.playlists / "Sega - Mega Drive.lpl"
+        sega.write_text(json.dumps({"items": [{
+            "path": str(self.rom), "label": "Sega Game",
+            "db_name": "Sega - Mega Drive.lpl",
+        }]}), encoding="utf-8")
+
+        self.assertEqual(load_retroarch_games(playstation)[0]["platform"], "PlayStation")
+        self.assertEqual(load_retroarch_games(sega)[0]["platform"], "SEGA")
+
     def test_imports_nintendo_playlist_and_builds_native_core_command(self):
         self.write_playlist([{
             "path": str(self.rom),

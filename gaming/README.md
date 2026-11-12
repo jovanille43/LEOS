@@ -16,6 +16,8 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 
 Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell.
 
+Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
+
 ## Développement local
 
 Depuis le dossier `gaming/` :
