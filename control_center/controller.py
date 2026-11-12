@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
 from desktop.themes import palette_for_theme
@@ -16,7 +17,7 @@ from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
-from control_center.diagnostics import collect_system_diagnostics
+from control_center.diagnostics import collect_system_diagnostics, format_diagnostic_report
 from control_center.cleanup import collect_cleanup_preview
 from control_center.system_updates import (
     interpret_update_check_exit_code,
@@ -352,6 +353,23 @@ class ControlCenterController(QObject):
         if snapshot != self._diagnostics_snapshot:
             self._diagnostics_snapshot = snapshot
             self.diagnosticsChanged.emit()
+
+    @Slot(result=bool)
+    def copyDiagnosticReport(self) -> bool:
+        """Copy a bounded support report that excludes private network and process data."""
+        try:
+            report = format_diagnostic_report(
+                self._hardware_snapshot,
+                self._diagnostics_snapshot,
+                self._deployment_snapshot,
+            )
+            clipboard = QGuiApplication.clipboard()
+            if clipboard is None:
+                return False
+            clipboard.setText(report)
+        except (RuntimeError, TypeError, AttributeError):
+            return False
+        return True
 
     @Property(str, notify=systemUpdatesChanged)
     def systemUpdateStatus(self) -> str:
