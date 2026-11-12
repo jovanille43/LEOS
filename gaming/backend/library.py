@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from leos_core.paths import data_home as xdg_data_home
+from leos_core.paths import config_home as xdg_config_home, data_home as xdg_data_home
 
 from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot, QUrl
 from PySide6.QtGui import QDesktopServices
@@ -194,7 +194,7 @@ class GameLibraryModel(QAbstractListModel):
     def _heroic_installed_files(self) -> list[tuple[Path, str]]:
         home = Path.home()
         config_roots = [
-            home / ".config" / "heroic",
+            xdg_config_home() / "heroic",
             home / ".var/app/com.heroicgameslauncher.hgl/config/heroic",
         ]
         candidates: list[tuple[Path, str]] = []
@@ -222,7 +222,9 @@ class GameLibraryModel(QAbstractListModel):
         return candidates
 
     def _retroarch_playlist_directories(self) -> list[Path]:
-        return find_retroarch_playlist_directories()
+        return find_retroarch_playlist_directories(
+            xdg_config_home=xdg_config_home()
+        )
 
     def _load_manual_games(self) -> list[dict[str, Any]]:
         try:
@@ -341,7 +343,9 @@ class GameLibraryModel(QAbstractListModel):
         except OSError:
             playlist_directories = []
         try:
-            thumbnail_directories = find_retroarch_thumbnail_directories()
+            thumbnail_directories = find_retroarch_thumbnail_directories(
+                xdg_config_home=xdg_config_home()
+            )
         except OSError:
             thumbnail_directories = []
         for directory in playlist_directories:
