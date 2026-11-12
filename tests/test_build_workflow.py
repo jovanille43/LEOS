@@ -240,6 +240,20 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Layout.preferredWidth: 42", shop)
         self.assertIn("Layout.preferredHeight: 42", shop)
 
+    def test_qml_button_content_items_use_typed_button_ids(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        shop = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("text: continueGamingButton.text", selector)
+        self.assertIn("text: powerProfileButton.text", gaming)
+        self.assertIn("text: categoryButton.text", gaming)
+        self.assertIn("text: addGameButton.text", gaming)
+        self.assertIn("text: favoriteGameButton.text", gaming)
+        self.assertIn("launchSelectedGameButton.enabled", gaming)
+        self.assertIn("text: launchSelectedGameButton.text", gaming)
+        self.assertIn("text: confirmPowerProfileButton.text", gaming)
+        self.assertIn("text: installRemoveButton.text", shop)
+
     def test_recipe_ci_reports_hashes_for_all_deployed_branding_assets(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Report deployed branding SHA-256 fingerprints", source)
