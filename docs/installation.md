@@ -29,6 +29,8 @@ Les GPU NVIDIA Kepler et plus anciens ne sont pas annoncés comme compatibles Ga
 
 Ces repères Gaming ne doivent pas être présentés comme des exigences universelles du mode Desktop. Un PC peut être utilisable en Desktop sans offrir les performances nécessaires aux jeux récents.
 
+Le parcours du premier démarrage, y compris l'offre d'applications facultatives, est décrit dans le [guide de premier démarrage](first-run.md).
+
 ## Procédure prévue après publication
 
 La procédure détaillée de retour arrière et de récupération est disponible dans [le guide de récupération](recovery.md). Lis-la avant le premier essai d'installation : LEOS repose sur les déploiements OSTree de Bazzite et ne fournit pas encore de mécanisme de réparation autonome.
