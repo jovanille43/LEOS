@@ -90,7 +90,7 @@ if (( ${#missing_apps[@]} > 0 )); then
     fi
 
     case "$flathub_url" in
-        https://dl.flathub.org/repo/|https://flathub.org/repo/|https://dl.flathub.org/repo/flathub.flatpakrepo|https://flathub.org/repo/flathub.flatpakrepo)
+        https://dl.flathub.org/repo|https://flathub.org/repo|https://dl.flathub.org/repo/|https://flathub.org/repo/|https://dl.flathub.org/repo/flathub.flatpakrepo|https://flathub.org/repo/flathub.flatpakrepo)
             ;;
         *)
             echo "LEOS: le dépôt nommé Flathub est absent ou son URL n'est pas officielle ; aucune installation lancée." >&2
