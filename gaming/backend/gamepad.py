@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+import time
 
 from controller_center.profiles import detect_controller_profile
 
@@ -55,6 +56,11 @@ class GamepadActionMapper:
         self.axis_centers = dict(axis_centers or {})
         self.profile = profile if profile in {"standard", "xbox", "playstation", "nintendo", "custom"} else "standard"
         self._stick_states = {"ABS_X": 0, "ABS_Y": 0}
+        self._held_directions: dict[str, str] = {}
+        self._repeat_delay = 0.38
+        self._repeat_interval = 0.12
+        self._repeat_started_at = 0.0
+        self._repeat_last_at = 0.0
 
     def _button_action(self, name: str) -> str | None:
         if self.profile == "nintendo":
@@ -66,19 +72,67 @@ class GamepadActionMapper:
 
     def feed(self, event: dict[str, Any]) -> str | None:
         kind = event.get("kind")
-        name = event.get("name")
+        name = str(event.get("name", ""))
         value = event.get("value")
-        if kind == "button" and value == 1:
-            return self._button_action(str(name))
+        now = time.monotonic()
+
+        if kind == "button":
+            action = self._button_action(name)
+            if value == 1:
+                if action in {"up", "down", "left", "right"}:
+                    return self._update_held_direction(name, action, now)
+                return action
+            if value == 0:
+                self._update_held_direction(name, None, now)
+            return None
+
         if kind != "axis":
             return None
 
-        axis_name = str(name)
-        if axis_name in {"ABS_HAT0X", "ABS_HAT0Y"}:
-            return self._hat_action(axis_name, int(value))
-        if axis_name in {"ABS_X", "ABS_Y"}:
-            return self._stick_action(axis_name, event)
+        if name == "ABS_HAT0X":
+            self._hat_x = max(-1, min(1, int(value)))
+            action = "left" if self._hat_x < 0 else "right" if self._hat_x > 0 else None
+        elif name == "ABS_HAT0Y":
+            self._hat_y = max(-1, min(1, int(value)))
+            action = "up" if self._hat_y < 0 else "down" if self._hat_y > 0 else None
+        elif name in {"ABS_X", "ABS_Y"}:
+            action = self._stick_action(name, event)
+        else:
+            return None
+
+        return self._update_held_direction(name, action, now)
+
+    def _current_held_direction(self) -> str | None:
+        if not self._held_directions:
+            return None
+        return next(reversed(self._held_directions.values()))
+
+    def _update_held_direction(
+        self, source: str, action: str | None, now: float
+    ) -> str | None:
+        previous = self._current_held_direction()
+        self._held_directions.pop(source, None)
+        if action is not None:
+            self._held_directions[source] = action
+        current = self._current_held_direction()
+        if current != previous:
+            self._repeat_started_at = now
+            self._repeat_last_at = now
+            return current
         return None
+
+    def repeat_action(self, now: float | None = None) -> str | None:
+        """Return a held direction after the initial delay and at a steady rate."""
+        current = self._current_held_direction()
+        if current is None:
+            return None
+        now = time.monotonic() if now is None else now
+        if now - self._repeat_started_at < self._repeat_delay:
+            return None
+        if now - self._repeat_last_at < self._repeat_interval:
+            return None
+        self._repeat_last_at = now
+        return current
 
     def _hat_action(self, name: str, value: int) -> str | None:
         if name == "ABS_HAT0X":
@@ -102,9 +156,8 @@ class GamepadActionMapper:
         normalized = (value - center) / span
         threshold = self.deadzone_percent / 100.0
         state = 0 if abs(normalized) <= threshold else (1 if normalized > 0 else -1)
-        previous = self._stick_states[name]
         self._stick_states[name] = state
-        if state == 0 or state == previous:
+        if state == 0:
             return None
         if name == "ABS_X":
             return "right" if state > 0 else "left"
