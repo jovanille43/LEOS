@@ -147,7 +147,7 @@ class SettingsStoreTests(unittest.TestCase):
     def test_invalid_utf8_settings_are_preserved_during_read_and_update(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
-            invalid = b"\\xff\\xfe\\x80"
+            invalid = bytes((0xFF, 0xFE, 0x80))
             path.write_bytes(invalid)
 
             settings = SettingsStore(path)
