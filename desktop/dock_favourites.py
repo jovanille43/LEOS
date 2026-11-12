@@ -6,25 +6,27 @@ freedesktop application database and apply changes with explicit approval.
 """
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator
+
+from leos_core.paths import config_home as xdg_config_home
+
 
 DEFAULT_PINNED_APPS = (
     "org.kde.dolphin.desktop",
     "firefox.desktop",
     "steam.desktop",
 )
-from leos_core.paths import config_home as xdg_config_home
-
-
 MAX_PINNED_APPS = 32
 
 
 def _config_path() -> Path:
-    root = xdg_config_home()
-    return root / "leos" / "dock-favourites.json"
+    return xdg_config_home() / "leos" / "dock-favourites.json"
 
 
 def _valid_id(value: object) -> bool:
@@ -37,59 +39,70 @@ def _valid_id(value: object) -> bool:
     )
 
 
+def _valid_payload(data: object) -> bool:
+    return (
+        isinstance(data, dict)
+        and set(data) == {"schema_version", "items"}
+        and type(data["schema_version"]) is int
+        and data["schema_version"] == 1
+        and isinstance(data["items"], list)
+        and len(data["items"]) <= MAX_PINNED_APPS
+        and all(_valid_id(item) for item in data["items"])
+        and len(set(data["items"])) == len(data["items"])
+    )
+
+
 class DockFavourites:
-    """Atomic, private local store for pinned application desktop-file IDs."""
+    """Atomic, private and interprocess-safe storage for pinned desktop-file IDs."""
 
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or _config_path()
         self._items = list(DEFAULT_PINNED_APPS)
         self.load()
 
-    def load(self) -> None:
+    @contextmanager
+    def _exclusive_lock(self) -> Iterator[None]:
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink():
+            raise OSError("Dock favourites directory cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("Dock favourites lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def load(self) -> bool:
+        """Refresh from disk; leave the last valid in-memory state on corruption."""
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            return False
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            self._items = list(DEFAULT_PINNED_APPS)
+            return True
         except (OSError, json.JSONDecodeError):
-            return
-        if (isinstance(data, dict) and set(data) == {"schema_version", "items"}
-                and data["schema_version"] == 1 and isinstance(data["items"], list)
-                and len(data["items"]) <= MAX_PINNED_APPS
-                and all(_valid_id(item) for item in data["items"])
-                and len(set(data["items"])) == len(data["items"])):
-            self._items = list(data["items"])
+            return False
+        if not _valid_payload(data):
+            return False
+        self._items = list(data["items"])
+        return True
 
     def items(self) -> list[str]:
+        self.load()
         return list(self._items)
 
-    def pin(self, desktop_id: str) -> None:
-        if not _valid_id(desktop_id):
-            raise ValueError("Expected a valid application .desktop ID")
-        if desktop_id in self._items:
-            return
-        if len(self._items) >= MAX_PINNED_APPS:
-            raise ValueError("The LEOS dock cannot contain more than 32 favourites")
-        self._items.append(desktop_id)
-        self.save()
-
-    def unpin(self, desktop_id: str) -> None:
-        if desktop_id in self._items:
-            self._items.remove(desktop_id)
-            self.save()
-
-    def move(self, desktop_id: str, index: int) -> None:
-        if desktop_id not in self._items:
-            raise ValueError("Application is not pinned")
-        if type(index) is not int or not 0 <= index < len(self._items):
-            raise ValueError("Invalid dock position")
-        self._items.remove(desktop_id)
-        self._items.insert(index, desktop_id)
-        self.save()
-
-    def save(self) -> None:
+    def _write_unlocked(self) -> None:
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise OSError("Dock favourites path cannot be a symbolic link")
         payload = json.dumps(
             {"schema_version": 1, "items": self._items},
             indent=2, ensure_ascii=False,
         ) + "\n"
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         fd, temp_name = tempfile.mkstemp(
             prefix="dock-favourites.", suffix=".tmp", dir=self.path.parent
         )
@@ -105,3 +118,48 @@ class DockFavourites:
                 os.unlink(temp_name)
             except FileNotFoundError:
                 pass
+
+    def _reload_for_update(self) -> None:
+        if not self.load():
+            raise ValueError("Dock favourites file is invalid or inaccessible; it was left untouched")
+
+    def pin(self, desktop_id: str) -> None:
+        if not _valid_id(desktop_id):
+            raise ValueError("Expected a valid application .desktop ID")
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if desktop_id in self._items:
+                return
+            if len(self._items) >= MAX_PINNED_APPS:
+                raise ValueError("The LEOS dock cannot contain more than 32 favourites")
+            self._items.append(desktop_id)
+            self._write_unlocked()
+
+    def unpin(self, desktop_id: str) -> None:
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if desktop_id not in self._items:
+                return
+            self._items.remove(desktop_id)
+            self._write_unlocked()
+
+    def move(self, desktop_id: str, index: int) -> None:
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if desktop_id not in self._items:
+                raise ValueError("Application is not pinned")
+            if type(index) is not int or not 0 <= index < len(self._items):
+                raise ValueError("Invalid dock position")
+            self._items.remove(desktop_id)
+            self._items.insert(index, desktop_id)
+            self._write_unlocked()
+
+    def save(self) -> None:
+        """Persist the in-memory list safely; intended for explicit maintenance."""
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if len(self._items) > MAX_PINNED_APPS or not all(
+                _valid_id(item) for item in self._items
+            ) or len(set(self._items)) != len(self._items):
+                raise ValueError("Dock favourites data is invalid")
+            self._write_unlocked()
