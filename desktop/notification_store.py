@@ -7,14 +7,15 @@ import os
 import tempfile
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Iterator
+
+from leos_core.paths import state_home as xdg_state_home
 
 MAX_NOTIFICATIONS = 100
 MAX_TITLE = 160
 MAX_BODY = 2000
-from leos_core.paths import state_home as xdg_state_home
 
 LEVELS = {"info", "success", "warning", "error"}
 
@@ -65,7 +66,7 @@ class NotificationStore:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def load(self) -> bool:
-        if self.path.is_symlink():
+        if self.path.is_symlink() or self.path.parent.is_symlink():
             return False
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
@@ -84,12 +85,14 @@ class NotificationStore:
         return False
 
     def items(self, unread_only: bool = False) -> list[dict]:
+        self.load()
         records = self._items
         if unread_only:
             records = [x for x in records if not x["read"]]
         return [dict(x) for x in reversed(records)]
 
     def unread_count(self) -> int:
+        self.load()
         return sum(not x["read"] for x in self._items)
 
     def add(self, title: str, body: str = "", level: str = "info") -> str:
