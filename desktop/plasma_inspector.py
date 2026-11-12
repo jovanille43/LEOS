@@ -32,6 +32,7 @@ def _read_config_snapshot(path: Path) -> tuple[bytes, str | None]:
     if path.is_symlink():
         return b"", "unsafe"
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_CLOEXEC", 0)
     descriptor = os.open(path, flags)
     try:
         info = os.fstat(descriptor)

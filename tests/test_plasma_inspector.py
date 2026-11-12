@@ -118,6 +118,20 @@ class PlasmaInspectorTests(unittest.TestCase):
         self.assertIn("Aucune modification", report)
         self.assertIn("Panneau 1", report)
 
+    def test_fifo_config_is_rejected_without_blocking(self):
+        import os
+        import time
+
+        self.path.unlink()
+        try:
+            os.mkfifo(self.path)
+        except (AttributeError, NotImplementedError, OSError):
+            self.skipTest("Named pipes unavailable")
+        started = time.monotonic()
+        result = inspect_plasma_config(self.path)
+        self.assertEqual(result["status"], "unsafe")
+        self.assertLess(time.monotonic() - started, 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()
