@@ -5,35 +5,58 @@ set -euo pipefail
 state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
 state_dir="$state_home/leos"
 marker="$state_dir/default-apps-seeded"
+# This consent applies only to the fixed v1 application list below. Increment the
+# marker version whenever that list changes so new software always needs consent.
+consent_marker="$state_dir/default-apps-consent-v1"
 
-if [[ -e "$marker" ]]; then
-    exit 0
-fi
-
-# A graphical confirmation is mandatory. Headless sessions never install software.
-if ! command -v kdialog >/dev/null 2>&1; then
-    echo "LEOS starter applications skipped: graphical confirmation is unavailable."
-    exit 0
-fi
-if ! command -v flatpak >/dev/null 2>&1; then
-    echo "Flatpak is not available yet." >&2
+if [[ -L "$marker" || ( -e "$marker" && ! -f "$marker" ) ]]; then
+    echo "LEOS: invalid starter-app state marker; refusing to continue." >&2
     exit 1
 fi
-
-if ! kdialog --title "Applications facultatives LEOS" --defaultno --yesno \
-    "Souhaites-tu installer les applications facultatives suivantes dans ton profil utilisateur ?\n\n• Brave Browser\n• LibreOffice\n• VLC\n\nAucune application ne sera installée sans ton accord. Tu pourras ensuite les gérer depuis la boutique LEOS."; then
-    mkdir -p "$state_dir"
-    touch "$marker"
+if [[ -f "$marker" ]]; then
     exit 0
 fi
-
-flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 apps=(
     com.brave.Browser
     org.libreoffice.LibreOffice
     org.videolan.VLC
 )
+
+if ! command -v flatpak >/dev/null 2>&1; then
+    echo "Flatpak is not available yet." >&2
+    exit 1
+fi
+
+if [[ -L "$consent_marker" || ( -e "$consent_marker" && ! -f "$consent_marker" ) ]]; then
+    echo "LEOS: invalid starter-app consent marker; refusing to continue." >&2
+    exit 1
+fi
+
+if [[ ! -f "$consent_marker" ]]; then
+    # A graphical confirmation is mandatory. Headless sessions never install software.
+    if ! command -v kdialog >/dev/null 2>&1; then
+        echo "LEOS starter applications skipped: graphical confirmation is unavailable."
+        exit 0
+    fi
+
+    if ! kdialog --title "Applications facultatives LEOS" --defaultno --yesno \
+        "Souhaites-tu installer les applications facultatives suivantes dans ton profil utilisateur ?\\n\\n• Brave Browser\\n• LibreOffice\\n• VLC\\n\\nAucune application ne sera installée sans ton accord. Tu pourras ensuite les gérer depuis la boutique LEOS."; then
+        mkdir -p "$state_dir"
+        touch "$marker"
+        exit 0
+    fi
+
+    # Persist approval before attempting any installation. A partial failure can
+    # then be retried later without asking again or expanding the approved list.
+    mkdir -p "$state_dir"
+    if ! (umask 077; : > "$consent_marker"); then
+        echo "LEOS: impossible d'enregistrer le consentement ; aucune installation lancée." >&2
+        exit 1
+    fi
+fi
+
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 failed=0
 
@@ -57,3 +80,4 @@ fi
 
 mkdir -p "$state_dir"
 touch "$marker"
+rm -f "$consent_marker"
