@@ -42,7 +42,7 @@ class FirstRunSetupTests(unittest.TestCase):
         env.update({
             "HOME": str(root / "home"),
             "XDG_STATE_HOME": str(root / "state"),
-            "PATH": str(bindir),
+            "PATH": f"{bindir}:/usr/bin:/bin",
             "FLATPAK_LOG": str(root / "flatpak.log"),
             "PROMPT_LOG": str(root / "prompt.log"),
             "KDLG_RESULT": "1",
