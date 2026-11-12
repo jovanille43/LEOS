@@ -360,15 +360,15 @@ class HardwareInventoryTests(unittest.TestCase):
 
     def test_kscreen_parser_reports_active_modes_geometry_and_scale(self):
         output = (
-            "Output: 1 eDP-1 enabled connected priority 1 Panel\\n"
-            "    Modes: 0: \\x1b[32m1920x1080@60.00*\\x1b[0m 1: 1280x720@60.00\\n"
-            "    Geometry: 0,0 1920x1080\\n"
-            "    Scale: 1.25\\n"
-            "    Rotation: 1\\n"
-            "Output: 2 DP-1 enabled connected priority 2 DisplayPort\\n"
-            "    Modes: 0: 2560x1440@144.00* 1: 1920x1080@60.00\\n"
-            "    Geometry: 1920,0 2560x1440\\n"
-            "    Scale: 1\\n"
+            "Output: 1 eDP-1 enabled connected priority 1 Panel\n"
+            "    Modes: 0: \x1b[32m1920x1080@60.00*\x1b[0m 1: 1280x720@60.00\n"
+            "    Geometry: 0,0 1920x1080\n"
+            "    Scale: 1.25\n"
+            "    Rotation: 1\n"
+            "Output: 2 DP-1 enabled connected priority 2 DisplayPort\n"
+            "    Modes: 0: 2560x1440@144.00* 1: 1920x1080@60.00\n"
+            "    Geometry: 1920,0 2560x1440\n"
+            "    Scale: 1\n"
         )
         self.assertEqual(
             hardware._parse_kscreen_displays(output),
@@ -381,8 +381,8 @@ class HardwareInventoryTests(unittest.TestCase):
 
     def test_kscreen_parser_reports_connected_but_disabled_outputs(self):
         output = (
-            "Output: 3 HDMI-A-1 connected priority 3 HDMI\\n"
-            "    Modes: 0: 3840x2160@60.00*\\n"
+            "Output: 3 HDMI-A-1 connected priority 3 HDMI\n"
+            "    Modes: 0: 3840x2160@60.00*\n"
         )
         self.assertEqual(
             hardware._parse_kscreen_displays(output),
