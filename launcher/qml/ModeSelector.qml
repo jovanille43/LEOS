@@ -357,6 +357,10 @@ ApplicationWindow {
     }
 
     Keys.onPressed: function(event) {
+        if (window.transitionInProgress) {
+            event.accepted = true
+            return
+        }
         if (event.key === Qt.Key_G) {
             transitionDialog.open()
             event.accepted = true
