@@ -68,6 +68,16 @@ class BuildWorkflowTests(unittest.TestCase):
         })
         self.assertEqual(len(listed), 8)
 
+    def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
+        self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
+        self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
+        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
+        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
+        self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
+        self.assertIn("if not target.is_file()", source)
+
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Check out repository", source)
