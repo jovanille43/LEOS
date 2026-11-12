@@ -110,7 +110,7 @@ class ControllerProfileStore:
             payload = json.loads(raw.decode("utf-8"))
         except FileNotFoundError:
             return {"version": 1, "devices": {}}
-        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
             if strict:
                 raise ValueError("Controller profile file is unreadable or too large; it was left untouched") from exc
             return {"version": 1, "devices": {}}
