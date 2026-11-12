@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="3840" height="2160" viewBox="0 0 3840 2160">
+  <title>LEOS Desktop — fond officiel</title>
+  <desc>Fond noir profond avec halos cyan et magenta discrets et emblème officiel du lion seul au centre.</desc>
+  <defs>
+    <radialGradient id="cyan-halo" cx="18%" cy="37%" r="68%">
+      <stop offset="0" stop-color="#00b9e8" stop-opacity=".20"/>
+      <stop offset=".48" stop-color="#006782" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#001018" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="magenta-halo" cx="86%" cy="78%" r="65%">
+      <stop offset="0" stop-color="#d32ce8" stop-opacity=".17"/>
+      <stop offset=".48" stop-color="#67136f" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#16051c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="center-shade" cx="50%" cy="48%" r="72%">
+      <stop offset="0" stop-color="#090d14" stop-opacity="0"/>
+      <stop offset=".72" stop-color="#05070b" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#020307" stop-opacity=".92"/>
+    </radialGradient>
+    <linearGradient id="fine-line" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00d9ff" stop-opacity=".22"/>
+      <stop offset=".52" stop-color="#74869b" stop-opacity=".035"/>
+      <stop offset="1" stop-color="#e33bff" stop-opacity=".20"/>
+    </linearGradient>
+    <pattern id="micro-grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M96 0H0V96" fill="none" stroke="#9eb6c9" stroke-opacity=".035" stroke-width="1"/>
+      <circle cx="1" cy="1" r="1.5" fill="#b6c5d7" fill-opacity=".10"/>
+    </pattern>
+    <mask id="grid-fade">
+      <rect width="3840" height="2160" fill="url(#center-shade)"/>
+    </mask>
+    <filter id="soft-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+  </defs>
+
+  <rect width="3840" height="2160" fill="#05070b"/>
+  <rect width="3840" height="2160" fill="url(#cyan-halo)"/>
+  <rect width="3840" height="2160" fill="url(#magenta-halo)"/>
+
+  <g fill="none" stroke="url(#fine-line)" stroke-width="2">
+    <path d="M-180 1510C420 1120 710 1110 1160 1280"/>
+    <path d="M-180 1570C420 1180 710 1170 1160 1340" stroke-opacity=".42"/>
+    <path d="M4020 520C3420 900 3130 930 2680 780"/>
+    <path d="M4020 580C3420 960 3130 990 2680 840" stroke-opacity=".42"/>
+  </g>
+
+  <g fill="none" stroke-width="2">
+    <ellipse cx="1920" cy="1080" rx="1120" ry="810"
+             stroke="#00d9ff" stroke-opacity=".075" stroke-dasharray="2 26"/>
+    <ellipse cx="1920" cy="1080" rx="1190" ry="875"
+             stroke="#e33bff" stroke-opacity=".055" stroke-dasharray="2 34"/>
+  </g>
+
+  <g filter="url(#soft-blur)" opacity=".34">
+    <ellipse cx="1920" cy="1070" rx="600" ry="470" fill="#087b9a" fill-opacity=".13"/>
+    <ellipse cx="2110" cy="1190" rx="430" ry="350" fill="#a12eae" fill-opacity=".10"/>
+  </g>
+
+  <rect width="3840" height="2160" fill="url(#micro-grid)" mask="url(#grid-fade)"/>
+  <rect width="3840" height="2160" fill="url(#center-shade)"/>
+
+  <!-- Keep the supplied emblem as the single source of truth. -->
+  <image x="1070" y="180" width="1700" height="1800"
+         preserveAspectRatio="xMidYMid meet"
+         xlink:href="../desktop-logo.jpeg"/>
+</svg>
