@@ -24,7 +24,7 @@ Le sélecteur QML charge les deux emblèmes depuis `branding/` avec un chargemen
 
 Les vidéos fournies par Jovan sont les références maîtresses. Leur mouvement, leur durée, leur composition et leur identité sonore ne doivent pas être réinterprétés sans demande. Préserver les fichiers originaux ; toute conversion éventuelle doit être une copie optimisée, jamais un remplacement destructif.
 
-Avant d'activer la lecture dans l'interface, vérifier la disponibilité de Qt Multimedia dans l'image Bazzite ciblée et prévoir un comportement de repli si le décodage ou le fichier échoue. Les animations doivent respecter le réglage global LEOS permettant de les désactiver.
+Le sélecteur et Gaming sont maintenant raccordés à Qt Multimedia : chaque choix de mode joue la vidéo correspondante, et le retour depuis Gaming joue l'introduction Desktop. Les pistes AAC restent synchronisées et peuvent être coupées séparément via `sounds_enabled`. Le lecteur possède un repli en cas d'erreur et un délai de sécurité de 9 secondes. Le paquet `qt6-qtmultimedia` est inclus dans la recette. Le fonctionnement réel des codecs et du module QML doit encore être validé dans une session Bazzite.
 
 ## Signatures sonores
 
