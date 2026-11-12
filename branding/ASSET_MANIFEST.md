@@ -12,6 +12,14 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 
 Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
 
+## Fond d'écran Desktop
+
+| Chemin | Usage |
+| --- | --- |
+| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), fond noir et halos cyan/magenta discrets |
+
+Le SVG référence `../desktop-logo.jpeg` : l'emblème officiel reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ce chemin relatif. Le fond peut être choisi manuellement dans les paramètres de papier peint KDE ; il n'est jamais appliqué automatiquement. Le rendu SVG avec image liée doit encore être validé dans la session Bazzite réelle.
+
 ## Animations intégrées
 
 | Chemin | Déclenchement |
