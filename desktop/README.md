@@ -121,6 +121,8 @@ de scripting Plasma 6 pour créer un panneau LEOS ou actualiser un panneau déj�
 marqué comme appartenant à LEOS. Chaque panneau créé reçoit un marqueur privé
 `LEOS/managedBy=leos-panel-v1`.
 
+En cas d'échec pendant la création d'un nouveau panneau, l'adaptateur retire uniquement ce panneau créé par l'opération en cours. Lorsqu'il actualise un panneau LEOS existant, il restaure les propriétés précédentes en cas d'erreur. Aucun panneau personnel ne passe dans le chemin de suppression.
+
 L'adaptateur refuse de toucher à un panneau KDE personnel et refuse de créer
 un second dock lorsqu'un panneau non géré existe déjà. Il refuse également les
 versions antérieures à Plasma 6. Lors de la création, il vérifie la disponibilité
