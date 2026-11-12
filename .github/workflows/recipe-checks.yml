@@ -50,6 +50,29 @@ jobs:
       - name: Check LEOS first-run shell script
         run: bash -n packaging/leos-default-apps-setup
 
+      - name: Validate branding video and audio streams
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          videos=(
+            branding/animations/desktop-intro.mov
+            branding/animations/gaming-intro.mp4
+            branding/animations/gaming-roar-reference.mp4
+          )
+          for video in "${videos[@]}"; do
+            test -s "${video}"
+            if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "${video}" | grep -q .; then
+              echo "::error::No decodable video stream found in ${video}"
+              exit 1
+            fi
+            if ! ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "${video}" | grep -q .; then
+              echo "::error::No audio stream found in ${video}"
+              exit 1
+            fi
+            ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${video}"
+          done
+
       - name: Validate BlueBuild recipe
         run: bluebuild validate recipes/recipe.yml
 
