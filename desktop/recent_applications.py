@@ -14,6 +14,7 @@ from leos_core.paths import state_home as xdg_state_home
 
 
 MAX_RECENT_FILE_BYTES = 64 * 1024
+MAX_RECENT_ENTRIES = 100
 
 
 DESKTOP_ID_RE = re.compile(r"^[A-Za-z0-9_.+-]{1,240}\.desktop$")
@@ -30,7 +31,7 @@ class RecentApplications:
         if path is None:
             path = xdg_state_home() / "leos" / "recent-applications.json"
         self.path = path
-        self.limit = max(1, min(int(limit), 100))
+        self.limit = max(1, min(int(limit), MAX_RECENT_ENTRIES))
 
     @staticmethod
     def _valid_id(value: object) -> bool:
@@ -51,7 +52,11 @@ class RecentApplications:
             payload = json.loads(raw.decode("utf-8"))
         except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
             raise ValueError("Recent application history is unreadable or too large") from exc
-        if not isinstance(payload, list) or any(not self._valid_id(item) for item in payload):
+        if (
+            not isinstance(payload, list)
+            or len(payload) > MAX_RECENT_ENTRIES
+            or any(not self._valid_id(item) for item in payload)
+        ):
             raise ValueError("Recent application history has an invalid format")
         result: list[str] = []
         for item in payload:
