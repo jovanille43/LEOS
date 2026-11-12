@@ -25,12 +25,10 @@ ApplicationWindow {
         return true
     }
 
-    Keys.priority: Keys.BeforeItem
-    Keys.onPressed: function(event) {
-        if (event.key === Qt.Key_Escape) {
-            window.close()
-            event.accepted = true
-        }
+    Shortcut {
+        sequence: "Escape"
+        context: Qt.WindowShortcut
+        onActivated: window.close()
     }
 
     Component.onCompleted: search.forceActiveFocus()
