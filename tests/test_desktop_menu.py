@@ -105,7 +105,8 @@ class DesktopMenuTests(unittest.TestCase):
     def test_catalog_uses_pure_desktop_entry_helpers(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("from desktop.desktop_entries import (", source)
-        self.assertIn("desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value", source)
+        self.assertIn("desktop_application_dirs, desktop_entry_is_visible,", source)
+        self.assertIn("filter_desktop_applications, localized_desktop_value,", source)
         self.assertIn("desktop_entry_is_visible(values, current_desktops)", source)
         self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
         self.assertIn('localized_desktop_value(values, "Comment", locale_name)', source)
