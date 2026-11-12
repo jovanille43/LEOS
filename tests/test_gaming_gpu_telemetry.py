@@ -27,6 +27,33 @@ class GpuTelemetryTests(unittest.TestCase):
         self.assertEqual(metrics["memory_used"], 536870912)
         self.assertEqual(metrics["memory_total"], 2147483648)
 
+    def test_hybrid_system_prefers_gpu_with_available_discrete_telemetry(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            integrated = root / "class" / "drm" / "card0" / "device"
+            discrete = root / "class" / "drm" / "card10" / "device"
+            connector = root / "class" / "drm" / "card10-DP-1" / "device"
+            for device in (integrated, discrete, connector):
+                device.mkdir(parents=True)
+            (integrated / "vendor").write_text("0x8086")
+            (integrated / "device").write_text("0x4680")
+            (integrated / "gpu_busy_percent").write_text("22")
+            (discrete / "vendor").write_text("0x10de")
+            (discrete / "device").write_text("0x2684")
+            (discrete / "gpu_busy_percent").write_text("78")
+            (discrete / "mem_info_vram_used").write_text("2147483648")
+            (discrete / "mem_info_vram_total").write_text("8589934592")
+            (connector / "vendor").write_text("0x1002")
+            (connector / "device").write_text("0x164e")
+            (connector / "gpu_busy_percent").write_text("99")
+
+            metrics = read_gpu_metrics(root)
+
+        self.assertEqual(metrics["name"], "NVIDIA · PCI 0x2684")
+        self.assertEqual(metrics["usage"], 78.0)
+        self.assertEqual(metrics["memory_used"], 2147483648)
+        self.assertEqual(metrics["memory_total"], 8589934592)
+
     def test_missing_gpu_or_driver_metrics_remain_unavailable(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
