@@ -473,12 +473,16 @@ class GameLibraryModel(QAbstractListModel):
         # a partial list just because the loader fell back to an empty result.
         if self._manual_file.is_symlink() or self._manual_file.parent.is_symlink():
             return False
+        existing = None
         if self._manual_file.exists():
             existing = read_bounded_json(self._manual_file)
             if not isinstance(existing, list) or len(existing) > MAX_MANUAL_GAMES:
                 return False
 
         games = self._load_manual_games()
+        # Do not silently discard malformed records when adding one new entry.
+        if existing is not None and len(games) != len(existing):
+            return False
         game_id = f"manual:{title_identity_key(title)}"
         identity = title_identity_key(title)
         replacing = any(
