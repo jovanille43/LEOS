@@ -358,6 +358,41 @@ class HardwareInventoryTests(unittest.TestCase):
             },
         )
 
+    def test_kscreen_parser_reports_active_modes_geometry_and_scale(self):
+        output = (
+            "Output: 1 eDP-1 enabled connected priority 1 Panel\\n"
+            "    Modes: 0: \\x1b[32m1920x1080@60.00*\\x1b[0m 1: 1280x720@60.00\\n"
+            "    Geometry: 0,0 1920x1080\\n"
+            "    Scale: 1.25\\n"
+            "    Rotation: 1\\n"
+            "Output: 2 DP-1 enabled connected priority 2 DisplayPort\\n"
+            "    Modes: 0: 2560x1440@144.00* 1: 1920x1080@60.00\\n"
+            "    Geometry: 1920,0 2560x1440\\n"
+            "    Scale: 1\\n"
+        )
+        self.assertEqual(
+            hardware._parse_kscreen_displays(output),
+            (
+                "2",
+                "eDP-1 · actif · 1920x1080 à 60 Hz · géométrie 0,0 1920x1080 · échelle 1.25 | "
+                "DP-1 · actif · 2560x1440 à 144 Hz · géométrie 1920,0 2560x1440 · échelle 1",
+            ),
+        )
+
+    def test_kscreen_parser_reports_connected_but_disabled_outputs(self):
+        output = (
+            "Output: 3 HDMI-A-1 connected priority 3 HDMI\\n"
+            "    Modes: 0: 3840x2160@60.00*\\n"
+        )
+        self.assertEqual(
+            hardware._parse_kscreen_displays(output),
+            ("1", "HDMI-A-1 · connecté, inactif · 3840x2160 à 60 Hz"),
+        )
+
+    def test_kscreen_parser_returns_none_when_command_output_is_unavailable(self):
+        self.assertIsNone(hardware._parse_kscreen_displays(""))
+        self.assertIsNone(hardware._parse_kscreen_displays("no output data"))
+
     def test_display_inventory_lists_connected_outputs_and_available_modes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -373,7 +408,7 @@ class HardwareInventoryTests(unittest.TestCase):
                 (connector / "modes").write_text(modes, encoding="ascii")
 
             self.assertEqual(
-                hardware._display_details(root),
+                hardware._display_details(root, kscreen_output=""),
                 (
                     "2",
                     "eDP-1 · actif · modes disponibles : 1920x1080, 2560x1440 | "
@@ -395,7 +430,7 @@ class HardwareInventoryTests(unittest.TestCase):
     def test_display_inventory_reports_unknown_when_drm_has_no_connectors(self):
         with tempfile.TemporaryDirectory() as temporary:
             self.assertEqual(
-                hardware._display_details(Path(temporary)),
+                hardware._display_details(Path(temporary), kscreen_output=""),
                 ("Non vérifiable", "Aucun connecteur d'écran exposé par DRM"),
             )
 
