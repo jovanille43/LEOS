@@ -36,6 +36,32 @@ jobs:
             fi
           done
 
+      - name: Validate wallpaper SVG assets and official emblem links
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          namespace = "{http://www.w3.org/2000/svg}"
+          xlink_href = "{http://www.w3.org/1999/xlink}href"
+          expected = {
+              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg",
+              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg",
+          }
+          for wallpaper, emblem in expected.items():
+              root = ET.parse(wallpaper).getroot()
+              if root.attrib.get("viewBox") != "0 0 3840 2160":
+                  raise SystemExit(f"Invalid 4K viewBox: {wallpaper}")
+              images = root.findall(f".//{namespace}image")
+              if len(images) != 1 or images[0].attrib.get(xlink_href) != emblem:
+                  raise SystemExit(f"Unexpected official emblem reference: {wallpaper}")
+              target = (wallpaper.parent / emblem).resolve()
+              if not target.is_file():
+                  raise SystemExit(f"Wallpaper emblem is missing: {target}")
+              print(f"Validated {wallpaper} -> {target}")
+          PY
+
       - name: Check signing prerequisites
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
