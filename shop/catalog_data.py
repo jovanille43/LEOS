@@ -15,6 +15,7 @@ from leos_core.json_utils import json_nesting_within_limit
 MAX_CATALOG_BYTES = 256 * 1024
 MAX_CATALOG_ITEMS = 128
 MAX_CATALOG_FIELD_LENGTH = 2048
+SUPPORTED_CATALOG_SOURCES = frozenset({"Flathub"})
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
 
 _REQUIRED_FIELDS = frozenset({
@@ -88,6 +89,8 @@ def load_catalog(path: Path) -> list[dict[str, Any]]:
                 or any(ord(character) < 32 and character not in "\t\n" for character in value)
             ):
                 raise ValueError(f"Champ de catalogue invalide : {field}")
+        if item["source"] not in SUPPORTED_CATALOG_SOURCES:
+            raise ValueError("Source de catalogue non prise en charge par cette version")
         app_id = item["id"]
         if not APP_ID_RE.fullmatch(app_id) or app_id in seen_ids:
             raise ValueError("Identifiant d'application invalide ou dupliqué")
