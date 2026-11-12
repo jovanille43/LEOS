@@ -6,6 +6,7 @@ import fcntl
 import json
 import os
 import tempfile
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -17,10 +18,36 @@ MAX_SETTINGS_BYTES = 256 * 1024
 
 def _read_settings_file(path: Path) -> dict[str, Any]:
     """Read a bounded JSON object without following an untrusted symlink."""
-    with path.open("rb") as stream:
-        raw = stream.read(MAX_SETTINGS_BYTES + 1)
-    if len(raw) > MAX_SETTINGS_BYTES:
-        raise ValueError("LEOS settings file is too large")
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0)
+    descriptor = os.open(path, flags)
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("LEOS settings path is not a regular file")
+        if before.st_size > MAX_SETTINGS_BYTES:
+            raise ValueError("LEOS settings file is too large")
+        chunks: list[bytes] = []
+        remaining = MAX_SETTINGS_BYTES + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(64 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(raw) > MAX_SETTINGS_BYTES
+            or len(raw) != before.st_size
+            or before.st_ino != after.st_ino
+            or before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or before.st_ctime_ns != after.st_ctime_ns
+        ):
+            raise ValueError("LEOS settings file changed during reading")
+    finally:
+        os.close(descriptor)
     loaded = json.loads(raw.decode("utf-8"))
     if not isinstance(loaded, dict):
         raise ValueError("LEOS settings file has an invalid format")
@@ -70,7 +97,7 @@ class SettingsStore:
             return
         try:
             loaded = _read_settings_file(self.path)
-        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
             return
 
         for key, default in DEFAULTS.items():
@@ -121,7 +148,7 @@ class SettingsStore:
                 if self.path.exists():
                     try:
                         _read_settings_file(self.path)
-                    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+                    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
                         raise ValueError(
                             "LEOS settings file is unreadable or too large; it was left untouched"
                         ) from exc
