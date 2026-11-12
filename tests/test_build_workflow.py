@@ -116,5 +116,20 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("/cosign.pub", source)
 
 
+    def test_recipe_checks_validate_and_decode_all_branding_video_audio(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("Validate branding video and audio streams", source)
+        self.assertIn("ffprobe -v error -select_streams v:0", source)
+        self.assertIn("ffprobe -v error -select_streams a:0", source)
+        self.assertIn('ffmpeg -v error -i "${video}" -f null -', source)
+        for path in (
+            "branding/animations/desktop-intro.mov",
+            "branding/animations/gaming-intro.mp4",
+            "branding/animations/gaming-roar-reference.mp4",
+        ):
+            with self.subTest(path=path):
+                self.assertIn(path, source)
+
+
 if __name__ == "__main__":
     unittest.main()
