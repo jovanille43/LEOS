@@ -403,6 +403,28 @@ class HardwareInventoryTests(unittest.TestCase):
         self.assertIsNone(hardware._parse_kscreen_displays(""))
         self.assertIsNone(hardware._parse_kscreen_displays("no output data"))
 
+    def test_display_inventory_prefers_kscreen_active_state_over_drm_fallback(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            connector = root / "card0-DP-1"
+            connector.mkdir()
+            (connector / "status").write_text("disconnected", encoding="ascii")
+
+            kscreen_output = (
+                "Output: 1 DP-1 enabled connected priority 1 DisplayPort\n"
+                "    Modes: 0: 2560x1440@144.00*\n"
+                "    Geometry: 0,0 2560x1440\n"
+                "    Scale: 1.25\n"
+            )
+            self.assertEqual(
+                hardware._display_details(root, kscreen_output=kscreen_output),
+                (
+                    "1",
+                    "DP-1 · actif · 2560x1440 à 144 Hz · "
+                    "géométrie 0,0 2560x1440 · échelle 1.25",
+                ),
+            )
+
     def test_display_inventory_lists_connected_outputs_and_available_modes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
