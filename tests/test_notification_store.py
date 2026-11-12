@@ -55,6 +55,39 @@ class NotificationStoreTests(unittest.TestCase):
             self.assertEqual(store.items(), [])
             self.assertEqual(path.read_text(encoding="utf-8"), '{"schema_version":9}')
 
+    def test_oversized_history_is_ignored_and_preserved(self):
+        from desktop.notification_store import MAX_NOTIFICATION_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            oversized = b" " * (MAX_NOTIFICATION_FILE_BYTES + 1)
+            path.write_bytes(oversized)
+            store = NotificationStore(path)
+            self.assertEqual(store.items(), [])
+            self.assertEqual(path.read_bytes(), oversized)
+            with self.assertRaises(OSError):
+                store.add("Ne pas écraser")
+            self.assertEqual(path.read_bytes(), oversized)
+
+    def test_reload_clears_stale_events_after_external_corruption(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            store = NotificationStore(path)
+            store.add("Événement valide")
+            self.assertEqual(store.unread_count(), 1)
+            path.write_text("{broken", encoding="utf-8")
+            self.assertEqual(store.items(), [])
+            self.assertEqual(store.unread_count(), 0)
+
+    def test_boolean_schema_version_is_not_accepted_as_integer_one(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            path.write_text('{"schema_version":true,"items":[]}', encoding="utf-8")
+            store = NotificationStore(path)
+            self.assertFalse(store.load())
+            self.assertEqual(store.items(), [])
+            self.assertEqual(path.read_text(encoding="utf-8"), '{"schema_version":true,"items":[]}')
+
     def test_saved_file_is_private(self):
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
