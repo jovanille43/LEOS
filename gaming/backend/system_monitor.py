@@ -167,6 +167,7 @@ class SystemMonitor(QObject):
     def gpuMemoryTotal(self) -> int:
         return self._gpu_memory_total
 
-    @Property(bool, constant=True)
+    @Property(bool, notify=metricsChanged)
     def available(self) -> bool:
-        return psutil is not None
+        """Whether at least one telemetry provider is usable."""
+        return psutil is not None or self._gpu_name != "GPU non détecté"
