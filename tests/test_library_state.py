@@ -5,7 +5,11 @@ import unittest
 from pathlib import Path
 import tempfile
 
-from gaming.backend.library_state import filter_games, read_bounded_json
+from gaming.backend.library_state import (
+    filter_games, read_bounded_json, validate_manual_game_input,
+    MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH, MAX_MANUAL_COMMAND_LENGTH,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_TITLE_LENGTH,
+)
 
 
 class LibraryStateTests(unittest.TestCase):
@@ -42,6 +46,35 @@ class LibraryStateTests(unittest.TestCase):
             path.write_text("{broken", encoding="utf-8")
             self.assertIsNone(read_bounded_json(path))
             self.assertIsNone(read_bounded_json(path.with_name("missing.json")))
+
+    def test_manual_game_validation_accepts_safe_argument_lists(self):
+        result = validate_manual_game_input(
+            "  Mon jeu  préféré  ", " PC ", '"/opt/games/my game" --fullscreen'
+        )
+        self.assertEqual(
+            result,
+            ("Mon jeu préféré", "PC", ["/opt/games/my game", "--fullscreen"]),
+        )
+
+    def test_manual_game_validation_rejects_oversized_and_malformed_input(self):
+        invalid = [
+            (None, "PC", "game"),
+            ("", "PC", "game"),
+            ("x" * (MAX_MANUAL_TITLE_LENGTH + 1), "PC", "game"),
+            ("Game", "P" * (MAX_MANUAL_PLATFORM_LENGTH + 1), "game"),
+            ("Game", "PC", "x" * (MAX_MANUAL_COMMAND_LENGTH + 1)),
+            ("Game", "PC", '"unterminated'),
+            ("Game", "PC", "game " + " ".join(f"arg{i}" for i in range(MAX_MANUAL_ARGUMENTS))),
+            ("Game", "PC", "game " + "x" * (MAX_MANUAL_ARGUMENT_LENGTH + 1)),
+            ("Game", "PC", "game\\x00bad"),
+        ]
+        for values in invalid:
+            with self.subTest(values=values):
+                self.assertIsNone(validate_manual_game_input(*values))
+
+    def test_manual_game_validation_does_not_invoke_a_shell(self):
+        result = validate_manual_game_input("Game", "PC", "game; rm -rf /")
+        self.assertEqual(result, ("Game", "PC", ["game;", "rm", "-rf", "/"]))
 
     def test_home_returns_all_games(self):
         self.assertEqual(len(filter_games(self.games, "Accueil", set(), [])), 5)
