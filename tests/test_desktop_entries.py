@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from desktop.desktop_entries import (
-    desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
+    desktop_application_dirs, desktop_entry_is_visible, desktop_file_id, desktop_entry_paths,
     filter_desktop_applications, localized_desktop_value,
 )
 
@@ -202,6 +202,19 @@ class DesktopEntriesTests(unittest.TestCase):
                     root / ".local" / "share" / "applications",
                 ),
             )
+
+    def test_desktop_file_ids_flatten_nested_application_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            nested = root / "kde" / "utilities" / "viewer.desktop"
+            nested.parent.mkdir(parents=True)
+            nested.write_text("[Desktop Entry]", encoding="utf-8")
+            self.assertEqual(desktop_file_id(nested, root), "kde-utilities-viewer.desktop")
+            flat = root / "browser.desktop"
+            flat.write_text("[Desktop Entry]", encoding="utf-8")
+            self.assertEqual(desktop_file_id(flat, root), "browser.desktop")
+            self.assertEqual(desktop_file_id(root / "missing.desktop", root / "other"), "")
+            self.assertEqual(desktop_file_id(root / "not-a-desktop.txt", root), "")
 
 
 if __name__ == "__main__":
