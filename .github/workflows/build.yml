@@ -117,10 +117,18 @@ jobs:
           cosign sign-blob --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
           cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
 
-      - name: Build and publish LEOS
+      - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@v1
         with:
           recipe: recipe.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number || 0 }}
+
+      - name: Build and publish LEOS (NVIDIA)
+        uses: blue-build/github-action@v1
+        with:
+          recipe: recipe-nvidia.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}

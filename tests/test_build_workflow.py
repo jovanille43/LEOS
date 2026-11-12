@@ -167,11 +167,27 @@ class BuildWorkflowTests(unittest.TestCase):
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("recipe: recipe.yml", source)
+        self.assertIn("recipe: recipe-nvidia.yml", source)
         self.assertTrue((ROOT / "recipes/recipe.yml").is_file())
+        self.assertTrue((ROOT / "recipes/recipe-nvidia.yml").is_file())
+        self.assertTrue((ROOT / "recipes/common-modules.yml").is_file())
         self.assertFalse((ROOT / "recipes/recipes/recipe.yml").exists())
 
+    def test_standard_and_nvidia_recipes_share_the_same_modules(self):
+        standard = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        nvidia = (ROOT / "recipes/recipe-nvidia.yml").read_text(encoding="utf-8")
+        common = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("name: leos", standard)
+        self.assertIn("base-image: ghcr.io/ublue-os/bazzite", standard)
+        self.assertIn("name: leos-nvidia", nvidia)
+        self.assertIn("base-image: ghcr.io/ublue-os/bazzite-nvidia", nvidia)
+        self.assertEqual(standard.count("from-file: common-modules.yml"), 1)
+        self.assertEqual(nvidia.count("from-file: common-modules.yml"), 1)
+        self.assertIn("type: signing", common)
+        self.assertIn("src: branding", common)
+
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
-        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: branding", recipe)
         self.assertIn("dest: /usr/share/leos/", recipe)
 
@@ -186,11 +202,11 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("gaming-intro.ogg", manifest)
 
     def test_recipe_installs_qt_multimedia_for_intro_playback(self):
-        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtmultimedia", recipe)
 
     def test_recipe_installs_qt_svg_for_wallpaper_previews(self):
-        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)
         control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)

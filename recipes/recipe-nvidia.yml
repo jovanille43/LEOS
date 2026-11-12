@@ -1,0 +1,9 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
+name: leos-nvidia
+description: LEOS, a Bazzite-based Linux distribution with custom Desktop and Gaming modes.
+base-image: ghcr.io/ublue-os/bazzite-nvidia
+image-version: stable
+modules:
+  - from-file: common-modules.yml

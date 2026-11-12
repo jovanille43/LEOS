@@ -139,23 +139,27 @@ jobs:
                   raise SystemExit(f"Wallpaper emblem is missing: {target}")
               print(f"Validated {wallpaper} -> {target}")
           PY
-      - name: Validate BlueBuild recipe
-        run: bluebuild validate recipes/recipe.yml
-
-      - name: Generate Containerfile
+      - name: Validate LEOS image recipes
         run: |
           set -euo pipefail
-          attempt=1
-          max_attempts=3
-          until bluebuild generate recipes/recipe.yml -o "$RUNNER_TEMP/LEOS-Containerfile"; do
-            if [[ "$attempt" -ge "$max_attempts" ]]; then
-              echo "::error::BlueBuild could not generate the Containerfile after ${max_attempts} attempts."
-              exit 1
-            fi
-            echo "BlueBuild schema/network request failed; retrying (${attempt}/${max_attempts})..."
-            sleep "$((attempt * 3))"
-            attempt=$((attempt + 1))
-          done
+          bluebuild validate recipes/recipe.yml
+          bluebuild validate recipes/recipe-nvidia.yml
 
-      - name: Confirm generated build file
-        run: test -s "$RUNNER_TEMP/LEOS-Containerfile"
+      - name: Generate Containerfiles
+        run: |
+          set -euo pipefail
+          for recipe in recipe.yml recipe-nvidia.yml; do
+            output="$RUNNER_TEMP/${recipe%.yml}-Containerfile"
+            attempt=1
+            max_attempts=3
+            until bluebuild generate "recipes/${recipe}" -o "$output"; do
+              if [[ "$attempt" -ge "$max_attempts" ]]; then
+                echo "::error::BlueBuild could not generate ${recipe} after ${max_attempts} attempts."
+                exit 1
+              fi
+              echo "BlueBuild schema/network request failed for ${recipe}; retrying (${attempt}/${max_attempts})..."
+              sleep "$((attempt * 3))"
+              attempt=$((attempt + 1))
+            done
+            test -s "$output"
+          done

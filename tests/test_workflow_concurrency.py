@@ -22,11 +22,12 @@ class WorkflowConcurrencyTests(unittest.TestCase):
 
     def test_recipe_generation_retries_transient_schema_fetch_failures(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("for recipe in recipe.yml recipe-nvidia.yml", source)
         self.assertIn("max_attempts=3", source)
-        self.assertIn('until bluebuild generate recipes/recipe.yml', source)
+        self.assertIn('until bluebuild generate "recipes/${recipe}"', source)
         self.assertIn('sleep "$((attempt * 3))"', source)
-        self.assertIn("could not generate the Containerfile after", source)
-        self.assertIn('run: test -s "$RUNNER_TEMP/LEOS-Containerfile"', source)
+        self.assertIn("could not generate ${recipe} after", source)
+        self.assertIn('test -s "$output"', source)
 
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")

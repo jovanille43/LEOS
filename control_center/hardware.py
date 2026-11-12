@@ -102,7 +102,7 @@ def _gaming_baseline_assessment(
     if memory_total_bytes <= 0:
         issues.append("quantité de RAM non vérifiable")
     elif memory_total_bytes < 8_000_000_000:
-        issues.append("moins de 8 Gio de RAM")
+        issues.append("moins de 8 Go de RAM")
 
     if issues:
         return "À vérifier : " + " · ".join(issues)

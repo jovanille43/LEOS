@@ -1,0 +1,104 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    install:
+      packages:
+        - python3-pyside6
+        - python3-psutil
+        - python3-evdev
+        - libnotify
+        - aurorae
+        - qt6-qtmultimedia
+        - qt6-qtsvg
+
+  - type: copy
+    src: gaming
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: launcher
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: control_center
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: controller_center
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: shop
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: desktop
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: plasma-theme/leos
+    dest: /usr/share/plasma/desktoptheme/leos/
+
+  - type: copy
+    src: icons/leos
+    dest: /usr/share/icons/leos/
+
+  - type: copy
+    src: aurorae/leos
+    dest: /usr/share/aurorae/themes/leos/
+
+  - type: copy
+    src: config
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: packaging/leos-default-apps-setup
+    dest: /usr/libexec/
+
+  - type: copy
+    src: packaging/leos-default-apps.service
+    dest: /usr/lib/systemd/user/
+
+  - type: systemd
+    user:
+      enabled:
+        - leos-default-apps.service
+
+  - type: copy
+    src: leos_core
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: branding
+    dest: /usr/share/leos/
+
+  - type: copy
+    src: desktop/applications/leos-mode-selector.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-control-center.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-controller-center.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-store.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-menu.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/applications/leos-notifications.desktop
+    dest: /usr/share/applications/
+
+  - type: copy
+    src: desktop/autostart/leos-session.desktop
+    dest: /usr/etc/xdg/autostart/
+
+  - type: signing

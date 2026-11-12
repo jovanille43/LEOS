@@ -54,7 +54,7 @@ class HardwareInventoryTests(unittest.TestCase):
             "ARM64", "UEFI non détecté", 4 * 1024 ** 3
         )
         self.assertIn("ARM64 hors cible", unsupported)
-        self.assertIn("moins de 8 Go", unsupported)
+        self.assertIn("moins de 8 Go de RAM", unsupported)
         self.assertIn("UEFI non détecté", unsupported)
 
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):
