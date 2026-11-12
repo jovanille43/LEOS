@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
+from controller_center.input_state import ControllerInputState
 from controller_center.profiles import (
     ControllerProfileStore,
     detect_controller_profile,
@@ -28,6 +29,7 @@ class ControllerCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.backend = GamepadBackend()
+        self.input_state = ControllerInputState()
         self.store = ControllerProfileStore()
         self.devices: list[dict] = []
         self.selected_index = -1
@@ -174,25 +176,21 @@ class ControllerCenterController(QObject):
         events = self.backend.poll()
         if self.backend.device is None and self.poll_timer.isActive():
             self.poll_timer.stop()
+            self.input_state.clear()
+            self.buttons_text = self.input_state.buttons_text
             self.status = "Connexion interrompue — nouvelle détection en cours…"
             self.changed.emit()
         if not events:
             return
         for event in events[-12:]:
-            if event["kind"] == "button" and event["value"] == 1:
-                self.last_event = f"Bouton pressé : {event['name']}"
-            elif event["kind"] == "axis":
-                self.last_event = f"Axe {event['name']} : {event['value']}"
+            description = self.input_state.consume(event)
+            if description:
+                self.last_event = description
+        self.buttons_text = self.input_state.buttons_text
         if self.backend.axes:
             self.axes_text = " · ".join(
                 f"{name}: {value}" for name, value in self.backend.axes.items()
             )
-        pressed = [
-            event["name"] for event in events
-            if event["kind"] == "button" and event["value"] == 1
-        ]
-        if pressed:
-            self.buttons_text = " · ".join(pressed[-8:])
         self.changed.emit()
 
     @Slot(str)
@@ -235,6 +233,8 @@ class ControllerCenterController(QObject):
     def _close_monitor(self) -> None:
         self.poll_timer.stop()
         self.backend.close()
+        self.input_state.clear()
+        self.buttons_text = self.input_state.buttons_text
 
     def shutdown(self) -> None:
         self.refresh_timer.stop()
