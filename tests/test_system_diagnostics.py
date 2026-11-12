@@ -198,9 +198,9 @@ class SystemDiagnosticsTests(unittest.TestCase):
                 self.assertNotIn(private_value, report)
 
     def test_report_formatter_removes_control_characters_and_bounds_values(self):
-        value = diagnostics._safe_report_value("CPU\\x00\\nmodel" + "x" * 400)
-        self.assertNotIn("\\x00", value)
-        self.assertNotIn("\\n", value)
+        value = diagnostics._safe_report_value("CPU\x00\nmodel" + "x" * 400)
+        self.assertNotIn("\x00", value)
+        self.assertNotIn("\n", value)
         self.assertEqual(len(value), 240)
         self.assertEqual(diagnostics._safe_report_value({"unexpected": "value"}), "")
 
