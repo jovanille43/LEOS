@@ -17,9 +17,9 @@ class HardwareInventoryTests(unittest.TestCase):
 
     def test_hardware_text_reader_keeps_valid_utf8_and_tolerates_kernel_bytes(self):
         with tempfile.NamedTemporaryFile() as stream:
-            stream.write(b"Model: Test CPU\\xff")
+            stream.write(b"Model: Test CPU" + bytes([0xFF]))
             stream.flush()
-            self.assertEqual(hardware._read(stream.name), "Model: Test CPU\\ufffd")
+            self.assertEqual(hardware._read(stream.name), "Model: Test CPU" + chr(0xFFFD))
 
     def test_snapshot_exposes_all_dashboard_fields(self):
         snapshot = hardware.collect_hardware_snapshot()
