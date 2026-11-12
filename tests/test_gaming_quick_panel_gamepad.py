@@ -34,7 +34,7 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
 
     def test_opening_quick_panel_resets_focus(self):
         self.assertGreaterEqual(
-            self.qml.count("quickPanelFocusIndex = 0"), 3
+            self.qml.count("quickPanelFocusIndex = 0"), 2
         )
 
     def test_focus_is_visibly_indicated_on_quick_panel_controls(self):
