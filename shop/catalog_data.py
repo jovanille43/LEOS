@@ -66,7 +66,7 @@ def load_catalog(path: Path) -> list[dict[str, Any]]:
     except UnicodeError as exc:
         raise ValueError("Le catalogue n'est pas encodé en UTF-8") from exc
     if not json_nesting_within_limit(text):
-        raise ValueError("La structure JSON du catalogue est invalide ou trop profonde")
+        raise ValueError("Le catalogue contient un JSON invalide ou une structure trop profonde")
     try:
         payload = json.loads(text)
     except (json.JSONDecodeError, RecursionError) as exc:
