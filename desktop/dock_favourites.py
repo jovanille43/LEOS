@@ -145,6 +145,23 @@ class DockFavourites:
             self._items.remove(desktop_id)
             self._write_unlocked()
 
+
+    def toggle(self, desktop_id: str) -> bool:
+        """Atomically toggle one pin and return whether it is pinned afterward."""
+        if not _valid_id(desktop_id):
+            raise ValueError("Expected a valid application .desktop ID")
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if desktop_id in self._items:
+                self._items.remove(desktop_id)
+                self._write_unlocked()
+                return False
+            if len(self._items) >= MAX_PINNED_APPS:
+                raise ValueError("The LEOS dock cannot contain more than 32 favourites")
+            self._items.append(desktop_id)
+            self._write_unlocked()
+            return True
+
     def move(self, desktop_id: str, index: int) -> None:
         with self._exclusive_lock():
             self._reload_for_update()
