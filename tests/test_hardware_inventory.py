@@ -423,7 +423,7 @@ class HardwareInventoryTests(unittest.TestCase):
             connector.mkdir()
             (connector / "status").write_text("disconnected", encoding="ascii")
             self.assertEqual(
-                hardware._display_details(root),
+                hardware._display_details(root, kscreen_output=""),
                 ("0", "Aucun écran connecté détecté par DRM"),
             )
 
@@ -439,7 +439,7 @@ class HardwareInventoryTests(unittest.TestCase):
             root = Path(temporary)
             (root / "card0-DP-1").mkdir()
             self.assertEqual(
-                hardware._display_details(root),
+                hardware._display_details(root, kscreen_output=""),
                 ("Non vérifiable", "État des connecteurs non exposé par DRM"),
             )
 
@@ -450,7 +450,7 @@ class HardwareInventoryTests(unittest.TestCase):
             connector.mkdir()
             (connector / "status").write_text("connected", encoding="ascii")
             self.assertEqual(
-                hardware._display_details(root),
+                hardware._display_details(root, kscreen_output=""),
                 ("1", "DP-1 · connecté · modes non exposés"),
             )
 
