@@ -126,6 +126,13 @@ class HeroicGameImportTests(unittest.TestCase):
         self.manifest.write_bytes(bytes((0xFF, 0xFE, 0x80)))
         self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
 
+    def test_rejects_oversized_manifest_before_parsing(self):
+        from gaming.backend.heroic import MAX_HEROIC_MANIFEST_BYTES
+
+        with self.manifest.open("wb") as stream:
+            stream.truncate(MAX_HEROIC_MANIFEST_BYTES + 1)
+        self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
+
     def test_rejects_unsupported_runner_and_corrupt_files(self):
         self.write_manifest({})
         self.assertEqual(load_heroic_games(self.manifest, "other"), [])
