@@ -55,6 +55,17 @@ def desktop_entry_paths(directories: tuple[Path, ...]) -> tuple[Path, ...]:
             preferred[path.name] = path
     return tuple(preferred.values())
 
+def desktop_file_id(path: Path, applications_dir: Path) -> str:
+    """Create the freedesktop desktop-file ID, flattening subdirectory slashes."""
+    try:
+        relative = path.relative_to(applications_dir)
+    except ValueError:
+        return ""
+    if not relative.parts or relative.suffix != ".desktop":
+        return ""
+    return "-".join(relative.parts)
+
+
 def localized_desktop_value(
     values: dict[str, str], key: str, locale_name: str
 ) -> str:
