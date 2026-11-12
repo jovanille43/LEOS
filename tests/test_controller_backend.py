@@ -91,6 +91,29 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
             monitor.open("/dev/input/js0")
         self.assertEqual(self.devices, [])
 
+    def test_close_tolerates_device_disappearing_during_disconnect(self):
+        class DisappearingGamepad(FakeGamepad):
+            def close(self):
+                raise OSError("device disconnected")
+
+        with patch.object(backend, "InputDevice", DisappearingGamepad):
+            monitor = backend.GamepadBackend()
+            monitor.open("/dev/input/event0")
+            monitor.axes["ABS_X"] = 100
+            monitor.close()
+        self.assertIsNone(monitor.device)
+        self.assertEqual(monitor.axes, {})
+        self.assertEqual(monitor.axis_ranges, {})
+
+    def test_scan_ignores_close_error_when_device_disappears(self):
+        class DisappearingGamepad(FakeGamepad):
+            def close(self):
+                raise OSError("device disconnected")
+
+        with patch.object(backend, "InputDevice", DisappearingGamepad):
+            result = backend.GamepadBackend().scan()
+        self.assertEqual(len(result), 1)
+
     def test_invalid_device_is_closed_after_open_failure(self):
         class NotAGamepad(FakeGamepad):
             def capabilities(self):
