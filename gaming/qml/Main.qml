@@ -700,7 +700,7 @@ ApplicationWindow {
                                         ? "Aucun favori pour le moment. Sélectionne un jeu et ajoute-le à tes favoris."
                                         : window.selectedCategory === "Récemment joués"
                                             ? "Aucun jeu lancé récemment."
-                                            : "Aucun jeu détecté dans cette catégorie.\\n\\nSteam sera analysé automatiquement. Tu peux aussi ajouter un jeu manuellement."
+                                            : "Aucun jeu détecté dans cette catégorie.\\n\\nInstalle un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
                                 color: window.muted
                                 font.pixelSize: 14
                             }
