@@ -31,6 +31,13 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("window.clearSelection()", source)
         self.assertIn("leos.refreshLibrary()", source)
 
+    def test_empty_library_explains_supported_launchers_and_manual_refresh(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("Installe un jeu dans Steam, Heroic ou Lutris", source)
+        self.assertIn("sélectionne ACTUALISER", source)
+        self.assertIn("ajouter un jeu manuellement", source)
+        self.assertNotIn("Steam sera analysé automatiquement", source)
+
     def test_library_shows_filtered_game_count(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")', source)
