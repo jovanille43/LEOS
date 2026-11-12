@@ -225,6 +225,26 @@ class GamepadActionTests(unittest.TestCase):
             "confirm",
         )
 
+    def test_malformed_preferences_fall_back_without_crashing(self):
+        mapper = mapper_from_preferences(
+            {"profile": "auto", "deadzone": "invalid", "axis_centers": None},
+            {"name": "Unknown", "vendor": "bad", "product": None},
+        )
+        self.assertEqual(mapper.deadzone_percent, 8)
+        self.assertEqual(mapper.axis_centers, {})
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "confirm",
+        )
+
+    def test_invalid_axis_centers_and_profiles_are_sanitized(self):
+        mapper = GamepadActionMapper(
+            axis_centers={"ABS_X": True, "ABS_Y": 100, "X" * 49: 0, "ABS_Z": 999999},
+            profile="unexpected",
+        )
+        self.assertEqual(mapper.axis_centers, {"ABS_Y": 100})
+        self.assertEqual(mapper.profile, "standard")
+
     def test_unknown_events_are_ignored(self):
         self.assertIsNone(
             self.mapper.feed({"kind": "button", "name": "BTN_TRIGGER", "value": 1})
