@@ -19,7 +19,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - `wallpapers/` — fonds d'écran Desktop et Gaming.
 - `icons/` — icônes et éléments graphiques.
 
-Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations.
+Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
 
 La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chemins et l'état de vérification sont détaillés dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
 
