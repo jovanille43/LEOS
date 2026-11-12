@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from itertools import islice
 import os
 import re
 import shlex
@@ -31,6 +32,10 @@ from .retroarch import (
 )
 from .mangohud import build_launch_command
 from .install_state import installation_status
+
+
+MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
+MAX_RETROARCH_PLAYLISTS_PER_DIRECTORY = 2_000
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -290,7 +295,7 @@ class GameLibraryModel(QAbstractListModel):
             steam_directories = []
         for directory in steam_directories:
             try:
-                manifests = list(directory.glob("appmanifest_*.acf"))
+                manifests = list(islice(directory.glob("appmanifest_*.acf"), MAX_STEAM_MANIFESTS_PER_LIBRARY))
             except OSError:
                 continue
             for manifest in manifests:
@@ -341,7 +346,7 @@ class GameLibraryModel(QAbstractListModel):
             thumbnail_directories = []
         for directory in playlist_directories:
             try:
-                playlists = sorted(directory.glob("*.lpl"))
+                playlists = sorted(islice(directory.glob("*.lpl"), MAX_RETROARCH_PLAYLISTS_PER_DIRECTORY))
             except OSError:
                 continue
             for playlist in playlists:
