@@ -1,7 +1,5 @@
 #!/usr/bin/bash
-# Install LEOS' suggested starter applications once per user.
-# The completion marker is deliberately persistent: uninstalling an app later
-# through LEOS Store must not cause it to be reinstalled on the next login.
+# Offer optional starter applications; never install or add a remote without consent.
 set -euo pipefail
 
 state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -12,9 +10,21 @@ if [[ -e "$marker" ]]; then
     exit 0
 fi
 
+# A graphical confirmation is mandatory. Headless sessions never install software.
+if ! command -v kdialog >/dev/null 2>&1; then
+    echo "LEOS starter applications skipped: graphical confirmation is unavailable."
+    exit 0
+fi
 if ! command -v flatpak >/dev/null 2>&1; then
     echo "Flatpak is not available yet." >&2
     exit 1
+fi
+
+if ! kdialog --title "Bienvenue dans LEOS" --defaultno --yesno \
+    "Souhaites-tu installer les applications facultatives suivantes dans ton profil utilisateur ?\n\n• Brave Browser\n• LibreOffice\n• VLC\n\nAucune application ne sera installée sans ton accord. Tu pourras ensuite les gérer depuis la boutique LEOS."; then
+    mkdir -p "$state_dir"
+    touch "$marker"
+    exit 0
 fi
 
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
