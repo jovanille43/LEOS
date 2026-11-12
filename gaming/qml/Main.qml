@@ -426,7 +426,7 @@ ApplicationWindow {
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                     }
-                    Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
                         Label { text: "JEUX"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
                         CheckBox {
@@ -492,6 +492,7 @@ ApplicationWindow {
                             Repeater {
                                 model: leos.availablePowerProfiles
                                 delegate: Button {
+                                    id: powerProfileButton
                                     required property string modelData
                                     text: window.powerProfileLabel(modelData)
                                     onClicked: {
@@ -506,7 +507,7 @@ ApplicationWindow {
                                         border.color: window.quickPanelFocusIndex === index + 1 ? window.cyan : (leos.activePowerProfile === modelData ? window.cyan : "#344052")
                                     }
                                     contentItem: Label {
-                                        text: parent.text
+                                        text: powerProfileButton.text
                                         color: "white"
                                         font.pixelSize: 8
                                         horizontalAlignment: Text.AlignHCenter
@@ -515,7 +516,7 @@ ApplicationWindow {
                             }
                         }
                     }
-                    Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     Item { Layout.fillWidth: true }
                     Button {
                         text: "RETOUR DESKTOP"
@@ -563,6 +564,7 @@ ApplicationWindow {
                     Repeater {
                         model: window.categoryNames
                         delegate: Button {
+                            id: categoryButton
                             required property string modelData
                             Layout.fillWidth: true
                             text: modelData
@@ -573,7 +575,7 @@ ApplicationWindow {
                                 border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.magenta : (modelData === window.selectedCategory ? window.cyan : "transparent")
                             }
                             contentItem: Label {
-                                text: parent.text
+                                text: categoryButton.text
                                 color: "white"
                                 leftPadding: 9
                                 verticalAlignment: Text.AlignVCenter
@@ -633,11 +635,12 @@ ApplicationWindow {
                             }
                         }
                         Button {
+                            id: addGameButton
                             text: "+ AJOUTER UN JEU"
                             onClicked: addDialog.open()
                             background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                             contentItem: Label {
-                                text: parent.text
+                                text: addGameButton.text
                                 color: "white"
                                 font.pixelSize: 11
                                 font.weight: Font.DemiBold
@@ -901,6 +904,7 @@ ApplicationWindow {
                                 }
                                 Item { Layout.fillHeight: true }
                                 Button {
+                                    id: favoriteGameButton
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: window.selectedIsFavorite ? "RETIRER DES FAVORIS" : "AJOUTER AUX FAVORIS"
@@ -919,7 +923,7 @@ ApplicationWindow {
                                         border.color: window.magenta
                                     }
                                     contentItem: Label {
-                                        text: parent.text
+                                        text: favoriteGameButton.text
                                         color: "white"
                                         font.pixelSize: 11
                                         font.weight: Font.DemiBold
@@ -927,6 +931,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Button {
+                                    id: launchSelectedGameButton
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: "JOUER"
@@ -936,12 +941,12 @@ ApplicationWindow {
                                     }
                                     background: Rectangle {
                                         radius: 10
-                                        color: parent.enabled ? "#103847" : "#202630"
-                                        border.color: parent.enabled ? window.cyan : "#344052"
+                                        color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
+                                        border.color: launchSelectedGameButton.enabled ? window.cyan : "#344052"
                                     }
                                     contentItem: Label {
-                                        text: parent.text
-                                        color: parent.enabled ? "white" : "#778091"
+                                        text: launchSelectedGameButton.text
+                                        color: launchSelectedGameButton.enabled ? "white" : "#778091"
                                         font.pixelSize: 13
                                         font.weight: Font.Bold
                                         horizontalAlignment: Text.AlignHCenter
@@ -1090,6 +1095,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Button {
+                id: confirmPowerProfileButton
                 text: "CONFIRMER LE CHANGEMENT"
                 Layout.fillWidth: true
                 onClicked: {
@@ -1101,7 +1107,7 @@ ApplicationWindow {
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
-                    text: parent.text
+                    text: confirmPowerProfileButton.text
                     color: "white"
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
