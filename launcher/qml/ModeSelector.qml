@@ -33,7 +33,7 @@ ApplicationWindow {
         introPlayer.source = Qt.resolvedUrl(
             mode === "gaming"
                 ? "../../branding/animations/gaming-intro.mp4"
-                : "../../branding/animations/desktop-intro.mp4"
+                : "../../branding/animations/desktop-intro.mov"
         )
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
