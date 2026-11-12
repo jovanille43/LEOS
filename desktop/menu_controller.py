@@ -8,7 +8,7 @@ from pathlib import Path
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
 from desktop.desktop_entries import (
-    desktop_application_dirs, desktop_entry_is_visible, desktop_file_id, desktop_entry_paths,
+    desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
     filter_desktop_applications, localized_desktop_value,
 )
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
@@ -139,10 +139,10 @@ class ApplicationCatalog(QAbstractListModel):
     @Slot()
     def refresh(self):
         found: dict[str, dict[str, str]] = {}
-        for path in desktop_entry_paths(APP_DIRS):
-            item = self._read_entry(path)
+        for desktop_id, path in desktop_entry_paths(APP_DIRS):
+            item = self._read_entry(path, desktop_id=desktop_id)
             if item:
-                found[item["desktopId"]] = item
+                found[desktop_id] = item
         self._all = sorted(found.values(), key=lambda item: item["name"].casefold())
         self._apply_filter()
 
