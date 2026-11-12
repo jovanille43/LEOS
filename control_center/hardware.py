@@ -446,6 +446,57 @@ def _gpu_details() -> str:
     ]
     return " · ".join(lines) if lines else "Non détecté"
 
+def _display_details(
+    drm_root: Path = Path("/sys/class/drm"),
+) -> tuple[str, str]:
+    """Inventory connected DRM display connectors without changing display settings."""
+    try:
+        connectors = sorted(
+            path
+            for path in drm_root.glob("card*-*")
+            if re.fullmatch(r"card\\d+-.+", path.name)
+        )
+    except OSError:
+        connectors = []
+
+    if not connectors:
+        return "Non vérifiable", "Aucun connecteur d'écran exposé par DRM"
+
+    connected: list[str] = []
+    for connector in connectors:
+        status = _read(connector / "status").strip().lower()
+        if status != "connected":
+            continue
+
+        connector_name = re.sub(r"^card\\d+-", "", connector.name)
+        enabled = _read(connector / "enabled").strip().lower()
+        if enabled == "enabled":
+            state = "actif"
+        elif enabled == "disabled":
+            state = "connecté, non activé"
+        else:
+            state = "connecté"
+
+        raw_modes = _read(connector / "modes")
+        modes: list[str] = []
+        for line in raw_modes.splitlines():
+            mode = line.strip()
+            if re.fullmatch(r"\\d{2,5}x\\d{2,5}", mode) and mode not in modes:
+                modes.append(mode)
+
+        if modes:
+            mode_text = ", ".join(modes[:4])
+            if len(modes) > 4:
+                mode_text += f" et {len(modes) - 4} autre(s)"
+            connected.append(f"{connector_name} · {state} · modes disponibles : {mode_text}")
+        else:
+            connected.append(f"{connector_name} · {state} · modes non exposés")
+
+    if not connected:
+        return "0", "Aucun écran connecté détecté par DRM"
+    return str(len(connected)), " | ".join(connected)
+
+
 def _bluetooth_details() -> tuple[str, str]:
     service = _run(["systemctl", "show", "-p", "ActiveState", "--value", "bluetooth"])
     if service != "active":
@@ -585,6 +636,8 @@ def collect_hardware_snapshot() -> dict[str, str]:
         ),
         "storage": storage,
         "gpu": _gpu_details(),
+        "displayCount": _display_details()[0],
+        "displays": _display_details()[1],
         "vulkan": vulkan,
         "operatingSystem": pretty_name.group(1) if pretty_name else "Linux (distribution non identifiée)",
         "kernel": platform.release() or "Indisponible",
