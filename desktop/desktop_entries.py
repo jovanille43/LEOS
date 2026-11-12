@@ -2,7 +2,32 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
+from leos_core.paths import data_home as xdg_data_home
 from leos_core.text import normalize_search_text
+
+
+def desktop_application_dirs() -> tuple[Path, ...]:
+    """Return system application directories followed by the user override directory."""
+    configured = os.environ.get("XDG_DATA_DIRS", "").strip()
+    roots = configured.split(os.pathsep) if configured else ["/usr/local/share", "/usr/share"]
+    directories: list[Path] = []
+    seen: set[Path] = set()
+    for root in roots:
+        candidate = Path(root.strip()).expanduser()
+        if not root.strip() or not candidate.is_absolute():
+            continue
+        application_dir = candidate / "applications"
+        if application_dir not in seen:
+            directories.append(application_dir)
+            seen.add(application_dir)
+
+    user_dir = xdg_data_home() / "applications"
+    if user_dir not in seen:
+        directories.append(user_dir)
+    return tuple(directories)
 
 
 def localized_desktop_value(
