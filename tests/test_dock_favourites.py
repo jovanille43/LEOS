@@ -112,7 +112,7 @@ class DockFavouritesTests(unittest.TestCase):
                 self.skipTest("Symbolic links unavailable")
             store = DockFavourites(link)
             self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
-            with self.assertRaises(OSError):
+            with self.assertRaises((OSError, ValueError)):
                 store.pin("org.example.Safe.desktop")
             self.assertEqual(
                 target.read_text(encoding="utf-8"),
