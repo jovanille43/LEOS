@@ -134,7 +134,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.png"
+                            source: "../../branding/desktop-logo.jpeg"
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 185
@@ -180,7 +180,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.png"
+                            source: "../../branding/gaming-logo.jpeg"
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 185
