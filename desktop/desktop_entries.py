@@ -34,6 +34,27 @@ def desktop_application_dirs() -> tuple[Path, ...]:
     return tuple(directories)
 
 
+
+
+def desktop_entry_paths(directories: tuple[Path, ...]) -> tuple[Path, ...]:
+    """Select one Desktop Entry per ID, letting later (higher-priority) dirs win.
+
+    Select paths before parsing them: a user-level Hidden=true entry must mask
+    a system-level entry with the same desktop-file ID rather than exposing the
+    lower-priority application as a fallback.
+    """
+    preferred: dict[str, Path] = {}
+    for directory in directories:
+        try:
+            if not directory.is_dir():
+                continue
+            entries = sorted(directory.glob("*.desktop"))
+        except OSError:
+            continue
+        for path in entries:
+            preferred[path.name] = path
+    return tuple(preferred.values())
+
 def localized_desktop_value(
     values: dict[str, str], key: str, locale_name: str
 ) -> str:
