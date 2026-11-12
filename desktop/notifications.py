@@ -38,11 +38,17 @@ def _show_native_notification(title: str, body: str, level: str) -> None:
     if body:
         command.append(body)
     try:
-        subprocess.run(
-            command, check=False, timeout=2,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        # Notifications are best-effort UI feedback. Spawn notify-send without
+        # waiting so a slow desktop bus cannot stall Gaming or Desktop.
+        subprocess.Popen(
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+            start_new_session=True,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError:
         return
 
 
