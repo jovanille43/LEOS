@@ -39,6 +39,13 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
         self.assertIn("self._start_power_profile_task(profile)", apply)
         self.assertIn("Une opération de gestion d'énergie est déjà en cours.", apply)
 
+    def test_qml_reports_pending_state_instead_of_claiming_immediate_success(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        self.assertNotIn('statusText.text = "Profil énergie mis à jour."', qml)
+        self.assertIn('self._power_profile_message = "Changement du profil d\'énergie en cours…"', controller)
+        self.assertIn("self.messageChanged.emit(self._message)", controller)
+
     def test_profile_backend_uses_only_native_powerprofilesctl(self):
         module = (ROOT / "gaming/backend/power_profiles.py").read_text(encoding="utf-8")
         self.assertIn('[executable, "get"]', module)
