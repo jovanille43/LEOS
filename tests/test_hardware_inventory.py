@@ -58,6 +58,42 @@ class HardwareInventoryTests(unittest.TestCase):
             "Cœurs physiques indisponibles",
         )
 
+    def test_linux_cpu_list_parser_handles_ranges_and_invalid_entries(self):
+        self.assertEqual(
+            hardware._parse_cpu_list("0-3, 6,8-9,broken,-2,12-10"),
+            {0, 1, 2, 3, 6, 8, 9},
+        )
+
+    def test_sysfs_topology_counts_online_cores_across_packages(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "online").write_text("0-3,8-9", encoding="utf-8")
+            for cpu_id, package, core in [
+                (0, 0, 0), (1, 0, 0), (2, 0, 1),
+                (3, 0, 1), (8, 1, 0), (9, 1, 0),
+            ]:
+                topology = root / f"cpu{cpu_id}" / "topology"
+                topology.mkdir(parents=True)
+                (topology / "physical_package_id").write_text(str(package), encoding="utf-8")
+                (topology / "core_id").write_text(str(core), encoding="utf-8")
+
+            self.assertEqual(hardware._cpu_topology_from_sysfs(root), (3, 6))
+            self.assertEqual(hardware._cpu_topology(sysfs_root=root), (3, 6))
+
+    def test_sysfs_topology_reports_unknown_cores_instead_of_guessing(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "online").write_text("0-1", encoding="utf-8")
+            for cpu_id in range(2):
+                (root / f"cpu{cpu_id}" / "topology").mkdir(parents=True)
+            self.assertEqual(hardware._cpu_topology_from_sysfs(root), (None, 2))
+
     def test_memory_total_parser_and_gaming_baseline_are_conservative(self):
         with patch.object(
             hardware, "_read",
