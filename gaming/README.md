@@ -32,7 +32,7 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 
 - Les fournisseurs automatiques actuels couvrent Steam, les installations Heroic (Epic, GOG et Amazon Games) et Lutris ; les autres lanceurs ne sont pas encore importés.
 - Les jaquettes sont recherchées dans les caches locaux Steam et Lutris, ainsi que dans les chemins d'images locaux explicitement référencés par les manifestes Heroic. Aucune image n'est téléchargée ; les URL distantes et formats non pris en charge sont ignorés.
-- Les métadonnées en ligne, les fiches cinématiques et les animations de lancement ne sont pas encore connectées.
+- Les introductions vidéo de transition Desktop/Gaming sont connectées à Qt Multimedia ; les pistes AAC intégrées suivent le réglage sonore LEOS et un repli évite de bloquer la transition. Les animations propres au lancement de chaque jeu, les fiches cinématiques et les métadonnées en ligne ne sont pas encore connectées.
 - La charge GPU, la VRAM et la température GPU sont lues via sysfs DRM/hwmon lorsqu'elles sont exposées (notamment sur les pilotes AMD compatibles). Le nom affiché identifie le constructeur et l'identifiant PCI, pas nécessairement le modèle commercial. L'overlay FPS s'appuie sur MangoHud lorsqu'il est installé et activé ; LEOS n'invente pas de valeur FPS et ne prétend pas intégrer un compteur interne temps réel.
 - La navigation à la manette couvre les directions, la validation, le retour et le panneau rapide. Les raccourcis globaux du système restent à définir.
 - Les profils d'énergie sont limités aux modes natifs détectés (Performance, Équilibré, Économie d'énergie). LEOS ne simule pas de profil silencieux distinct et ne pilote pas directement les ventilateurs ; si le service système est absent, les commandes sont désactivées.
@@ -65,4 +65,4 @@ Les manifestes Steam ne peuvent fournir un chemin d'installation que si le nom d
 
 ## Fonds d'écran de référence
 
-Le dépôt fournit un fond Gaming 4K dans `branding/wallpapers/gaming-leos.svg`. Il réutilise directement `branding/gaming-logo.jpeg` par référence relative, sans créer une version altérée de l'emblème. Le fichier est empaqueté avec les autres ressources LEOS, mais il n'est pas encore utilisé comme arrière-plan de l'application Gaming : cette intégration reste distincte de la bibliothèque plein écran actuelle et attend la validation du rendu SVG sur Bazzite.
+Le dépôt fournit un fond Gaming 4K dans `branding/wallpapers/gaming-leos.svg`. Il réutilise directement `branding/gaming-logo.jpeg` par référence relative, sans créer une version altérée de l'emblème. Le fichier est empaqueté avec les autres ressources LEOS ; il reste une ressource sélectionnable via les paramètres natifs KDE et n'est pas appliqué automatiquement à l'arrière-plan de l'application Gaming. Le rendu SVG lié attend encore une validation sur Bazzite.
