@@ -109,6 +109,12 @@ class LibraryStateTests(unittest.TestCase):
             self.assertIsNone(read_bounded_json(path))
             self.assertIsNone(read_bounded_json(path.with_name("missing.json")))
 
+    def test_bounded_json_reader_rejects_deeply_nested_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            path.write_text("[" * 2000 + "0" + "]" * 2000, encoding="utf-8")
+            self.assertIsNone(read_bounded_json(path))
+
     def test_manual_game_validation_accepts_safe_argument_lists(self):
         result = validate_manual_game_input(
             "  Mon jeu  préféré  ", " PC ", '"/opt/games/my game" --fullscreen'
