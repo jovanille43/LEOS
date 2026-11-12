@@ -10,7 +10,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 ## Direction visuelle Desktop
 
-- Emblème officiel du lion seul, dès que le fichier source sera ajouté au dépôt.
+- Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Son intégration au fond d'écran ou à un élément permanent du bureau reste à finaliser.
 - Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
@@ -25,7 +25,7 @@ Aucune configuration Plasma existante ne sera écrasée silencieusement.
 
 ## À finaliser
 
-- Intégration de l'emblème et du fond d'écran officiels.
+- Création et intégration du fond d'écran Desktop officiel ; l'emblème source est déjà présent et empaqueté.
 - Application automatique des profils de disposition au véritable panneau Plasma (l'adaptateur de panneau existe mais reste inactif) ; dock et widgets encore non intégrés.
 - Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).
