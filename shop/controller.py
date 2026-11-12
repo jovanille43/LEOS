@@ -225,7 +225,7 @@ class StoreController(QObject):
             if exit_code == 0:
                 self._action = "verified"
                 self._set_verification_details(
-                    f"Source vérifiée : {self._verified_source_url}\\n{runtime_summary(stdout)}"
+                    f"Source vérifiée : {self._verified_source_url}\n{runtime_summary(stdout)}"
                 )
                 self._set_status(
                     f"{target} est disponible sur Flathub. Tu peux maintenant confirmer son installation."
