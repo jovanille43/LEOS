@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, QByteArray
+
+from shop.catalog_data import load_catalog
 
 
 class CatalogModel(QAbstractListModel):
@@ -36,7 +37,12 @@ class CatalogModel(QAbstractListModel):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         catalog_path = Path(__file__).with_name("catalog.json")
-        self._items = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.load_error = ""
+        try:
+            self._items = load_catalog(catalog_path)
+        except (OSError, ValueError):
+            self._items = []
+            self.load_error = "Le catalogue LEOS est indisponible ou invalide. Aucune installation ne peut être lancée."
         self._installed_user: set[str] = set()
         self._installed_system: set[str] = set()
 
