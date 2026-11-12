@@ -34,9 +34,9 @@ Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos o
 
 | Ressource | Taille GitHub | Durée média |
 | --- | ---: | ---: |
-| `desktop-logo.jpeg` | 67 277 octets |
-| `gaming-logo.jpeg` | 73 084 octets |
-| `reference-comparison.jpeg` | 105 202 octets |
+| `desktop-logo.jpeg` | 67 277 octets | — |
+| `gaming-logo.jpeg` | 73 084 octets | — |
+| `reference-comparison.jpeg` | 105 202 octets | — |
 | `animations/desktop-intro.mov` | 2 934 309 octets | 5,354 s |
 | `animations/gaming-intro.mp4` | 2 115 657 octets | 6,048 s |
 | `animations/gaming-roar-reference.mp4` | 2 763 575 octets | 6,080 s |
