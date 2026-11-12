@@ -23,6 +23,7 @@ from control_center.system_updates import (
     system_update_check_command,
     system_updater_command,
     pending_deployment_from_status,
+    deployment_inventory_from_status,
     rpm_ostree_status_command,
 )
 
@@ -202,6 +203,14 @@ class ControlCenterController(QObject):
         self._system_update_timeout.setSingleShot(True)
         self._system_update_timeout.setInterval(SYSTEM_UPDATE_CHECK_TIMEOUT_MS)
         self._system_update_timeout.timeout.connect(self._on_system_update_check_timeout)
+        self._deployment_snapshot = {
+            "available": False,
+            "bootedVersion": "Non vérifiable",
+            "bootedChecksum": "—",
+            "otherCount": 0,
+            "pendingCount": 0,
+            "pinnedCount": 0,
+        }
         self._deployment_process = QProcess(self)
         self._deployment_process.finished.connect(self._on_deployment_status_finished)
         self._deployment_process.errorOccurred.connect(self._on_deployment_status_error)
@@ -356,6 +365,11 @@ class ControlCenterController(QObject):
     def systemUpdaterAvailable(self) -> bool:
         return system_updater_command() is not None
 
+    @Property("QVariantMap", notify=systemUpdatesChanged)
+    def deploymentSnapshot(self) -> dict[str, str | int | bool]:
+        """Expose read-only OSTree deployment inventory to the recovery page."""
+        return dict(self._deployment_snapshot)
+
     def _set_system_update_status(self, message: str) -> None:
         self._system_update_status = message
         self.systemUpdatesChanged.emit()
@@ -390,6 +404,10 @@ class ControlCenterController(QObject):
         if _exit_status != QProcess.ExitStatus.NormalExit or exit_code != 0:
             return
         payload = bytes(self._deployment_process.readAllStandardOutput()).decode("utf-8", errors="replace")
+        inventory = deployment_inventory_from_status(payload)
+        if inventory is not None and inventory != self._deployment_snapshot:
+            self._deployment_snapshot = inventory
+            self.systemUpdatesChanged.emit()
         pending = pending_deployment_from_status(payload)
         previous = str(self.settings.get("last_notified_system_update", ""))
         if pending is None:
