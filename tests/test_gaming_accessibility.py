@@ -59,6 +59,16 @@ class GamingAccessibilityTests(unittest.TestCase):
             "Gaming QML still contains text smaller than 12 px",
         )
 
+    def test_game_tiles_are_responsive_and_source_labels_are_bounded(self):
+        self.assertIn(
+            "Math.max(220, Math.min(300, Math.floor(gameGrid.width / 3)))",
+            self.qml,
+        )
+        self.assertIn("cellHeight: 190", self.qml)
+        self.assertIn("Layout.preferredWidth: 88", self.qml)
+        self.assertIn("Layout.preferredHeight: 126", self.qml)
+        self.assertIn("elide: Text.ElideRight", self.qml)
+
     def test_focus_color_is_separate_from_selection_and_favorite_accents(self):
         self.assertIn('property color focusColor: "#ffffff"', self.qml)
         self.assertIn("window.focusColor", self.qml)
