@@ -188,6 +188,7 @@ class ControllerProfileStore:
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.path.parent.is_symlink() or self.path.is_symlink():
             raise OSError("Controller profile path cannot be a symbolic link")
+        os.chmod(self.path.parent, 0o700)
         fd, temporary = tempfile.mkstemp(prefix=".controllers-", dir=self.path.parent)
         try:
             os.fchmod(fd, 0o600)
