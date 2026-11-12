@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
+from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale, QThreadPool
 
 from desktop.desktop_entries import (
     desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
@@ -29,12 +29,41 @@ ROLE_NAMES = {
 
 
 
+class _ApplicationScanSignals(QObject):
+    completed = Signal(object)
+
+
+class _ApplicationScanTask(QRunnable):
+    """Discover and parse desktop entries without blocking the menu window."""
+
+    def __init__(self, directories, reader) -> None:
+        super().__init__()
+        self.directories = directories
+        self.reader = reader
+        self.signals = _ApplicationScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            found: dict[str, dict[str, str]] = {}
+            for desktop_id, path in desktop_entry_paths(self.directories):
+                item = self.reader(path, desktop_id=desktop_id)
+                if item:
+                    found[desktop_id] = item
+            snapshot = tuple(found.values())
+        except Exception:
+            # Keep the last valid model intact; a later refresh can retry.
+            snapshot = None
+        self.signals.completed.emit(snapshot)
+
+
 class ApplicationCatalog(QAbstractListModel):
     """Read installed .desktop entries and launch them without a shell."""
 
     launchFailed = Signal(str)
     notificationCountChanged = Signal()
     categoryChanged = Signal()
+    loadingChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -42,6 +71,9 @@ class ApplicationCatalog(QAbstractListModel):
         self._visible: list[dict[str, str]] = []
         self._query = ""
         self._category = "Tout"
+        self._scan_task: _ApplicationScanTask | None = None
+        self._refresh_pending = False
+        self._loading = False
         self.favourites = DockFavourites()
         self.notifications = NotificationStore()
         self.recentApplications = RecentApplications()
@@ -136,15 +168,38 @@ class ApplicationCatalog(QAbstractListModel):
             "workingDirectory": working_directory,
         }
 
+    @Property(bool, notify=loadingChanged)
+    def loading(self) -> bool:
+        return self._loading
+
+    def _set_loading(self, loading: bool) -> None:
+        loading = bool(loading)
+        if self._loading != loading:
+            self._loading = loading
+            self.loadingChanged.emit()
+
     @Slot()
     def refresh(self):
-        found: dict[str, dict[str, str]] = {}
-        for desktop_id, path in desktop_entry_paths(APP_DIRS):
-            item = self._read_entry(path, desktop_id=desktop_id)
-            if item:
-                found[desktop_id] = item
-        self._all = sorted(found.values(), key=lambda item: item["name"].casefold())
-        self._apply_filter()
+        if self._scan_task is not None:
+            self._refresh_pending = True
+            return
+        task = _ApplicationScanTask(APP_DIRS, self._read_entry)
+        task.signals.completed.connect(self._on_scan_completed)
+        self._scan_task = task
+        self._set_loading(True)
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(object)
+    def _on_scan_completed(self, snapshot) -> None:
+        self._scan_task = None
+        if snapshot is not None:
+            self._all = sorted(snapshot, key=lambda item: item["name"].casefold())
+            self._apply_filter()
+        if self._refresh_pending:
+            self._refresh_pending = False
+            self.refresh()
+            return
+        self._set_loading(False)
 
     def _apply_filter(self):
         selected = filter_desktop_applications(
