@@ -374,6 +374,20 @@ class ControlCenterController(QObject):
         self._system_update_status = message
         self.systemUpdatesChanged.emit()
 
+    def _reset_deployment_snapshot(self) -> None:
+        """Discard cached deployment details when a fresh read is unavailable."""
+        unknown = {
+            "available": False,
+            "bootedVersion": "Non vérifiable",
+            "bootedChecksum": "—",
+            "otherCount": 0,
+            "pendingCount": 0,
+            "pinnedCount": 0,
+        }
+        if self._deployment_snapshot != unknown:
+            self._deployment_snapshot = unknown
+            self.systemUpdatesChanged.emit()
+
     @Slot()
     def refreshPendingSystemUpdate(self) -> None:
         """Observe Bazzite's staged deployment without starting an update."""
@@ -381,6 +395,7 @@ class ControlCenterController(QObject):
             return
         command = rpm_ostree_status_command()
         if not command:
+            self._reset_deployment_snapshot()
             return
         self._deployment_process.setProgram(command[0])
         self._deployment_process.setArguments(command[1:])
@@ -400,12 +415,16 @@ class ControlCenterController(QObject):
         self._deployment_check_running = False
         if self._deployment_timed_out:
             self._deployment_timed_out = False
+            self._reset_deployment_snapshot()
             return
         if _exit_status != QProcess.ExitStatus.NormalExit or exit_code != 0:
+            self._reset_deployment_snapshot()
             return
         payload = bytes(self._deployment_process.readAllStandardOutput()).decode("utf-8", errors="replace")
         inventory = deployment_inventory_from_status(payload)
-        if inventory is not None and inventory != self._deployment_snapshot:
+        if inventory is None:
+            self._reset_deployment_snapshot()
+        elif inventory != self._deployment_snapshot:
             self._deployment_snapshot = inventory
             self.systemUpdatesChanged.emit()
         pending = pending_deployment_from_status(payload)
@@ -429,6 +448,7 @@ class ControlCenterController(QObject):
             return
         self._deployment_timeout.stop()
         self._deployment_check_running = False
+        self._reset_deployment_snapshot()
 
     @Slot()
     def checkForSystemUpdates(self) -> None:
