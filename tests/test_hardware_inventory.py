@@ -379,7 +379,17 @@ class HardwareInventoryTests(unittest.TestCase):
             ),
         )
 
-    def test_kscreen_parser_reports_connected_but_disabled_outputs(self):
+    def test_kscreen_parser_preserves_large_integer_display_scale(self):
+        output = (
+            "Output: 1 DP-1 enabled connected priority 1 DisplayPort\n"
+            "    Modes: 0: 1920x1080@60.00*\n"
+            "    Scale: 10.0\n"
+        )
+        self.assertEqual(
+            hardware._parse_kscreen_displays(output),
+            ("1", "DP-1 · actif · 1920x1080 à 60 Hz · échelle 10"),
+        )
+
         output = (
             "Output: 3 HDMI-A-1 connected priority 3 HDMI\n"
             "    Modes: 0: 3840x2160@60.00*\n"
