@@ -163,6 +163,13 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('applicationCatalog.clearRecentApplications()', qml)
         self.assertIn('applicationCatalog.currentCategory === "Récemment utilisées"', qml)
 
+    def test_menu_polls_shared_favourites_and_recent_lists(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("self._notification_timer.timeout.connect(self.refreshSharedStores)", source)
+        self.assertIn("def refreshSharedStores(self)", source)
+        self.assertIn("if favourites == self._favourites_snapshot and recent == self._recent_snapshot:", source)
+        self.assertIn("self._apply_filter()", source)
+
 
 if __name__ == "__main__":
     unittest.main()
