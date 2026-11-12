@@ -373,7 +373,7 @@ ApplicationWindow {
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
-                    text: parent.text
+                    text: continueGamingButton.text
                     color: "white"
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
