@@ -43,7 +43,9 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         selected.extend(column for column in optional if column in columns)
         quoted_columns = ", ".join(f'"{column}"' for column in selected)
         rows = connection.execute(
-            f'SELECT {quoted_columns} FROM "games" WHERE "installed" = 1 ORDER BY "name" COLLATE NOCASE'
+            f'SELECT {quoted_columns} FROM "games" WHERE "installed" = 1 '
+            'AND CAST("id" AS INTEGER) > 0 AND "name" IS NOT NULL '
+            'AND TRIM("name") != "" ORDER BY "name" COLLATE NOCASE'
         ).fetchmany(MAX_LUTRIS_GAMES)
 
         games: list[dict[str, Any]] = []
