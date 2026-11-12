@@ -22,14 +22,14 @@ class HardwareInventoryTests(unittest.TestCase):
 
     def test_cpu_details_reads_arm_processor_field_and_online_cpu_list(self):
         responses = {
-            "/proc/cpuinfo": "processor : 0\\nProcessor : ARMv8 Processor rev 1 (v8l)\\n",
+            "/proc/cpuinfo": "Processor : ARMv8 Processor rev 1 (v8l)\\n",
             "/sys/devices/system/cpu/online": "0-5",
         }
         with patch.object(hardware, "_read", side_effect=lambda path: responses.get(str(path), "")):
             with patch.object(hardware.os, "cpu_count", return_value=99):
                 self.assertEqual(
                     hardware._cpu_details(),
-                    ("ARMv8 Processor rev 1 (v8l)", "1 thread(s)"),
+                    ("ARMv8 Processor rev 1 (v8l)", "6 thread(s)"),
                 )
 
     def test_cpu_details_uses_device_tree_model_when_proc_has_no_model(self):
