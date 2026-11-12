@@ -180,6 +180,8 @@ class ControllerProfileStore:
                     current["axis_centers"][axis] = value
                 if len(current["axis_centers"]) > MAX_AXIS_CENTERS:
                     raise ValueError("Too many controller axis centers")
+            if device_id not in devices and len(devices) >= MAX_CONTROLLER_PROFILES:
+                raise ValueError("Too many saved controller profiles")
             devices[device_id] = current
             self._write(payload)
             return current
