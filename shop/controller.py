@@ -82,7 +82,7 @@ class StoreController(QObject):
             return
         executable = shutil.which(program)
         if not executable:
-            if action in {"verify-remote", "verify-install"}:
+            if action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Flatpak n'est pas disponible : la source et les dépendances n'ont pas pu être vérifiées.")
             self._set_status(f"{program} n'est pas disponible sur ce système.")
             post_notification("Opération impossible", self._status, "error")
@@ -92,7 +92,7 @@ class StoreController(QObject):
         self._stdout.clear()
         self._stderr.clear()
         # QProcess reports startup failures through errorOccurred. Do not
-        # block the GUI thread with waitForStarted while Flatpak initializes.
+        # block the GUI thread while Flatpak initializes.
         self._set_busy(True)
         self._set_status("Vérification ou opération Flatpak en cours…")
         self._process.start(executable, args)
