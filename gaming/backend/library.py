@@ -87,7 +87,7 @@ class GameLibraryModel(QAbstractListModel):
 
     @staticmethod
     def _flatpak_app_available(app_id: str) -> bool:
-        data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+        data_home = xdg_data_home()
         roots = [data_home / "flatpak" / "app", Path("/var/lib/flatpak/app")]
         return any((root / app_id).is_dir() for root in roots)
 
