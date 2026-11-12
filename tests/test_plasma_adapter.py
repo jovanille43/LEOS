@@ -43,10 +43,16 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('availableTypes.indexOf(widgetTypes[a])', script)
         self.assertIn('newPanelWidgets.length < 2', script)
 
-    def test_script_never_deletes_a_panel_or_widget(self):
+    def test_failed_creation_removes_only_the_panel_created_by_that_script(self):
         script = build_panel_management_script(self.store.get())
-        self.assertNotIn('.remove()', script)
-        self.assertIn('LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1', script)
+        created_branch = script.index("if (created && panel)")
+        remove_call = script.index("panel.remove()")
+        existing_panel_rollback = script.index("} else if (panel && before)")
+        self.assertLess(created_branch, remove_call)
+        self.assertLess(remove_call, existing_panel_rollback)
+        self.assertEqual(script.count("panel.remove()"), 1)
+        self.assertIn("LEOS_PARTIAL_PANEL_ROLLED_BACK=1", script)
+        self.assertNotIn("LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1", script)
 
     def test_disabling_dock_is_not_applied_yet(self):
         self.store.set_dock(enabled=False)
