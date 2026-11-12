@@ -55,6 +55,7 @@ class SystemMonitor(QObject):
         except (OSError, RuntimeError, NotImplementedError):
             return -1.0
         cpu_sensor_hints = ("coretemp", "k10temp", "zenpower", "cpu", "package id", "tctl", "tdie")
+        readings: list[float] = []
         for chip_name, entries in sensors.items():
             labels = " ".join(
                 [chip_name] + [str(getattr(entry, "label", "")) for entry in entries]
@@ -62,10 +63,13 @@ class SystemMonitor(QObject):
             if not any(hint in labels for hint in cpu_sensor_hints):
                 continue
             for entry in entries:
-                current = getattr(entry, "current", None)
-                if current is not None and current > 0:
-                    return float(current)
-        return -1.0
+                try:
+                    current = float(getattr(entry, "current", None))
+                except (TypeError, ValueError):
+                    continue
+                if 0 < current < 150:
+                    readings.append(current)
+        return max(readings) if readings else -1.0
 
     def _read_disk_usage(self) -> float:
         if psutil is None:
@@ -103,14 +107,28 @@ class SystemMonitor(QObject):
         # CPU/RAM/disk/network metrics depend on psutil, but GPU telemetry has
         # its own DRM and NVIDIA CLI sources and must remain usable without it.
         if psutil is not None:
+            # Keep each provider independent: a failing memory or disk query
+            # must not hide otherwise healthy CPU and network measurements.
             try:
                 self._cpu = float(psutil.cpu_percent(interval=None))
+            except (OSError, RuntimeError, AttributeError, TypeError, ValueError):
+                self._cpu = -1.0
+            try:
                 self._memory = float(psutil.virtual_memory().percent)
+            except (OSError, RuntimeError, AttributeError, TypeError, ValueError):
+                self._memory = -1.0
+            try:
                 self._cpu_temp = self._read_cpu_temperature()
+            except (OSError, RuntimeError, AttributeError, TypeError, ValueError):
+                self._cpu_temp = -1.0
+            try:
                 self._disk_usage = self._read_disk_usage()
+            except (OSError, RuntimeError, AttributeError, TypeError, ValueError):
+                self._disk_usage = -1.0
+            try:
                 self._network_receive_rate, self._network_send_rate = self._read_network_rates()
-            except (OSError, RuntimeError, AttributeError):
-                pass
+            except (OSError, RuntimeError, AttributeError, TypeError, ValueError):
+                self._network_receive_rate = self._network_send_rate = -1.0
 
         try:
             gpu = read_gpu_metrics()
