@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from desktop.desktop_entries import (
-    desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value,
+    desktop_application_dirs, desktop_entry_is_visible,
+    filter_desktop_applications, localized_desktop_value,
 )
 
 
