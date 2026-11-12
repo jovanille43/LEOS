@@ -13,6 +13,10 @@ from typing import Iterator
 from typing import Any
 
 PROFILE_NAMES = ("auto", "standard", "xbox", "playstation", "nintendo", "custom")
+MAX_PROFILE_FILE_BYTES = 256 * 1024
+MAX_CONTROLLER_PROFILES = 128
+MAX_AXIS_CENTERS = 64
+MAX_AXIS_NAME_LENGTH = 48
 from leos_core.paths import config_home as xdg_config_home
 
 
@@ -95,14 +99,24 @@ class ControllerProfileStore:
                 raise OSError("Controller profile path cannot be a symbolic link")
             return {"version": 1, "devices": {}}
         try:
-            payload = json.loads(self.path.read_text(encoding="utf-8"))
+            with self.path.open("rb") as stream:
+                raw = stream.read(MAX_PROFILE_FILE_BYTES + 1)
+            if len(raw) > MAX_PROFILE_FILE_BYTES:
+                raise ValueError("Controller profile file is too large")
+            payload = json.loads(raw.decode("utf-8"))
         except FileNotFoundError:
             return {"version": 1, "devices": {}}
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
             if strict:
-                raise ValueError("Controller profile file is unreadable; it was left untouched") from exc
+                raise ValueError("Controller profile file is unreadable or too large; it was left untouched") from exc
             return {"version": 1, "devices": {}}
-        if not isinstance(payload, dict) or type(payload.get("version")) is not int or payload.get("version") != 1 or not isinstance(payload.get("devices"), dict):
+        if (
+            not isinstance(payload, dict)
+            or type(payload.get("version")) is not int
+            or payload.get("version") != 1
+            or not isinstance(payload.get("devices"), dict)
+            or len(payload["devices"]) > MAX_CONTROLLER_PROFILES
+        ):
             if strict:
                 raise ValueError("Controller profile file has an invalid format; it was left untouched")
             return {"version": 1, "devices": {}}
@@ -127,7 +141,10 @@ class ControllerProfileStore:
             centers = {}
         valid_centers = {
             axis: value for axis, value in centers.items()
-            if isinstance(axis, str) and type(value) is int and -65536 <= value <= 65536
+            if (
+                isinstance(axis, str) and 0 < len(axis) <= MAX_AXIS_NAME_LENGTH
+                and type(value) is int and -65536 <= value <= 65536
+            
         }
         return {"profile": profile, "deadzone": deadzone, "axis_centers": valid_centers}
 
@@ -155,9 +172,14 @@ class ControllerProfileStore:
                 if not isinstance(centers, dict):
                     raise ValueError("Axis centers must be a mapping")
                 for axis, value in centers.items():
-                    if not isinstance(axis, str) or type(value) is not int or not -65536 <= value <= 65536:
+                    if (
+                        not isinstance(axis, str) or not 0 < len(axis) <= MAX_AXIS_NAME_LENGTH
+                        or type(value) is not int or not -65536 <= value <= 65536
+                    ):
                         raise ValueError("Invalid axis center")
                     current["axis_centers"][axis] = value
+                if len(current["axis_centers"]) > MAX_AXIS_CENTERS:
+                    raise ValueError("Too many controller axis centers")
             devices[device_id] = current
             self._write(payload)
             return current
