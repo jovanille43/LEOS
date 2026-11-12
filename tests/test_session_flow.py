@@ -33,7 +33,7 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("MediaPlayer.EndOfMedia", qml)
         self.assertIn("onErrorOccurred", qml)
         self.assertIn("interval: 9000", qml)
-        self.assertIn("muted: !modeSelectorController.soundsEnabled", qml)
+        self.assertIn("introAudioOutput.muted = !modeSelectorController.soundsEnabled", qml)
         self.assertIn("def animationsEnabled(self)", controller)
         self.assertIn("def soundsEnabled(self)", controller)
         self.assertIn("window.requestModeWithIntro(\"gaming\")", qml)
@@ -49,7 +49,7 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("window.requestDesktopReturn()", qml)
         self.assertIn("MediaPlayer.EndOfMedia", qml)
         self.assertIn("onErrorOccurred", qml)
-        self.assertIn("muted: !leos.soundsEnabled", qml)
+        self.assertIn("desktopIntroAudio.muted = !leos.soundsEnabled", qml)
         self.assertIn("def animationsEnabled(self)", controller)
         self.assertIn("def soundsEnabled(self)", controller)
 
