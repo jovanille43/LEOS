@@ -43,11 +43,18 @@ if [[ ! -f "$consent_marker" ]]; then
         exit 0
     fi
 
-    if ! kdialog --title "Applications facultatives LEOS" --defaultno --yesno \
+    if kdialog --title "Applications facultatives LEOS" --defaultno --yesno \
         "Souhaites-tu installer les applications facultatives suivantes dans ton profil utilisateur ?\\n\\n• Brave Browser\\n• LibreOffice\\n• VLC\\n\\nAucune application ne sera installée sans ton accord. Tu pourras ensuite les gérer depuis la boutique LEOS."; then
-        mkdir -p "$state_dir"
-        touch "$marker"
-        exit 0
+        :
+    else
+        dialog_status=$?
+        if [[ "$dialog_status" -eq 1 ]]; then
+            mkdir -p "$state_dir"
+            touch "$marker"
+            exit 0
+        fi
+        echo "LEOS: la fenêtre de consentement a échoué (code $dialog_status) ; aucune installation lancée." >&2
+        exit 1
     fi
 
     # Persist approval before attempting any installation. A partial failure can
