@@ -1202,7 +1202,7 @@ ApplicationWindow {
                                     Label {
                                         text: window.selectedInstallStatus || "—"
                                         color: window.selectedInstallStatus === "Installé" ? window.cyan :
-                                               window.selectedInstallStatus === "Fichiers absents" ? window.magenta : "white"
+                                               window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d" : "white"
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                     }
