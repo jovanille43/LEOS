@@ -44,6 +44,16 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
+    def test_branding_manifest_documents_secondary_gaming_animation(self):
+        manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
+        self.assertIn("gaming-roar-reference.mp4", manifest)
+        self.assertIn("Référence secondaire uniquement", manifest)
+
+    def test_branding_readme_does_not_require_nonexistent_separate_audio_files(self):
+        readme = (ROOT / "branding/README.md").read_text(encoding="utf-8")
+        self.assertIn("pistes AAC des vidéos MP4", readme)
+        self.assertNotIn("`sounds/`", readme)
+
     def test_private_cosign_key_is_ignored_but_public_key_is_trackable(self):
         source = (ROOT / ".gitignore").read_text(encoding="utf-8")
         self.assertIn("/cosign.key", source)
