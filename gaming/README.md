@@ -10,7 +10,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 - `backend/system_monitor.py` : CPU/RAM, températures CPU/GPU et télémétrie GPU/VRAM via les métriques DRM/hwmon exposées par le pilote Linux. Les données non fournies par le pilote restent indisponibles.
 - `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/mangohud.py` : détection facultative de MangoHud et ajout du wrapper uniquement aux commandes de lancement direct lorsque l'utilisateur active l'overlay. Aucun paquet n'est installé et aucune configuration globale n'est modifiée.
-- `backend/controller.py` : relie le modèle et les services à QML, surveille les manettes compatibles et transmet les actions de navigation.
+- `backend/controller.py` : relie le modèle et les services à QML, surveille les manettes compatibles et transmet les actions de navigation. Le panneau rapide est également navigable à la manette : overlay MangoHud, profils d'énergie avec confirmation, retour Desktop et fermeture.
 - `requirements.txt` : dépendances du prototype.
 
 Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell.
