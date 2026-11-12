@@ -14,7 +14,7 @@ from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 from shop.catalog import CatalogModel
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
-    is_trusted_flathub_remote,
+    trusted_flathub_remote_url,
     parse_flatpak_inventory,
 )
 from shop.flatpak_metadata import runtime_summary
@@ -44,6 +44,7 @@ class StoreController(QObject):
         self._process.readyReadStandardError.connect(self._read_output)
         self._action = ""
         self._target = ""
+        self._verified_source_url = ""
         self._stdout = bytearray()
         self._stderr = bytearray()
 
@@ -121,6 +122,7 @@ class StoreController(QObject):
         if item.get("installed_scope"):
             self._set_status("Cette application est déjà installée.")
             return
+        self._verified_source_url = ""
         self._set_verification_details("Vérification de l'adresse officielle Flathub…")
         self._start(
             "verify-remote",
@@ -198,8 +200,12 @@ class StoreController(QObject):
             return
 
         if action == "verify-remote":
-            if exit_code == 0 and is_trusted_flathub_remote(stdout):
-                self._set_verification_details("Adresse officielle Flathub confirmée. Lecture des métadonnées et du runtime…")
+            remote_url = trusted_flathub_remote_url(stdout) if exit_code == 0 else ""
+            if remote_url:
+                self._verified_source_url = remote_url
+                self._set_verification_details(
+                    f"Adresse officielle Flathub confirmée : {remote_url}. Lecture des métadonnées et du runtime…"
+                )
                 self._start(
                     "verify-install",
                     target,
@@ -208,6 +214,7 @@ class StoreController(QObject):
                 )
             else:
                 self._action = ""
+                self._verified_source_url = ""
                 self._set_verification_details("Le dépôt nommé Flathub est absent ou son adresse n'est pas reconnue comme officielle. Aucune installation n'a été lancée.")
                 self._set_status("Source Flathub non vérifiée : installation bloquée.")
                 post_notification("Source non vérifiée", self._status, "warning")
@@ -217,13 +224,16 @@ class StoreController(QObject):
         if action == "verify-install":
             if exit_code == 0:
                 self._action = "verified"
-                self._set_verification_details(runtime_summary(stdout))
+                self._set_verification_details(
+                    f"Source vérifiée : {self._verified_source_url}\\n{runtime_summary(stdout)}"
+                )
                 self._set_status(
                     f"{target} est disponible sur Flathub. Tu peux maintenant confirmer son installation."
                 )
                 self.operationFinished.emit(True, self._status)
             else:
                 self._action = ""
+                self._verified_source_url = ""
                 self._set_verification_details("Les informations de dépendances n’ont pas pu être vérifiées.")
                 detail = stderr.strip().splitlines()
                 reason = detail[-1] if detail else "Application ou dépôt indisponible."
