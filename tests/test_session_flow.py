@@ -232,5 +232,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
 
 
+    def test_mode_selector_tries_later_controllers_when_first_open_fails(self):
+        controller = (ROOT / "launcher" / "controller.py").read_text(encoding="utf-8")
+        gamepad = (ROOT / "gaming" / "backend" / "gamepad.py").read_text(encoding="utf-8")
+        self.assertIn("open_first_available_gamepad", controller)
+        self.assertIn(
+            "device, _open_error = open_first_available_gamepad(self._backend, devices)",
+            controller,
+        )
+        self.assertIn("if device is None:", controller)
+        self.assertNotIn("device = devices[0]", controller)
+        self.assertIn("except (OSError, ValueError, RuntimeError)", gamepad)
+
+
 if __name__ == "__main__":
     unittest.main()
