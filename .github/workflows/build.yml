@@ -26,6 +26,7 @@ jobs:
             branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
             branding/animations/gaming-roar-reference.mp4
+            branding/wallpapers/desktop-leos.svg
           )
           for asset in "${required_assets[@]}"; do
             if [[ ! -s "${asset}" ]]; then
