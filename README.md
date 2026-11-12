@@ -43,7 +43,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 
 ### Composants source présents dans le dépôt
 
-- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games) et Lutris, ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
+- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
 - **Cohérence de bibliothèque** : titres nettoyés sans réécriture de leur capitalisation, recherche tolérante aux accents et aux espaces répétés, signalement prudent des titres identiques entre sources. Les entrées ne sont jamais fusionnées ou supprimées automatiquement.
 - **Métadonnées de jeu** : source, identifiant de catalogue, jaquette locale lorsqu'elle existe et état d'installation vérifié. Les chemins privés et commandes de lancement ne sont pas exposés dans la fiche QML.
 - **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
@@ -61,17 +61,17 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les catégories console/arcade sont prêtes pour les futures intégrations ; l'import automatique actuel concerne Steam, Heroic et Lutris.
+- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade. LEOS ne parcourt pas les dossiers ROM, ne télécharge aucun jeu et n'installe ni émulateur ni cœur.
 - Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
 - Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
 - Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
-- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games) et Lutris ; ajout manuel de commandes de lancement.
+- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement.
 - Jaquettes recherchées dans les caches locaux Steam/Lutris et les fichiers explicitement référencés par Heroic. Aucune image distante n'est téléchargée.
 - Fiche de jeu : titre, plateforme, source, statut des fichiers locaux et identifiant catalogue ; chemins privés et arguments de lancement restent masqués.
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
 - Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
 - MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. Les intégrations d'émulateurs restent à développer.
+- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge ; les autres intégrations d'émulateurs et de catalogues console restent à développer.
 
 ## Desktop Mode
 
