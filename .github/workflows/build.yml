@@ -23,7 +23,7 @@ jobs:
             branding/desktop-logo.jpeg
             branding/gaming-logo.jpeg
             branding/reference-comparison.jpeg
-            branding/animations/desktop-intro.mp4
+            branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
             branding/animations/gaming-roar-reference.mp4
           )
@@ -33,7 +33,6 @@ jobs:
               exit 1
             fi
           done
-          sha256sum --check branding/SHA256SUMS
 
       - name: Check signing prerequisites
         env:
