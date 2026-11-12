@@ -72,6 +72,7 @@ class BuildWorkflowTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
         self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
+        self.assertIn('images[0].attrib.get("href") != emblem', source)
         self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
         self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
         self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
