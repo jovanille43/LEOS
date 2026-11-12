@@ -15,6 +15,8 @@ class SessionFlowTests(unittest.TestCase):
         self.assertNotIn("desktop-logo.png", source)
         self.assertNotIn("gaming-logo.png", source)
         self.assertIn("visible: status === Image.Ready", source)
+        self.assertEqual(source.count("asynchronous: true"), 2)
+        self.assertEqual(source.count("smooth: true"), 2)
 
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(
