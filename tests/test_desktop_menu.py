@@ -79,9 +79,12 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_desktop_menu_uses_shared_accent_insensitive_search(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
-        self.assertIn("from leos_core.text import normalize_search_text", source)
-        self.assertIn("item[\"desktopId\"]", source)
-        self.assertIn("normalize_search_text(self._query)", source)
+        filters = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
+        self.assertIn("from desktop.desktop_entries import", source)
+        self.assertIn("filter_desktop_applications(", source)
+        self.assertIn("from leos_core.text import normalize_search_text", filters)
+        self.assertIn("normalize_search_text(search_query)", filters)
+        self.assertIn('str(item.get("desktopId", ""))', filters)
 
     def test_menu_uses_validated_desktop_entry_working_directory(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
