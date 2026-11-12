@@ -43,9 +43,72 @@ def _cpu_details() -> tuple[str, str]:
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
 
 
-def _cpu_topology(data: str | None = None) -> tuple[int | None, int]:
-    """Estimate physical cores from Linux CPU topology without guessing from threads."""
-    cpu_data = _read("/proc/cpuinfo") if data is None else data
+def _parse_cpu_list(value: str) -> set[int]:
+    """Parse Linux CPU-list syntax such as '0-3,8,10-11'."""
+    cpus: set[int] = set()
+    for item in value.strip().split(","):
+        if not item:
+            continue
+        try:
+            if "-" in item:
+                first, last = (int(part) for part in item.split("-", 1))
+                if first < 0 or last < first:
+                    continue
+                cpus.update(range(first, last + 1))
+            else:
+                cpu = int(item)
+                if cpu >= 0:
+                    cpus.add(cpu)
+        except ValueError:
+            continue
+    return cpus
+
+
+def _cpu_topology_from_sysfs(root: Path) -> tuple[int | None, int]:
+    """Read online CPU/core topology from sysfs, which also supports non-x86 CPUs."""
+    online = _read(root / "online")
+    online_ids = _parse_cpu_list(online) if online else set()
+    if not online_ids:
+        online_ids = {
+            int(match.group(1))
+            for path in root.glob("cpu[0-9]*")
+            if (match := re.fullmatch(r"cpu(\d+)", path.name))
+        }
+
+    core_pairs: set[tuple[str, str]] = set()
+    core_ids: set[str] = set()
+    for cpu_id in online_ids:
+        topology = root / f"cpu{cpu_id}" / "topology"
+        core = _read(topology / "core_id").strip()
+        package = _read(topology / "physical_package_id").strip()
+        if not core:
+            continue
+        if package:
+            core_pairs.add((package, core))
+        else:
+            core_ids.add(core)
+
+    if core_pairs:
+        return len(core_pairs), len(online_ids)
+    if core_ids:
+        return len(core_ids), len(online_ids)
+    return None, len(online_ids)
+
+
+def _cpu_topology(
+    data: str | None = None,
+    sysfs_root: Path = Path("/sys/devices/system/cpu"),
+) -> tuple[int | None, int]:
+    """Estimate physical cores from sysfs or /proc without guessing from threads."""
+    if data is None:
+        physical_cores, logical_threads = _cpu_topology_from_sysfs(sysfs_root)
+        if physical_cores is not None:
+            return physical_cores, logical_threads or os.cpu_count() or 0
+        cpu_data = _read("/proc/cpuinfo")
+    else:
+        # Explicit data keeps this parser deterministic for tests and callers.
+        cpu_data = data
+
     blocks = re.split(r"\n\s*\n", cpu_data.strip()) if cpu_data.strip() else []
     logical_ids: set[str] = set()
     core_pairs: set[tuple[str, str]] = set()
