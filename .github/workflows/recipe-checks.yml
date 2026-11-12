@@ -74,6 +74,9 @@ jobs:
             ffmpeg -v error -i "${video}" -f null -
           done
 
+      - name: Verify deployed branding SHA-256 fingerprints
+        run: sha256sum --check branding/DEPLOYED_SHA256SUMS
+
       - name: Report deployed branding SHA-256 fingerprints
         run: |
           set -euo pipefail
