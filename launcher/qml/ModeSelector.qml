@@ -282,7 +282,8 @@ ApplicationWindow {
         }
         videoOutput: introVideoOutput
         onMediaStatusChanged: {
-            if (mediaStatus === MediaPlayer.EndOfMedia)
+            if (mediaStatus === MediaPlayer.EndOfMedia ||
+                    mediaStatus === MediaPlayer.InvalidMedia)
                 window.finishModeTransition()
         }
         onErrorOccurred: function(error, errorString) {
