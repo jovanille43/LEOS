@@ -19,6 +19,14 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
                        "def markAllRead", "def clearAll", "def unreadCount", "def refresh"):
             self.assertIn(method, source)
 
+
+    def test_notification_qt_actions_handle_storage_failures_without_escaping(self):
+        source = (ROOT / "desktop/notification_model.py").read_text(encoding="utf-8")
+        for method in ("mark_read", "dismiss", "mark_all_read", "clear"):
+            start = source.index(f"self.store.{method}(")
+            handler = source.rfind("except (OSError, ValueError):", 0, start)
+            self.assertGreaterEqual(handler, 0, f"{method} must handle storage failures")
+
     def test_qml_has_read_dismiss_and_clear_controls(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         for action in ("notificationModel.markRead", "notificationModel.dismiss",

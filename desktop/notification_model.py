@@ -74,24 +74,36 @@ class NotificationModel(QAbstractListModel):
 
     @Slot(str, result=bool)
     def markRead(self, notification_id: str) -> bool:
-        result = self.store.mark_read(notification_id)
+        try:
+            result = self.store.mark_read(notification_id)
+        except (OSError, ValueError):
+            return False
         if result:
             self._reload()
         return result
 
     @Slot(str, result=bool)
     def dismiss(self, notification_id: str) -> bool:
-        result = self.store.dismiss(notification_id)
+        try:
+            result = self.store.dismiss(notification_id)
+        except (OSError, ValueError):
+            return False
         if result:
             self._reload()
         return result
 
     @Slot()
     def markAllRead(self):
-        self.store.mark_all_read()
+        try:
+            self.store.mark_all_read()
+        except (OSError, ValueError):
+            return
         self._reload()
 
     @Slot()
     def clearAll(self):
-        self.store.clear()
+        try:
+            self.store.clear()
+        except (OSError, ValueError):
+            return
         self._reload()
