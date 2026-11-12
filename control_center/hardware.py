@@ -401,7 +401,11 @@ def _audio_details() -> tuple[str, str, str]:
         columns = line.split()
         if len(columns) >= 2:
             output_names.append(columns[1])
-    input_count = sum(1 for line in sources.splitlines() if line.split() and not line.split()[1].endswith(".monitor"))
+    input_count = 0
+    for line in sources.splitlines():
+        columns = line.split()
+        if len(columns) >= 2 and not columns[1].endswith(".monitor"):
+            input_count += 1
     output = default_sink or (output_names[0] if output_names else "Sortie non détectée")
     inputs = f"{input_count} entrée(s) détectée(s)" if input_count else "Entrée non détectée"
     return server, output, inputs
