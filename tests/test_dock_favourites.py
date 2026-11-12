@@ -119,6 +119,27 @@ class DockFavouritesTests(unittest.TestCase):
                 '{"schema_version":1,"items":[]}',
             )
 
+    def test_atomic_toggle_returns_new_pin_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = DockFavourites(Path(directory) / "dock.json")
+            self.assertTrue(store.toggle("org.example.Toggle.desktop"))
+            self.assertIn("org.example.Toggle.desktop", store.items())
+            self.assertFalse(store.toggle("org.example.Toggle.desktop"))
+            self.assertNotIn("org.example.Toggle.desktop", store.items())
+
+    def test_concurrent_toggles_from_two_instances_are_serialized(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            first = DockFavourites(path)
+            second = DockFavourites(path)
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                results = list(executor.map(
+                    lambda store: store.toggle("org.example.Toggle.desktop"),
+                    (first, second),
+                ))
+            self.assertEqual(sorted(results), [False, True])
+            self.assertNotIn("org.example.Toggle.desktop", DockFavourites(path).items())
+
 
 if __name__ == "__main__":
     unittest.main()
