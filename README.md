@@ -39,7 +39,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 
 ### Compatibilité matérielle
 
-LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Deux recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel) et `leos-nvidia` sur Bazzite NVIDIA. Ces variantes doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md).
+LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel), `leos-nvidia` pour NVIDIA Maxwell/Pascal/Volta et `leos-nvidia-open` pour NVIDIA Turing et plus récent. Ce sont des variantes matérielles d'un même système, pas des éditions distinctes. Elles doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md).
 
 ### Composants source présents dans le dépôt
 
@@ -161,7 +161,7 @@ LEOS/
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [ ] Intégration complète du dock au véritable panneau Plasma.
 - [ ] Intégrations d'émulateurs.
-- [ ] Variantes matérielles — construire et tester les deux images Bazzite (standard et NVIDIA), puis documenter les limites des PC hybrides.
+- [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
 - [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
 - [ ] Préparer une ISO installable après validation de l'image.
