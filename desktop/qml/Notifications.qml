@@ -97,14 +97,16 @@ ApplicationWindow {
                         }
                         ColumnLayout {
                             ToolButton {
+                                id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: parent.text; color: window.cyan; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.cyan; font.pixelSize: 17 }
                             }
                             ToolButton {
+                                id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: parent.text; color: window.magenta; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.magenta; font.pixelSize: 18 }
                             }
                         }
                     }
