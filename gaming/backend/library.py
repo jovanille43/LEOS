@@ -217,7 +217,7 @@ class GameLibraryModel(QAbstractListModel):
     def _load_manual_games(self) -> list[dict[str, Any]]:
         try:
             raw = json.loads(self._manual_file.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return []
         if not isinstance(raw, list):
             return []
@@ -248,7 +248,7 @@ class GameLibraryModel(QAbstractListModel):
     def _read_id_list(path: Path) -> list[str]:
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return []
         if not isinstance(raw, list):
             return []
