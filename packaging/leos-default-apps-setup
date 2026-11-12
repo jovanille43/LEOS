@@ -20,7 +20,7 @@ if ! command -v flatpak >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! kdialog --title "Bienvenue dans LEOS" --defaultno --yesno \
+if ! kdialog --title "Applications facultatives LEOS" --defaultno --yesno \
     "Souhaites-tu installer les applications facultatives suivantes dans ton profil utilisateur ?\n\n• Brave Browser\n• LibreOffice\n• VLC\n\nAucune application ne sera installée sans ton accord. Tu pourras ensuite les gérer depuis la boutique LEOS."; then
     mkdir -p "$state_dir"
     touch "$marker"
