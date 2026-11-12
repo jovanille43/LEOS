@@ -32,7 +32,6 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("desktop-intro.mov", qml)
         self.assertIn("MediaPlayer.EndOfMedia", qml)
         self.assertIn("MediaPlayer.InvalidMedia", qml)
-        self.assertIn("MediaPlayer.InvalidMedia", qml)
         self.assertIn("onErrorOccurred", qml)
         self.assertIn("interval: 9000", qml)
         self.assertIn("introAudioOutput.muted = !modeSelectorController.soundsEnabled", qml)
@@ -99,6 +98,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("desktop-intro.mov", gaming)
         self.assertNotIn("desktop-intro.mp4", selector)
         self.assertNotIn("desktop-intro.mp4", gaming)
+
+    def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("MediaPlayer.InvalidMedia", qml)
+        self.assertIn("onErrorOccurred", qml)
+        self.assertIn("interval: 9000", qml)
+        self.assertIn("onTriggered: window.finishDesktopReturn()", qml)
+        self.assertIn("if (returningToDesktop)", qml)
+        self.assertIn("returningToDesktop = true", qml)
 
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
