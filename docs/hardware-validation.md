@@ -158,6 +158,8 @@ Effectuer les essais avec une application Flatpak non critique.
 
 ## 10. Mises à jour, rollback et stabilité
 
+Suivre également le [guide de récupération et de retour arrière](recovery.md). Les commandes OSTree doivent être testées uniquement sur une machine ou un disque de test, jamais sur le seul poste de travail.
+
 - [ ] Vérifier l'état OSTree avant toute mise à jour.
 - [ ] Effectuer une mise à jour uniquement après avoir confirmé que le déploiement de test peut être restauré.
 - [ ] Redémarrer et vérifier que le nouveau déploiement démarre.
