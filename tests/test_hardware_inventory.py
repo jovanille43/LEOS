@@ -267,9 +267,9 @@ class HardwareInventoryTests(unittest.TestCase):
 
     def test_audio_inventory_ignores_malformed_source_rows(self):
         responses = iter([
-            "Server Name: PipeWire\\nDefault Sink: output.test",
+            "Server Name: PipeWire\nDefault Sink: output.test",
             "",
-            "malformed-source-row\\n0 input.test module-test s16le 2ch 48000Hz RUNNING",
+            "malformed-source-row\n0 input.test module-test s16le 2ch 48000Hz RUNNING",
         ])
         with patch.object(hardware, "_run", side_effect=lambda *_args, **_kwargs: next(responses)):
             self.assertEqual(
