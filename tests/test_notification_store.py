@@ -93,6 +93,28 @@ class NotificationStoreTests(unittest.TestCase):
             self.assertEqual(store.items(), [])
             self.assertEqual(store.unread_count(), 0)
 
+    def test_deeply_nested_json_is_rejected_without_crashing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            path.write_text("[" * 2000 + "]" * 2000, encoding="utf-8")
+            store = NotificationStore(path)
+            self.assertEqual(store.items(), [])
+            self.assertEqual(path.read_text(encoding="utf-8"), "[" * 2000 + "]" * 2000)
+
+    def test_notification_timestamp_must_include_timezone(self):
+        import json
+        import uuid
+
+        record = {
+            "id": str(uuid.uuid4()), "title": "Test", "body": "",
+            "level": "info", "created_at": "2026-11-12T10:00:00",
+            "read": False,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            path.write_text(json.dumps({"schema_version": 1, "items": [record]}), encoding="utf-8")
+            self.assertEqual(NotificationStore(path).items(), [])
+
     def test_boolean_schema_version_is_not_accepted_as_integer_one(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "inbox.json"
