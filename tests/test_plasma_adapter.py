@@ -54,12 +54,15 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn("LEOS_PARTIAL_PANEL_ROLLED_BACK=1", script)
         self.assertNotIn("LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1", script)
 
-    def test_disabling_dock_is_not_applied_yet(self):
+    def test_disabling_dock_keeps_existing_panel_intact(self):
         self.store.set_dock(enabled=False)
         script = build_panel_management_script(self.store.get())
-        self.assertIn('if (!desired.enabled)', script)
-        self.assertIn('LEOS_PANEL_DISABLE_NOT_IMPLEMENTED=1', script)
-        self.assertNotIn('.remove()', script)
+        disable_start = script.index("if (!desired.enabled)")
+        disable_end = script.index("if (!panel && allPanels.length > 0)", disable_start)
+        disable_branch = script[disable_start:disable_end]
+        self.assertIn('LEOS_PANEL_DISABLE_NOT_IMPLEMENTED=1', disable_branch)
+        self.assertIn("return;", disable_branch)
+        self.assertNotIn(".remove()", disable_branch)
 
     def test_script_requires_plasma_six_or_newer(self):
         script = build_panel_management_script(self.store.get())
