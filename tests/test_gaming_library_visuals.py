@@ -38,6 +38,20 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("ajouter un jeu manuellement", source)
         self.assertNotIn("Steam sera analysé automatiquement", source)
 
+    def test_empty_state_offers_contextual_actions(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function activateEmptyStatePrimaryAction()", source)
+        self.assertIn('id: emptyStatePrimaryButton', source)
+        self.assertIn('searchField.clear()', source)
+        self.assertIn('chooseCategory(0)', source)
+        self.assertIn('leos.refreshLibrary()', source)
+        self.assertIn('text: window.emptyStatePrimaryLabel()', source)
+
+    def test_gamepad_confirm_activates_the_empty_state_primary_action(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('window.activateEmptyStatePrimaryAction()', source)
+        self.assertIn('else if (gameGrid.count === 0)', source)
+
     def test_library_shows_filtered_game_count(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")', source)

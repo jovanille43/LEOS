@@ -31,6 +31,16 @@ python main.py
 
 Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte.
 
+## Lisibilité et accessibilité de Gaming
+
+L'interface utilise une échelle typographique commune (texte courant 17 px, légendes 15 px, microcopie 14 px et titres 26–30 px). Qt Quick interprète ces tailles comme des pixels indépendants de la densité et applique la mise à l'échelle haute densité du système ; LEOS ne multiplie pas ces valeurs manuellement par le facteur DPI.
+
+La bibliothèque expose une liste accessible, des cartes de jeu nommées avec leur plateforme/source et leur état de sélection, un champ de recherche éditable, le panneau rapide et la fiche du jeu. Les messages d'état et les états vides sont également exposés comme texte accessible. Les boutons des contrôles Qt Quick conservent leurs comportements clavier natifs ; les cartes personnalisées de la bibliothèque déclarent explicitement leur rôle et leur nom.
+
+La légende de commandes indique les boutons physiques de validation et de retour selon le profil détecté (Xbox, PlayStation, Nintendo ou disposition standard), ainsi que les commandes clavier. Le repère de focus est blanc ; le cyan reste réservé à la sélection/aux états actifs et le magenta aux accents de favoris.
+
+Ces ajouts ont des tests de contrat QML/Python et passent le lint QML de CI. Ils ne constituent pas une certification WCAG ni une validation du lecteur d'écran : la navigation clavier/manette à l'écran et l'arbre AT-SPI/Orca doivent encore être testés sur une session Bazzite réelle, ainsi que la lisibilité depuis un canapé.
+
 ## Limites connues
 
 - Les fournisseurs automatiques couvrent Steam, Heroic (Epic, GOG et Amazon Games), Lutris et les listes de lecture JSON RetroArch. L'import RetroArch est en lecture seule ; il ignore les listes d'historique/favoris et ne balaie pas les dossiers ROM.

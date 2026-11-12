@@ -21,6 +21,17 @@ BUTTON_ACTIONS = {
 }
 
 
+def gamepad_button_legend(profile: object) -> str:
+    """Describe the physical confirm/back buttons for the active layout."""
+    if not isinstance(profile, str):
+        profile = ""
+    if profile == "playstation":
+        return "× · VALIDER   ○ · RETOUR"
+    if profile == "xbox" or profile == "nintendo":
+        return "A · VALIDER   B · RETOUR"
+    return "BOUTON DU BAS · VALIDER   BOUTON DROIT · RETOUR"
+
+
 def mapper_from_preferences(
     preferences: dict[str, Any],
     device: dict[str, Any] | None = None,
