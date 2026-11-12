@@ -414,7 +414,14 @@ class GameLibraryModel(QAbstractListModel):
         else:
             self._favorites.add(game_id)
             is_favorite = True
-        self._write_id_list(self._favorites_file, sorted(self._favorites))
+        try:
+            self._write_id_list(self._favorites_file, sorted(self._favorites))
+        except (OSError, ValueError):
+            if is_favorite:
+                self._favorites.discard(game_id)
+            else:
+                self._favorites.add(game_id)
+            return not is_favorite
         self._apply_filter()
         return is_favorite
 
@@ -423,7 +430,12 @@ class GameLibraryModel(QAbstractListModel):
             item for item in self._recent if item != game_id
         ]
         self._recent = self._recent[:50]
-        self._write_id_list(self._recent_file, self._recent)
+        try:
+            self._write_id_list(self._recent_file, self._recent)
+        except (OSError, ValueError):
+            # Keep this session usable even when the user's data directory is
+            # temporarily read-only or out of space.
+            pass
         # Keep the currently displayed row order stable while a game is launched.
         # The recent-order view is refreshed the next time the category is opened
         # or the user explicitly refreshes the library.
