@@ -25,6 +25,7 @@ from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
+from .retroarch import RETROARCH_FLATPAK_ID, load_retroarch_games
 from .mangohud import build_launch_command
 from .install_state import installation_status
 
@@ -99,6 +100,8 @@ class GameLibraryModel(QAbstractListModel):
              or self._flatpak_app_available("com.heroicgameslauncher.hgl")),
             ("LUTRIS", bool(shutil.which("lutris"))
              or self._flatpak_app_available("net.lutris.Lutris")),
+            ("RETROARCH", bool(shutil.which("retroarch"))
+             or self._flatpak_app_available(RETROARCH_FLATPAK_ID)),
         ]
         return [
             f"{name} · {'DISPONIBLE' if available else 'NON DÉTECTÉ'}"
@@ -214,6 +217,49 @@ class GameLibraryModel(QAbstractListModel):
                         candidates.append((path, runner))
         return candidates
 
+    def _retroarch_playlist_directories(self) -> list[Path]:
+        """Find only known RetroArch playlist locations, including user overrides."""
+        home = Path.home()
+        config_home = Path(os.environ.get("XDG_CONFIG_HOME", str(home / ".config"))).expanduser()
+        config_roots = [
+            config_home / "retroarch",
+            home / ".config" / "retroarch",
+            home / ".var/app/org.libretro.RetroArch/config/retroarch",
+        ]
+        directories: list[Path] = []
+        seen: set[str] = set()
+
+        def add_directory(candidate: Path) -> None:
+            try:
+                if not candidate.is_dir():
+                    return
+                resolved = candidate.resolve()
+                key = str(resolved)
+                if key not in seen:
+                    seen.add(key)
+                    directories.append(resolved)
+            except (OSError, RuntimeError):
+                return
+
+        for root in config_roots:
+            add_directory(root / "playlists")
+            config_file = root / "retroarch.cfg"
+            try:
+                config = config_file.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            match = re.search(
+                r'^\\s*playlist_directory\\s*=\\s*"([^"]+)"',
+                config,
+                re.MULTILINE,
+            )
+            if match and match.group(1).casefold() != "default":
+                configured = Path(match.group(1)).expanduser()
+                if configured.is_absolute():
+                    add_directory(configured)
+
+        return directories
+
     def _load_manual_games(self) -> list[dict[str, Any]]:
         try:
             raw = json.loads(self._manual_file.read_text(encoding="utf-8"))
@@ -320,6 +366,29 @@ class GameLibraryModel(QAbstractListModel):
                 except OSError:
                     game["artwork"] = ""
                 discovered.setdefault(game["id"], game)
+        native_retroarch = shutil.which("retroarch")
+        flatpak_retroarch = (
+            not native_retroarch
+            and shutil.which("flatpak") is not None
+            and self._flatpak_app_available(RETROARCH_FLATPAK_ID)
+        )
+        try:
+            playlist_directories = self._retroarch_playlist_directories()
+        except OSError:
+            playlist_directories = []
+        for directory in playlist_directories:
+            try:
+                playlists = sorted(directory.glob("*.lpl"))
+            except OSError:
+                continue
+            for playlist in playlists:
+                for game in load_retroarch_games(
+                    playlist,
+                    native_executable=native_retroarch,
+                    flatpak_available=flatpak_retroarch,
+                ):
+                    discovered.setdefault(game["id"], game)
+
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
@@ -399,7 +468,7 @@ class GameLibraryModel(QAbstractListModel):
             "artwork": str(game.get("artwork", "")),
             "installStatus": (
                 installation_status(game)
-                if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:"))
+                if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:"))
                 else "Ajout manuel"
             ),
             "appId": str(game.get("app_id", "")),

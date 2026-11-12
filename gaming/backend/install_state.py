@@ -12,13 +12,17 @@ def installation_status(game: dict[str, Any]) -> str:
     for key, expected_type in (
         ("install_path", "directory"),
         ("executable", "file"),
+        ("content_path", "content"),
     ):
         value = game.get(key)
         if not isinstance(value, str) or not value.strip():
             continue
-        candidate = Path(value).expanduser()
+        # RetroArch can store archive entries as "archive.zip#member.rom".
+        # Only the archive itself is present on the host filesystem.
+        candidate_value = value.partition("#")[0] if expected_type == "content" else value
+        candidate = Path(candidate_value).expanduser()
         if candidate.is_absolute():
-            candidates.append((candidate, expected_type))
+            candidates.append((candidate, "file" if expected_type == "content" else expected_type))
 
     if not candidates:
         return "État inconnu"

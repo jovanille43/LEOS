@@ -6,7 +6,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 
 - `main.py` : initialise Qt Quick et connecte les services backend.
 - `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel. Les jaquettes manquantes ou devenues illisibles ont un visuel de remplacement à monogramme ; les sélections changent avec une transition douce.
-- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic et Lutris, ajout manuel, favoris et historique récent.
+- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic, Lutris et des listes RetroArch, ajout manuel, favoris et historique récent.
 - `backend/system_monitor.py` : CPU/RAM, températures CPU/GPU et télémétrie GPU/VRAM via les métriques DRM/hwmon exposées par le pilote Linux. Les données non fournies par le pilote restent indisponibles.
 - `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/mangohud.py` : détection facultative de MangoHud et ajout du wrapper uniquement aux commandes de lancement direct lorsque l'utilisateur active l'overlay. Aucun paquet n'est installé et aucune configuration globale n'est modifiée.
@@ -31,7 +31,7 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 
 ## Limites connues
 
-- Les fournisseurs automatiques actuels couvrent Steam, les installations Heroic (Epic, GOG et Amazon Games) et Lutris ; les autres lanceurs ne sont pas encore importés.
+- Les fournisseurs automatiques couvrent Steam, Heroic (Epic, GOG et Amazon Games), Lutris et les listes de lecture JSON RetroArch. L'import RetroArch est en lecture seule ; il ignore les listes d'historique/favoris et ne balaie pas les dossiers ROM.
 - Les jaquettes sont recherchées dans les caches locaux Steam et Lutris, ainsi que dans les chemins d'images locaux explicitement référencés par les manifestes Heroic. Aucune image n'est téléchargée ; les URL distantes et formats non pris en charge sont ignorés.
 - Les introductions vidéo de transition Desktop/Gaming sont connectées à Qt Multimedia ; les pistes AAC intégrées suivent le réglage sonore LEOS et un repli évite de bloquer la transition. Les animations propres au lancement de chaque jeu, les fiches cinématiques et les métadonnées en ligne ne sont pas encore connectées.
 - La charge GPU, la VRAM et la température GPU sont lues via sysfs DRM/hwmon lorsqu'elles sont exposées (notamment sur les pilotes AMD compatibles). Le nom affiché identifie le constructeur et l'identifiant PCI, pas nécessairement le modèle commercial. L'overlay FPS s'appuie sur MangoHud lorsqu'il est installé et activé ; LEOS n'invente pas de valeur FPS et ne prétend pas intégrer un compteur interne temps réel.
@@ -52,7 +52,7 @@ LEOS vérifie qu'un exécutable direct est trouvable et exécutable avant de dem
 
 ### Détection des lanceurs
 
-Le panneau rapide indique la disponibilité de Steam, Heroic et Lutris à partir des exécutables natifs trouvés dans le PATH et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
+Le panneau rapide indique la disponibilité de Steam, Heroic, Lutris et RetroArch à partir des exécutables natifs trouvés dans le PATH et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
 
 La disponibilité des lanceurs est réévaluée périodiquement pendant Gaming Mode (toutes les 15 secondes) ; l'interface n'affiche un changement que si l'état détecté diffère. En cas d'échec de lancement, la notification reprend le motif précis présenté dans l'interface, plutôt qu'un message générique. La recherche accepte aussi l'App ID Steam et l'identifiant stable d'une entrée importée.
 
