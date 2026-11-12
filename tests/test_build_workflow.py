@@ -267,6 +267,9 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]', source)
         self.assertIn("Unknown image variant.", source)
         self.assertIn("Authenticate to GitHub Container Registry", source)
+        self.assertIn("sigstore/cosign-installer@v3", source)
+        self.assertIn("cosign verify --key cosign.pub", source)
+        self.assertIn("Verify published LEOS image signature", source)
 
     def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
