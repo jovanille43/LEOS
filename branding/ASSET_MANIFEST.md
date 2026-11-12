@@ -6,9 +6,9 @@ Ce document définit les noms et conditions d'intégration des ressources offici
 
 | Chemin attendu | Usage |
 | --- | --- |
-| `branding/desktop-logo.webp` | Lion seul, Desktop Mode |
-| `branding/gaming-logo.webp` | Lion avec manette, Gaming Mode |
-| `branding/reference-comparison.webp` | Référence interne uniquement ; jamais affichée comme logo principal |
+| `branding/desktop-logo.jpg` | Lion seul, Desktop Mode |
+| `branding/gaming-logo.jpg` | Lion avec manette, Gaming Mode |
+| `branding/reference-comparison.jpg` | Référence interne uniquement ; jamais affichée comme logo principal |
 
 Les deux emblèmes de mode doivent conserver le lion métallique, les accents cyan et magenta, la typographie et le fond de la référence. Ne pas recadrer les détails distinctifs ni redessiner le lion.
 
@@ -18,8 +18,8 @@ Les interfaces QML chargent les deux fichiers de mode depuis `branding/`. En leu
 
 | Chemin attendu | Déclenchement |
 | --- | --- |
-| `branding/animations/desktop-intro.webm` | Entrée dans Desktop Mode |
-| `branding/animations/gaming-intro.webm` | Chaque entrée dans Gaming Mode |
+| `branding/animations/desktop-intro.mp4` | Entrée dans Desktop Mode |
+| `branding/animations/gaming-intro.mp4` | Chaque entrée dans Gaming Mode |
 
 Les vidéos fournies par Jovan sont les références maîtresses. Leur mouvement, leur durée, leur composition et leur identité sonore ne doivent pas être réinterprétés sans demande. Préserver les fichiers originaux ; toute conversion éventuelle doit être une copie optimisée, jamais un remplacement destructif.
 
@@ -50,16 +50,16 @@ Les fichiers sources ont été transmis dans la conversation le 12 novembre 2026
 
 | Source reçue | Rôle canonique | Empreinte SHA-256 du fichier source |
 | --- | --- | --- |
-| `IMG_2598(2).jpeg` | `desktop-logo.webp` — lion seul, emblème Desktop | `7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548` |
-| `IMG_2599(2).jpeg` | `gaming-logo.webp` — lion avec manette, emblème Gaming | `512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb` |
-| `IMG_2591(1).jpeg` | `reference-comparison.webp` — planche comparative, référence uniquement | `eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9` |
+| `IMG_2598(2).jpeg` | `desktop-logo.jpg` — lion seul, emblème Desktop | `7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548` |
+| `IMG_2599(2).jpeg` | `gaming-logo.jpg` — lion avec manette, emblème Gaming | `512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb` |
+| `IMG_2591(1).jpeg` | `reference-comparison.jpg` — planche comparative, référence uniquement | `eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9` |
 | `6af360efcc8e48ee89610680(1).mp4` | `animations/desktop-intro.webm` — apparition progressive du lion seul puis du mot-symbole LEOS | `3b1b5d3775cbbb58a96542df2aafafc943f9782009d07ae2258399c956816bc0` |
 | `video-6af35d8d3134ec85f320926c(2).mp4` | `animations/gaming-intro.webm` — rugissement, éclat énergétique, apparition de la manette et emblème Gaming final | `1a622ea8f87faac42cf5e2a782f67425a8482789f0cb289d4b6a48d0a417dfcd` |
 | `video-6af36284cc8e48ee89610c5c(1).mp4` | `animations/gaming-roar-reference.webm` — variante de rugissement et transition vers le lion avec manette | `db26fa64ed7658f1f86322bc60e5b08201a6497c1740f439c6df1dc6138af4c9` |
 
 Les trois animations sont des références distinctes. L'animation Gaming principale est celle qui se termine sur le lion tenant la manette, avec l'éclat cyan/magenta. La variante de rugissement est conservée comme référence secondaire et ne remplace pas l'animation principale.
 
-**État de transfert :** contenu et rôles vérifiés, empreintes sources consignées. Les binaires canoniques ci-dessus ne sont pas encore présents dans l'arbre GitHub ; ne pas les déclarer intégrés ni les charger depuis des chemins inexistants. Les fichiers vidéo ont des pistes audio AAC dans les sources ; la conversion WebM documentée ici est une cible de packaging sans audio. Toute conversion finale doit préserver une copie originale avec son audio, sauf décision explicite contraire.
+**État de transfert :** contenu et rôles vérifiés, empreintes sources consignées. Les binaires canoniques ci-dessus ne sont pas encore présents dans l'arbre GitHub ; ne pas les déclarer intégrés ni les charger depuis des chemins inexistants. Les vidéos sources contiennent une piste audio AAC. Conserver les MP4 originaux comme références maîtresses afin de préserver le son et la synchronisation ; toute version optimisée doit être une copie dérivée avec audio, jamais un remplacement destructif.
 
 ## État réel
 
