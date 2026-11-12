@@ -184,6 +184,45 @@ class KdeColorSchemeTests(unittest.TestCase):
         state_file.write_text("{broken", encoding="utf-8")
         self.assertFalse(self.manager.can_restore())
 
+    def test_oversized_kdeglobals_is_not_parsed_or_modified(self):
+        from desktop.kde_colors import MAX_KDE_CONFIG_BYTES
+
+        path = self.config / "kdeglobals"
+        original = b"[General]\nColorScheme=BreezeDark\n"
+        data = original + b" " * MAX_KDE_CONFIG_BYTES
+        path.write_bytes(data)
+        self.assertIsNone(self.manager.current_scheme())
+        with self.assertRaises(RuntimeError):
+            self.manager.apply_theme("leos-original")
+        self.assertEqual(path.read_bytes(), data)
+        self.assertEqual(self.runner.calls, [])
+
+    def test_oversized_kde_theme_state_is_not_restored_or_overwritten(self):
+        from desktop.kde_colors import MAX_KDE_STATE_BYTES
+
+        state_dir = self.state / "leos"
+        state_dir.mkdir(parents=True)
+        state_file = state_dir / "kde-color-scheme.json"
+        original = b" " * (MAX_KDE_STATE_BYTES + 1)
+        state_file.write_bytes(original)
+        self.assertFalse(self.manager.can_restore())
+        with self.assertRaises(ValueError):
+            self.manager.apply_theme("leos-original")
+        self.assertEqual(state_file.read_bytes(), original)
+        self.assertEqual(self.runner.calls, [])
+
+    def test_oversized_existing_scheme_is_not_overwritten(self):
+        from desktop.kde_colors import MAX_KDE_SCHEME_BYTES
+
+        directory = self.data / "color-schemes"
+        directory.mkdir(parents=True)
+        target = directory / "LEOS-cyan.colors"
+        original = b" " * (MAX_KDE_SCHEME_BYTES + 1)
+        target.write_bytes(original)
+        with self.assertRaises(FileExistsError):
+            self.manager.install_scheme("cyan")
+        self.assertEqual(target.read_bytes(), original)
+
     def test_control_center_exposes_apply_and_restore_with_confirmation(self):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
