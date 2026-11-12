@@ -204,6 +204,18 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('window.launchApplication("leos-notifications.desktop"', qml)
         self.assertIn("window.launchApplication(desktopId, name)", qml)
 
+    def test_favourites_view_exposes_relative_reordering_controls(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        store = (ROOT / "desktop/dock_favourites.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("def moveFavourite(self, desktop_id: str, offset: int)", source)
+        self.assertIn("self.favourites.move_by(desktop_id, offset)", source)
+        self.assertIn("def move_by(self, desktop_id: str, offset: int)", store)
+        self.assertIn('applicationCatalog.currentCategory === "Favoris"', qml)
+        self.assertIn("applicationCatalog.moveFavourite(desktopId, -1)", qml)
+        self.assertIn("applicationCatalog.moveFavourite(desktopId, 1)", qml)
+        self.assertIn("search.text.length === 0", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
