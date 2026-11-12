@@ -112,7 +112,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         self.assertIn("official LEOS lion artwork", readme)
 
     def test_bluebuild_recipe_installs_style_to_plasma_directory(self):
-        recipe = (ROOT / "recipes" / "recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: plasma-theme/leos", recipe)
         self.assertIn("dest: /usr/share/plasma/desktoptheme/leos/", recipe)
 

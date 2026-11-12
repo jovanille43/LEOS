@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class NotificationCentreIntegrationTests(unittest.TestCase):
     def test_notification_application_is_packaged(self):
         entry = (ROOT / "desktop/applications/leos-notifications.desktop").read_text(encoding="utf-8")
-        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("notifications_main.py", entry)
         self.assertIn("src: desktop/applications/leos-notifications.desktop", recipe)
         self.assertIn("- libnotify", recipe)

@@ -64,7 +64,7 @@ class AuroraeWindowDecorationTests(unittest.TestCase):
         self.assertEqual(layout["TitleHeight"], "36")
 
     def test_bluebuild_installs_aurorae_runtime_and_theme(self):
-        recipe = (ROOT / "recipes" / "recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("- aurorae", recipe)
         self.assertIn("src: aurorae/leos", recipe)
         self.assertIn("dest: /usr/share/aurorae/themes/leos/", recipe)

@@ -15,7 +15,7 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("Terminal=false", entry)
 
     def test_menu_launcher_is_included_in_the_image_recipe(self):
-        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: desktop/applications/leos-menu.desktop", recipe)
         self.assertIn("dest: /usr/share/applications/", recipe)
 
