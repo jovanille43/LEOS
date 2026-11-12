@@ -126,6 +126,13 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtmultimedia", recipe)
 
+    def test_recipe_installs_qt_svg_for_wallpaper_previews(self):
+        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        self.assertIn("qt6-qtsvg", recipe)
+        control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)
+        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', control_center)
+
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
         self.assertIn("gaming-roar-reference.mp4", manifest)
