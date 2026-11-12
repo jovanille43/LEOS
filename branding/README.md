@@ -12,9 +12,9 @@ L'image comparative des deux emblèmes est une référence interne ; elle ne doi
 
 ## Organisation
 
-- `desktop-logo.jpg` — emblème Desktop.
-- `gaming-logo.jpg` — emblème Gaming.
-- `reference-comparison.jpg` — comparaison interne uniquement.
+- `desktop-logo.jpeg` — emblème Desktop.
+- `gaming-logo.jpeg` — emblème Gaming.
+- `reference-comparison.jpeg` — comparaison interne uniquement.
 - `animations/` — animations d'entrée des deux modes.
 - `sounds/` — signatures sonores et effets LEOS.
 - `wallpapers/` — fonds d'écran Desktop et Gaming.
