@@ -106,6 +106,7 @@ class FirstRunSetupTests(unittest.TestCase):
                 any("install " in command and "org.videolan.VLC" in command for command in commands)
             )
             self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
+            self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
 
     def test_failed_app_does_not_block_other_installs_or_mark_setup_complete(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -125,7 +126,6 @@ class FirstRunSetupTests(unittest.TestCase):
 
             # A later Desktop entry resumes the approved list without asking again.
             env["FAIL_APP"] = ""
-            (root / "bin/kdialog").unlink()
             retry = self._run(env)
             self.assertEqual(retry.returncode, 0, retry.stderr)
             self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
