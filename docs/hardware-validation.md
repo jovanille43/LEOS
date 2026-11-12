@@ -100,6 +100,7 @@ Les vidéos actuellement hébergées ont passé le contrôle CI de présence des
 - [ ] Les profils d'énergie n'affichent que les profils réellement disponibles.
 - [ ] Les valeurs GPU indisponibles restent indiquées comme telles.
 - [ ] Sur un PC hybride, toutes les cartes graphiques visibles sont identifiées sans confondre les connecteurs DRM avec des GPU supplémentaires.
+- [ ] Deux GPU du même modèle mais avec des adresses PCI différentes apparaissent séparément dans l'inventaire ; plusieurs nœuds DRM d'une même carte ne créent pas de doublon.
 - [ ] Sur un PC avec deux GPU NVIDIA, les mesures `nvidia-smi` sont associées à la bonne carte même si l'ordre de sortie diffère de l'ordre DRM.
 - [ ] Sur un PC mixte Intel/AMD + NVIDIA, aucune mesure NVIDIA n'est attribuée à l'iGPU ou à un autre GPU dont l'identifiant PCI ne correspond pas.
 - [ ] L'absence ou le délai d'expiration de `nvidia-smi` laisse Gaming Mode utilisable ; les mesures indisponibles sont signalées comme telles.
