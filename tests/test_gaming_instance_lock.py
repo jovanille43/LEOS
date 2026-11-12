@@ -62,6 +62,35 @@ class GamingInstanceLockTests(unittest.TestCase):
             gaming.release()
             selector.release()
 
+    def test_symlink_lock_directory_is_rejected(self):
+        import os
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            real = root / "real"
+            real.mkdir()
+            linked = root / "linked"
+            try:
+                os.symlink(real, linked, target_is_directory=True)
+            except (NotImplementedError, OSError):
+                self.skipTest("Symlinks unavailable in this environment")
+            with self.assertRaises(OSError):
+                acquire_instance_lock("gaming", linked)
+            self.assertEqual(list(real.iterdir()), [])
+
+    def test_overlong_lock_identifier_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "too long"):
+                acquire_instance_lock("g" * 65, Path(temporary))
+
+    def test_lock_directory_permissions_are_private(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "leos"
+            lock = acquire_instance_lock("gaming", directory)
+            self.assertIsNotNone(lock)
+            self.assertEqual(directory.stat().st_mode & 0o777, 0o700)
+            lock.release()
+
     def test_symlink_lock_file_is_rejected(self):
         import os
 
