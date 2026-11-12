@@ -15,24 +15,37 @@ _MINIMUM_PRIORITY = {"all": 0, "important": 1, "critical": 2}
 def _show_native_notification(title: str, body: str, level: str) -> None:
     """Forward eligible notices to the active freedesktop notification service."""
     settings = SettingsStore()
-    if not settings.get("notifications_enabled", True):
+    (
+        enabled,
+        minimum,
+        last_mode,
+        silent_in_gaming,
+        duration,
+        sounds_enabled,
+    ) = settings.snapshot((
+        "notifications_enabled",
+        "notification_minimum_priority",
+        "last_mode",
+        "silent_notifications_in_gaming",
+        "notification_duration_seconds",
+        "notification_sounds_enabled",
+    ))
+    if not enabled:
         return
-    minimum = settings.get("notification_minimum_priority", "all")
     if _PRIORITY[level] < _MINIMUM_PRIORITY.get(minimum, 0):
         return
-    if settings.get("last_mode") == "gaming" and settings.get("silent_notifications_in_gaming", True):
+    if last_mode == "gaming" and silent_in_gaming:
         return
 
     executable = shutil.which("notify-send")
     if not executable:
         return
     urgency = {"info": "normal", "success": "low", "warning": "normal", "error": "critical"}[level]
-    duration = settings.get("notification_duration_seconds", 5)
     command = [
         executable, "--app-name=LEOS", "--icon=leos",
         f"--urgency={urgency}", f"--expire-time={duration * 1000}",
     ]
-    if not settings.get("notification_sounds_enabled", True):
+    if not sounds_enabled:
         command.append("--hint=boolean:suppress-sound:true")
     command.extend(["--", title])
     if body:
