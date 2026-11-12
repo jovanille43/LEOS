@@ -144,9 +144,10 @@ _SCRIPT = r'''(function () {
     } catch (error) {
         try {
             if (created && panel) {
-                panel.hiding = "autohide";
-                panel.height = 1;
-                print("LEOS_PARTIAL_PANEL_HIDDEN_FOR_MANUAL_REVIEW=1");
+                // This exact panel was created by this transaction; no user
+                // panel can enter this branch.
+                panel.remove();
+                print("LEOS_PARTIAL_PANEL_ROLLED_BACK=1");
             } else if (panel && before) {
                 panel.location = before.location;
                 panel.alignment = before.alignment;
