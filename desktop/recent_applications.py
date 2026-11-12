@@ -30,16 +30,18 @@ class RecentApplications:
     ) -> None:
         if path is None:
             path = xdg_state_home() / "leos" / "recent-applications.json"
+        if type(limit) is not int or not 1 <= limit <= MAX_RECENT_ENTRIES:
+            raise ValueError("Recent application history limit is invalid")
         self.path = path
-        self.limit = max(1, min(int(limit), MAX_RECENT_ENTRIES))
+        self.limit = limit
 
     @staticmethod
     def _valid_id(value: object) -> bool:
         return isinstance(value, str) and bool(DESKTOP_ID_RE.fullmatch(value))
 
     def _read(self) -> list[str]:
-        if self.path.is_symlink():
-            raise ValueError("Recent application history cannot be a symbolic link")
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise ValueError("Recent application history path cannot be a symbolic link")
         if not self.path.exists():
             return []
         if not self.path.is_file():
@@ -74,14 +76,24 @@ class RecentApplications:
     def _write(self, items: list[str]) -> None:
         if self.path.is_symlink():
             raise ValueError("Recent application history cannot be a symbolic link")
+        if (
+            not isinstance(items, list)
+            or len(items) > MAX_RECENT_ENTRIES
+            or any(not self._valid_id(item) for item in items)
+        ):
+            raise ValueError("Invalid recent application history")
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise ValueError("Recent application history path cannot be a symbolic link")
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self.path.parent.is_symlink():
-            raise ValueError("Recent application history directory cannot be a symbolic link")
+        os.chmod(self.path.parent, 0o700)
         payload = json.dumps(items[: self.limit], indent=2, ensure_ascii=False) + "\n"
+        if len(payload.encode("utf-8")) > MAX_RECENT_FILE_BYTES:
+            raise ValueError("Recent application history exceeds its storage limit")
         descriptor, temporary = tempfile.mkstemp(
             prefix="recent-apps.", suffix=".tmp", dir=self.path.parent
         )
         try:
+            os.fchmod(descriptor, 0o600)
             with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
                 stream.write(payload)
                 stream.flush()
