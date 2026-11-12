@@ -140,6 +140,20 @@ class DockFavouritesTests(unittest.TestCase):
             self.assertEqual(sorted(results), [False, True])
             self.assertNotIn("org.example.Toggle.desktop", DockFavourites(path).items())
 
+    def test_move_by_reorders_one_step_and_rejects_invalid_targets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            store = DockFavourites(path)
+            original = store.items()
+            self.assertTrue(store.move_by("steam.desktop", -1))
+            moved = store.items()
+            self.assertEqual(moved.index("steam.desktop"), original.index("steam.desktop") - 1)
+            self.assertFalse(store.move_by("org.kde.dolphin.desktop", -1))
+            with self.assertRaises(ValueError):
+                store.move_by("org.example.Missing.desktop", 1)
+            with self.assertRaises(ValueError):
+                store.move_by("steam.desktop", 0)
+
 
 if __name__ == "__main__":
     unittest.main()
