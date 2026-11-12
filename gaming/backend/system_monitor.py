@@ -100,22 +100,27 @@ class SystemMonitor(QObject):
         return float(received), float(sent)
 
     def refresh(self) -> None:
-        if psutil is None:
-            return
+        # CPU/RAM/disk/network metrics depend on psutil, but GPU telemetry has
+        # its own DRM and NVIDIA CLI sources and must remain usable without it.
+        if psutil is not None:
+            try:
+                self._cpu = float(psutil.cpu_percent(interval=None))
+                self._memory = float(psutil.virtual_memory().percent)
+                self._cpu_temp = self._read_cpu_temperature()
+                self._disk_usage = self._read_disk_usage()
+                self._network_receive_rate, self._network_send_rate = self._read_network_rates()
+            except (OSError, RuntimeError, AttributeError):
+                pass
+
         try:
-            self._cpu = float(psutil.cpu_percent(interval=None))
-            self._memory = float(psutil.virtual_memory().percent)
-            self._cpu_temp = self._read_cpu_temperature()
-            self._disk_usage = self._read_disk_usage()
-            self._network_receive_rate, self._network_send_rate = self._read_network_rates()
             gpu = read_gpu_metrics()
             self._gpu_name = str(gpu["name"])
             self._gpu_usage = float(gpu["usage"])
             self._gpu_temperature = float(gpu["temperature"])
             self._gpu_memory_used = int(gpu["memory_used"])
             self._gpu_memory_total = int(gpu["memory_total"])
-        except (OSError, RuntimeError):
-            return
+        except (OSError, RuntimeError, KeyError, TypeError, ValueError):
+            pass
         self.metricsChanged.emit()
 
     @Property(float, notify=metricsChanged)
