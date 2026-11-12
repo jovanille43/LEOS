@@ -94,3 +94,80 @@ def pending_deployment_from_status(payload: str) -> dict[str, str] | None:
                 "version": version,
             }
     return None
+
+def deployment_inventory_from_status(payload: str) -> dict[str, str | int | bool] | None:
+    """Summarize booted and retained OSTree deployments without changing them.
+
+    The list is descriptive only: an additional deployment is not guaranteed to
+    be bootable or suitable for rollback, so callers must not label it as a
+    verified recovery point.
+    """
+    import json
+
+    if (
+        not isinstance(payload, str)
+        or len(payload) > MAX_RPM_OSTREE_STATUS_CHARS
+        or not json_nesting_within_limit(payload)
+    ):
+        return None
+    try:
+        status = json.loads(payload)
+    except (TypeError, json.JSONDecodeError, RecursionError):
+        return None
+    if not isinstance(status, dict) or not isinstance(status.get("deployments"), list):
+        return None
+
+    deployments = status["deployments"]
+    if not deployments or len(deployments) > MAX_RPM_OSTREE_DEPLOYMENTS:
+        return None
+
+    booted = [
+        item for item in deployments
+        if isinstance(item, dict) and item.get("booted") is True
+    ]
+    if len(booted) != 1:
+        return None
+
+    current = booted[0]
+    checksum = current.get("checksum")
+    if not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", checksum):
+        return None
+
+    version = current.get("version")
+    if (
+        not isinstance(version, str)
+        or not version.strip()
+        or len(version) > 128
+        or any(ord(character) < 32 or ord(character) == 127 for character in version)
+    ):
+        version = "Version inconnue"
+    else:
+        version = version.strip()
+
+    retained = []
+    for item in deployments:
+        if not isinstance(item, dict) or item.get("booted") is True:
+            continue
+        other_checksum = item.get("checksum")
+        if (
+            not isinstance(other_checksum, str)
+            or not re.fullmatch(r"[0-9a-fA-F]{64}", other_checksum)
+        ):
+            continue
+        retained.append(item)
+
+    pending_count = sum(
+        1 for item in retained
+        if item.get("pending") is True or item.get("staged") is True
+    )
+    pinned_count = sum(1 for item in retained if item.get("pinned") is True)
+
+    return {
+        "available": True,
+        "bootedVersion": version,
+        "bootedChecksum": checksum.lower()[:12],
+        "otherCount": len(retained),
+        "pendingCount": pending_count,
+        "pinnedCount": pinned_count,
+    }
+
