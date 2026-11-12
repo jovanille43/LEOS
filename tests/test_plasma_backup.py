@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from desktop.plasma_backup import PlasmaBackupManager
@@ -53,6 +54,55 @@ class PlasmaBackupTests(unittest.TestCase):
     def test_invalid_backup_identifier_is_rejected(self):
         with self.assertRaises(ValueError):
             self.manager.restore_backup("../outside", confirmed=True)
+
+    def test_backup_rejects_symlinked_config_directory(self):
+        root = Path(self.temporary.name)
+        actual = root / "actual-config"
+        actual.mkdir()
+        source = actual / "plasma-org.kde.plasma.desktop-appletsrc"
+        source.write_text("[Containments]\\n", encoding="utf-8")
+        linked = root / "linked-config"
+        try:
+            linked.symlink_to(actual, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        manager = PlasmaBackupManager(
+            linked / source.name, self.backups
+        )
+        with self.assertRaises(FileNotFoundError):
+            manager.create_backup()
+
+    def test_backup_rejects_symlinked_backup_parent(self):
+        root = Path(self.temporary.name)
+        actual = root / "actual-state"
+        actual.mkdir()
+        linked = root / "linked-state"
+        try:
+            linked.symlink_to(actual, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        manager = PlasmaBackupManager(self.config, linked / "plasma-backups")
+        with self.assertRaises(ValueError):
+            manager.create_backup()
+
+    def test_list_backups_scans_only_a_bounded_number_of_manifests(self):
+        from desktop import plasma_backup
+
+        backup_id = self.manager.create_backup()
+        valid_manifest = self.backups / f"{backup_id}.json"
+        original_glob = Path.glob
+
+        def many_manifests(path, pattern):
+            if path == self.backups and pattern == "*.json":
+                return iter(
+                    [self.backups / f"{index:032x}.json"
+                     for index in range(plasma_backup.MAX_BACKUP_MANIFESTS_SCANNED)]
+                    + [valid_manifest]
+                )
+            return original_glob(path, pattern)
+
+        with patch("desktop.plasma_backup.Path.glob", new=many_manifests):
+            self.assertEqual(self.manager.list_backups(), [])
 
     def test_missing_source_config_is_reported(self):
         self.config.unlink()
