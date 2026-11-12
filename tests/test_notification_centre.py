@@ -50,12 +50,14 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
 
     def test_gaming_settings_actions_report_persistence_failures(self):
         source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
-        for key in ("gaming_mangohud_enabled", "silent_notifications_in_gaming"):
-            position = source.index(key)
-            handler = source.rfind("except (OSError, ValueError, TypeError):", 0, position)
-            self.assertGreaterEqual(handler, 0, f"{key} must handle settings write failures")
-        self.assertIn("Impossible d'enregistrer le réglage MangoHud.", source)
-        self.assertIn("Impossible d'enregistrer le réglage des notifications.", source)
+        mango = source[source.index("    def setMangoHudEnabled("):source.index("    @Property(int, notify=notificationCountChanged)")]
+        silent = source[source.index("    def toggleSilentNotifications("):source.index("    @Slot()\n    def refreshNotificationCount")]
+        self.assertIn("self.settings.set(\"gaming_mangohud_enabled\", requested)", mango)
+        self.assertIn("except (OSError, ValueError, TypeError):", mango)
+        self.assertIn("Impossible d'enregistrer le réglage MangoHud.", mango)
+        self.assertIn("self.settings.set(\"silent_notifications_in_gaming\", enabled)", silent)
+        self.assertIn("except (OSError, ValueError, TypeError):", silent)
+        self.assertIn("Impossible d'enregistrer le réglage des notifications.", silent)
 
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
