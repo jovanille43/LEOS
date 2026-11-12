@@ -29,7 +29,7 @@ class SessionFlowTests(unittest.TestCase):
         controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
         self.assertIn("import QtMultimedia", qml)
         self.assertIn("gaming-intro.mp4", qml)
-        self.assertIn("desktop-intro.mp4", qml)
+        self.assertIn("desktop-intro.mov", qml)
         self.assertIn("MediaPlayer.EndOfMedia", qml)
         self.assertIn("MediaPlayer.InvalidMedia", qml)
         self.assertIn("MediaPlayer.InvalidMedia", qml)
@@ -53,11 +53,27 @@ class SessionFlowTests(unittest.TestCase):
             handler.index("if (event.key === Qt.Key_G)"),
         )
 
+    def test_branding_animation_files_exist_at_runtime_paths(self):
+        branding = ROOT / "branding"
+        self.assertTrue((branding / "desktop-logo.jpeg").is_file())
+        self.assertTrue((branding / "gaming-logo.jpeg").is_file())
+        self.assertTrue((branding / "animations" / "desktop-intro.mov").is_file())
+        self.assertTrue((branding / "animations" / "gaming-intro.mp4").is_file())
+        self.assertTrue((branding / "animations" / "gaming-roar-reference.mp4").is_file())
+
+    def test_desktop_intro_uses_mov_extension_in_both_transitions(self):
+        selector = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("desktop-intro.mov", selector)
+        self.assertIn("desktop-intro.mov", gaming)
+        self.assertNotIn("desktop-intro.mp4", selector)
+        self.assertNotIn("desktop-intro.mp4", gaming)
+
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         self.assertIn("import QtMultimedia", qml)
-        self.assertIn("desktop-intro.mp4", qml)
+        self.assertIn("desktop-intro.mov", qml)
         self.assertIn("function requestDesktopReturn()", qml)
         self.assertIn("function finishDesktopReturn()", qml)
         self.assertIn("window.requestDesktopReturn()", qml)
