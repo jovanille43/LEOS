@@ -342,9 +342,9 @@ def _parse_lspci_gpu_devices(output: str) -> dict[str, str]:
     """Map PCI addresses to descriptive GPU names from lspci output."""
     devices: dict[str, str] = {}
     pattern = re.compile(
-        r"^([0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7])\\s+"
+        r"^([0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7])\s+"
         r"(?:VGA compatible controller|3D controller|Display controller)"
-        r"(?:\\s+\\[[^]]+\\])?:\\s*(.+)$",
+        r"(?:\s+\[[^]]+\])?:\s*(.+)$",
         re.IGNORECASE,
     )
     for line in output.splitlines():
@@ -352,7 +352,7 @@ def _parse_lspci_gpu_devices(output: str) -> dict[str, str]:
         if not match:
             continue
         description = re.sub(
-            r"\\s+\\[[0-9a-f]{4}:[0-9a-f]{4}\\](?:\\s+\\(rev [^)]+\\))?$",
+            r"\s+\[[0-9a-f]{4}:[0-9a-f]{4}\](?:\s+\(rev [^)]+\))?$",
             "",
             match.group(2).strip(),
             flags=re.IGNORECASE,
@@ -371,7 +371,7 @@ def _gpu_details() -> str:
         devices = sorted(
             device
             for device in Path("/sys/class/drm").glob("card*/device")
-            if re.fullmatch(r"card\\d+", device.parent.name)
+            if re.fullmatch(r"card\d+", device.parent.name)
         )
     except OSError:
         devices = []
