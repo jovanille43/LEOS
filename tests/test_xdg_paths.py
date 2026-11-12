@@ -98,6 +98,16 @@ class XdgPathTests(unittest.TestCase):
                 self.assertEqual(style.config_file, config / "plasmarc")
                 self.assertEqual(style.state_file, state / "leos" / "plasma-style.json")
 
+    def test_gaming_library_routes_launcher_config_through_xdg_helper(self):
+        source = (
+            Path(__file__).resolve().parents[1] / "gaming" / "backend" / "library.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("config_home as xdg_config_home", source)
+        self.assertIn('xdg_config_home() / "heroic"', source)
+        self.assertIn("find_retroarch_playlist_directories(", source)
+        self.assertIn("find_retroarch_thumbnail_directories(", source)
+        self.assertGreaterEqual(source.count("xdg_config_home=xdg_config_home()"), 2)
+
     def test_gaming_library_routes_data_paths_through_shared_xdg_helper(self):
         source = (
             Path(__file__).resolve().parents[1] / "gaming" / "backend" / "library.py"
