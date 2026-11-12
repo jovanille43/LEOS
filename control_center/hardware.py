@@ -315,7 +315,7 @@ def _gpu_details() -> str:
         devices = sorted(
             device
             for device in Path("/sys/class/drm").glob("card*/device")
-            if re.fullmatch(r"card\\d+", device.parent.name)
+            if re.fullmatch(r"card\d+", device.parent.name)
         )
     except OSError:
         devices = []
