@@ -29,6 +29,16 @@ class SettingsModuleCommandTests(unittest.TestCase):
             ["/usr/bin/kcmshell6", "kcm_networkmanagement"],
         )
 
+    def test_wallpaper_module_opens_the_native_kde_picker(self):
+        self.assertEqual(
+            settings_module_command(
+                "wallpaper",
+                lambda name: "/usr/bin/kcmshell6" if name == "kcmshell6" else None,
+            ),
+            ["/usr/bin/kcmshell6", "kcm_wallpaper"],
+        )
+        self.assertEqual(SETTINGS_MODULES["wallpaper"], "kcm_wallpaper")
+
     def test_uses_system_settings_when_standalone_shell_is_missing(self):
         def finder(name):
             return "/usr/bin/systemsettings" if name == "systemsettings" else None
@@ -67,7 +77,18 @@ class SettingsModuleCommandTests(unittest.TestCase):
         qml_path = Path(__file__).resolve().parents[1] / "control_center" / "qml" / "Main.qml"
         qml = qml_path.read_text(encoding="utf-8")
         sections = set(re.findall(r'section: "([a-z-]+)"', qml))
-        self.assertEqual(sections, set(SETTINGS_MODULES))
+        self.assertTrue(sections.issubset(set(SETTINGS_MODULES)))
+        self.assertIn("wallpaper", SETTINGS_MODULES)
+
+    def test_appearance_exposes_both_leos_wallpapers_and_native_kde_selection(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', qml)
+        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', qml)
+        self.assertIn('controlCenter.openSettingsModule("wallpaper")', qml)
+        modules = (root / "control_center/settings_modules.py").read_text(encoding="utf-8")
+        self.assertIn('"wallpaper": "kcm_wallpaper"', modules)
+        self.assertIn("rien n'est appliqué sans ton choix dans KDE", qml)
 
     def test_animation_and_sound_preferences_are_exposed_as_shared_controls(self):
         root = Path(__file__).resolve().parents[1]
