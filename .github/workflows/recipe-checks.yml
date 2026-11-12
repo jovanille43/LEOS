@@ -144,11 +144,12 @@ jobs:
           set -euo pipefail
           bluebuild validate recipes/recipe.yml
           bluebuild validate recipes/recipe-nvidia.yml
+          bluebuild validate recipes/recipe-nvidia-open.yml
 
       - name: Generate Containerfiles
         run: |
           set -euo pipefail
-          for recipe in recipe.yml recipe-nvidia.yml; do
+          for recipe in recipe.yml recipe-nvidia.yml recipe-nvidia-open.yml; do
             output="$RUNNER_TEMP/${recipe%.yml}-Containerfile"
             attempt=1
             max_attempts=3
