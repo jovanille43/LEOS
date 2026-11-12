@@ -16,6 +16,25 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Verify official LEOS branding assets
+        run: |
+          set -euo pipefail
+          required_assets=(
+            branding/desktop-logo.jpeg
+            branding/gaming-logo.jpeg
+            branding/reference-comparison.jpeg
+            branding/animations/desktop-intro.mp4
+            branding/animations/gaming-intro.mp4
+            branding/animations/gaming-roar-reference.mp4
+          )
+          for asset in "${required_assets[@]}"; do
+            if [[ ! -s "${asset}" ]]; then
+              echo "::error::Official LEOS asset is missing: ${asset}"
+              exit 1
+            fi
+          done
+          sha256sum --check branding/SHA256SUMS
+
       - name: Check signing prerequisites
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
