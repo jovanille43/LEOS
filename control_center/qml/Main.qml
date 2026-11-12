@@ -578,7 +578,7 @@ ApplicationWindow {
                                             onClicked: {
                                                 const opened = controlCenter.openSettingsModule("wallpaper")
                                                 window.wallpaperNotice = opened
-                                                    ? "Paramètres de fond d'écran KDE ouverts. Choisis le fichier LEOS dans le dossier des ressources."
+                                                    ? "Paramètres KDE ouverts. Dans le sélecteur, ouvre /usr/share/leos/branding/wallpapers/ puis choisis desktop-leos.svg ou gaming-leos.svg."
                                                     : "Le module de fond d'écran KDE n'est pas disponible sur cette session."
                                             }
                                         }
