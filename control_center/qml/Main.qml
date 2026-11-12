@@ -1039,7 +1039,7 @@ ApplicationWindow {
                                         { title: "PRÉCONTRÔLE GAMING", value: controlCenter.hardwareSnapshot.gamingBaseline, detail: "Références : 4 cœurs, 8 Go, 50 Go libres et Vulkan 1.3+. Certains critères ne peuvent pas être certifiés automatiquement." },
                                         { title: "MÉMOIRE VIVE", value: controlCenter.hardwareSnapshot.memory, detail: "RAM détectée par Linux" },
                                         { title: "CARTE GRAPHIQUE", value: controlCenter.hardwareSnapshot.gpu, detail: "Contrôleur graphique détecté" },
-                                        { title: "ÉCRANS CONNECTÉS", value: controlCenter.hardwareSnapshot.displayCount, detail: controlCenter.hardwareSnapshot.displays + " · Modes proposés par le pilote, pas nécessairement la résolution active." },
+                                        { title: "ÉCRANS CONNECTÉS", value: controlCenter.hardwareSnapshot.displayCount, detail: controlCenter.hardwareSnapshot.displays + " · Configuration active KScreen, ou modes disponibles via DRM." },
                                         { title: "VULKAN", value: controlCenter.hardwareSnapshot.vulkan, detail: "Version exposée par chaque GPU, si le pilote la fournit" },
                                         { title: "STOCKAGE", value: controlCenter.hardwareSnapshot.storage, detail: "Espace libre sur / ; le type SSD et la destination d'installation ne sont pas vérifiés" },
                                         { title: "SYSTÈME", value: controlCenter.hardwareSnapshot.operatingSystem, detail: "Noyau " + controlCenter.hardwareSnapshot.kernel },
