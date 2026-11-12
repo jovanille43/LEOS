@@ -10,7 +10,7 @@ from urllib.parse import quote
 
 
 MAX_LUTRIS_GAMES = 20_000
-MAX_LUTRIS_QUERY_SECONDS = 2.0
+MAX_LUTRIS_QUERY_SECONDS = 10.0
 
 
 def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
@@ -22,11 +22,6 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
     try:
         connection = sqlite3.connect(uri, uri=True, timeout=1.0)
         connection.execute("PRAGMA query_only = ON")
-        deadline = time.monotonic() + MAX_LUTRIS_QUERY_SECONDS
-        connection.set_progress_handler(
-            lambda: 1 if time.monotonic() > deadline else 0,
-            1000,
-        )
     except (sqlite3.Error, OSError):
         return []
 
@@ -38,6 +33,11 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         if not required.issubset(columns):
             return []
 
+        deadline = time.monotonic() + MAX_LUTRIS_QUERY_SECONDS
+        connection.set_progress_handler(
+            lambda: 1 if time.monotonic() > deadline else 0,
+            1000,
+        )
         optional = ("directory", "executable", "platform", "service")
         selected = ["id", "name", "slug", "runner", "installed"]
         selected.extend(column for column in optional if column in columns)
