@@ -14,11 +14,11 @@ class NetworkTests(unittest.TestCase):
 
     def test_default_route_falls_back_to_ipv6_on_ipv6_only_networks(self):
         route_files = {
-            "/proc/net/route": "Iface Destination Gateway Flags RefCnt Use Metric\\n",
+            "/proc/net/route": "Iface Destination Gateway Flags RefCnt Use Metric\n",
             "/proc/net/ipv6_route": (
                 "0" * 32 + " 00 " + "0" * 32 + " 00 "
                 + "fe800000000000000000000000000001 "
-                + "00000000 00000000 00000000 00000001 wlan0\\n"
+                + "00000000 00000000 00000000 00000001 wlan0\n"
             ),
         }
         with patch.object(
@@ -29,8 +29,8 @@ class NetworkTests(unittest.TestCase):
 
     def test_default_route_requires_an_active_ipv4_route(self):
         route = (
-            "Iface Destination Gateway Flags RefCnt Use Metric\\n"
-            "eth0 00000000 0101A8C0 0002 0 0 0\\n"
+            "Iface Destination Gateway Flags RefCnt Use Metric\n"
+            "eth0 00000000 0101A8C0 0002 0 0 0\n"
         )
         with patch.object(
             network, "_read",
