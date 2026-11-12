@@ -104,6 +104,24 @@ class GamepadActionTests(unittest.TestCase):
             self.assertIsNone(self.mapper.feed(event))
         self.assertIsNone(self.mapper.repeat_action(now=41.0))
 
+    def test_reset_clears_held_directions_and_repeat_state(self):
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=50.0):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "button", "name": "BTN_DPAD_DOWN", "value": 1}
+                ),
+                "down",
+            )
+        self.mapper.reset()
+        self.assertIsNone(self.mapper.repeat_action(now=51.0))
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=52.0):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "button", "name": "BTN_DPAD_UP", "value": 1}
+                ),
+                "up",
+            )
+
     def test_nintendo_profile_swaps_confirm_and_back_buttons(self):
         mapper = GamepadActionMapper(profile="nintendo")
         self.assertEqual(
