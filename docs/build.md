@@ -37,7 +37,7 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 
 - Vérifier le contenu du workflow `.github/workflows/build.yml`.
 - [x] Valider `recipes/recipe.yml` avec le CLI BlueBuild (`bluebuild validate`) et générer un Containerfile (`bluebuild generate`) dans le workflow GitHub Actions.
-- Vérifier la présence des trois logos et des trois vidéos aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
+- Vérifier la présence des trois logos et des trois vidéos aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
 - Confirmer que le secret `SIGNING_SECRET` est configuré et que la clé publique correspondante est disponible.
 - Déclencher le workflow manuellement seulement après ces contrôles.
 
