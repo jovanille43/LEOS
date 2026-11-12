@@ -44,6 +44,7 @@ ApplicationWindow {
         returningToDesktop = true
         desktopIntroOverlay.visible = true
         desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mp4")
+        desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
     }
@@ -885,7 +886,8 @@ ApplicationWindow {
     MediaPlayer {
         id: desktopIntroPlayer
         audioOutput: AudioOutput {
-            muted: !leos.soundsEnabled
+            id: desktopIntroAudio
+            muted: true
         }
         videoOutput: desktopIntroVideoOutput
         onMediaStatusChanged: {
