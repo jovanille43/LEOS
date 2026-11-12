@@ -380,14 +380,14 @@ def _gpu_details() -> str:
     pci_output = _run(["lspci", "-D", "-nn"], timeout=2.0)
     pci_names = _parse_lspci_gpu_devices(pci_output)
     pci_pattern = re.compile(
-        r"[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7]$",
+        r"[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7]$",
         re.IGNORECASE,
     )
     try:
         devices = sorted(
             device
             for device in Path("/sys/class/drm").glob("card*/device")
-            if re.fullmatch(r"card\\d+", device.parent.name)
+            if re.fullmatch(r"card\d+", device.parent.name)
         )
     except OSError:
         devices = []
