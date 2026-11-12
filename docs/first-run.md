@@ -17,9 +17,10 @@ Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une p
 
 - Une réponse positive autorise l'ajout du dépôt utilisateur Flathub et l'installation des seules applications absentes.
 - Les applications déjà présentes dans l'installation utilisateur ou système sont ignorées.
-- Si une installation échoue, les autres applications sont tout de même traitées. Le parcours reste en attente et pourra être retenté lors d'une prochaine entrée dans Desktop ; les applications déjà installées seront ignorées.
-- Une réponse négative n'ajoute pas Flathub et ne lance aucune installation.
-- La réponse est mémorisée dans `~/.local/state/leos/default-apps-seeded` (ou sous `$XDG_STATE_HOME` si cette variable est définie).
+- Le consentement positif est enregistré avant toute installation dans `~/.local/state/leos/default-apps-consent-v1` (ou sous `$XDG_STATE_HOME` si cette variable est définie). Cette autorisation concerne uniquement la liste versionnée Brave, LibreOffice et VLC.
+- Si une installation échoue, les autres applications sont tout de même traitées. Le consentement est conservé et une prochaine entrée dans Desktop reprend uniquement les applications manquantes, sans afficher une seconde demande d'autorisation.
+- Lorsque toutes les applications sont déjà présentes ou ont été installées, LEOS enregistre `default-apps-seeded` puis supprime le marqueur temporaire de consentement.
+- Une réponse négative n'ajoute pas Flathub, ne lance aucune installation et enregistre directement `default-apps-seeded` pour ne pas reposer la question à chaque session.
 - La proposition n'est pas lancée pendant Gaming Mode. Elle sera présentée lors d'une prochaine entrée dans Desktop si aucune réponse n'a encore été mémorisée.
 - Sans `kdialog`, aucune installation n'est effectuée ; le lanceur pourra réessayer lors d'une prochaine entrée dans Desktop.
 - Les applications restent ensuite gérables depuis la boutique LEOS. Une désinstallation volontaire n'entraîne pas de réinstallation automatique.
