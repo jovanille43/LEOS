@@ -15,8 +15,8 @@ L'image comparative des deux emblèmes est une référence interne ; elle ne doi
 - `desktop-logo.jpeg` — emblème Desktop.
 - `gaming-logo.jpeg` — emblème Gaming.
 - `reference-comparison.jpeg` — comparaison interne uniquement.
-- `animations/` — animations d'entrée des deux modes.
-- `sounds/` — signatures sonores et effets LEOS.
+- `animations/` — animations d'entrée des deux modes et variante Gaming de référence.
+- Les signatures sonores sont intégrées aux pistes AAC des vidéos MP4 officielles ; aucun dossier `sounds/` séparé n'est requis.
 - `wallpapers/` — fonds d'écran Desktop et Gaming.
 - `icons/` — icônes et éléments graphiques.
 
