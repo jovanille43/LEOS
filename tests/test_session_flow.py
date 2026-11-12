@@ -108,6 +108,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("if (returningToDesktop)", qml)
         self.assertIn("returningToDesktop = true", qml)
 
+    def test_gaming_window_routes_keyboard_events_through_focused_content(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: gamingContent", qml)
+        self.assertIn("focus: true", qml)
+        self.assertIn("Keys.onPressed: function(event)", qml)
+        self.assertIn('window.handleGamepadAction("confirm")', qml)
+        window_header = qml.split("ApplicationWindow {", 1)[1].split("id: gamingContent", 1)[0]
+        self.assertNotIn("focus: true", window_header)
+
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
