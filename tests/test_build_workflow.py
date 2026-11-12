@@ -242,6 +242,32 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
                 self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
 
+    def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", source)
+        self.assertIn("type: choice", source)
+        for variant in ("standard", "nvidia-legacy", "nvidia-modern"):
+            with self.subTest(variant=variant):
+                self.assertIn(variant, source)
+        self.assertIn('standard) image_name="leos"', source)
+        self.assertIn('nvidia-legacy) image_name="leos-nvidia"', source)
+        self.assertIn('nvidia-modern) image_name="leos-nvidia-open"', source)
+
+    def test_iso_workflow_uses_published_image_and_generates_checksum(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("bluebuild generate-iso --iso-name", source)
+        self.assertIn('image "$IMAGE_REF"', source)
+        self.assertIn('sha256sum "$ISO_NAME"', source)
+        self.assertIn("actions/upload-artifact@v4", source)
+        self.assertIn("packages: read", source)
+        self.assertIn("retention-days: 14", source)
+
+    def test_iso_workflow_validates_image_tag_before_building(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn('if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]', source)
+        self.assertIn("Unknown image variant.", source)
+        self.assertIn("Authenticate to GitHub Container Registry", source)
+
     def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Lint Qt Quick and QML sources", source)
