@@ -249,7 +249,7 @@ class GameLibraryModel(QAbstractListModel):
                 and isinstance(launch, list)
                 and 0 < len(launch) <= MAX_MANUAL_ARGUMENTS
                 and all(
-                    isinstance(part, str) and 0 < len(part) <= 2048 and "\\x00" not in part
+                    isinstance(part, str) and 0 < len(part) <= 2048 and chr(0) not in part
                     for part in launch
                 )
             ):
