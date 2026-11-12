@@ -68,12 +68,9 @@ def _cpu_details() -> tuple[str, str]:
                 model = candidate
                 break
 
-    logical = processor_entries
-    if not logical:
-        online = _read("/sys/devices/system/cpu/online")
-        logical = len(_parse_cpu_list(online)) if online else 0
-    if not logical:
-        logical = os.cpu_count() or 0
+    online = _read("/sys/devices/system/cpu/online")
+    online_ids = _parse_cpu_list(online) if online else set()
+    logical = len(online_ids) or processor_entries or os.cpu_count() or 0
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
 
 def _parse_cpu_list(value: str) -> set[int]:
