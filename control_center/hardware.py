@@ -233,6 +233,12 @@ def _gaming_baseline_assessment(
             message += ". À confirmer : " + " · ".join(unknown)
         return message
     if unknown:
+        unverified_only = {
+            "fréquence CPU de référence non certifiée",
+            "type de support de stockage non vérifié",
+        }
+        if set(unknown).issubset(unverified_only):
+            return "Indicateurs vérifiables au niveau des seuils. Non certifié : " + " · ".join(unknown)
         return "Contrôle Gaming incomplet. À confirmer : " + " · ".join(unknown)
     return (
         "Seuils matériels Gaming observés comme conformes. "
