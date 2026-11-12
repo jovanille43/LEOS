@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from controller_center.profiles import ControllerProfileStore
@@ -43,6 +44,65 @@ class GamepadActionTests(unittest.TestCase):
             self.mapper.feed({"kind": "axis", "name": "ABS_HAT0Y", "value": 1}),
             "down",
         )
+
+    def test_held_dpad_direction_repeats_after_initial_delay(self):
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=10.0):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "button", "name": "BTN_DPAD_RIGHT", "value": 1}
+                ),
+                "right",
+            )
+        self.assertIsNone(self.mapper.repeat_action(now=10.37))
+        self.assertEqual(self.mapper.repeat_action(now=10.38), "right")
+        self.assertIsNone(self.mapper.repeat_action(now=10.49))
+        self.assertEqual(self.mapper.repeat_action(now=10.50), "right")
+
+    def test_releasing_direction_stops_repeat_without_extra_move(self):
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=20.0):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "axis", "name": "ABS_HAT0Y", "value": -1}
+                ),
+                "up",
+            )
+            self.assertIsNone(
+                self.mapper.feed(
+                    {"kind": "axis", "name": "ABS_HAT0Y", "value": 0}
+                )
+            )
+        self.assertIsNone(self.mapper.repeat_action(now=21.0))
+
+    def test_direction_change_restarts_initial_repeat_delay(self):
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=30.0):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "button", "name": "BTN_DPAD_LEFT", "value": 1}
+                ),
+                "left",
+            )
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=30.5):
+            self.assertEqual(
+                self.mapper.feed(
+                    {"kind": "button", "name": "BTN_DPAD_UP", "value": 1}
+                ),
+                "up",
+            )
+        self.assertIsNone(self.mapper.repeat_action(now=30.87))
+        self.assertEqual(self.mapper.repeat_action(now=30.88), "up")
+
+    def test_analog_stick_hold_repeats_and_returns_to_neutral(self):
+        event = {
+            "kind": "axis", "name": "ABS_X", "minimum": -1000,
+            "maximum": 1000, "value": 700,
+        }
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=40.0):
+            self.assertEqual(self.mapper.feed(event), "right")
+        self.assertEqual(self.mapper.repeat_action(now=40.38), "right")
+        event["value"] = 0
+        with patch("gaming.backend.gamepad.time.monotonic", return_value=40.5):
+            self.assertIsNone(self.mapper.feed(event))
+        self.assertIsNone(self.mapper.repeat_action(now=41.0))
 
     def test_nintendo_profile_swaps_confirm_and_back_buttons(self):
         mapper = GamepadActionMapper(profile="nintendo")
