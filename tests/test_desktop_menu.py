@@ -174,6 +174,20 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("if favourites == self._favourites_snapshot and recent == self._recent_snapshot:", source)
         self.assertIn("self._apply_filter()", source)
 
+    def test_keyboard_activation_uses_shared_launch_close_behavior(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        start = qml.index("function activateApplication()")
+        end = qml.index("Keys.onPressed", start)
+        self.assertIn("window.launchApplication(desktopId, name)", qml[start:end])
+
+    def test_menu_preserves_precise_backend_launch_errors(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        start = qml.index("function launchApplication(")
+        end = qml.index("Shortcut {", start)
+        helper = qml[start:end]
+        self.assertNotIn("Impossible de lancer", helper)
+        self.assertIn("function onLaunchFailed(message) { status.text = message }", qml)
+
     def test_menu_closes_after_successful_launch_and_on_escape(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("function launchApplication(desktopId, applicationName)", qml)
