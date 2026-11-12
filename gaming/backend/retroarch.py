@@ -21,6 +21,58 @@ MAX_PLAYLIST_ITEMS = 20_000
 _IGNORED_PLAYLISTS = {"content_favorites", "content_history", "favorites", "history"}
 
 
+def find_retroarch_playlist_directories(
+    home: Path | None = None,
+    xdg_config_home: Path | None = None,
+) -> list[Path]:
+    """Find default and explicitly configured local playlist directories."""
+    home = Path.home() if home is None else Path(home).expanduser()
+    if xdg_config_home is None or not Path(xdg_config_home).expanduser().is_absolute():
+        config_home = home / ".config"
+    else:
+        config_home = Path(xdg_config_home).expanduser()
+
+    config_roots = [
+        config_home / "retroarch",
+        home / ".config" / "retroarch",
+        home / ".var/app/org.libretro.RetroArch/config/retroarch",
+    ]
+    directories: list[Path] = []
+    seen: set[str] = set()
+
+    def add_directory(candidate: Path) -> None:
+        try:
+            if not candidate.is_dir():
+                return
+            resolved = candidate.resolve()
+            key = str(resolved)
+            if key not in seen:
+                seen.add(key)
+                directories.append(resolved)
+        except (OSError, RuntimeError):
+            return
+
+    for root in config_roots:
+        add_directory(root / "playlists")
+        try:
+            config = (root / "retroarch.cfg").read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            continue
+        match = re.search(
+            r'^\\s*playlist_directory\\s*=\\s*"([^"]+)"',
+            config,
+            re.MULTILINE,
+        )
+        if match and match.group(1).casefold() != "default":
+            configured = Path(match.group(1)).expanduser()
+            if configured.is_absolute():
+                add_directory(configured)
+
+    return directories
+
+
 def _local_content_path(raw_path: Any, base_directory: Any = "") -> str:
     """Resolve a local content path, including RetroArch's archive#member form."""
     if not isinstance(raw_path, str):

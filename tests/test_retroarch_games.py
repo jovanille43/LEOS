@@ -5,7 +5,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.retroarch import load_retroarch_games
+from gaming.backend.retroarch import (
+    find_retroarch_playlist_directories,
+    load_retroarch_games,
+)
 from gaming.backend.install_state import installation_status
 
 
@@ -45,6 +48,39 @@ class RetroArchPlaylistTests(unittest.TestCase):
 
         self.assertEqual(load_retroarch_games(playstation)[0]["platform"], "PlayStation")
         self.assertEqual(load_retroarch_games(sega)[0]["platform"], "SEGA")
+
+    def test_discovers_xdg_flatpak_and_configured_playlist_directories(self):
+        home = self.root / "home"
+        home.mkdir()
+        xdg = self.root / "xdg-config"
+        native = home / ".config/retroarch"
+        flatpak = home / ".var/app/org.libretro.RetroArch/config/retroarch"
+        custom = self.root / "custom-playlists"
+        for directory in (
+            xdg / "retroarch/playlists",
+            native / "playlists",
+            flatpak / "playlists",
+            custom,
+        ):
+            directory.mkdir(parents=True)
+
+        (native / "retroarch.cfg").write_text(
+            f'playlist_directory = "{custom}"\\n',
+            encoding="utf-8",
+        )
+        found = find_retroarch_playlist_directories(home, xdg)
+
+        self.assertIn((xdg / "retroarch/playlists").resolve(), found)
+        self.assertIn((native / "playlists").resolve(), found)
+        self.assertIn((flatpak / "playlists").resolve(), found)
+        self.assertIn(custom.resolve(), found)
+
+    def test_relative_xdg_config_home_falls_back_to_home_config(self):
+        home = self.root / "home"
+        default = home / ".config/retroarch/playlists"
+        default.mkdir(parents=True)
+        found = find_retroarch_playlist_directories(home, Path("relative-config"))
+        self.assertIn(default.resolve(), found)
 
     def test_imports_nintendo_playlist_and_builds_native_core_command(self):
         self.write_playlist([{

@@ -25,7 +25,10 @@ from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
-from .retroarch import RETROARCH_FLATPAK_ID, load_retroarch_games
+from .retroarch import (
+    RETROARCH_FLATPAK_ID, find_retroarch_playlist_directories,
+    load_retroarch_games,
+)
 from .mangohud import build_launch_command
 from .install_state import installation_status
 
@@ -219,47 +222,7 @@ class GameLibraryModel(QAbstractListModel):
         return candidates
 
     def _retroarch_playlist_directories(self) -> list[Path]:
-        """Find only known RetroArch playlist locations, including user overrides."""
-        home = Path.home()
-        config_home = Path(os.environ.get("XDG_CONFIG_HOME", str(home / ".config"))).expanduser()
-        config_roots = [
-            config_home / "retroarch",
-            home / ".config" / "retroarch",
-            home / ".var/app/org.libretro.RetroArch/config/retroarch",
-        ]
-        directories: list[Path] = []
-        seen: set[str] = set()
-
-        def add_directory(candidate: Path) -> None:
-            try:
-                if not candidate.is_dir():
-                    return
-                resolved = candidate.resolve()
-                key = str(resolved)
-                if key not in seen:
-                    seen.add(key)
-                    directories.append(resolved)
-            except (OSError, RuntimeError):
-                return
-
-        for root in config_roots:
-            add_directory(root / "playlists")
-            config_file = root / "retroarch.cfg"
-            try:
-                config = config_file.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                continue
-            match = re.search(
-                r'^\s*playlist_directory\s*=\s*"([^"]+)"',
-                config,
-                re.MULTILINE,
-            )
-            if match and match.group(1).casefold() != "default":
-                configured = Path(match.group(1)).expanduser()
-                if configured.is_absolute():
-                    add_directory(configured)
-
-        return directories
+        return find_retroarch_playlist_directories()
 
     def _load_manual_games(self) -> list[dict[str, Any]]:
         try:
