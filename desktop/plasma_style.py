@@ -20,6 +20,25 @@ from leos_core.paths import (
 )
 
 SCHEMA_VERSION = 1
+MAX_PLASMA_STATE_BYTES = 64 * 1024
+MAX_PLASMA_CONFIG_BYTES = 1024 * 1024
+MAX_PLASMA_METADATA_BYTES = 256 * 1024
+
+
+
+def _read_bounded_text(path: Path, max_bytes: int) -> str | None:
+    if type(max_bytes) is not int or max_bytes < 0:
+        return None
+    if path.is_symlink() or path.parent.is_symlink():
+        return None
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(max_bytes + 1)
+        if len(raw) > max_bytes:
+            return None
+        return raw.decode("utf-8")
+    except (OSError, UnicodeError):
+        return None
 
 
 class PlasmaStyleManager:
@@ -59,9 +78,12 @@ class PlasmaStyleManager:
             metadata = directory / "metadata.json"
             if directory.is_symlink() or metadata.is_symlink() or not metadata.is_file():
                 continue
+            metadata_text = _read_bounded_text(metadata, MAX_PLASMA_METADATA_BYTES)
+            if metadata_text is None:
+                continue
             try:
-                payload = json.loads(metadata.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
+                payload = json.loads(metadata_text)
+            except json.JSONDecodeError:
                 continue
             plugin = payload.get("KPlugin", {}) if isinstance(payload, dict) else {}
             if isinstance(plugin, dict) and plugin.get("Id") == STYLE_ID:
@@ -73,10 +95,13 @@ class PlasmaStyleManager:
             return None
         parser = configparser.ConfigParser(interpolation=None, strict=False)
         parser.optionxform = str
+        content = _read_bounded_text(self.config_file, MAX_PLASMA_CONFIG_BYTES)
+        if content is None:
+            return None
         try:
-            parser.read(self.config_file, encoding="utf-8")
+            parser.read_string(content)
             value = parser.get("Theme", "name", fallback="").strip()
-        except (OSError, configparser.Error):
+        except configparser.Error:
             return None
         if not value or len(value) > 80 or any(ch in value for ch in ("/", chr(92), chr(10), chr(13))):
             return None
@@ -85,9 +110,12 @@ class PlasmaStyleManager:
     def _read_state(self) -> dict[str, Any]:
         if self.state_file.is_symlink() or not self.state_file.is_file():
             return {}
+        content = _read_bounded_text(self.state_file, MAX_PLASMA_STATE_BYTES)
+        if content is None:
+            return {}
         try:
-            state = json.loads(self.state_file.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            state = json.loads(content)
+        except json.JSONDecodeError:
             return {}
         if (
             not isinstance(state, dict)
@@ -115,17 +143,20 @@ class PlasmaStyleManager:
             raise ValueError("Symbolic-link Plasma style state files are not accepted")
         if self.state_file.exists() and not self._read_state():
             raise ValueError("Existing Plasma style state is invalid; it was left untouched")
-        self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        self.state_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.state_file.parent.is_symlink():
             raise ValueError("Symbolic-link Plasma style state directories are not accepted")
-        payload = json.dumps(state, indent=2, ensure_ascii=False) + chr(10)
+        payload = (json.dumps(state, indent=2, ensure_ascii=False) + chr(10)).encode("utf-8")
+        if len(payload) > MAX_PLASMA_STATE_BYTES:
+            raise ValueError("Plasma style state exceeds its storage limit")
+        os.chmod(self.state_file.parent, 0o700)
         fd, temporary = tempfile.mkstemp(prefix="plasma-style.", suffix=".tmp", dir=self.state_file.parent)
         try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "wb") as stream:
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.chmod(temporary, 0o600)
             os.replace(temporary, self.state_file)
         finally:
             try:
