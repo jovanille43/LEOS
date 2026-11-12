@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 _PCI_ADDRESS = re.compile(
-    r"^(?:0x)?([0-9a-f]{4,8}):([0-9a-f]{2}):([0-9a-f]{2})\\.([0-7])$",
+    r"^(?:0x)?([0-9a-f]{4,8}):([0-9a-f]{2}):([0-9a-f]{2})\.([0-7])$",
     re.IGNORECASE,
 )
 
@@ -116,7 +116,7 @@ def read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
         cards = sorted(
             card
             for card in (sys_root / "class" / "drm").glob("card[0-9]*")
-            if re.fullmatch(r"card\\d+", card.name)
+            if re.fullmatch(r"card\d+", card.name)
         )
     except OSError:
         cards = []
