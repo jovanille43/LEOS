@@ -8,7 +8,7 @@ from pathlib import Path
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
 from desktop.desktop_entries import (
-    desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
+    desktop_application_dirs, desktop_entry_is_visible, desktop_file_id, desktop_entry_paths,
     filter_desktop_applications, localized_desktop_value,
 )
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
@@ -78,7 +78,7 @@ class ApplicationCatalog(QAbstractListModel):
         return item.get(key, "") if key else None
 
     @staticmethod
-    def _read_entry(path: Path) -> dict[str, str] | None:
+    def _read_entry(path: Path, desktop_id: str | None = None) -> dict[str, str] | None:
         values: dict[str, str] = {}
         in_entry = False
         try:
@@ -127,7 +127,7 @@ class ApplicationCatalog(QAbstractListModel):
         locale_name = QLocale.system().name()
         return {
             "name": localized_desktop_value(values, "Name", locale_name) or path.stem,
-            "desktopId": path.name,
+            "desktopId": desktop_id or path.name,
             "icon": values.get("Icon", "application-x-executable"),
             "category": values.get("Categories", "Other;").split(";")[0] or "Other",
             "description": localized_desktop_value(values, "Comment", locale_name),
