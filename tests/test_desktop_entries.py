@@ -8,11 +8,39 @@ from unittest.mock import patch
 
 from desktop.desktop_entries import (
     desktop_application_dirs, desktop_entry_is_visible, desktop_file_id, desktop_entry_paths,
-    filter_desktop_applications, localized_desktop_value,
+    filter_desktop_applications, localized_desktop_value, read_desktop_entry_text,
 )
 
 
 class DesktopEntriesTests(unittest.TestCase):
+    def test_desktop_entry_reader_bounds_regular_file_reads(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "example.desktop"
+            path.write_bytes(b"12345")
+            self.assertIsNone(read_desktop_entry_text(path, max_bytes=4))
+            path.write_bytes(b"[Desktop Entry]")
+            self.assertEqual(read_desktop_entry_text(path), "[Desktop Entry]")
+
+    def test_desktop_entry_reader_rejects_symlinks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.desktop"
+            target.write_text("[Desktop Entry]", encoding="utf-8")
+            link = root / "linked.desktop"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links are unavailable")
+            self.assertIsNone(read_desktop_entry_text(link))
+
+    def test_desktop_entry_reader_rejects_non_regular_files_without_blocking(self):
+        if not hasattr(os, "mkfifo"):
+            self.skipTest("Named pipes are unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            fifo = Path(directory) / "entry.desktop"
+            os.mkfifo(fifo)
+            self.assertIsNone(read_desktop_entry_text(fifo))
+
     def test_localized_value_prefers_country_then_language(self):
         values = {
             "Name": "Generic name",
