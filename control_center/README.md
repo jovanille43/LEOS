@@ -28,7 +28,7 @@ Aucune commande d'installation, de déploiement ou de redémarrage n'est appelé
 
 La page **Mises à jour** est accessible dans la navigation latérale. La vérification utilise exclusivement la commande en lecture seule `uupd update-check`, via `pkexec` pour les sessions non privilégiées. Elle n'installe pas de mise à jour. Lorsque l'outil officiel `bazzite-updater` est présent, le bouton dédié l'ouvre afin que l'utilisateur consulte les changements et décide lui-même de l'installation.
 
-Les résultats sont affichés dans la page et les événements importants sont enregistrés dans l'historique de notifications LEOS. La disponibilité de l'outil est détectée à l'exécution ; aucun exécutable factice n'est fourni.
+Les résultats sont affichés dans la page et les événements importants sont enregistrés dans l'historique de notifications LEOS. La disponibilité de l'outil est détectée à l'exécution ; aucun exécutable factice n'est fourni. La vérification réseau est limitée à deux minutes ; l'observation locale d'un déploiement en attente est limitée à vingt secondes. En cas de dépassement, LEOS interrompt uniquement la commande de lecture concernée, affiche un avertissement et permet de réessayer. Ces délais ne coupent jamais une installation système, qui reste du ressort de Bazzite.
 
 **Validation restante :** exécuter la vérification dans une image Bazzite réelle et confirmer la disponibilité des commandes sur les variantes d'image ciblées. Le projet ne modifie pas les timers ni les politiques de mise à jour Bazzite.
 
