@@ -137,6 +137,14 @@ class RecentApplicationsTests(unittest.TestCase):
             with self.subTest(limit=limit), self.assertRaises(ValueError):
                 RecentApplications(Path("recent.json"), limit=limit)
 
+    def test_deeply_nested_json_is_ignored_without_crashing(self):
+        from desktop.recent_applications import MAX_RECENT_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "recent.json"
+            path.write_text("[" * 2000 + "]" * 2000, encoding="utf-8")
+            self.assertEqual(RecentApplications(path).items(), [])
+
     def test_history_reader_rejects_symlinked_parent(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
