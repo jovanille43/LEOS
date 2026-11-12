@@ -110,7 +110,10 @@ def _build_launch(
 ) -> list[str]:
     archive_path = content_path.partition("#")[0]
     content_file = Path(archive_path)
-    core = _core_for_launch(core_path, flatpak=not bool(native_executable))
+    core = _core_for_launch(
+        core_path,
+        flatpak=flatpak_available and not bool(native_executable),
+    )
     if native_executable:
         command = [native_executable]
         if core:

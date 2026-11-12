@@ -115,6 +115,17 @@ class RetroArchPlaylistTests(unittest.TestCase):
         ])
         self.assertEqual(game["launch"][-1], str(self.rom))
 
+    def test_flatpak_runtime_core_is_not_passed_to_missing_native_launcher(self):
+        self.write_playlist([{
+            "path": str(self.rom),
+            "label": "Flatpak Only Core",
+            "core_path": "/app/lib/libretro/fake_libretro.so",
+        }])
+        game = load_retroarch_games(
+            self.playlist, native_executable=None, flatpak_available=False
+        )[0]
+        self.assertEqual(game["launch"], ["retroarch", str(self.rom)])
+
     def test_flatpak_custom_core_gets_its_own_read_only_permission(self):
         self.write_playlist([{
             "path": str(self.rom),

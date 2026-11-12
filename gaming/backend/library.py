@@ -101,7 +101,8 @@ class GameLibraryModel(QAbstractListModel):
             ("LUTRIS", bool(shutil.which("lutris"))
              or self._flatpak_app_available("net.lutris.Lutris")),
             ("RETROARCH", bool(shutil.which("retroarch"))
-             or self._flatpak_app_available(RETROARCH_FLATPAK_ID)),
+             or (bool(shutil.which("flatpak"))
+                 and self._flatpak_app_available(RETROARCH_FLATPAK_ID))),
         ]
         return [
             f"{name} · {'DISPONIBLE' if available else 'NON DÉTECTÉ'}"
