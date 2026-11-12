@@ -80,7 +80,24 @@ for app_id in "${apps[@]}"; do
 done
 
 if (( ${#missing_apps[@]} > 0 )); then
-    flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    remote_output="$(flatpak remotes --user --columns=name,url)"
+    flathub_url="$(printf '%s\\n' "$remote_output" | awk 'tolower($1) == "flathub" { print $2; exit }')"
+
+    if [[ -z "$flathub_url" ]]; then
+        flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+        remote_output="$(flatpak remotes --user --columns=name,url)"
+        flathub_url="$(printf '%s\\n' "$remote_output" | awk 'tolower($1) == "flathub" { print $2; exit }')"
+    fi
+
+    case "$flathub_url" in
+        https://dl.flathub.org/repo/|https://flathub.org/repo/|\\
+        https://dl.flathub.org/repo/flathub.flatpakrepo|https://flathub.org/repo/flathub.flatpakrepo)
+            ;;
+        *)
+            echo "LEOS: le dépôt nommé Flathub est absent ou son URL n'est pas officielle ; aucune installation lancée." >&2
+            exit 1
+            ;;
+    esac
 
     failed=0
     for app_id in "${missing_apps[@]}"; do
