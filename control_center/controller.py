@@ -134,7 +134,7 @@ class ControlCenterController(QObject):
             key: "Analyse en cours…"
             for key in (
                 "cpu", "cpuThreads", "cpuCores", "memory", "memoryTotal", "architecture",
-                "firmware", "gamingBaseline", "storage", "gpu", "vulkan",
+                "firmware", "gamingBaseline", "storage", "gpu", "displayCount", "displays", "vulkan",
                 "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
                 "audioServer", "audioOutput", "audioInputs", "controllers",
                 "battery", "usbDevices", "network",
