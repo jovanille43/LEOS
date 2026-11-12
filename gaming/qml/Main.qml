@@ -1305,7 +1305,12 @@ ApplicationWindow {
             width: parent.width
             spacing: 12
             Label { text: "Nom du jeu"; color: "white" }
-            TextField { id: gameName; Layout.fillWidth: true; placeholderText: "Ex. : Mon jeu" }
+            TextField {
+                id: gameName
+                Layout.fillWidth: true
+                placeholderText: "Ex. : Mon jeu"
+                maximumLength: 256
+            }
             Label { text: "Plateforme"; color: "white" }
             ComboBox {
                 id: gamePlatform
@@ -1317,6 +1322,7 @@ ApplicationWindow {
                 id: launchCommand
                 Layout.fillWidth: true
                 placeholderText: "Ex. : steam steam://rungameid/123456"
+                maximumLength: 8192
             }
             Label {
                 text: "La commande est enregistrée dans ton profil et exécutée sans passer par un shell."
