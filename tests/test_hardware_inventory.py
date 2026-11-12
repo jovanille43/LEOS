@@ -379,6 +379,17 @@ class HardwareInventoryTests(unittest.TestCase):
             ),
         )
 
+    def test_kscreen_parser_preserves_integer_refresh_rates(self):
+        output = (
+            "Output: 1 DP-1 enabled connected priority 1 DisplayPort\n"
+            "    Modes: 0: 3840x2160@120*\n"
+            "    Geometry: 0,0 3840x2160\n"
+        )
+        self.assertEqual(
+            hardware._parse_kscreen_displays(output),
+            ("1", "DP-1 · actif · 3840x2160 à 120 Hz · géométrie 0,0 3840x2160"),
+        )
+
     def test_kscreen_parser_preserves_large_integer_display_scale(self):
         output = (
             "Output: 1 DP-1 enabled connected priority 1 DisplayPort\n"
