@@ -174,6 +174,22 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("if favourites == self._favourites_snapshot and recent == self._recent_snapshot:", source)
         self.assertIn("self._apply_filter()", source)
 
+    def test_menu_closes_after_successful_launch_and_on_escape(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("function launchApplication(desktopId, applicationName)", qml)
+        self.assertIn("if (!applicationCatalog.launch(desktopId))", qml)
+        self.assertIn("window.close()", qml)
+        self.assertIn("Keys.onPressed: function(event)", qml)
+        self.assertIn("event.key === Qt.Key_Escape", qml)
+        self.assertIn("Component.onCompleted: search.forceActiveFocus()", qml)
+
+    def test_application_cards_and_quick_actions_share_the_launch_helper(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('window.launchApplication("leos-mode-selector.desktop"', qml)
+        self.assertIn('window.launchApplication("leos-control-center.desktop"', qml)
+        self.assertIn('window.launchApplication("leos-notifications.desktop"', qml)
+        self.assertIn("window.launchApplication(desktopId, name)", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
