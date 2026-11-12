@@ -182,10 +182,9 @@ class ControllerCenterController(QObject):
             self.changed.emit()
         if not events:
             return
-        for event in events:
-            description = self.input_state.consume(event)
-            if description:
-                self.last_event = description
+        description = self.input_state.consume_all(events)
+        if description:
+            self.last_event = description
         self.buttons_text = self.input_state.buttons_text
         if self.backend.axes:
             self.axes_text = " · ".join(
