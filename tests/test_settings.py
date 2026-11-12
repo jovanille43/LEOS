@@ -144,6 +144,20 @@ class SettingsStoreTests(unittest.TestCase):
                 SettingsStore(path).set("theme", "cyan")
             self.assertEqual(path.read_text(encoding="utf-8"), invalid)
 
+    def test_invalid_utf8_settings_are_preserved_during_read_and_update(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            invalid = b"\\xff\\xfe\\x80"
+            path.write_bytes(invalid)
+
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("last_mode"), "desktop")
+            self.assertEqual(path.read_bytes(), invalid)
+
+            with self.assertRaises(ValueError):
+                settings.set("theme", "cyan")
+            self.assertEqual(path.read_bytes(), invalid)
+
     def test_symbolic_link_settings_file_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
