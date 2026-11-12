@@ -86,3 +86,7 @@ La page **Réseau** présente l'état des interfaces, l'interface portant la rou
 Le relevé s'exécute hors du thread graphique, sans générer de trafic de test et sans modifier NetworkManager, les routes, le DNS ou les interfaces. Les adresses affichées sont celles publiées par `ip` pour chaque interface. Les interfaces absentes, les compteurs inaccessibles et les informations Wi-Fi non exposées sont signalés comme indisponibles plutôt que supposés.
 
 **Limites connues :** la passerelle est actuellement lue dans la table de routage IPv4 du noyau ; les routes IPv6, les VPN détaillés, les statistiques par application et les tests de débit ne sont pas encore intégrés. Le débit initial reste « — » jusqu'au deuxième relevé. La validation matérielle doit être réalisée sur une session Bazzite avec Ethernet, Wi-Fi et VPN.
+
+## Apparence et fonds d'écran
+
+La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. Le bouton de sélection ouvre le module natif KDE `kcm_wallpaper` ; l'utilisateur choisit lui-même le fichier dans `/usr/share/leos/branding/wallpapers/` et confirme dans KDE. Aucun fond d'écran n'est appliqué automatiquement par le Centre de contrôle.
