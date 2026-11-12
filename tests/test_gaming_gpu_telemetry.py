@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from gaming.backend.gpu_metrics import read_gpu_metrics
@@ -79,6 +80,38 @@ class GpuTelemetryTests(unittest.TestCase):
             (sensor / "temp2_input").write_text("85000")
             metrics = read_gpu_metrics(root)
         self.assertEqual(metrics["temperature"], 62.5)
+
+    @patch("gaming.backend.gpu_metrics.shutil.which", return_value="/usr/bin/nvidia-smi")
+    @patch("gaming.backend.gpu_metrics.subprocess.run")
+    def test_uses_nvidia_smi_when_no_drm_gpu_is_exposed(self, run, _which):
+        run.return_value.returncode = 0
+        run.return_value.stdout = "NVIDIA GeForce RTX 4070, 63, 68, 4096, 12288\\n"
+        with tempfile.TemporaryDirectory() as temporary:
+            metrics = read_gpu_metrics(Path(temporary))
+        self.assertEqual(metrics["name"], "NVIDIA GeForce RTX 4070")
+        self.assertEqual(metrics["usage"], 63.0)
+        self.assertEqual(metrics["temperature"], 68.0)
+        self.assertEqual(metrics["memory_used"], 4096 * 1024 * 1024)
+        self.assertEqual(metrics["memory_total"], 12288 * 1024 * 1024)
+        self.assertEqual(run.call_args.kwargs["timeout"], 2.0)
+
+    @patch("gaming.backend.gpu_metrics.shutil.which", return_value=None)
+    def test_nvidia_fallback_is_optional(self, _which):
+        with tempfile.TemporaryDirectory() as temporary:
+            metrics = read_gpu_metrics(Path(temporary))
+        self.assertEqual(metrics["name"], "GPU non détecté")
+
+    @patch("gaming.backend.gpu_metrics.shutil.which", return_value="/usr/bin/nvidia-smi")
+    @patch("gaming.backend.gpu_metrics.subprocess.run")
+    def test_nvidia_fallback_ignores_unavailable_and_out_of_range_values(self, run, _which):
+        run.return_value.returncode = 0
+        run.return_value.stdout = "NVIDIA GPU, N/A, 190, N/A, 8192\\n"
+        with tempfile.TemporaryDirectory() as temporary:
+            metrics = read_gpu_metrics(Path(temporary))
+        self.assertEqual(metrics["usage"], -1.0)
+        self.assertEqual(metrics["temperature"], -1.0)
+        self.assertEqual(metrics["memory_used"], -1)
+        self.assertEqual(metrics["memory_total"], 8192 * 1024 * 1024)
 
     def test_invalid_usage_is_not_exposed(self):
         with tempfile.TemporaryDirectory() as temporary:
