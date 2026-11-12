@@ -22,6 +22,50 @@ class LibraryStateTests(unittest.TestCase):
             {"id": "manual:sega", "title": "Sonic", "platform": "SEGA"},
         ]
 
+    def test_bounded_json_writer_sets_private_permissions(self):
+        import os
+        from gaming.backend.library_state import write_bounded_json
+
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory) / "state"
+            parent.mkdir(mode=0o755)
+            parent.chmod(0o755)
+            path = parent / "favorites.json"
+            write_bounded_json(path, ["steam:1", "heroic:two"])
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
+            self.assertEqual(read_bounded_json(path), ["steam:1", "heroic:two"])
+
+    def test_bounded_json_writer_rejects_oversize_without_replacing_file(self):
+        from gaming.backend.library_state import write_bounded_json
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            write_bounded_json(path, {"keep": True})
+            original = path.read_bytes()
+            with self.assertRaisesRegex(ValueError, "storage limit"):
+                write_bounded_json(path, {"payload": "x" * 100}, max_bytes=16)
+            self.assertEqual(path.read_bytes(), original)
+
+    def test_bounded_json_writer_rejects_symbolic_links(self):
+        from gaming.backend.library_state import write_bounded_json
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            target.write_text('{"keep":true}', encoding="utf-8")
+            link = root / "state.json"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            with self.assertRaises(OSError):
+                write_bounded_json(link, {"replace": True})
+            self.assertEqual(target.read_text(encoding="utf-8"), '{"keep":true}')
+            self.assertTrue(link.is_symlink())
+
     def test_bounded_text_reader_rejects_oversized_metadata(self):
         from gaming.backend.library_state import read_bounded_text
 
