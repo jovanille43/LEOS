@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Callable, Sequence
 
 
+MAX_HARDWARE_TEXT_BYTES = 4 * 1024 * 1024
+
+
 def _run(command: Sequence[str], timeout: float = 1.5) -> str:
     """Run a bounded, read-only system query; missing tools never break the UI."""
     try:
@@ -24,9 +27,13 @@ def _run(command: Sequence[str], timeout: float = 1.5) -> str:
 
 def _read(path: str | Path) -> str:
     try:
-        return Path(path).read_text(encoding="utf-8", errors="replace")
+        with Path(path).open("rb") as stream:
+            raw = stream.read(MAX_HARDWARE_TEXT_BYTES + 1)
     except OSError:
         return ""
+    if len(raw) > MAX_HARDWARE_TEXT_BYTES:
+        return ""
+    return raw.decode("utf-8", errors="replace")
 
 
 def _cpu_details() -> tuple[str, str]:
