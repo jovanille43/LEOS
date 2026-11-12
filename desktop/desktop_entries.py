@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from itertools import islice
 from pathlib import Path
 
 from leos_core.paths import data_home as xdg_data_home
@@ -10,6 +11,7 @@ from leos_core.text import normalize_search_text
 
 
 MAX_DESKTOP_ENTRY_BYTES = 256 * 1024
+MAX_DESKTOP_ENTRIES_PER_DIRECTORY = 10_000
 
 
 def read_desktop_entry_text(path: Path, max_bytes: int = MAX_DESKTOP_ENTRY_BYTES) -> str | None:
@@ -67,7 +69,9 @@ def desktop_entry_paths(
         try:
             if not directory.is_dir():
                 continue
-            paths = sorted(directory.rglob("*.desktop"))
+            paths = sorted(
+                islice(directory.rglob("*.desktop"), MAX_DESKTOP_ENTRIES_PER_DIRECTORY)
+            )
         except OSError:
             continue
         for path in paths:
