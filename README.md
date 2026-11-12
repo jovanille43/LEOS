@@ -53,6 +53,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 - **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
 - **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
 - **Premier démarrage** : un guide non bloquant explique Desktop et Gaming dans le sélecteur de mode. Après le choix de Desktop, LEOS peut proposer Brave, LibreOffice et VLC en Flatpak utilisateur ; aucune application n'est installée sans confirmation.
+  Détails : [guide du premier démarrage](docs/first-run.md).
 - **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
 Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
