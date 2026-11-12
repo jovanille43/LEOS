@@ -91,7 +91,7 @@ class DesktopLayoutStore:
             if len(raw) > MAX_LAYOUT_FILE_BYTES:
                 return
             loaded = json.loads(raw.decode("utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
             return
         if validate_layout(loaded):
             self._layout = loaded
