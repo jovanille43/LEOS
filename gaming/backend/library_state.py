@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 import json
+import shlex
 from pathlib import Path
 import re
 import unicodedata
@@ -12,6 +13,12 @@ from leos_core.text import normalize_search_text
 
 
 MAX_LIBRARY_STATE_FILE_BYTES = 2 * 1024 * 1024
+MAX_MANUAL_GAMES = 5000
+MAX_MANUAL_TITLE_LENGTH = 256
+MAX_MANUAL_PLATFORM_LENGTH = 64
+MAX_MANUAL_COMMAND_LENGTH = 8192
+MAX_MANUAL_ARGUMENTS = 32
+MAX_MANUAL_ARGUMENT_LENGTH = 2048
 
 
 MAX_LIBRARY_TEXT_FILE_BYTES = 1024 * 1024
@@ -108,6 +115,34 @@ def normalize_display_title(title: str) -> str:
     if not isinstance(title, str):
         return ""
     return re.sub(r"\s+", " ", title).strip()
+
+
+def validate_manual_game_input(
+    title: object, platform: object, command: object
+) -> tuple[str, str, list[str]] | None:
+    """Validate manual game fields before they reach persistent storage or QProcess."""
+    if not all(isinstance(value, str) for value in (title, platform, command)):
+        return None
+    clean_title = normalize_display_title(title)
+    clean_platform = normalize_display_title(platform) or "PC"
+    clean_command = command.strip()
+    if (
+        not clean_title or len(clean_title) > MAX_MANUAL_TITLE_LENGTH
+        or len(clean_platform) > MAX_MANUAL_PLATFORM_LENGTH
+        or not clean_command or len(clean_command) > MAX_MANUAL_COMMAND_LENGTH
+        or "\x00" in clean_command
+    ):
+        return None
+    try:
+        launch = shlex.split(clean_command, posix=True)
+    except ValueError:
+        return None
+    if (
+        not launch or len(launch) > MAX_MANUAL_ARGUMENTS
+        or any(not part or len(part) > MAX_MANUAL_ARGUMENT_LENGTH or "\x00" in part for part in launch)
+    ):
+        return None
+    return clean_title, clean_platform, launch
 
 
 def title_identity_key(title: str) -> str:
