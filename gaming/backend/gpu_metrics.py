@@ -38,7 +38,9 @@ def _pci_address_for_device(device: Path) -> str | None:
     return None
 
 
-def _parse_nvidia_value(value: str, *, minimum: float = 0, maximum: float | None = None) -> float:
+def _parse_nvidia_value(
+    value: str, *, minimum: float = 0, maximum: float | None = None
+) -> float:
     try:
         parsed = float(value.strip())
     except (TypeError, ValueError):
@@ -102,7 +104,9 @@ def _nvidia_metrics_score(metrics: dict[str, object]) -> tuple[int, int, int, in
     )
 
 
-def _best_nvidia_metrics(devices: dict[str, dict[str, object]]) -> dict[str, object] | None:
+def _best_nvidia_metrics(
+    devices: dict[str, dict[str, object]],
+) -> dict[str, object] | None:
     """Choose a deterministic fallback only when no DRM GPU can be matched."""
     if not devices:
         return None
