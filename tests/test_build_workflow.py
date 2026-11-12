@@ -91,7 +91,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("gaming-logo.jpeg", manifest)
         self.assertIn("animations/desktop-intro.mov", manifest)
         self.assertIn("animations/gaming-intro.mp4", manifest)
-        self.assertIn("pistes audio aac", manifest.lower())
+        self.assertIn("pistes audio des vidéos", manifest.lower())
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
@@ -102,7 +102,7 @@ class BuildWorkflowTests(unittest.TestCase):
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
         self.assertIn("gaming-roar-reference.mp4", manifest)
-        self.assertIn("Référence secondaire uniquement", manifest)
+        self.assertIn("non jouée automatiquement", manifest)
 
     def test_branding_readme_does_not_require_nonexistent_separate_audio_files(self):
         readme = (ROOT / "branding/README.md").read_text(encoding="utf-8")
