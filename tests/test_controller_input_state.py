@@ -61,6 +61,13 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertIn('text: "BOUTONS MAINTENUS"', qml)
         self.assertIn("self.buttons_text = self.input_state.buttons_text", controller)
 
+    def test_controller_poll_processes_all_queued_events(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("for event in events:", controller)
+        self.assertNotIn("for event in events[-12:]", controller)
     def test_disconnect_clears_held_buttons(self):
         self.state.consume({"kind": "button", "name": "BTN_SOUTH", "value": 1})
         self.state.clear()
