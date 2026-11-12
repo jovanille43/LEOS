@@ -338,22 +338,54 @@ def _gaming_baseline_assessment(
         "Cela ne remplace pas un essai réel des pilotes, du Wi-Fi, de l'audio et des jeux."
     )
 
+def _parse_lspci_gpu_devices(output: str) -> dict[str, str]:
+    """Map PCI addresses to descriptive GPU names from lspci output."""
+    devices: dict[str, str] = {}
+    pattern = re.compile(
+        r"^([0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7])\\s+"
+        r"(?:VGA compatible controller|3D controller|Display controller)"
+        r"(?:\\s+\\[[^]]+\\])?:\\s*(.+)$",
+        re.IGNORECASE,
+    )
+    for line in output.splitlines():
+        match = pattern.match(line.strip())
+        if not match:
+            continue
+        description = re.sub(
+            r"\\s+\\[[0-9a-f]{4}:[0-9a-f]{4}\\](?:\\s+\\(rev [^)]+\\))?$",
+            "",
+            match.group(2).strip(),
+            flags=re.IGNORECASE,
+        )
+        if description:
+            devices[match.group(1).lower()] = description
+    return devices
+
+
 def _gpu_details() -> str:
     found: list[str] = []
     vendor_names = {"0x10de": "NVIDIA", "0x1002": "AMD", "0x8086": "Intel"}
+    pci_output = _run(["lspci", "-D", "-nn"], timeout=2.0)
+    pci_names = _parse_lspci_gpu_devices(pci_output)
     try:
         devices = sorted(
             device
             for device in Path("/sys/class/drm").glob("card*/device")
-            if re.fullmatch(r"card\d+", device.parent.name)
+            if re.fullmatch(r"card\\d+", device.parent.name)
         )
     except OSError:
         devices = []
+
     for device in devices:
         vendor = _read(device / "vendor").strip().lower()
         if not vendor:
             continue
-        name = vendor_names.get(vendor, f"GPU {vendor}")
+        vendor_name = vendor_names.get(vendor, f"GPU {vendor}")
+        try:
+            pci_address = device.resolve(strict=True).name.lower()
+        except OSError:
+            pci_address = ""
+        name = pci_names.get(pci_address, vendor_name)
         driver_link = device / "driver"
         try:
             driver = driver_link.resolve(strict=True).name
@@ -362,12 +394,20 @@ def _gpu_details() -> str:
         label = f"{name} ({driver})" if driver else name
         if label not in found:
             found.append(label)
+
     if found:
         return " · ".join(found)
+    if pci_names:
+        return " · ".join(pci_names.values())
     lspci = _run(["lspci", "-nn"], timeout=2.0)
-    lines = [line.split(": ", 1)[-1] for line in lspci.splitlines() if "VGA compatible controller" in line or "3D controller" in line or "Display controller" in line]
+    lines = [
+        line.split(": ", 1)[-1]
+        for line in lspci.splitlines()
+        if "VGA compatible controller" in line
+        or "3D controller" in line
+        or "Display controller" in line
+    ]
     return " · ".join(lines) if lines else "Non détecté"
-
 
 def _bluetooth_details() -> tuple[str, str]:
     service = _run(["systemctl", "show", "-p", "ActiveState", "--value", "bluetooth"])
