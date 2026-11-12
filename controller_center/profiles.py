@@ -19,6 +19,7 @@ MAX_CONTROLLER_PROFILES = 128
 MAX_AXIS_CENTERS = 64
 MAX_AXIS_NAME_LENGTH = 48
 from leos_core.paths import config_home as xdg_config_home
+from leos_core.json_utils import json_nesting_within_limit
 
 
 DEFAULT_PROFILE = {
@@ -107,7 +108,10 @@ class ControllerProfileStore:
                 raw = stream.read(MAX_PROFILE_FILE_BYTES + 1)
             if len(raw) > MAX_PROFILE_FILE_BYTES:
                 raise ValueError("Controller profile file is too large")
-            payload = json.loads(raw.decode("utf-8"))
+            text = raw.decode("utf-8")
+            if not json_nesting_within_limit(text):
+                raise ValueError("Controller profile JSON nesting is excessive or malformed")
+            payload = json.loads(text)
         except FileNotFoundError:
             return {"version": 1, "devices": {}}
         except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
