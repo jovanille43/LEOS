@@ -27,6 +27,10 @@ from control_center.system_updates import (
 )
 
 
+SYSTEM_UPDATE_CHECK_TIMEOUT_MS = 120_000
+DEPLOYMENT_STATUS_TIMEOUT_MS = 20_000
+
+
 class _HardwareScanSignals(QObject):
     completed = Signal(dict)
 
@@ -161,13 +165,23 @@ class ControlCenterController(QObject):
         QTimer.singleShot(750, self.scanCleanupPreview)
         self._system_update_status = "Aucune vérification lancée."
         self._system_update_check_running = False
+        self._system_update_timed_out = False
         self._system_update_process = QProcess(self)
         self._system_update_process.finished.connect(self._on_system_update_check_finished)
         self._system_update_process.errorOccurred.connect(self._on_system_update_check_error)
+        self._system_update_timeout = QTimer(self)
+        self._system_update_timeout.setSingleShot(True)
+        self._system_update_timeout.setInterval(SYSTEM_UPDATE_CHECK_TIMEOUT_MS)
+        self._system_update_timeout.timeout.connect(self._on_system_update_check_timeout)
         self._deployment_process = QProcess(self)
         self._deployment_process.finished.connect(self._on_deployment_status_finished)
         self._deployment_process.errorOccurred.connect(self._on_deployment_status_error)
         self._deployment_check_running = False
+        self._deployment_timed_out = False
+        self._deployment_timeout = QTimer(self)
+        self._deployment_timeout.setSingleShot(True)
+        self._deployment_timeout.setInterval(DEPLOYMENT_STATUS_TIMEOUT_MS)
+        self._deployment_timeout.timeout.connect(self._on_deployment_status_timeout)
         self._deployment_timer = QTimer(self)
         self._deployment_timer.setInterval(10 * 60 * 1000)
         self._deployment_timer.timeout.connect(self.refreshPendingSystemUpdate)
@@ -320,10 +334,22 @@ class ControlCenterController(QObject):
         self._deployment_process.setProgram(command[0])
         self._deployment_process.setArguments(command[1:])
         self._deployment_check_running = True
+        self._deployment_timed_out = False
+        self._deployment_timeout.start()
         self._deployment_process.start()
 
+    def _on_deployment_status_timeout(self) -> None:
+        if not self._deployment_check_running:
+            return
+        self._deployment_timed_out = True
+        self._deployment_process.kill()
+
     def _on_deployment_status_finished(self, exit_code: int, _exit_status) -> None:
+        self._deployment_timeout.stop()
         self._deployment_check_running = False
+        if self._deployment_timed_out:
+            self._deployment_timed_out = False
+            return
         if exit_code != 0:
             return
         payload = bytes(self._deployment_process.readAllStandardOutput()).decode("utf-8", errors="replace")
@@ -344,7 +370,9 @@ class ControlCenterController(QObject):
             post_notification("Mise à jour système prête", message, "success")
 
     def _on_deployment_status_error(self, _error) -> None:
+        self._deployment_timeout.stop()
         self._deployment_check_running = False
+        self._deployment_timed_out = False
 
     @Slot()
     def checkForSystemUpdates(self) -> None:
@@ -359,11 +387,26 @@ class ControlCenterController(QObject):
         self._system_update_process.setProgram(command[0])
         self._system_update_process.setArguments(command[1:])
         self._system_update_check_running = True
+        self._system_update_timed_out = False
         self._set_system_update_status("Vérification en cours… Une autorisation système peut être demandée.")
+        self._system_update_timeout.start()
         self._system_update_process.start()
 
+    def _on_system_update_check_timeout(self) -> None:
+        if not self._system_update_check_running:
+            return
+        self._system_update_timed_out = True
+        self._system_update_process.kill()
+
     def _on_system_update_check_finished(self, exit_code: int, _exit_status) -> None:
+        self._system_update_timeout.stop()
         self._system_update_check_running = False
+        if self._system_update_timed_out:
+            self._system_update_timed_out = False
+            message = "La vérification des mises à jour a dépassé deux minutes. Réessaie lorsque la connexion sera disponible."
+            self._set_system_update_status(message)
+            post_notification("Vérification trop longue", message, "warning")
+            return
         result = interpret_update_check_exit_code(exit_code)
         if result == "available":
             message = "Une mise à jour système est disponible. Ouvre Bazzite Updater pour la consulter et choisir de l’installer."
@@ -382,6 +425,8 @@ class ControlCenterController(QObject):
         self.systemUpdatesChanged.emit()
 
     def _on_system_update_check_error(self, _error) -> None:
+        self._system_update_timeout.stop()
+        self._system_update_timed_out = False
         self._system_update_check_running = False
         message = "Impossible de démarrer uupd. Vérifie que Bazzite est correctement installé."
         self._set_system_update_status(message)
