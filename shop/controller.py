@@ -45,7 +45,10 @@ class StoreController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.catalog = CatalogModel(self)
-        self._status = "Catalogue LEOS prêt. Vérifie les sources avant toute opération."
+        self._status = (
+            self.catalog.load_error
+            or "Catalogue LEOS prêt. Vérifie les sources avant toute opération."
+        )
         self._verification_details = "Les dépendances seront résolues par Flatpak."
         self._busy = False
         self._process = QProcess(self)
