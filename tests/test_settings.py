@@ -1,7 +1,10 @@
 """Tests for shared LEOS settings."""
 
+import json
+import os
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from leos_core.settings import SettingsStore
@@ -114,6 +117,55 @@ class SettingsStoreTests(unittest.TestCase):
             )
             settings = SettingsStore(path)
             self.assertEqual(settings.get("transition_app_policy"), "ask")
+
+    def test_concurrent_updates_from_separate_instances_are_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            first = SettingsStore(path)
+            second = SettingsStore(path)
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                list(executor.map(
+                    lambda item: item[0].set(item[1], item[2]),
+                    [
+                        (first, "theme", "magenta"),
+                        (second, "sounds_enabled", False),
+                    ],
+                ))
+            final = SettingsStore(path)
+            self.assertEqual(final.get("theme"), "magenta")
+            self.assertFalse(final.get("sounds_enabled"))
+
+    def test_corrupt_settings_are_not_overwritten_by_update(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            invalid = "{broken json"
+            path.write_text(invalid, encoding="utf-8")
+            with self.assertRaises(ValueError):
+                SettingsStore(path).set("theme", "cyan")
+            self.assertEqual(path.read_text(encoding="utf-8"), invalid)
+
+    def test_symbolic_link_settings_file_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "settings.json"
+            target = root / "target.json"
+            target.write_text('{"theme":"magenta"}', encoding="utf-8")
+            try:
+                path.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            with self.assertRaises(OSError):
+                SettingsStore(path).set("theme", "cyan")
+            self.assertEqual(target.read_text(encoding="utf-8"), '{"theme":"magenta"}')
+
+    def test_settings_lock_file_is_private(self) -> None:
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            SettingsStore(path).set("theme", "cyan")
+            lock_path = path.with_name(path.name + ".lock")
+            self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
 
 if __name__ == "__main__":
