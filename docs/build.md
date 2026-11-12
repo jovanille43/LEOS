@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : validation BlueBuild, génération du Containerfile, syntaxe du script de premier démarrage et tests Python. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des huit ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
 
 ## Base retenue
 
