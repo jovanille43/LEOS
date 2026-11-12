@@ -35,6 +35,12 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertIn("if self._system_update_timed_out:", controller)
         self.assertIn("if self._deployment_timed_out:", controller)
 
+    def test_crashed_update_processes_are_not_treated_as_successful_checks(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("if _exit_status != QProcess.ExitStatus.NormalExit or exit_code != 0:", controller)
+        self.assertIn("if _exit_status == QProcess.ExitStatus.NormalExit", controller)
+        self.assertIn('else "error"', controller)
+
     def test_update_check_never_calls_install_or_upgrade(self):
         module = (ROOT / "control_center/system_updates.py").read_text(encoding="utf-8")
         controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
