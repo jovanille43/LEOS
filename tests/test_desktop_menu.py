@@ -36,6 +36,14 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("applicationCatalog.loading", qml)
         self.assertIn("Chargement des applications…", qml)
 
+    def test_menu_category_repeater_observes_async_catalog_updates(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("categoriesChanged = Signal()", source)
+        self.assertIn('@Property("QStringList", notify=categoriesChanged)', source)
+        self.assertIn("self.categoriesChanged.emit()", source)
+        self.assertIn("model: applicationCatalog.availableCategories", qml)
+
     def test_menu_catalog_coalesces_refreshes_while_a_scan_is_running(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("self._refresh_pending = True", source)
