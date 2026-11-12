@@ -23,7 +23,7 @@ class FirstRunSetupTests(unittest.TestCase):
             'printf "%s\\n" "$*" >> "$FLATPAK_LOG"\n'
             'if [[ "$1" == info ]]; then\n'
             '  app_id="${@: -1}"\n'
-            '  [[ -n "$EXISTING_APP" && "$app_id" == "$EXISTING_APP" ]] && exit 0\n'
+            '  [[ -n "$EXISTING_APP" && ",$EXISTING_APP," == *",$app_id,"* ]] && exit 0\n'
             '  [[ -f "$INSTALLED_LOG" ]] && grep -Fqx "$app_id" "$INSTALLED_LOG" && exit 0\n'
             '  exit 1\n'
             'fi\n'
@@ -106,6 +106,23 @@ class FirstRunSetupTests(unittest.TestCase):
             self.assertFalse(
                 any("install " in command and "org.videolan.VLC" in command for command in commands)
             )
+            self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
+            self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
+
+    def test_accepting_when_all_apps_exist_does_not_add_flathub(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            env = self._environment(root)
+            env["KDLG_RESULT"] = "0"
+            env["EXISTING_APP"] = (
+                "com.brave.Browser,org.libreoffice.LibreOffice,org.videolan.VLC"
+            )
+            result = self._run(env)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            commands = (root / "flatpak.log").read_text().splitlines()
+            self.assertTrue(all(command.startswith("info ") for command in commands))
+            self.assertFalse(any(command.startswith("remote-add ") for command in commands))
+            self.assertFalse(any(command.startswith("install ") for command in commands))
             self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
             self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
 
