@@ -35,4 +35,4 @@ La navigation fonctionne à la souris, au clavier et avec les manettes reconnues
 
 ## Notifications des modes LEOS
 
-Le sélecteur enregistre un événement dans l'historique LEOS après le lancement réussi de Gaming ou la sélection de Desktop. Le contrôleur Gaming enregistre également la demande de retour vers Desktop. Ces événements sont persistants et non intrusifs : ils ne déclenchent pas de fenêtre au-dessus d'un jeu.
+Le choix de Desktop est enregistré par le sélecteur. Pour Gaming, le dernier mode et la notification de démarrage ne sont enregistrés qu'après le chargement réussi de la fenêtre QML ; un échec de chargement ne marque donc pas Gaming comme dernier mode utilisé. Le contrôleur Gaming enregistre également la demande de retour vers Desktop. Ces événements sont persistants et non intrusifs : ils ne déclenchent pas de fenêtre au-dessus d'un jeu.
