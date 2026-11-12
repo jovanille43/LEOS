@@ -109,6 +109,12 @@ class GpuMetricsTests(unittest.TestCase):
         self.assertEqual(metrics["usage"], 45.0)
         self.assertEqual(metrics["temperature"], 61.0)
 
+    def test_nvidia_smi_invalid_text_encoding_is_non_fatal(self):
+        invalid_text = UnicodeDecodeError("utf-8", b"\\xff", 0, 1, "invalid byte")
+        with patch.object(gpu_metrics.shutil, "which", return_value="/usr/bin/nvidia-smi"):
+            with patch.object(gpu_metrics.subprocess, "run", side_effect=invalid_text):
+                self.assertEqual(gpu_metrics._nvidia_smi_devices(), {})
+
     def test_nvidia_smi_timeout_is_non_fatal(self):
         with patch.object(gpu_metrics.shutil, "which", return_value="/usr/bin/nvidia-smi"):
             with patch.object(
