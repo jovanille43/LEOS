@@ -47,6 +47,26 @@ jobs:
           chmod +x "$RUNNER_TEMP/bluebuild"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
+      - name: Lint Qt Quick and QML sources
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE:/workspace:ro" \
+            --workdir /workspace \
+            fedora:45 \
+            bash -euc '
+              dnf install -y qt6-qtdeclarative-devel qt6-qtmultimedia qt6-qtsvg
+              mapfile -d "" qml_files < <(find launcher gaming control_center controller_center desktop shop -type f -name "*.qml" -print0)
+              if [[ "${#qml_files[@]}" -eq 0 ]]; then
+                echo "No QML sources found."
+                exit 1
+              fi
+              for file in "${qml_files[@]}"; do
+                echo "Linting ${file}"
+                qmllint-qt6 "${file}"
+              done
+            '
+
       - name: Check LEOS first-run shell script
         run: bash -n packaging/leos-default-apps-setup
 
