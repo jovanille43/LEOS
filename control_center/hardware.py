@@ -51,9 +51,9 @@ def _cpu_details() -> tuple[str, str]:
             if value.isdigit():
                 processor_entries += 1
             elif not model:
-                model = value.strip("\\x00")
+                model = value.strip("\x00")
         elif key in model_fields and not model:
-            candidate = value.strip("\\x00")
+            candidate = value.strip("\x00")
             if candidate.lower() not in {"0", "unknown", "not specified"}:
                 model = candidate
 
@@ -63,7 +63,7 @@ def _cpu_details() -> tuple[str, str]:
             "/sys/devices/virtual/dmi/id/product_name",
             "/sys/devices/virtual/dmi/id/board_name",
         ):
-            candidate = _read(path).replace("\\x00", "").strip()
+            candidate = _read(path).replace("\x00", "").strip()
             if candidate and candidate.lower() not in {"unknown", "not specified"}:
                 model = candidate
                 break
