@@ -211,6 +211,18 @@ ApplicationWindow {
             }
             return
         }
+        if (powerProfileDialog.visible) {
+            if (action === "confirm") {
+                powerProfileDialog.close()
+                if (!leos.applyPowerProfile(pendingPowerProfile))
+                    statusText.text = leos.powerProfileStatus
+                else
+                    statusText.text = "Profil énergie mis à jour."
+            } else if (action === "back") {
+                powerProfileDialog.close()
+            }
+            return
+        }
         if (addDialog.visible) {
             if (action === "back")
                 addDialog.close()
