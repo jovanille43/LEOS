@@ -74,7 +74,7 @@ LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique
 
 Trois recettes d'image partagent les mêmes modules LEOS : Bazzite standard pour AMD/Intel, Bazzite NVIDIA legacy pour Maxwell/Pascal/Volta, et Bazzite NVIDIA open pour Turing et plus récent. Ce sont des variantes matérielles d'un seul système LEOS, pas des éditions fonctionnelles distinctes. Leur présence dans le dépôt ne certifie pas encore la compatibilité : les trois images doivent être construites et testées sur matériel réel. Les PC hybrides et les périphériques radio/audio doivent également être testés. Les sondes LEOS restent en lecture seule et affichent les capacités absentes comme indisponibles.
 
-Le Centre de contrôle expose un précontrôle indicatif x86_64 / UEFI / RAM. Ce contrôle partiel ne certifie pas la compatibilité GPU/Vulkan, CPU, Wi-Fi, Bluetooth ou périphériques. La politique et la matrice de tests sont détaillées dans [hardware-compatibility.md](hardware-compatibility.md).
+Le Centre de contrôle expose un précontrôle Gaming indicatif : architecture, UEFI, RAM, estimation des cœurs physiques, espace libre sur / et version Vulkan par GPU lorsque disponible. Il ne certifie pas la fréquence CPU, le type de SSD, la destination d'installation, les pilotes ou la compatibilité réelle des périphériques ; les données absentes restent non vérifiables et ne bloquent pas Desktop Mode. La politique et la matrice de tests sont détaillées dans [hardware-compatibility.md](hardware-compatibility.md).
 
 ## 9. Principes de développement
 
