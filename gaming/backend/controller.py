@@ -188,6 +188,7 @@ class GamingController(QObject):
     def _refresh_gamepad(self) -> None:
         if not backend_available():
             self._gamepad.close()
+            self._gamepad_mapper.reset()
             self._gamepad_path = ""
             self._set_gamepad_status("Manette : backend indisponible")
             return
@@ -196,6 +197,7 @@ class GamingController(QObject):
         paths = {item["path"] for item in devices}
         if self._gamepad_path and self._gamepad_path not in paths:
             self._gamepad.close()
+            self._gamepad_mapper.reset()
             self._gamepad_path = ""
 
         if not self._gamepad_path and devices:
@@ -230,6 +232,7 @@ class GamingController(QObject):
             self.gamepadAction.emit(repeated_action)
         if self._gamepad_path and self._gamepad.device is None:
             self._gamepad_path = ""
+            self._gamepad_mapper.reset()
             self._set_gamepad_status("Connexion manette interrompue — nouvelle détection…")
 
     @Slot(str, str, str, result=bool)
