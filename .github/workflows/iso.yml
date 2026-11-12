@@ -31,6 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
+      - name: Check out LEOS public verification key
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
       - name: Install Podman and BlueBuild CLI
         run: |
           set -euo pipefail
@@ -70,6 +76,14 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$GH_TOKEN" | sudo podman login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Verify published LEOS image signature
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          test -s cosign.pub
+          cosign verify --key cosign.pub "$IMAGE_REF"
 
       - name: Generate bootable installer ISO
         env:
