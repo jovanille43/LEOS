@@ -1,3 +1,11 @@
+    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
+        source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("../../branding/desktop-logo.jpeg", source)
+        self.assertIn("../../branding/gaming-logo.jpeg", source)
+        self.assertNotIn("desktop-logo.png", source)
+        self.assertNotIn("gaming-logo.png", source)
+        self.assertIn("visible: status === Image.Ready", source)
+
 """Tests for the LEOS startup and mode-selection contract."""
 
 import unittest
