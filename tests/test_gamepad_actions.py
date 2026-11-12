@@ -237,6 +237,15 @@ class GamepadActionTests(unittest.TestCase):
             "confirm",
         )
 
+    def test_unhashable_profile_and_boolean_deadzone_are_sanitized(self):
+        mapper = GamepadActionMapper(deadzone_percent=True, profile=["nintendo"])
+        self.assertEqual(mapper.deadzone_percent, 8)
+        self.assertEqual(mapper.profile, "standard")
+        self.assertEqual(
+            mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "confirm",
+        )
+
     def test_invalid_axis_centers_and_profiles_are_sanitized(self):
         mapper = GamepadActionMapper(
             axis_centers={"ABS_X": True, "ABS_Y": 100, "X" * 49: 0, "ABS_Z": 999999},
