@@ -98,7 +98,7 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_menu_qml_exposes_search_categories_and_empty_state(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
-        for feature in ("Rechercher une application", "applicationCatalog.categories()",
+        for feature in ("Rechercher une application", "applicationCatalog.availableCategories",
                         "applicationCatalog.setSearch(text)", "applicationCatalog.launch(desktopId)",
                         "Aucune application trouvée"):
             self.assertIn(feature, qml)
