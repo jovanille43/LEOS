@@ -107,7 +107,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_menu_exposes_a_favourites_category_in_addition_to_app_categories(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         filters = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
-        self.assertIn('return ["Tout", "Favoris"] + sorted', source)
+        self.assertIn('return ["Tout", "Favoris", "Récemment utilisées"] + sorted', source)
         self.assertIn('if category == "Favoris":', filters)
         self.assertIn("selected.sort(key=lambda item: pinned_order.index", filters)
         self.assertIn("filter_desktop_applications(", source)
