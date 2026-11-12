@@ -67,7 +67,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
 - Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
 - MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Le démarrage cinématique, les transitions animées de lancement/retour et les intégrations d'émulateurs restent des étapes à développer et valider.
+- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son AAC intégré, réglage sonore indépendant et repli en cas d'erreur ; le transfert des binaires et la validation sur Bazzite restent à effectuer. Les intégrations d'émulateurs restent à développer.
 
 ## Desktop Mode
 
@@ -75,7 +75,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les préférences de dock et profils de disposition sont préparés, mais leur application au véritable panneau Plasma reste désactivée.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran, sons et animations restent à intégrer complètement.
+- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran restent à intégrer ; les animations Desktop/Gaming sont raccordées, mais leurs fichiers MP4 doivent encore être transférés dans le dépôt et testés.
 
 ## Bluetooth
 
