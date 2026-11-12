@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import re
 import subprocess
 from pathlib import Path
@@ -26,22 +27,46 @@ def _run(command: list[str], timeout: float = 2.0) -> str:
 
 
 def _default_route() -> tuple[str, str]:
-    """Return default interface and gateway from the kernel route table."""
+    """Return an active IPv4 or IPv6 default interface and its gateway."""
     for line in _read("/proc/net/route").splitlines()[1:]:
         columns = line.split()
         if len(columns) < 4 or columns[1] != "00000000":
             continue
         try:
             flags = int(columns[3], 16)
-            gateway_int = int(columns[2], 16)
-            if not flags & 0x2:
+            if not flags & 0x1:
                 continue
-            gateway = ".".join(str((gateway_int >> (8 * i)) & 255) for i in range(4))
+            gateway = ""
+            if flags & 0x2:
+                gateway_int = int(columns[2], 16)
+                gateway = ".".join(
+                    str((gateway_int >> (8 * i)) & 255) for i in range(4)
+                )
             return columns[0], gateway
         except (ValueError, IndexError):
             continue
-    return "", ""
 
+    # IPv6 routes are exposed separately by Linux and are essential on
+    # IPv6-only networks where /proc/net/route has no default route.
+    for line in _read("/proc/net/ipv6_route").splitlines():
+        columns = line.split()
+        if (
+            len(columns) < 10
+            or columns[0] != "0" * 32
+            or columns[1] != "00"
+        ):
+            continue
+        try:
+            flags = int(columns[8], 16)
+            if not flags & 0x1:
+                continue
+            gateway_bytes = bytes.fromhex(columns[4])
+            gateway_address = ipaddress.IPv6Address(gateway_bytes)
+            gateway = "" if gateway_address.is_unspecified else str(gateway_address)
+            return columns[9], gateway
+        except (ValueError, IndexError):
+            continue
+    return "", ""
 
 def _dns_servers() -> list[str]:
     servers: list[str] = []
