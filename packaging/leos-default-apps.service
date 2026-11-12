@@ -1,5 +1,5 @@
 [Unit]
-Description=Install LEOS starter applications once for this user
+Description=Offer optional LEOS starter applications with user consent
 Documentation=https://github.com/jovanille43/LEOS
 After=graphical-session.target
 StartLimitIntervalSec=0
