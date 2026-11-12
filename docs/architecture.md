@@ -68,7 +68,15 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 - Il accepte la souris, le clavier et les manettes reconnues via evdev en lecture seule ; il réutilise les profils contrôleur LEOS sans modifier globalement les entrées Linux.
 - Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
 
-## 8. Principes de développement
+## 8. Compatibilité matérielle
+
+LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique. La cible initiale suit la base Bazzite : x86_64 et démarrage UEFI. La référence Gaming publiée par Bazzite inclut 8 Gio de RAM, un processeur quadricœur à 2 GHz, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés).
+
+La recette actuelle utilise l'image Bazzite générale. Une seconde variante basée sur l'image Bazzite NVIDIA doit être ajoutée avant d'annoncer la prise en charge complète des GPU NVIDIA. Les PC hybrides et les périphériques radio/audio doivent être testés sur matériel réel. Les sondes LEOS restent en lecture seule et affichent les capacités absentes comme indisponibles.
+
+Le Centre de contrôle expose un précontrôle indicatif x86_64 / UEFI / RAM. Ce contrôle partiel ne certifie pas la compatibilité GPU/Vulkan, CPU, Wi-Fi, Bluetooth ou périphériques. La politique et la matrice de tests sont détaillées dans [hardware-compatibility.md](hardware-compatibility.md).
+
+## 9. Principes de développement
 
 1. Construire d'abord une version minimale fonctionnelle.
 2. Préserver la stabilité et les mécanismes natifs de Bazzite.

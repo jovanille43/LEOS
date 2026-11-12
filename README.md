@@ -37,6 +37,10 @@ Les références visuelles fournies pour le projet doivent être respectées. L'
 
 LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
 
+### Compatibilité matérielle
+
+LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Gio de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). La prise en charge NVIDIA nécessite une variante d'image dédiée qui reste à développer. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md).
+
 ### Composants source présents dans le dépôt
 
 - **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games) et Lutris, ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
@@ -156,7 +160,8 @@ LEOS/
 - [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [ ] Intégration complète du dock au véritable panneau Plasma.
-- [ ] Intégrations d'émulateurs et validation élargie sur plusieurs configurations matérielles.
+- [ ] Intégrations d'émulateurs.
+- [ ] Variantes matérielles — produire et tester les images Bazzite générale (AMD/Intel) et NVIDIA, puis documenter les limites des PC hybrides.
 - [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
 - [ ] Préparer une ISO installable après validation de l'image.

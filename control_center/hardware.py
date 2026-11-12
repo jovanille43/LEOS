@@ -58,6 +58,60 @@ def _memory_details() -> str:
     return f"{used / gib:.1f} / {total / gib:.1f} Gio utilisés"
 
 
+def _memory_total_bytes() -> int:
+    """Return physical RAM in bytes, or zero when the kernel does not expose it."""
+    match = re.search(r"^MemTotal:\s+(\d+)\s+kB", _read("/proc/meminfo"), re.MULTILINE)
+    return int(match.group(1)) * 1024 if match else 0
+
+
+def _memory_total_details(total_bytes: int) -> str:
+    if total_bytes <= 0:
+        return "Indisponible"
+    return f"{total_bytes / (1024 ** 3):.1f} Gio"
+
+
+def _architecture_details(machine: str | None = None) -> str:
+    """Normalize common machine names without implying unsupported architectures work."""
+    value = (platform.machine() if machine is None else machine).strip().lower()
+    if value in {"x86_64", "amd64", "x64"}:
+        return "x86_64"
+    if value in {"aarch64", "arm64"}:
+        return "ARM64"
+    return value or "Indisponible"
+
+
+def _firmware_details(path: Path = Path("/sys/firmware/efi")) -> str:
+    """UEFI is detected only when Linux exposes its EFI firmware interface."""
+    try:
+        return "UEFI" if path.is_dir() else "UEFI non détecté"
+    except OSError:
+        return "Indisponible"
+
+
+def _gaming_baseline_assessment(
+    architecture: str, firmware: str, memory_total_bytes: int
+) -> str:
+    """Summarize only the Bazzite baseline checks that LEOS can verify locally."""
+    issues: list[str] = []
+    if architecture == "Indisponible":
+        issues.append("architecture non vérifiable")
+    elif architecture != "x86_64":
+        issues.append(f"architecture {architecture} hors cible x86_64")
+    if firmware != "UEFI":
+        issues.append("démarrage UEFI non détecté")
+    if memory_total_bytes <= 0:
+        issues.append("quantité de RAM non vérifiable")
+    elif memory_total_bytes < 8 * (1024 ** 3):
+        issues.append("moins de 8 Gio de RAM")
+
+    if issues:
+        return "À vérifier : " + " · ".join(issues)
+    return (
+        "Contrôles partiels conformes (x86_64, UEFI, au moins 8 Gio). "
+        "CPU, GPU Vulkan 1.3+, pilotes et périphériques restent à valider."
+    )
+
+
 def _gpu_details() -> str:
     found: list[str] = []
     vendor_names = {"0x10de": "NVIDIA", "0x1002": "AMD", "0x8086": "Intel"}
@@ -200,12 +254,21 @@ def collect_hardware_snapshot() -> dict[str, str]:
         storage = "Indisponible"
     bluetooth, bluetooth_devices = _bluetooth_details()
     audio_server, audio_output, audio_inputs = _audio_details()
+    architecture = _architecture_details()
+    firmware = _firmware_details()
+    memory_total_bytes = _memory_total_bytes()
     os_release = _read("/etc/os-release")
     pretty_name = re.search(r'^PRETTY_NAME="?([^"\n]+)', os_release, re.MULTILINE)
     return {
         "cpu": cpu,
         "cpuThreads": threads,
         "memory": _memory_details(),
+        "memoryTotal": _memory_total_details(memory_total_bytes),
+        "architecture": architecture,
+        "firmware": firmware,
+        "gamingBaseline": _gaming_baseline_assessment(
+            architecture, firmware, memory_total_bytes
+        ),
         "storage": storage,
         "gpu": _gpu_details(),
         "operatingSystem": pretty_name.group(1) if pretty_name else "Linux (distribution non identifiée)",

@@ -10,11 +10,48 @@ class HardwareInventoryTests(unittest.TestCase):
         snapshot = hardware.collect_hardware_snapshot()
         expected = {
             "cpu", "cpuThreads", "memory", "storage", "gpu",
+            "memoryTotal", "architecture", "firmware", "gamingBaseline",
             "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
             "audioServer", "audioOutput", "audioInputs", "controllers", "battery", "usbDevices", "network",
         }
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
+
+    def test_architecture_normalizes_common_x86_and_arm_names(self):
+        self.assertEqual(hardware._architecture_details("AMD64"), "x86_64")
+        self.assertEqual(hardware._architecture_details("x64"), "x86_64")
+        self.assertEqual(hardware._architecture_details("aarch64"), "ARM64")
+        self.assertEqual(hardware._architecture_details(""), "Indisponible")
+
+    def test_firmware_detection_requires_exposed_efi_directory(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            efi = root / "efi"
+            efi.mkdir()
+            self.assertEqual(hardware._firmware_details(efi), "UEFI")
+            self.assertEqual(hardware._firmware_details(root / "missing"), "UEFI non détecté")
+
+    def test_memory_total_parser_and_gaming_baseline_are_conservative(self):
+        with patch.object(
+            hardware, "_read",
+            return_value="MemTotal:       16384000 kB\\nMemAvailable:    8192000 kB\\n",
+        ):
+            total = hardware._memory_total_bytes()
+        self.assertEqual(total, 16384000 * 1024)
+        self.assertEqual(hardware._memory_total_details(total), "15.6 Gio")
+        passed = hardware._gaming_baseline_assessment("x86_64", "UEFI", total)
+        self.assertIn("Contrôles partiels conformes", passed)
+        self.assertIn("Vulkan 1.3+", passed)
+
+        unsupported = hardware._gaming_baseline_assessment(
+            "ARM64", "UEFI non détecté", 4 * 1024 ** 3
+        )
+        self.assertIn("ARM64 hors cible", unsupported)
+        self.assertIn("moins de 8 Gio", unsupported)
+        self.assertIn("UEFI non détecté", unsupported)
 
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):
         with patch.object(hardware, "_run", return_value="inactive"):

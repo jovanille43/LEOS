@@ -105,7 +105,8 @@ class ControlCenterController(QObject):
         self._hardware_snapshot = {
             key: "Analyse en cours…"
             for key in (
-                "cpu", "cpuThreads", "memory", "storage", "gpu",
+                "cpu", "cpuThreads", "memory", "memoryTotal", "architecture",
+                "firmware", "gamingBaseline", "storage", "gpu",
                 "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
                 "audioServer", "audioOutput", "audioInputs", "controllers",
                 "battery", "usbDevices", "network",
