@@ -101,13 +101,13 @@ def _gaming_baseline_assessment(
         issues.append("démarrage UEFI non détecté")
     if memory_total_bytes <= 0:
         issues.append("quantité de RAM non vérifiable")
-    elif memory_total_bytes < 8 * (1024 ** 3):
+    elif memory_total_bytes < 8_000_000_000:
         issues.append("moins de 8 Gio de RAM")
 
     if issues:
         return "À vérifier : " + " · ".join(issues)
     return (
-        "Contrôles partiels conformes (x86_64, UEFI, au moins 8 Gio). "
+        "Contrôles partiels conformes (x86_64, UEFI, au moins 8 Go). "
         "CPU, GPU Vulkan 1.3+, pilotes et périphériques restent à valider."
     )
 

@@ -45,12 +45,16 @@ class HardwareInventoryTests(unittest.TestCase):
         passed = hardware._gaming_baseline_assessment("x86_64", "UEFI", total)
         self.assertIn("Contrôles partiels conformes", passed)
         self.assertIn("Vulkan 1.3+", passed)
+        eight_gb = hardware._gaming_baseline_assessment(
+            "x86_64", "UEFI", 8_000_000_000
+        )
+        self.assertIn("Contrôles partiels conformes", eight_gb)
 
         unsupported = hardware._gaming_baseline_assessment(
             "ARM64", "UEFI non détecté", 4 * 1024 ** 3
         )
         self.assertIn("ARM64 hors cible", unsupported)
-        self.assertIn("moins de 8 Gio", unsupported)
+        self.assertIn("moins de 8 Go", unsupported)
         self.assertIn("UEFI non détecté", unsupported)
 
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):

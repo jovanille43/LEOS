@@ -1035,7 +1035,7 @@ ApplicationWindow {
                                         { title: "PROCESSEUR", value: controlCenter.hardwareSnapshot.cpu, detail: controlCenter.hardwareSnapshot.cpuThreads },
                                         { title: "ARCHITECTURE", value: controlCenter.hardwareSnapshot.architecture, detail: "Architecture de l'image Bazzite ciblée : x86_64" },
                                         { title: "MICROLOGICIEL", value: controlCenter.hardwareSnapshot.firmware, detail: "Le démarrage UEFI est requis par la base Bazzite" },
-                                        { title: "RAM TOTALE", value: controlCenter.hardwareSnapshot.memoryTotal, detail: "Référence Gaming Bazzite : 8 Gio minimum" },
+                                        { title: "RAM TOTALE", value: controlCenter.hardwareSnapshot.memoryTotal, detail: "Référence Gaming Bazzite : 8 Go minimum" },
                                         { title: "PRÉCONTRÔLE GAMING", value: controlCenter.hardwareSnapshot.gamingBaseline, detail: "Indication partielle : le GPU, Vulkan, les pilotes et les périphériques nécessitent des tests." },
                                         { title: "MÉMOIRE VIVE", value: controlCenter.hardwareSnapshot.memory, detail: "RAM détectée par Linux" },
                                         { title: "CARTE GRAPHIQUE", value: controlCenter.hardwareSnapshot.gpu, detail: "Contrôleur graphique détecté" },

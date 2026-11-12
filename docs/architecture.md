@@ -70,7 +70,7 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 
 ## 8. Compatibilité matérielle
 
-LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique. La cible initiale suit la base Bazzite : x86_64 et démarrage UEFI. La référence Gaming publiée par Bazzite inclut 8 Gio de RAM, un processeur quadricœur à 2 GHz, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés).
+LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique. La cible initiale suit la base Bazzite : x86_64 et démarrage UEFI. La référence Gaming publiée par Bazzite inclut 8 Go de RAM, un processeur quadricœur à 2 GHz, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés).
 
 La recette actuelle utilise l'image Bazzite générale. Une seconde variante basée sur l'image Bazzite NVIDIA doit être ajoutée avant d'annoncer la prise en charge complète des GPU NVIDIA. Les PC hybrides et les périphériques radio/audio doivent être testés sur matériel réel. Les sondes LEOS restent en lecture seule et affichent les capacités absentes comme indisponibles.
 
