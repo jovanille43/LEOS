@@ -99,6 +99,9 @@ Les vidéos actuellement hébergées ont passé le contrôle CI de présence des
 - [ ] Les erreurs de lancement sont compréhensibles.
 - [ ] Les profils d'énergie n'affichent que les profils réellement disponibles.
 - [ ] Les valeurs GPU indisponibles restent indiquées comme telles.
+- [ ] Sur un PC hybride, toutes les cartes graphiques visibles sont identifiées sans confondre les connecteurs DRM avec des GPU supplémentaires.
+- [ ] La télémétrie Gaming sélectionne un GPU qui expose réellement ses mesures ; tester notamment iGPU + GPU dédié.
+- [ ] Les températures CPU/GPU correspondent à des capteurs identifiés et ne sont pas remplacées par des estimations.
 - [ ] MangoHud n'est proposé que lorsqu'il est installé.
 
 ## 6. Manettes et Bluetooth
