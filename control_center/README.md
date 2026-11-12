@@ -13,7 +13,7 @@ Les valeurs sont conservées dans `~/.config/leos/settings.json` (ou `$XDG_CONFI
 
 ## Limites
 
-Le panneau enregistre les préférences, mais tous les moteurs d'application visuelle/sonore et de gestion des performances ne sont pas encore intégrés. La sélection d'un profil ne change pas encore les fréquences CPU/GPU. Les paramètres système avancés restent ouverts dans KDE System Settings.
+Le panneau enregistre les préférences partagées. Le réglage Animations pilote les introductions de transition Desktop/Gaming ; le réglage Sons coupe séparément leurs pistes audio AAC sans désactiver la vidéo. Les effets sonores des notifications LEOS restent confiés au service KDE, sans fichier audio propriétaire supplémentaire. La sélection d'un profil ne change pas directement les fréquences CPU/GPU : elle demande le profil natif réellement exposé par le système. Les paramètres système avancés restent ouverts dans KDE System Settings.
 
 Le prototype n'a pas encore été exécuté dans une session Bazzite/KDE.
 
@@ -39,7 +39,7 @@ Le suivi périodique se limite à l’observation des déploiements en attente, 
 
 La page **Notifications** du Centre de contrôle permet d'activer/désactiver les fenêtres système, de choisir une durée de 3, 5 ou 8 secondes, de filtrer les notifications par priorité, de couper leur son via l'indication standard `suppress-sound` et d'activer le silence automatique en Gaming Mode. Les événements continuent d'être enregistrés dans l'historique local même lorsqu'une fenêtre est filtrée ou désactivée.
 
-Les sons reposent sur le service de notifications KDE et sa configuration sonore : LEOS ne joue pas encore de fichier audio propriétaire. Le mode silencieux en jeu est activé par défaut. Les préférences sont stockées dans le fichier utilisateur `settings.json`.
+Les sons des notifications reposent sur le service KDE et sa configuration sonore ; ils sont distincts des pistes AAC intégrées aux vidéos d'introduction LEOS. Le mode silencieux en jeu est activé par défaut. Les préférences sont stockées dans le fichier utilisateur `settings.json`.
 En Gaming Mode, un bouton permanent dans la barre supérieure permet de basculer immédiatement le mode silencieux. L’état est partagé avec le Centre de contrôle et persiste après fermeture du mode Gaming. À l’entrée dans Gaming Mode, LEOS enregistre le mode actif ; le retour au bureau restaure l’état Desktop.
 Les préférences partagées sont relues depuis le fichier utilisateur par les processus LEOS. Le Centre de contrôle détecte les changements effectués par Gaming Mode et les autres composants toutes les 1,5 secondes, sans redémarrage de l’interface.
 
