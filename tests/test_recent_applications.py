@@ -1,12 +1,13 @@
 """Tests for safe recent-application history."""
 
 import json
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
 from pathlib import Path
 
-from desktop.recent_applications import RecentApplications
+from desktop.recent_applications import RecentApplications, MAX_RECENT_ENTRIES
 
 
 class RecentApplicationsTests(unittest.TestCase):
