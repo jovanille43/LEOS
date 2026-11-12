@@ -103,6 +103,17 @@ class ReadOnlyGamepadBackendTests(unittest.TestCase):
         self.assertTrue(monitor.device is None)
 
 
+    def test_gaming_controller_clears_mapper_on_gamepad_disconnect(self):
+        from pathlib import Path
+
+        source = (
+            Path(__file__).resolve().parents[1] / "gaming/backend/controller.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("self._gamepad_mapper.reset()", source)
+        self.assertIn(
+            "if self._gamepad_path and self._gamepad.device is None:", source
+        )
+
     def test_legacy_evdev_opens_descriptor_strictly_read_only(self):
         class LegacyInputDevice:
             def __init__(self, _path):
