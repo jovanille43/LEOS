@@ -29,14 +29,15 @@ Ces repères Gaming ne doivent pas être présentés comme des exigences univers
 
 ## Procédure prévue après publication
 
-1. Télécharger l'image correspondant au GPU principal depuis la publication officielle LEOS.
-2. Vérifier la somme SHA-256 publiée avec l'image.
-3. Sauvegarder les données importantes et préparer une clé USB d'installation.
-4. Démarrer la machine sur la clé en mode UEFI.
-5. Tester d'abord le démarrage, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
-6. Installer uniquement après validation de ces éléments et en ayant vérifié le disque cible.
-7. Au premier démarrage, choisir Desktop ou Gaming depuis le sélecteur LEOS.
-8. Les applications facultatives proposées par LEOS restent optionnelles : aucune installation ne sera effectuée sans confirmation.
+1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
+2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag de l'image publiée.
+3. Récupérer l'ISO et son fichier SHA-256 dans les artefacts du workflow, puis vérifier la somme avant utilisation.
+4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer.
+5. Démarrer la machine sur la clé en mode UEFI.
+6. Tester d'abord le démarrage, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
+7. Installer uniquement après validation de ces éléments et en ayant vérifié le disque cible.
+8. Au premier démarrage, choisir Desktop ou Gaming depuis le sélecteur LEOS.
+9. Les applications facultatives proposées par LEOS restent optionnelles : aucune installation ne sera effectuée sans confirmation.
 
 ## Validation avant diffusion
 
