@@ -23,6 +23,7 @@ DEFAULT_PINNED_APPS = (
     "steam.desktop",
 )
 MAX_PINNED_APPS = 32
+MAX_DOCK_FILE_BYTES = 16 * 1024
 
 
 def _config_path() -> Path:
@@ -81,11 +82,15 @@ class DockFavourites:
         if self.path.is_symlink() or self.path.parent.is_symlink():
             return False
         try:
-            data = json.loads(self.path.read_text(encoding="utf-8"))
+            with self.path.open("rb") as stream:
+                raw = stream.read(MAX_DOCK_FILE_BYTES + 1)
+            if len(raw) > MAX_DOCK_FILE_BYTES:
+                return False
+            data = json.loads(raw.decode("utf-8"))
         except FileNotFoundError:
             self._items = list(DEFAULT_PINNED_APPS)
             return True
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return False
         if not _valid_payload(data):
             return False
