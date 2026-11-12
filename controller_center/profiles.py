@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator
 from typing import Any
 
 PROFILE_NAMES = ("auto", "standard", "xbox", "playstation", "nintendo", "custom")
@@ -70,63 +73,99 @@ class ControllerProfileStore:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or config_path()
 
-    def _read(self) -> dict[str, Any]:
+    @contextmanager
+    def _exclusive_lock(self) -> Iterator[None]:
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("Controller profile path cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("Controller profile lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def _read(self, strict: bool = False) -> dict[str, Any]:
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            if strict:
+                raise OSError("Controller profile path cannot be a symbolic link")
+            return {"version": 1, "devices": {}}
         try:
             payload = json.loads(self.path.read_text(encoding="utf-8"))
-            if payload.get("version") != 1 or not isinstance(payload.get("devices"), dict):
-                return {"version": 1, "devices": {}}
-            return payload
-        except (OSError, json.JSONDecodeError, AttributeError):
+        except FileNotFoundError:
             return {"version": 1, "devices": {}}
+        except (OSError, json.JSONDecodeError) as exc:
+            if strict:
+                raise ValueError("Controller profile file is unreadable; it was left untouched") from exc
+            return {"version": 1, "devices": {}}
+        if not isinstance(payload, dict) or type(payload.get("version")) is not int or payload.get("version") != 1 or not isinstance(payload.get("devices"), dict):
+            if strict:
+                raise ValueError("Controller profile file has an invalid format; it was left untouched")
+            return {"version": 1, "devices": {}}
+        return payload
 
     def get(self, device_id: str) -> dict[str, Any]:
         record = self._read()["devices"].get(device_id, {})
         if not isinstance(record, dict):
             record = {}
+        return self._validated_record(record)
+
+    @staticmethod
+    def _validated_record(record: dict[str, Any]) -> dict[str, Any]:
         profile = record.get("profile", DEFAULT_PROFILE["profile"])
         if profile not in PROFILE_NAMES:
             profile = DEFAULT_PROFILE["profile"]
         deadzone = record.get("deadzone", DEFAULT_PROFILE["deadzone"])
-        if not isinstance(deadzone, int) or not 0 <= deadzone <= 40:
+        if type(deadzone) is not int or not 0 <= deadzone <= 40:
             deadzone = DEFAULT_PROFILE["deadzone"]
         centers = record.get("axis_centers", {})
         if not isinstance(centers, dict):
             centers = {}
         valid_centers = {
-            str(axis): int(value)
-            for axis, value in centers.items()
-            if isinstance(axis, str) and isinstance(value, int) and -65536 <= value <= 65536
+            axis: value for axis, value in centers.items()
+            if isinstance(axis, str) and type(value) is int and -65536 <= value <= 65536
         }
         return {"profile": profile, "deadzone": deadzone, "axis_centers": valid_centers}
 
     def update(self, device_id: str, **changes: Any) -> dict[str, Any]:
-        current = self.get(device_id)
-        if "profile" in changes:
-            if changes["profile"] not in PROFILE_NAMES:
-                raise ValueError("Unknown controller profile")
-            current["profile"] = changes["profile"]
-        if "deadzone" in changes:
-            value = changes["deadzone"]
-            if not isinstance(value, int) or not 0 <= value <= 40:
-                raise ValueError("Deadzone must be an integer between 0 and 40")
-            current["deadzone"] = value
-        if "axis_centers" in changes:
-            centers = changes["axis_centers"]
-            if not isinstance(centers, dict):
-                raise ValueError("Axis centers must be a mapping")
-            current["axis_centers"].update({
-                str(axis): int(value)
-                for axis, value in centers.items()
-                if isinstance(axis, str) and isinstance(value, int) and -65536 <= value <= 65536
-            })
-
-        payload = self._read()
-        payload["devices"][device_id] = current
-        self._write(payload)
-        return current
+        if not isinstance(device_id, str) or not device_id or len(device_id) > 128:
+            raise ValueError("Invalid controller identifier")
+        with self._exclusive_lock():
+            payload = self._read(strict=True)
+            devices = payload["devices"]
+            record = devices.get(device_id, {})
+            if not isinstance(record, dict):
+                record = {}
+            current = self._validated_record(record)
+            if "profile" in changes:
+                if changes["profile"] not in PROFILE_NAMES:
+                    raise ValueError("Unknown controller profile")
+                current["profile"] = changes["profile"]
+            if "deadzone" in changes:
+                value = changes["deadzone"]
+                if type(value) is not int or not 0 <= value <= 40:
+                    raise ValueError("Deadzone must be an integer between 0 and 40")
+                current["deadzone"] = value
+            if "axis_centers" in changes:
+                centers = changes["axis_centers"]
+                if not isinstance(centers, dict):
+                    raise ValueError("Axis centers must be a mapping")
+                for axis, value in centers.items():
+                    if not isinstance(axis, str) or type(value) is not int or not -65536 <= value <= 65536:
+                        raise ValueError("Invalid axis center")
+                    current["axis_centers"][axis] = value
+            devices[device_id] = current
+            self._write(payload)
+            return current
 
     def _write(self, payload: dict[str, Any]) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("Controller profile path cannot be a symbolic link")
         fd, temporary = tempfile.mkstemp(prefix=".controllers-", dir=self.path.parent)
         try:
             os.fchmod(fd, 0o600)
