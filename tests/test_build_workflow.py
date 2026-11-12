@@ -224,6 +224,22 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('qmllint-qt6 "${file}"', source)
         self.assertIn('if [[ "${#qml_files[@]}" -eq 0 ]]', source)
 
+    def test_qml_layout_warnings_are_prevented_in_known_areas(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        controllers = (ROOT / "controller_center/qml/Main.qml").read_text(encoding="utf-8")
+        shop = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
+
+        self.assertIn("id: modeSelectorContent", selector)
+        self.assertIn("focus: true", selector)
+        self.assertNotIn("    focus: true", selector.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
+        self.assertIn('Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253"', gaming)
+        self.assertIn("Layout.preferredWidth: 54", controllers)
+        self.assertIn("Layout.preferredHeight: 54", controllers)
+        self.assertIn("Layout.preferredHeight: 1", controllers)
+        self.assertIn("Layout.preferredWidth: 42", shop)
+        self.assertIn("Layout.preferredHeight: 42", shop)
+
     def test_recipe_ci_reports_hashes_for_all_deployed_branding_assets(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Report deployed branding SHA-256 fingerprints", source)
