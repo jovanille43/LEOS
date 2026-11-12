@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QProcess, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QRunnable, QProcess, QThreadPool, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
@@ -15,8 +15,37 @@ from desktop.notifications import post_notification
 
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
-from .power_profiles import inspect_power_profiles, set_power_profile
+from .power_profiles import PowerProfileState, inspect_power_profiles, set_power_profile
 from .mangohud import find_mangohud
+
+
+class _PowerProfileTaskSignals(QObject):
+    completed = Signal(object, bool, str)
+
+
+class _PowerProfileTask(QRunnable):
+    """Run slow power-profiles-daemon queries away from the QML thread."""
+
+    def __init__(self, profile: str | None = None) -> None:
+        super().__init__()
+        self.profile = profile
+        self.signals = _PowerProfileTaskSignals()
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            if self.profile is None:
+                state = inspect_power_profiles()
+                success, message = True, state.message
+            else:
+                success, message = set_power_profile(self.profile)
+                state = inspect_power_profiles()
+        except Exception:
+            state = PowerProfileState(
+                False, "", (), "Gestion native de l'énergie indisponible"
+            )
+            success, message = False, state.message
+        self.signals.completed.emit(state, success, message)
 
 
 class GamingController(QObject):
@@ -40,12 +69,16 @@ class GamingController(QObject):
         self._launcher_refresh_timer.timeout.connect(self.refreshLauncherStatuses)
         self._launcher_refresh_timer.start()
         self.monitor = SystemMonitor()
-        self._power_profiles = inspect_power_profiles()
+        self._power_profiles = PowerProfileState(
+            False, "", (), "Détection des profils d'énergie en cours…"
+        )
         self._power_profile_message = self._power_profiles.message
+        self._power_profile_task: _PowerProfileTask | None = None
         self._power_profile_refresh_timer = QTimer(self)
         self._power_profile_refresh_timer.setInterval(10000)
         self._power_profile_refresh_timer.timeout.connect(self.refreshPowerProfiles)
         self._power_profile_refresh_timer.start()
+        QTimer.singleShot(0, self.refreshPowerProfiles)
         self.settings = SettingsStore()
         self._mangohud_path = find_mangohud()
         self._mangohud_enabled = bool(
@@ -100,19 +133,41 @@ class GamingController(QObject):
 
     @Slot()
     def refreshPowerProfiles(self) -> None:
-        self._power_profiles = inspect_power_profiles()
-        self._power_profile_message = self._power_profiles.message
+        if self._power_profile_task is not None:
+            return
+        self._start_power_profile_task(None)
+
+    def _start_power_profile_task(self, profile: str | None) -> None:
+        task = _PowerProfileTask(profile)
+        task.signals.completed.connect(self._on_power_profile_task_completed)
+        self._power_profile_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(object, bool, str)
+    def _on_power_profile_task_completed(
+        self, state: PowerProfileState, success: bool, message: str
+    ) -> None:
+        self._power_profile_task = None
+        self._power_profiles = state
+        self._power_profile_message = message or state.message
+        self._message = self._power_profile_message
+        self.messageChanged.emit(self._message)
         self.powerProfilesChanged.emit()
 
     @Slot(str, result=bool)
     def applyPowerProfile(self, profile: str) -> bool:
-        success, message = set_power_profile(profile)
-        self._power_profiles = inspect_power_profiles()
-        self._power_profile_message = message
-        self._message = message
-        self.messageChanged.emit(message)
+        if not isinstance(profile, str) or profile not in self._power_profiles.profiles:
+            self._power_profile_message = "Ce profil n'est pas proposé par le système."
+            self.powerProfilesChanged.emit()
+            return False
+        if self._power_profile_task is not None:
+            self._power_profile_message = "Une opération de gestion d'énergie est déjà en cours."
+            self.powerProfilesChanged.emit()
+            return False
+        self._power_profile_message = "Changement du profil d'énergie en cours…"
         self.powerProfilesChanged.emit()
-        return success
+        self._start_power_profile_task(profile)
+        return True
 
     @Property(str, notify=launchStatusChanged)
     def lastLaunchStatus(self) -> str:
