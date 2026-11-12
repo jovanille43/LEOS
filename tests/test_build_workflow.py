@@ -44,6 +44,10 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
+    def test_recipe_installs_qt_multimedia_for_intro_playback(self):
+        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        self.assertIn("qt6-qtmultimedia", recipe)
+
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
         self.assertIn("gaming-roar-reference.mp4", manifest)
