@@ -370,9 +370,10 @@ class ControlCenterController(QObject):
             post_notification("Mise à jour système prête", message, "success")
 
     def _on_deployment_status_error(self, _error) -> None:
+        if self._deployment_timed_out:
+            return
         self._deployment_timeout.stop()
         self._deployment_check_running = False
-        self._deployment_timed_out = False
 
     @Slot()
     def checkForSystemUpdates(self) -> None:
@@ -425,8 +426,9 @@ class ControlCenterController(QObject):
         self.systemUpdatesChanged.emit()
 
     def _on_system_update_check_error(self, _error) -> None:
+        if self._system_update_timed_out:
+            return
         self._system_update_timeout.stop()
-        self._system_update_timed_out = False
         self._system_update_check_running = False
         message = "Impossible de démarrer uupd. Vérifie que Bazzite est correctement installé."
         self._set_system_update_status(message)
