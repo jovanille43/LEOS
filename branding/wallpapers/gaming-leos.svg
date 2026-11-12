@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="3840" height="2160" viewBox="0 0 3840 2160">
+  <title>LEOS Gaming — fond immersif 4K</title>
+  <desc>Fond noir immersif, arcs cyan et magenta et emblème officiel LEOS Gaming au centre.</desc>
+  <defs>
+    <radialGradient id="cyan-halo" cx="16%" cy="48%" r="72%">
+      <stop offset="0" stop-color="#00d9ff" stop-opacity=".24"/>
+      <stop offset=".48" stop-color="#006b8a" stop-opacity=".075"/>
+      <stop offset="1" stop-color="#001018" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="magenta-halo" cx="88%" cy="54%" r="72%">
+      <stop offset="0" stop-color="#e33bff" stop-opacity=".22"/>
+      <stop offset=".50" stop-color="#761286" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#18051d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="50%" cy="48%" r="72%">
+      <stop offset="0" stop-color="#06080d" stop-opacity=".02"/>
+      <stop offset=".74" stop-color="#04060a" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#020307" stop-opacity=".94"/>
+    </radialGradient>
+    <linearGradient id="energy-line" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00d9ff" stop-opacity=".42"/>
+      <stop offset=".5" stop-color="#8c6eaa" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#e33bff" stop-opacity=".42"/>
+    </linearGradient>
+    <pattern id="micro-grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M96 0H0V96" fill="none" stroke="#a7bed3" stroke-opacity=".035" stroke-width="1"/>
+      <circle cx="1" cy="1" r="1.5" fill="#c3d6e9" fill-opacity=".10"/>
+    </pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+  </defs>
+
+  <rect width="3840" height="2160" fill="#04060b"/>
+  <rect width="3840" height="2160" fill="url(#cyan-halo)"/>
+  <rect width="3840" height="2160" fill="url(#magenta-halo)"/>
+
+  <g filter="url(#glow)" opacity=".38">
+    <path d="M-180 1710C740 1320 1050 680 1920 770"
+          fill="none" stroke="#00cfff" stroke-opacity=".34" stroke-width="38"/>
+    <path d="M4020 450C3110 820 2780 1450 1920 1370"
+          fill="none" stroke="#e33bff" stroke-opacity=".30" stroke-width="40"/>
+  </g>
+  <g fill="none" stroke="url(#energy-line)" stroke-width="3">
+    <path d="M-140 1640C700 1290 1050 700 1880 780"/>
+    <path d="M-140 1700C700 1350 1050 760 1880 840" stroke-opacity=".42"/>
+    <path d="M3980 520C3150 870 2790 1460 1960 1380"/>
+    <path d="M3980 580C3150 930 2790 1520 1960 1440" stroke-opacity=".42"/>
+  </g>
+
+  <g fill="none" stroke-width="2">
+    <ellipse cx="1920" cy="1080" rx="1190" ry="870"
+             stroke="#00d9ff" stroke-opacity=".10" stroke-dasharray="3 24"
+             transform="rotate(-9 1920 1080)"/>
+    <ellipse cx="1920" cy="1080" rx="1270" ry="940"
+             stroke="#e33bff" stroke-opacity=".085" stroke-dasharray="3 30"
+             transform="rotate(8 1920 1080)"/>
+    <path d="M1920 100C1960 420 1960 560 1920 760"
+          stroke="#91a6bf" stroke-opacity=".10"/>
+    <path d="M1920 1400C1880 1650 1880 1810 1920 2060"
+          stroke="#91a6bf" stroke-opacity=".10"/>
+  </g>
+
+  <rect width="3840" height="2160" fill="url(#micro-grid)" opacity=".75"/>
+  <rect width="3840" height="2160" fill="url(#vignette)"/>
+
+  <!-- Keep the supplied gaming emblem as the single source of truth. -->
+  <image x="1060" y="180" width="1720" height="1800"
+         preserveAspectRatio="xMidYMid meet"
+         xlink:href="../gaming-logo.jpeg"/>
+</svg>
