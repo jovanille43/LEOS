@@ -128,6 +128,24 @@ class ControllerProfileTests(unittest.TestCase):
             self.store.update(self.device_id, profile="xbox")
         self.assertEqual(self.path.read_bytes(), raw)
 
+    def test_loaded_profile_axis_centres_are_capped(self):
+        from controller_center.profiles import MAX_AXIS_CENTERS
+
+        record = {
+            "profile": "custom",
+            "deadzone": 8,
+            "axis_centers": {f"ABS_{index}": index for index in range(MAX_AXIS_CENTERS + 20)},
+        }
+        validated = self.store._validated_record(record)
+        self.assertEqual(len(validated["axis_centers"]), MAX_AXIS_CENTERS)
+
+    def test_device_identity_hashing_bounds_untrusted_descriptor_fields(self):
+        from controller_center.profiles import device_profile_id
+
+        first = device_profile_id("X" * 10000, phys="P" * 10000)
+        second = device_profile_id("X" * 256, phys="P" * 256)
+        self.assertEqual(first, second)
+
     def test_number_of_saved_controller_profiles_is_bounded(self):
         from controller_center.profiles import MAX_CONTROLLER_PROFILES
 
