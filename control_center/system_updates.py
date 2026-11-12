@@ -6,6 +6,8 @@ import re
 import shutil
 from collections.abc import Callable
 
+from leos_core.json_utils import json_nesting_within_limit
+
 
 MAX_RPM_OSTREE_STATUS_CHARS = 2 * 1024 * 1024
 MAX_RPM_OSTREE_DEPLOYMENTS = 1000
@@ -58,7 +60,11 @@ def pending_deployment_from_status(payload: str) -> dict[str, str] | None:
     """Extract an actually staged/pending deployment from rpm-ostree JSON."""
     import json
 
-    if not isinstance(payload, str) or len(payload) > MAX_RPM_OSTREE_STATUS_CHARS:
+    if (
+        not isinstance(payload, str)
+        or len(payload) > MAX_RPM_OSTREE_STATUS_CHARS
+        or not json_nesting_within_limit(payload)
+    ):
         return None
     try:
         status = json.loads(payload)
