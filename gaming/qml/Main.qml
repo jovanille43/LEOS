@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtMultimedia
 
 ApplicationWindow {
     id: window
@@ -31,6 +32,31 @@ ApplicationWindow {
     property int selectedCategoryIndex: 0
     property string navigationArea: "categories"
     property string pendingPowerProfile: ""
+    property bool returningToDesktop: false
+
+    function requestDesktopReturn() {
+        if (returningToDesktop)
+            return
+        if (!leos.animationsEnabled) {
+            leos.returnToDesktop()
+            return
+        }
+        returningToDesktop = true
+        desktopIntroOverlay.visible = true
+        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mp4")
+        desktopIntroTimeout.start()
+        desktopIntroPlayer.play()
+    }
+
+    function finishDesktopReturn() {
+        if (!returningToDesktop)
+            return
+        returningToDesktop = false
+        desktopIntroTimeout.stop()
+        desktopIntroPlayer.stop()
+        desktopIntroOverlay.visible = false
+        leos.returnToDesktop()
+    }
 
     function gameMonogram(title) {
         const words = String(title || "").trim().split(/\s+/).filter(Boolean)
@@ -143,10 +169,12 @@ ApplicationWindow {
     }
 
     function handleGamepadAction(action) {
+        if (returningToDesktop)
+            return
         if (returnDialog.visible) {
             if (action === "confirm") {
                 returnDialog.close()
-                leos.returnToDesktop()
+                window.requestDesktopReturn()
             } else if (action === "back") {
                 returnDialog.close()
             }
@@ -843,6 +871,45 @@ ApplicationWindow {
         }
     }
 
+    MediaPlayer {
+        id: desktopIntroPlayer
+        audioOutput: AudioOutput {
+            muted: !leos.soundsEnabled
+        }
+        videoOutput: desktopIntroVideoOutput
+        onMediaStatusChanged: {
+            if (mediaStatus === MediaPlayer.EndOfMedia)
+                window.finishDesktopReturn()
+        }
+        onErrorOccurred: function(error, errorString) {
+            window.finishDesktopReturn()
+        }
+    }
+
+    Timer {
+        id: desktopIntroTimeout
+        interval: 9000
+        repeat: false
+        onTriggered: window.finishDesktopReturn()
+    }
+
+    Rectangle {
+        id: desktopIntroOverlay
+        anchors.fill: parent
+        color: "#000000"
+        visible: false
+        z: 1000
+        VideoOutput {
+            id: desktopIntroVideoOutput
+            anchors.fill: parent
+            fillMode: VideoOutput.PreserveAspectFit
+        }
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.AllButtons
+        }
+    }
+
     Dialog {
         id: returnDialog
         title: "Retourner à Desktop Mode ?"
@@ -864,7 +931,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 onClicked: {
                     returnDialog.close()
-                    leos.returnToDesktop()
+                    window.requestDesktopReturn()
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
@@ -976,6 +1043,10 @@ ApplicationWindow {
     }
 
     Keys.onPressed: function(event) {
+        if (window.returningToDesktop) {
+            event.accepted = true
+            return
+        }
         if (event.key === Qt.Key_Left) {
             window.navigateDirection("left")
             event.accepted = true
