@@ -265,6 +265,18 @@ class HardwareInventoryTests(unittest.TestCase):
                 ("PipeWire / PulseAudio", "alsa_output.pci-1.analog-stereo", "1 entrée(s) détectée(s)"),
             )
 
+    def test_audio_inventory_ignores_malformed_source_rows(self):
+        responses = iter([
+            "Server Name: PipeWire\\nDefault Sink: output.test",
+            "",
+            "malformed-source-row\\n0 input.test module-test s16le 2ch 48000Hz RUNNING",
+        ])
+        with patch.object(hardware, "_run", side_effect=lambda *_args, **_kwargs: next(responses)):
+            self.assertEqual(
+                hardware._audio_details(),
+                ("PipeWire / PulseAudio", "output.test", "1 entrée(s) détectée(s)"),
+            )
+
     def test_network_summary_omits_loopback_and_keeps_local_addresses(self):
         with patch.object(
             hardware, "_run",
