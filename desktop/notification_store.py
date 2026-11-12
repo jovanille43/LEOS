@@ -31,8 +31,10 @@ def _valid_record(item: object) -> bool:
         return False
     try:
         uuid.UUID(item["id"])
-        datetime.fromisoformat(item["created_at"])
-    except (ValueError, TypeError, AttributeError):
+        created_at = datetime.fromisoformat(item["created_at"])
+        if created_at.tzinfo is None or created_at.utcoffset() is None:
+            return False
+    except (ValueError, TypeError, AttributeError, OverflowError):
         return False
     return (
         isinstance(item["title"], str) and 0 < len(item["title"]) <= MAX_TITLE
@@ -80,7 +82,7 @@ class NotificationStore:
             data = json.loads(raw.decode("utf-8"))
         except FileNotFoundError:
             return True
-        except (OSError, UnicodeError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
             return False
         if (isinstance(data, dict) and type(data.get("schema_version")) is int
                 and data.get("schema_version") == 1
