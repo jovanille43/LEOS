@@ -42,6 +42,8 @@ La détection matérielle doit rester non bloquante et tolérante aux fonctions 
 - une donnée non exposée par le pilote reste « indisponible », jamais simulée ;
 - les animations, effets et rafraîchissements peuvent être allégés sur les machines modestes ;
 - les fonctions spécifiques à un fournisseur ne sont activées que si leur outil ou leur interface est réellement disponible ;
+- sur un système multi-GPU, l'inventaire identifie chaque carte PCI lorsque les informations sont exposées ; la télémétrie Gaming privilégie le GPU qui fournit les mesures réelles les plus complètes ;
+- les températures privilégient les capteurs CPU/GPU identifiés plutôt que les sondes génériques du châssis ou des périphériques ;
 - la configuration matérielle ne doit pas déclencher silencieusement l'installation ou la suppression d'un pilote.
 
 Le précontrôle affiché dans **Centre de contrôle → Matériel & connexions** vérifie l'architecture, le mode de démarrage, la quantité de RAM, une estimation des cœurs physiques, l'espace libre sur la racine / et la version Vulkan exposée par chaque GPU. LEOS inclut le paquet `vulkan-tools` pour fournir `vulkaninfo` ; la mesure reste « non vérifiable » si le pilote ou l'interface Vulkan n'expose pas les informations attendues. Le contrôle compare ces informations aux repères Gaming Bazzite (4 cœurs, 8 Go, 50 Go libres et Vulkan 1.3+). Il reste indicatif : la fréquence CPU de référence, le type et l'emplacement physique du SSD, la table GPT, la compatibilité réelle des pilotes, du Wi-Fi, du Bluetooth, de l'audio et des périphériques ne sont pas certifiés. L'absence d'une donnée, ou l'échec de la sonde Vulkan, est signalée comme « non vérifiable » et ne bloque jamais Desktop Mode.
