@@ -135,6 +135,17 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 - [ ] Les préférences et sauvegardes Plasma ne sont pas appliquées sans accord explicite.
 
 ## 8. Apparence et fonds d'écran
+## 8. Affichage et multi-écrans
+
+- [ ] Un écran interne eDP et un écran HDMI/DisplayPort externe sont détectés lorsqu'ils sont exposés par DRM.
+- [ ] La déconnexion et la reconnexion d'un écran mettent à jour l'inventaire sans faire planter le Centre de contrôle.
+- [ ] Les connecteurs débranchés ne sont pas comptés comme des écrans connectés.
+- [ ] Les modes annoncés par le pilote sont affichés sans être confondus avec le mode actuellement actif.
+- [ ] Les configurations avec plusieurs écrans de résolutions et fréquences différentes restent gérées par KDE/KScreen.
+- [ ] La mise à l'échelle, l'orientation, l'écran principal, le réveil après veille et les branchements à chaud sont vérifiés manuellement dans KDE.
+- [ ] Une absence de connecteur DRM ou de modes exposés reste une information « non vérifiable » et ne bloque pas LEOS.
+- [ ] LEOS n'applique jamais automatiquement une résolution, une fréquence, une orientation ou une disposition d'écran.
+
 
 - [ ] Les aperçus Desktop et Gaming s'affichent dans la page Apparence du Centre de contrôle.
 - [ ] Si un aperçu affiche son texte de repli, vérifier le chargement du plugin Qt SVG et la résolution du JPEG référencé depuis le SVG.
