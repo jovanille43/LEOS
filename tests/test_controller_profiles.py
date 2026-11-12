@@ -26,6 +26,18 @@ class ControllerProfileTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    def test_deeply_nested_profile_json_is_ignored_and_never_overwritten(self):
+        invalid = "[" * 2000 + "0" + "]" * 2000
+        self.path.write_text(invalid, encoding="utf-8")
+
+        self.assertEqual(
+            self.store.get(self.device_id),
+            {"profile": "auto", "deadzone": 8, "axis_centers": {}},
+        )
+        with self.assertRaisesRegex(ValueError, "unreadable or too large"):
+            self.store.update(self.device_id, profile="xbox")
+        self.assertEqual(self.path.read_text(encoding="utf-8"), invalid)
+
     def test_defaults_are_returned_for_unknown_device(self):
         self.assertEqual(
             self.store.get(self.device_id),
