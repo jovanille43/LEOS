@@ -7,6 +7,7 @@ from pathlib import Path
 
 from gaming.backend.retroarch import (
     find_retroarch_playlist_directories,
+    find_retroarch_thumbnail_directories,
     load_retroarch_games,
 )
 from gaming.backend.install_state import installation_status
