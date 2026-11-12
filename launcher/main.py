@@ -65,7 +65,9 @@ def main() -> int:
             except OSError as error:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
+            selected_mode["value"] = "gaming"
         if mode == "desktop":
+            selected_mode["value"] = "desktop"
             remembered = manager.rememberMode("desktop")
             post_notification(
                 "LEOS Desktop Mode",
@@ -73,8 +75,10 @@ def main() -> int:
                 else "Le bureau est actif, mais le choix de démarrage n'a pas pu être enregistré.",
                 "success" if remembered else "warning",
             )
+        selector_controller.completeOnboarding()
         app.quit()
 
+    selected_mode = {"value": ""}
     manager.modeRequested.connect(handle_mode)
 
     engine = QQmlApplicationEngine()
@@ -86,7 +90,21 @@ def main() -> int:
     if not engine.rootObjects():
         selector_controller.shutdown()
         return 1
-    return app.exec()
+
+    exit_code = app.exec()
+    if selected_mode["value"] == "desktop":
+        setup_script = Path("/usr/libexec/leos-default-apps-setup")
+        if setup_script.is_file():
+            try:
+                subprocess.Popen(
+                    ["/usr/bin/bash", str(setup_script)],
+                    start_new_session=True,
+                    close_fds=True,
+                )
+            except OSError:
+                # Optional application setup must never block Desktop startup.
+                pass
+    return exit_code
 
 
 if __name__ == "__main__":
