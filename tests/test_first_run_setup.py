@@ -25,6 +25,7 @@ class FirstRunSetupTests(unittest.TestCase):
             '  [[ -n "$EXISTING_APP" && "$*" == *"$EXISTING_APP"* ]] && exit 0\n'
             '  exit 1\n'
             'fi\n'
+            'if [[ "$1" == install && -n "$FAIL_APP" && "$*" == *"$FAIL_APP"* ]]; then exit 2; fi\n'
             "exit 0\n",
             encoding="utf-8",
         )
@@ -47,6 +48,7 @@ class FirstRunSetupTests(unittest.TestCase):
             "PROMPT_LOG": str(root / "prompt.log"),
             "KDLG_RESULT": "1",
             "EXISTING_APP": "",
+            "FAIL_APP": "",
         })
         Path(env["HOME"]).mkdir()
         return env
@@ -100,6 +102,20 @@ class FirstRunSetupTests(unittest.TestCase):
                 any("install " in command and "org.videolan.VLC" in command for command in commands)
             )
             self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
+
+    def test_failed_app_does_not_block_other_installs_or_mark_setup_complete(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            env = self._environment(root)
+            env["KDLG_RESULT"] = "0"
+            env["FAIL_APP"] = "com.brave.Browser"
+            result = self._run(env)
+            self.assertNotEqual(result.returncode, 0)
+            commands = (root / "flatpak.log").read_text().splitlines()
+            self.assertTrue(any("com.brave.Browser" in command and command.startswith("install ") for command in commands))
+            self.assertTrue(any("org.libreoffice.LibreOffice" in command and command.startswith("install ") for command in commands))
+            self.assertTrue(any("org.videolan.VLC" in command and command.startswith("install ") for command in commands))
+            self.assertFalse((root / "state/leos/default-apps-seeded").exists())
 
     def test_missing_graphical_confirmation_never_installs_or_marks_complete(self):
         with tempfile.TemporaryDirectory() as temporary:
