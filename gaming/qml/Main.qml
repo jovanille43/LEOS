@@ -1277,10 +1277,9 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 onClicked: {
                     powerProfileDialog.close()
-                    if (!leos.applyPowerProfile(window.pendingPowerProfile))
-                        statusText.text = leos.powerProfileStatus
-                    else
-                        statusText.text = "Profil énergie mis à jour."
+                    statusText.text = leos.applyPowerProfile(window.pendingPowerProfile)
+                        ? leos.powerProfileStatus
+                        : leos.powerProfileStatus
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
