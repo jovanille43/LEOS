@@ -462,7 +462,6 @@ class GameLibraryModel(QAbstractListModel):
         }
 
     @Slot(str, str, str, result=bool)
-    @Slot(str, str, str, result=bool)
     def addManualGame(self, title: str, platform: str, command: str) -> bool:
         validated = validate_manual_game_input(title, platform, command)
         if validated is None:
@@ -511,7 +510,6 @@ class GameLibraryModel(QAbstractListModel):
         write_bounded_json(
             self._manual_file, games, max_bytes=MAX_LIBRARY_STATE_FILE_BYTES
         )
-
 
     @property
     def lastLaunchStatus(self) -> str:
