@@ -137,7 +137,7 @@ LEOS/
 - [x] Emblèmes officiels et vidéos Desktop/Gaming présents dans le dépôt et copiés dans la recette.
 - [x] Transitions vidéo via Qt Multimedia avec piste audio configurable et repli en cas d'erreur.
 - [x] Contrôles Python automatisés et validation/génération de la recette BlueBuild réussis sur GitHub Actions.
-- [x] Première ressource de fond d'écran Desktop 4K utilisant l'emblème officiel ; son rendu et sa sélection dans KDE restent à valider.\n- [ ] Intégration complète du dock au véritable panneau Plasma.
+- [x] Premières ressources de fonds d'écran Desktop et Gaming 4K, chacune réutilisant l'emblème officiel du mode correspondant ; leur rendu et leur intégration restent à valider.\n- [ ] Intégration complète du dock au véritable panneau Plasma.
 - [ ] Intégrations d'émulateurs et validation élargie sur plusieurs configurations matérielles.
 - [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
