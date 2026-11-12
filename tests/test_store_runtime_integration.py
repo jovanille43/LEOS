@@ -54,6 +54,23 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("enabled: !store.busy", qml)
         self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
 
+    def test_flatpak_process_output_is_bounded_per_stream(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn("MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024", source)
+        self.assertIn("remaining = MAX_PROCESS_OUTPUT_BYTES - len(buffer)", source)
+        self.assertIn("buffer.extend(chunk[:remaining])", source)
+        self.assertIn("self._output_overflowed = True", source)
+
+    def test_finished_signal_after_process_error_is_ignored(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        finished = source[source.index("def _on_finished"):source.index("def _on_error")]
+        error = source[source.index("def _on_error"):source.index("def _append_output")]
+        self.assertIn("if not self._busy:", finished)
+        self.assertIn("self._set_busy(False)", error)
+        self.assertIn('self._action = ""', error)
+        self.assertIn('self._target = ""', error)
+        self.assertIn('self._verified_source_url = ""', error)
+
     def test_flatpak_process_start_does_not_block_the_gui_thread(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("self._set_busy(True)", source)
