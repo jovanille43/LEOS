@@ -61,7 +61,10 @@ def open_first_available_gamepad(
             continue
         try:
             backend.open(path)
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, RuntimeError) as error:
+            # A device may be visible during enumeration but still refuse the
+            # event-node open because its driver or permission state changed.
+            # Keep scanning so one bad node cannot hide a usable controller.
             last_error = str(error)
             backend.close()
             continue
