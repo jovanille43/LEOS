@@ -1277,9 +1277,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 onClicked: {
                     powerProfileDialog.close()
-                    statusText.text = leos.applyPowerProfile(window.pendingPowerProfile)
-                        ? leos.powerProfileStatus
-                        : leos.powerProfileStatus
+                    leos.applyPowerProfile(window.pendingPowerProfile)
+                    statusText.text = leos.powerProfileStatus
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
