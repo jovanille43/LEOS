@@ -41,6 +41,8 @@ Les PC portables hybrides (iGPU + GPU dédié) devront être testés séparémen
 - Si `nvidia-smi`, le pilote propriétaire ou l'accès aux nœuds DRM est absent ou expire, la télémétrie est facultative et ne doit pas empêcher Gaming Mode de démarrer.
 
 La détection matérielle doit rester non bloquante et tolérante aux fonctions absentes :
+L'inventaire des écrans lit les connecteurs exposés par DRM : il distingue les connecteurs connectés et actifs lorsque l'état est fourni, puis affiche les modes annoncés par le pilote. Cette liste de modes ne doit jamais être présentée comme la résolution ou la fréquence actuellement appliquée. LEOS laisse la gestion de la disposition, de la mise à l'échelle, de l'orientation et du taux de rafraîchissement à KDE/KScreen ; aucune valeur n'est modifiée lors d'une analyse matérielle.
+
 
 - l'absence d'un capteur ne doit pas faire échouer l'interface ;
 - une donnée non exposée par le pilote reste « indisponible », jamais simulée ;
