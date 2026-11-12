@@ -79,6 +79,26 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
         self.assertIn("if not target.is_file()", source)
 
+    def test_recipe_ci_checks_deployed_branding_hashes_before_reporting(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("sha256sum --check branding/DEPLOYED_SHA256SUMS", source)
+        self.assertLess(
+            source.index("Verify deployed branding SHA-256 fingerprints"),
+            source.index("Report deployed branding SHA-256 fingerprints"),
+        )
+
+    def test_image_workflow_checks_deployed_branding_hashes(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("sha256sum --check branding/DEPLOYED_SHA256SUMS", source)
+        deployed = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
+        entries = [
+            line for line in deployed.splitlines()
+            if line and not line.startswith("#")
+        ]
+        self.assertEqual(len(entries), 8)
+        for line in entries:
+            self.assertRegex(line, r"^[0-9a-f]{64}  branding/.+")
+
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Check out repository", source)
