@@ -15,6 +15,26 @@ ApplicationWindow {
     property color magenta: "#E33BFF"
     property color muted: "#929BAD"
 
+    function launchApplication(desktopId, applicationName) {
+        if (!applicationCatalog.launch(desktopId)) {
+            status.text = "Impossible de lancer " + applicationName + "."
+            return false
+        }
+        status.text = applicationName + " : lancement demandé."
+        window.close()
+        return true
+    }
+
+    Keys.priority: Keys.BeforeItem
+    Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Escape) {
+            window.close()
+            event.accepted = true
+        }
+    }
+
+    Component.onCompleted: search.forceActiveFocus()
+
     Rectangle {
         anchors.fill: parent
         color: "transparent"
@@ -39,15 +59,13 @@ ApplicationWindow {
             Button {
                 text: "MODES"
                 onClicked: {
-                    if (!applicationCatalog.launch("leos-mode-selector.desktop"))
-                        status.text = "Sélecteur de modes indisponible."
+                    window.launchApplication("leos-mode-selector.desktop", "le sélecteur de modes")
                 }
             }
             Button {
                 text: "CENTRE DE CONTRÔLE"
                 onClicked: {
-                    if (!applicationCatalog.launch("leos-control-center.desktop"))
-                        status.text = "Centre de contrôle indisponible."
+                    window.launchApplication("leos-control-center.desktop", "le Centre de contrôle")
                 }
             }
             Button {
@@ -55,8 +73,7 @@ ApplicationWindow {
                       ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
                       : "NOTIFICATIONS"
                 onClicked: {
-                    if (!applicationCatalog.launch("leos-notifications.desktop"))
-                        status.text = "Centre de notifications indisponible."
+                    window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
                 }
             }
             Button {
@@ -175,12 +192,7 @@ ApplicationWindow {
                                 id: appMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onClicked: {
-                                    if (!applicationCatalog.launch(desktopId))
-                                        status.text = "Lancement impossible. Vérifie l'installation de l'application."
-                                    else
-                                        status.text = name + " : lancement demandé."
-                                }
+                                onClicked: window.launchApplication(desktopId, name)
                             }
                             ColumnLayout {
                                 anchors.fill: parent
