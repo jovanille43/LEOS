@@ -66,8 +66,13 @@ def main() -> int:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
         if mode == "desktop":
-            manager.rememberMode("desktop")
-            post_notification("LEOS Desktop Mode", "Le bureau KDE est sélectionné.", "success")
+            remembered = manager.rememberMode("desktop")
+            post_notification(
+                "LEOS Desktop Mode",
+                "Le bureau KDE est sélectionné." if remembered
+                else "Le bureau est actif, mais le choix de démarrage n'a pas pu être enregistré.",
+                "success" if remembered else "warning",
+            )
         app.quit()
 
     manager.modeRequested.connect(handle_mode)
