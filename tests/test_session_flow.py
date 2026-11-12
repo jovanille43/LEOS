@@ -46,6 +46,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("function onGamepadAction(action)", qml)
         self.assertIn("window.handleGamepadAction(action)", qml)
 
+    def test_failed_gaming_qml_startup_releases_controller_resources(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
+        self.assertLess(
+            main.index("if not engine.rootObjects():"),
+            main.index("controller.shutdown()"),
+        )
+        self.assertIn("self.monitor.stop()", controller)
+        self.assertIn("self._gamepad_poll_timer.stop()", controller)
+        self.assertIn("self._gamepad_refresh_timer.stop()", controller)
+        self.assertIn("self._gamepad.close()", controller)
+
     def test_mode_choice_does_not_add_automatic_application_closing(self):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
