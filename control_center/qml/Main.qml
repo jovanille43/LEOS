@@ -20,6 +20,7 @@ ApplicationWindow {
     property string launchNotice: ""
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
+    property string wallpaperNotice: ""
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -467,6 +468,128 @@ ApplicationWindow {
                                             radius: 3
                                             color: window.themeColors.accent_secondary
                                         }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 286
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+
+                                    Label {
+                                        text: "FONDS D'ÉCRAN LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Deux fonds 4K assortis à chaque mode. Les aperçus utilisent les emblèmes officiels ; rien n'est appliqué sans ton choix dans KDE."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 12
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 5
+                                            Rectangle {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 112
+                                                radius: 8
+                                                color: "#05070b"
+                                                clip: true
+                                                Image {
+                                                    id: desktopWallpaperPreview
+                                                    anchors.fill: parent
+                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    fillMode: Image.PreserveAspectCrop
+                                                    asynchronous: true
+                                                    visible: status === Image.Ready
+                                                }
+                                                Label {
+                                                    anchors.centerIn: parent
+                                                    visible: desktopWallpaperPreview.status !== Image.Ready
+                                                    text: "APERÇU DESKTOP"
+                                                    color: "#a9bacb"
+                                                    font.pixelSize: 10
+                                                }
+                                            }
+                                            Label {
+                                                text: "DESKTOP · LION SEUL"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 9
+                                                font.weight: Font.DemiBold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 5
+                                            Rectangle {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 112
+                                                radius: 8
+                                                color: "#05070b"
+                                                clip: true
+                                                Image {
+                                                    id: gamingWallpaperPreview
+                                                    anchors.fill: parent
+                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    fillMode: Image.PreserveAspectCrop
+                                                    asynchronous: true
+                                                    visible: status === Image.Ready
+                                                }
+                                                Label {
+                                                    anchors.centerIn: parent
+                                                    visible: gamingWallpaperPreview.status !== Image.Ready
+                                                    text: "APERÇU GAMING"
+                                                    color: "#a9bacb"
+                                                    font.pixelSize: 10
+                                                }
+                                            }
+                                            Label {
+                                                text: "GAMING · LION + MANETTE"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 9
+                                                font.weight: Font.DemiBold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "CHOISIR DANS LES PARAMÈTRES KDE"
+                                            onClicked: {
+                                                const opened = controlCenter.openSettingsModule("wallpaper")
+                                                window.wallpaperNotice = opened
+                                                    ? "Paramètres de fond d'écran KDE ouverts. Choisis le fichier LEOS dans le dossier des ressources."
+                                                    : "Le module de fond d'écran KDE n'est pas disponible sur cette session."
+                                            }
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                    }
+                                    Label {
+                                        text: window.wallpaperNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                 }
                             }
