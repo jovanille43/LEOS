@@ -144,7 +144,7 @@ class ControllerProfileStore:
             if (
                 isinstance(axis, str) and 0 < len(axis) <= MAX_AXIS_NAME_LENGTH
                 and type(value) is int and -65536 <= value <= 65536
-            
+            )
         }
         return {"profile": profile, "deadzone": deadzone, "axis_centers": valid_centers}
 
