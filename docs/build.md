@@ -37,7 +37,7 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 
 - Vérifier le contenu du workflow `.github/workflows/build.yml`, notamment le contrôle cryptographique de correspondance entre la clé privée et `cosign.pub`.
 - [x] Valider `recipes/recipe.yml` avec le CLI BlueBuild (`bluebuild validate`) et générer un Containerfile (`bluebuild generate`) dans le workflow GitHub Actions.
-- Vérifier la présence des trois logos et des trois vidéos aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
+- Vérifier la présence des trois logos, des trois vidéos et du fond d'écran Desktop 4K aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
 - Confirmer que le secret `SIGNING_SECRET` est configuré et que la clé publique correspondante est disponible.
 - Déclencher le workflow manuellement seulement après ces contrôles.
 
@@ -52,7 +52,7 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - Les logos officiels et les trois vidéos d'introduction/référence sont présents dans `branding/`. Les fonds d'écran restent à intégrer ; le rendu vidéo/audio et les transitions doivent encore être validés sur une session Bazzite réelle.
 - Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six fichiers officiels ; le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio lisibles par ffprobe. Il vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
+Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six fichiers originaux transmis ainsi que du fond d'écran Desktop dérivé ; le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio lisibles par ffprobe. Il vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
 
 ## Validation sur matériel réel
 
