@@ -1,5 +1,7 @@
 """Tests for the read-only hardware inventory."""
+
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from control_center import hardware
@@ -9,10 +11,11 @@ class HardwareInventoryTests(unittest.TestCase):
     def test_snapshot_exposes_all_dashboard_fields(self):
         snapshot = hardware.collect_hardware_snapshot()
         expected = {
-            "cpu", "cpuThreads", "memory", "storage", "gpu",
+            "cpu", "cpuThreads", "cpuCores", "memory", "storage", "gpu", "vulkan",
             "memoryTotal", "architecture", "firmware", "gamingBaseline",
             "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
-            "audioServer", "audioOutput", "audioInputs", "controllers", "battery", "usbDevices", "network",
+            "audioServer", "audioOutput", "audioInputs", "controllers", "battery",
+            "usbDevices", "network",
         }
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
@@ -34,28 +37,108 @@ class HardwareInventoryTests(unittest.TestCase):
             self.assertEqual(hardware._firmware_details(efi), "UEFI")
             self.assertEqual(hardware._firmware_details(root / "missing"), "UEFI non détecté")
 
+    def test_cpu_topology_counts_physical_cores_separately_from_threads(self):
+        blocks = []
+        for core in range(4):
+            for thread in range(2):
+                blocks.append(
+                    f"processor : {core * 2 + thread}\nphysical id : 0\ncore id : {core}"
+                )
+        physical, logical = hardware._cpu_topology("\n\n".join(blocks))
+        self.assertEqual((physical, logical), (4, 8))
+        self.assertIn("4 cœur(s) physique(s)", hardware._cpu_core_details(physical, logical))
+        self.assertIn("8 threads logiques", hardware._cpu_core_details(physical, logical))
+
+    def test_cpu_topology_does_not_guess_physical_cores_from_logical_threads(self):
+        physical, logical = hardware._cpu_topology("processor : 0\n\nprocessor : 1")
+        self.assertIsNone(physical)
+        self.assertEqual(logical, 2)
+        self.assertEqual(
+            hardware._cpu_core_details(physical, logical),
+            "Cœurs physiques indisponibles",
+        )
+
     def test_memory_total_parser_and_gaming_baseline_are_conservative(self):
         with patch.object(
             hardware, "_read",
-            return_value="MemTotal:       16384000 kB\\nMemAvailable:    8192000 kB\\n",
+            return_value="MemTotal:       16384000 kB\nMemAvailable:    8192000 kB\n",
         ):
             total = hardware._memory_total_bytes()
         self.assertEqual(total, 16384000 * 1024)
         self.assertEqual(hardware._memory_total_details(total), "15.6 Gio")
-        passed = hardware._gaming_baseline_assessment("x86_64", "UEFI", total)
-        self.assertIn("Contrôles partiels conformes", passed)
-        self.assertIn("Vulkan 1.3+", passed)
-        eight_gb = hardware._gaming_baseline_assessment(
-            "x86_64", "UEFI", 8_000_000_000
+
+        devices = [("GPU de test", (1, 3, 280))]
+        passed = hardware._gaming_baseline_assessment(
+            "x86_64", "UEFI", total, 4, 60_000_000_000, devices
         )
-        self.assertIn("Contrôles partiels conformes", eight_gb)
+        self.assertIn("Seuils matériels Gaming observés comme conformes", passed)
+        self.assertIn("type de support de stockage non vérifié", passed)
 
         unsupported = hardware._gaming_baseline_assessment(
-            "ARM64", "UEFI non détecté", 4 * 1024 ** 3
+            "ARM64", "UEFI non détecté", 4 * 1024 ** 3,
+            physical_cores=2,
+            storage_free_bytes=20_000_000_000,
+            vulkan_devices=[("GPU ancien", (1, 2, 0))],
         )
         self.assertIn("ARM64 hors cible", unsupported)
         self.assertIn("moins de 8 Go de RAM", unsupported)
         self.assertIn("UEFI non détecté", unsupported)
+        self.assertIn("moins de 4 cœurs physiques", unsupported)
+        self.assertIn("moins de 50 Go libres", unsupported)
+        self.assertIn("Vulkan 1.3+", unsupported)
+
+    def test_missing_baseline_data_is_reported_as_unknown_not_as_failure(self):
+        result = hardware._gaming_baseline_assessment(
+            "x86_64", "UEFI", 16 * 1024 ** 3
+        )
+        self.assertIn("Contrôle Gaming incomplet", result)
+        self.assertIn("nombre de cœurs physiques non vérifiable", result)
+        self.assertIn("prise en charge Vulkan 1.3+ non vérifiable", result)
+        self.assertNotIn("moins de 4 cœurs", result)
+
+    def test_storage_reports_free_space_without_claiming_drive_type(self):
+        usage = SimpleNamespace(total=200 * 1024 ** 3, used=100 * 1024 ** 3, free=100 * 1024 ** 3)
+        with patch.object(hardware.shutil, "disk_usage", return_value=usage):
+            label, free = hardware._storage_details()
+        self.assertEqual(free, usage.free)
+        self.assertIn("Gio libres sur /", label)
+
+    def test_storage_unavailable_is_non_fatal(self):
+        with patch.object(hardware.shutil, "disk_usage", side_effect=OSError):
+            self.assertEqual(hardware._storage_details(), ("Indisponible", None))
+
+    def test_vulkan_parser_reads_per_device_api_version(self):
+        output = (
+            "Devices:\n========\n"
+            "GPU0:\n"
+            "    deviceName = AMD Radeon Test\n"
+            "    apiVersion = 1.3.280 (4206856)\n"
+            "GPU1:\n"
+            "    deviceName = Intel Graphics Test\n"
+            "    apiVersion = 1.2.198 (4202694)\n"
+        )
+        self.assertEqual(
+            hardware._parse_vulkan_devices(output),
+            [
+                ("AMD Radeon Test", (1, 3, 280)),
+                ("Intel Graphics Test", (1, 2, 198)),
+            ],
+        )
+
+    def test_vulkan_probe_reports_missing_tool_without_crashing(self):
+        with patch.object(hardware.shutil, "which", return_value=None):
+            self.assertEqual(
+                hardware._vulkan_snapshot(),
+                ("Non vérifiable (outil vulkaninfo absent)", None),
+            )
+
+    def test_vulkan_probe_keeps_unknown_device_version_unknown(self):
+        output = "GPU0:\n    deviceName = GPU Test\n"
+        with patch.object(hardware.shutil, "which", return_value="/usr/bin/vulkaninfo"):
+            with patch.object(hardware, "_run", return_value=output):
+                label, devices = hardware._vulkan_snapshot()
+        self.assertIn("version Vulkan inconnue", label)
+        self.assertEqual(devices, [("GPU Test", None)])
 
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):
         with patch.object(hardware, "_run", return_value="inactive"):
