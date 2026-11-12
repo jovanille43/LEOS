@@ -70,5 +70,6 @@
   <!-- Keep the supplied gaming emblem as the single source of truth. -->
   <image x="1060" y="180" width="1720" height="1800"
          preserveAspectRatio="xMidYMid meet"
+         href="../gaming-logo.jpeg"
          xlink:href="../gaming-logo.jpeg"/>
 </svg>
