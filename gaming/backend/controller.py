@@ -78,6 +78,14 @@ class GamingController(QObject):
         self._gamepad_refresh_timer.start()
 
 
+    @Property(bool, constant=False)
+    def animationsEnabled(self) -> bool:
+        return bool(self.settings.get("animations_enabled", True))
+
+    @Property(bool, constant=False)
+    def soundsEnabled(self) -> bool:
+        return bool(self.settings.get("sounds_enabled", True))
+
     @Property(str, notify=powerProfilesChanged)
     def activePowerProfile(self) -> str:
         return self._power_profiles.active
