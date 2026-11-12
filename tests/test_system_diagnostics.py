@@ -32,6 +32,42 @@ class SystemDiagnosticsTests(unittest.TestCase):
         ):
             self.assertEqual(diagnostics._temperature_celsius(), 42.0)
 
+    def test_temperature_prefers_labelled_cpu_sensor_over_unrelated_hot_zone(self):
+        hwmon_root = diagnostics.Path("/sys/class/hwmon")
+        thermal_root = diagnostics.Path("/sys/class/thermal")
+        hwmon_inputs = [
+            diagnostics.Path("/sys/class/hwmon/hwmon0/temp1_input"),
+            diagnostics.Path("/sys/class/hwmon/hwmon0/temp2_input"),
+        ]
+        thermal_inputs = [
+            diagnostics.Path("/sys/class/thermal/thermal_zone0/temp"),
+            diagnostics.Path("/sys/class/thermal/thermal_zone1/temp"),
+        ]
+
+        def fake_glob(root, pattern):
+            if root == hwmon_root:
+                return hwmon_inputs
+            if root == thermal_root:
+                return thermal_inputs
+            return []
+
+        values = {
+            str(hwmon_inputs[0]): "76000",
+            str(hwmon_inputs[0].with_name("temp1_label")): "Package id 0",
+            str(hwmon_inputs[0].parent / "name"): "coretemp",
+            str(hwmon_inputs[1]): "99000",
+            str(hwmon_inputs[1].with_name("temp2_label")): "Ambient",
+            str(thermal_inputs[0]): "93000",
+            str(thermal_inputs[0].parent / "type"): "acpitz",
+            str(thermal_inputs[1]): "82000",
+            str(thermal_inputs[1].parent / "type"): "cpu-thermal",
+        }
+        with (
+            patch.object(diagnostics.Path, "glob", side_effect=fake_glob),
+            patch.object(diagnostics, "_read", side_effect=lambda path: values.get(str(path), "")),
+        ):
+            self.assertEqual(diagnostics._temperature_celsius(), 76.0)
+
     def test_uptime_formats_days_and_handles_missing_file(self):
         with patch.object(diagnostics, "_read", return_value="176461.0 123456.0"):
             self.assertEqual(diagnostics._uptime(), "2 j 1 h")
