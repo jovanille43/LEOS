@@ -12,6 +12,7 @@ import re
 import unicodedata
 
 from leos_core.text import normalize_search_text
+from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_LIBRARY_STATE_FILE_BYTES = 2 * 1024 * 1024
@@ -95,7 +96,10 @@ def read_bounded_json(path: Path, max_bytes: int = MAX_LIBRARY_STATE_FILE_BYTES)
             raw = stream.read(max_bytes + 1)
         if len(raw) > max_bytes:
             return None
-        return json.loads(raw.decode("utf-8"))
+        text = raw.decode("utf-8")
+        if not json_nesting_within_limit(text):
+            return None
+        return json.loads(text)
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
         return None
 
