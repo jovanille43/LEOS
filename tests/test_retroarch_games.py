@@ -93,6 +93,21 @@ class RetroArchPlaylistTests(unittest.TestCase):
         self.assertEqual(by_title["SUPER MARIO WORLD"], artwork.resolve().as_uri())
         self.assertEqual(by_title["Unlisted Game"], "")
 
+    def test_thumbnail_index_scans_only_a_bounded_number_of_entries(self):
+        from unittest.mock import patch
+        from gaming.backend.retroarch import _thumbnail_index
+        from gaming.backend import retroarch
+
+        thumbnail_root = self.root / "thumbnails"
+        boxarts = thumbnail_root / self.playlist.stem / "Named_Boxarts"
+        boxarts.mkdir(parents=True)
+        for index in range(3):
+            (boxarts / f"Cover {index}.png").write_bytes(b"image")
+        with patch.object(retroarch, "MAX_RETROARCH_THUMBNAILS_PER_PLAYLIST", 1):
+            index = _thumbnail_index([thumbnail_root], self.playlist.stem)
+        self.assertLessEqual(len(index), 1)
+        self.assertTrue(set(index).issubset({"cover 0", "cover 1", "cover 2"}))
+
     def test_thumbnail_symlink_cannot_escape_configured_root(self):
         import os
 
