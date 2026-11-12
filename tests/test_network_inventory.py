@@ -12,6 +12,32 @@ class NetworkTests(unittest.TestCase):
         with patch.object(network, "_read", return_value=route):
             self.assertEqual(network._default_route(), ("wlan0", "192.168.1.1"))
 
+    def test_default_route_falls_back_to_ipv6_on_ipv6_only_networks(self):
+        route_files = {
+            "/proc/net/route": "Iface Destination Gateway Flags RefCnt Use Metric\\n",
+            "/proc/net/ipv6_route": (
+                "0" * 32 + " 00 " + "0" * 32 + " 00 "
+                + "fe800000000000000000000000000001 "
+                + "00000000 00000000 00000000 00000001 wlan0\\n"
+            ),
+        }
+        with patch.object(
+            network, "_read",
+            side_effect=lambda path: route_files.get(str(path), ""),
+        ):
+            self.assertEqual(network._default_route(), ("wlan0", "fe80::1"))
+
+    def test_default_route_requires_an_active_ipv4_route(self):
+        route = (
+            "Iface Destination Gateway Flags RefCnt Use Metric\\n"
+            "eth0 00000000 0101A8C0 0002 0 0 0\\n"
+        )
+        with patch.object(
+            network, "_read",
+            side_effect=lambda path: route if str(path) == "/proc/net/route" else "",
+        ):
+            self.assertEqual(network._default_route(), ("", ""))
+
     def test_dns_servers_are_unique_and_limited(self):
         content = "nameserver 1.1.1.1\nnameserver 8.8.8.8\nnameserver 1.1.1.1\n"
         with patch.object(network, "_read", return_value=content):
