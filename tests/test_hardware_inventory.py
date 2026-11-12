@@ -106,6 +106,23 @@ class HardwareInventoryTests(unittest.TestCase):
             self.assertEqual(hardware._cpu_topology_from_sysfs(root), (3, 6))
             self.assertEqual(hardware._cpu_topology(sysfs_root=root), (3, 6))
 
+    def test_sysfs_topology_uses_arm_cluster_ids_when_package_ids_are_absent(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "online").write_text("0-3", encoding="utf-8")
+            for cpu_id, cluster, core in [
+                (0, 0, 0), (1, 0, 1), (2, 1, 0), (3, 1, 1),
+            ]:
+                topology = root / f"cpu{cpu_id}" / "topology"
+                topology.mkdir(parents=True)
+                (topology / "cluster_id").write_text(str(cluster), encoding="utf-8")
+                (topology / "core_id").write_text(str(core), encoding="utf-8")
+
+            self.assertEqual(hardware._cpu_topology_from_sysfs(root), (4, 4))
+
     def test_sysfs_topology_reports_unknown_cores_instead_of_guessing(self):
         import tempfile
         from pathlib import Path
