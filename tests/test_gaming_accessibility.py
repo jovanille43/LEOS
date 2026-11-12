@@ -74,6 +74,13 @@ class GamingAccessibilityTests(unittest.TestCase):
         self.assertIn("window.focusColor", self.qml)
         self.assertIn('color: window.magenta', self.qml)
 
+    def test_warning_state_uses_amber_not_the_favorite_accent(self):
+        self.assertIn(
+            'window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d"',
+            self.qml,
+        )
+        self.assertIn('color: window.magenta', self.qml)
+
     def test_controller_legend_is_exposed_to_qml(self):
         self.assertIn("def gamepadButtonLegend", self.controller)
         self.assertIn("text: leos.gamepadButtonLegend", self.qml)
