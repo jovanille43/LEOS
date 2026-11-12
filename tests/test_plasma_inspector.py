@@ -131,9 +131,12 @@ class PlasmaInspectorTests(unittest.TestCase):
         self.assertIn("controlCenter.applyPlasmaLayout(true)", qml)
         self.assertIn("plasmaDockConfirmation.open()", qml)
         self.assertIn("INSPECTION DU BUREAU KDE", qml)
+        apply_start = controller.index("def applyPlasmaLayout(self, confirmed: bool)")
+        apply_end = controller.index("def _on_plasma_layout_completed", apply_start)
+        apply_method = controller[apply_start:apply_end]
         self.assertLess(
-            controller.index("backup_id = self.plasmaBackups.create_backup()"),
-            controller.index("QThreadPool.globalInstance().start(task)"),
+            apply_method.index("backup_id = self.plasmaBackups.create_backup()"),
+            apply_method.index("QThreadPool.globalInstance().start(task)"),
         )
         self.assertIn("_plasma_layout_tasks", controller)
         self.assertIn("onPlasmaLayoutFinished(message)", qml)
