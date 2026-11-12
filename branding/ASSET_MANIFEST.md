@@ -32,16 +32,16 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos ont été déplacées dans `branding/animations/` et renommées sans réencodage effectué par cette opération Git.
 
-| Ressource | Taille GitHub |
-| --- | ---: |
+| Ressource | Taille GitHub | Durée média |
+| --- | ---: | ---: |
 | `desktop-logo.jpeg` | 67 277 octets |
 | `gaming-logo.jpeg` | 73 084 octets |
 | `reference-comparison.jpeg` | 105 202 octets |
-| `animations/desktop-intro.mov` | 2 934 309 octets |
-| `animations/gaming-intro.mp4` | 2 115 657 octets |
-| `animations/gaming-roar-reference.mp4` | 2 763 575 octets |
+| `animations/desktop-intro.mov` | 2 934 309 octets | 5,354 s |
+| `animations/gaming-intro.mp4` | 2 115 657 octets | 6,048 s |
+| `animations/gaming-roar-reference.mp4` | 2 763 575 octets | 6,080 s |
 
-**Limite de vérification :** les tailles des vidéos ne correspondent pas aux tailles des fichiers originaux précédemment reçus dans la conversation. Les fichiers GitHub sont donc bien présents et raccordés, mais leur identité binaire avec les originaux n'est pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. Une validation du décodage et de la piste audio reste à faire sur Bazzite.
+**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. Le contrôle de métadonnées ne remplace pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
 
 ## Identité visuelle
 
