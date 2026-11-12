@@ -89,12 +89,17 @@ class GamepadActionMapper:
         if kind != "axis":
             return None
 
-        if name == "ABS_HAT0X":
-            self._hat_x = max(-1, min(1, int(value)))
-            action = "left" if self._hat_x < 0 else "right" if self._hat_x > 0 else None
-        elif name == "ABS_HAT0Y":
-            self._hat_y = max(-1, min(1, int(value)))
-            action = "up" if self._hat_y < 0 else "down" if self._hat_y > 0 else None
+        if name in {"ABS_HAT0X", "ABS_HAT0Y"}:
+            try:
+                hat_value = max(-1, min(1, int(value)))
+            except (TypeError, ValueError, OverflowError):
+                return None
+            if name == "ABS_HAT0X":
+                self._hat_x = hat_value
+                action = "left" if self._hat_x < 0 else "right" if self._hat_x > 0 else None
+            else:
+                self._hat_y = hat_value
+                action = "up" if self._hat_y < 0 else "down" if self._hat_y > 0 else None
         elif name in {"ABS_X", "ABS_Y"}:
             action = self._stick_action(name, event)
         else:
@@ -151,14 +156,18 @@ class GamepadActionMapper:
         return "up" if self._hat_y < 0 else "down" if self._hat_y > 0 else None
 
     def _stick_action(self, name: str, event: dict[str, Any]) -> str | None:
-        minimum = int(event.get("minimum", -32768))
-        maximum = int(event.get("maximum", 32767))
-        if maximum <= minimum:
+        try:
+            minimum = int(event.get("minimum", -32768))
+            maximum = int(event.get("maximum", 32767))
+            value = int(event["value"])
+            if maximum <= minimum:
+                return None
+            default_center = (minimum + maximum) // 2
+            center = int(self.axis_centers.get(name, default_center))
+        except (KeyError, TypeError, ValueError, OverflowError):
             return None
-        default_center = (minimum + maximum) // 2
-        center = int(self.axis_centers.get(name, default_center))
         center = max(minimum, min(maximum, center))
-        value = max(minimum, min(maximum, int(event["value"])))
+        value = max(minimum, min(maximum, value))
         span = (maximum - center) if value >= center else (center - minimum)
         if span <= 0:
             return None
