@@ -44,6 +44,16 @@ class DesktopLayoutTests(unittest.TestCase):
             self.assertTrue(restored.get("dock")["auto_hide"])
             self.assertTrue(restored.get("widgets_enabled"))
 
+    def test_deeply_nested_layout_is_ignored_without_being_overwritten(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            invalid = "[" * 2000 + "0" + "]" * 2000
+            path.write_text(invalid, encoding="utf-8")
+
+            store = DesktopLayoutStore(path)
+            self.assertEqual(store.get("profile"), DEFAULT_LAYOUT["profile"])
+            self.assertEqual(path.read_text(encoding="utf-8"), invalid)
+
     def test_layout_store_returns_a_copy_of_dock_preferences(self):
         with tempfile.TemporaryDirectory() as directory:
             store = DesktopLayoutStore(Path(directory) / "desktop-layout.json")
