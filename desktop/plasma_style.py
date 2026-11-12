@@ -5,6 +5,7 @@ import configparser
 import json
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 from pathlib import Path
@@ -27,18 +28,46 @@ MAX_PLASMA_METADATA_BYTES = 256 * 1024
 
 
 def _read_bounded_text(path: Path, max_bytes: int) -> str | None:
+    """Read a bounded regular file without following a final symlink or blocking on a FIFO."""
     if type(max_bytes) is not int or max_bytes < 0:
         return None
-    if path.is_symlink() or path.parent.is_symlink():
+    if path.parent.is_symlink():
+        return None
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError:
         return None
     try:
-        with path.open("rb") as stream:
-            raw = stream.read(max_bytes + 1)
-        if len(raw) > max_bytes:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or before.st_size > max_bytes:
+            return None
+        chunks: list[bytes] = []
+        remaining = max_bytes + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(1024 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(raw) > max_bytes
+            or len(raw) != before.st_size
+            or before.st_dev != after.st_dev
+            or before.st_ino != after.st_ino
+            or before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or before.st_ctime_ns != after.st_ctime_ns
+        ):
             return None
         return raw.decode("utf-8")
     except (OSError, UnicodeError):
         return None
+    finally:
+        os.close(descriptor)
 
 
 class PlasmaStyleManager:

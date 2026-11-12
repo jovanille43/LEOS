@@ -1,11 +1,17 @@
 """Tests for explicit LEOS Plasma Style application and rollback."""
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-from desktop.plasma_style import PlasmaStyleManager, MANAGED_BY, STYLE_ID
+from desktop.plasma_style import (
+    PlasmaStyleManager,
+    MANAGED_BY,
+    STYLE_ID,
+    _read_bounded_text,
+)
 
 
 class FakeRunner:
@@ -45,6 +51,23 @@ class PlasmaStyleManagerTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def test_bounded_reader_rejects_final_symlink(self):
+        target = Path(self.temp.name) / "outside.txt"
+        target.write_text("external data", encoding="utf-8")
+        link = Path(self.temp.name) / "linked.txt"
+        link.symlink_to(target)
+        self.assertIsNone(_read_bounded_text(link, 1024))
+
+    def test_bounded_reader_rejects_fifo_without_blocking(self):
+        fifo = Path(self.temp.name) / "metadata.pipe"
+        os.mkfifo(fifo)
+        self.assertIsNone(_read_bounded_text(fifo, 1024))
+
+    def test_bounded_reader_rejects_oversized_regular_file(self):
+        source = Path(self.temp.name) / "large.txt"
+        source.write_text("12345", encoding="utf-8")
+        self.assertIsNone(_read_bounded_text(source, 4))
 
     def test_detects_packaged_style(self):
         self.assertTrue(self.manager.style_installed())
