@@ -194,6 +194,17 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: desktopMenuLogo.status !== Image.Ready", qml)
 
+    def test_menu_button_content_uses_explicit_button_ids(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("categoryMenuButton.text", qml)
+        self.assertIn("categoryMenuButton.down", qml)
+        self.assertIn("favouriteMoveUpButton.text", qml)
+        self.assertIn("favouriteMoveDownButton.text", qml)
+        self.assertIn("favouritePinButton.text", qml)
+        self.assertNotIn("parent.text", qml)
+        self.assertNotIn("parent.down", qml)
+        self.assertNotIn("parent.enabled", qml)
+
     def test_menu_closes_after_successful_launch_and_on_escape(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("function launchApplication(desktopId, applicationName)", qml)
