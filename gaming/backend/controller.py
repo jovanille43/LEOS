@@ -227,13 +227,14 @@ class GamingController(QObject):
             action = self._gamepad_mapper.feed(event)
             if action:
                 self.gamepadAction.emit(action)
-        repeated_action = self._gamepad_mapper.repeat_action()
-        if repeated_action:
-            self.gamepadAction.emit(repeated_action)
         if self._gamepad_path and self._gamepad.device is None:
             self._gamepad_path = ""
             self._gamepad_mapper.reset()
             self._set_gamepad_status("Connexion manette interrompue — nouvelle détection…")
+            return
+        repeated_action = self._gamepad_mapper.repeat_action()
+        if repeated_action:
+            self.gamepadAction.emit(repeated_action)
 
     @Slot(str, str, str, result=bool)
     def addGame(self, title: str, platform: str, command: str) -> bool:
