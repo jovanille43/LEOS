@@ -120,6 +120,8 @@ class DockFavourites:
                 pass
 
     def _reload_for_update(self) -> None:
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise OSError("Dock favourites path cannot be a symbolic link")
         if not self.load():
             raise ValueError("Dock favourites file is invalid or inaccessible; it was left untouched")
 
