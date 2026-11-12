@@ -43,7 +43,7 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("function activateEmptyStatePrimaryAction()", source)
         self.assertIn('id: emptyStatePrimaryButton', source)
         self.assertIn('searchField.clear()', source)
-        self.assertIn('window.chooseCategory(0)', source)
+        self.assertIn('chooseCategory(0)', source)
         self.assertIn('leos.refreshLibrary()', source)
         self.assertIn('text: window.emptyStatePrimaryLabel()', source)
 
