@@ -24,13 +24,27 @@ class SystemDiagnosticsTests(unittest.TestCase):
     def test_temperature_handles_millidegrees_and_invalid_sensors(self):
         values = {
             "/sys/class/thermal/thermal_zone0/temp": "42000",
+            "/sys/class/thermal/thermal_zone0/type": "cpu-thermal",
             "/sys/class/thermal/thermal_zone1/temp": "bad",
+            "/sys/class/thermal/thermal_zone1/type": "unknown",
         }
         with (
             patch.object(diagnostics.Path, "glob", return_value=[diagnostics.Path(k) for k in values]),
             patch.object(diagnostics, "_read", side_effect=lambda path: values.get(str(path), "")),
         ):
             self.assertEqual(diagnostics._temperature_celsius(), 42.0)
+
+    def test_temperature_does_not_mislabel_unknown_thermal_zone_as_cpu(self):
+        path = diagnostics.Path("/sys/class/thermal/thermal_zone0/temp")
+        values = {
+            str(path): "99000",
+            str(path.parent / "type"): "wifi-radio",
+        }
+        with (
+            patch.object(diagnostics.Path, "glob", side_effect=[[], [path]]),
+            patch.object(diagnostics, "_read", side_effect=lambda item: values.get(str(item), "")),
+        ):
+            self.assertIsNone(diagnostics._temperature_celsius())
 
     def test_temperature_prefers_labelled_cpu_sensor_over_unrelated_hot_zone(self):
         hwmon_inputs = [
