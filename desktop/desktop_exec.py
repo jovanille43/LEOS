@@ -44,6 +44,8 @@ def parse_desktop_exec(
     except ValueError as exc:
         raise ValueError("Invalid desktop Exec quoting") from exc
 
+    if not tokens:
+        return []
     if len(tokens) > MAX_EXEC_ARGUMENTS or any(
         len(token) > MAX_EXEC_ARGUMENT_LENGTH for token in tokens
     ):
