@@ -179,8 +179,8 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("function launchApplication(desktopId, applicationName)", qml)
         self.assertIn("if (!applicationCatalog.launch(desktopId))", qml)
         self.assertIn("window.close()", qml)
-        self.assertIn("Keys.onPressed: function(event)", qml)
-        self.assertIn("event.key === Qt.Key_Escape", qml)
+        self.assertIn('sequence: "Escape"', qml)
+        self.assertIn("context: Qt.WindowShortcut", qml)
         self.assertIn("Component.onCompleted: search.forceActiveFocus()", qml)
 
     def test_application_cards_and_quick_actions_share_the_launch_helper(self):
