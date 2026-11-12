@@ -228,10 +228,11 @@ ApplicationWindow {
                                     ToolButton {
                                         text: isPinned ? "★" : "☆"
                                         onClicked: {
+                                            const wasPinned = isPinned
                                             if (!applicationCatalog.toggleFavourite(desktopId))
                                                 status.text = "Impossible de modifier les favoris du dock."
                                             else
-                                                status.text = isPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
+                                                status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
                                         contentItem: Label { text: parent.text; color: window.magenta; font.pixelSize: 18 }
                                         background: Rectangle { color: "transparent" }
