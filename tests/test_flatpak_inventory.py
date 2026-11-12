@@ -2,7 +2,11 @@
 
 import unittest
 
-from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
+from shop.flatpak_inventory import (
+    flatpak_uninstall_args,
+    is_trusted_flathub_remote,
+    parse_flatpak_inventory,
+)
 
 
 class FlatpakInventoryTests(unittest.TestCase):
@@ -44,6 +48,31 @@ class FlatpakInventoryTests(unittest.TestCase):
             flatpak_uninstall_args("bad-id", "user")
         with self.assertRaises(ValueError):
             flatpak_uninstall_args("org.example.App", "external")
+
+    def test_accepts_canonical_flathub_repository_urls(self):
+        self.assertTrue(
+            is_trusted_flathub_remote(
+                "Name URL\\nflathub https://dl.flathub.org/repo/\\n"
+            )
+        )
+        self.assertTrue(
+            is_trusted_flathub_remote(
+                "Name URL\\nflathub https://flathub.org/repo/flathub.flatpakrepo\\n"
+            )
+        )
+
+    def test_rejects_untrusted_or_malformed_flathub_urls(self):
+        for url in (
+            "https://example.com/repo/",
+            "http://dl.flathub.org/repo/",
+            "https://dl.flathub.org.evil.example/repo/",
+            "https://user@dl.flathub.org/repo/",
+            "https://dl.flathub.org:8443/repo/",
+            "https://dl.flathub.org/other/",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(is_trusted_flathub_remote(f"flathub {url}"))
+        self.assertFalse(is_trusted_flathub_remote(""))
 
     def test_named_system_installations_are_system_scope(self):
         user, system = parse_flatpak_inventory(
