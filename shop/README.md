@@ -8,7 +8,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - Recherche insensible à la casse et aux accents, tolérante aux espaces répétés, sur le nom, l'identifiant, la catégorie, la description et la source ; filtrage complémentaire par catégorie.
 - Détection séparée des installations Flatpak utilisateur et système ; la fiche distingue les deux portées et avertit lorsqu'une désinstallation système peut demander une autorisation administrateur.
 - Fiches indiquant identifiant, source, compatibilité et information sur les dépendances.
-- Vérification de l'adresse du dépôt Flathub du profil utilisateur avant toute requête de métadonnées ; seules les URL HTTPS canoniques Flathub sont acceptées. L'adresse exacte vérifiée est affichée dans la confirmation finale, avec le runtime déclaré dans les métadonnées lorsque disponible.
+- Vérification de l'adresse du dépôt Flathub du profil utilisateur avant toute requête de métadonnées ; seules les URL HTTPS canoniques Flathub sont acceptées. L'adresse exacte vérifiée est affichée dans la confirmation finale, avec le runtime déclaré dans les métadonnées lorsque disponible. L'origine est contrôlée une seconde fois juste après la confirmation finale et avant le lancement de l'installation.
 - Confirmation explicite avant installation et désinstallation.
 - Opérations réalisées par Flatpak, sans gestionnaire de paquets parallèle et sans shell.
 
