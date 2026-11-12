@@ -23,6 +23,12 @@ Pour une mise à jour à risque, il est possible de préserver un déploiement c
 
 Les fichiers personnels du répertoire utilisateur ne sont normalement pas remplacés par un changement de déploiement OSTree. Cela ne remplace pas une sauvegarde : les partitions de données, les applications Flatpak et les données de configuration doivent être sauvegardées selon leur emplacement et leur importance.
 
+## Lecture des déploiements dans le Centre de contrôle
+
+La page **Mises à jour** peut afficher un inventaire local issu de `rpm-ostree status --json` : version du déploiement démarré, préfixe de son checksum, nombre d'autres entrées conservées, entrées préparées et entrées épinglées. Cette lecture est effectuée périodiquement tant que le Centre de contrôle est ouvert.
+
+Cet inventaire ne certifie pas que chaque ancienne entrée peut démarrer ou servir de retour arrière. Il ne remplace pas la lecture complète de `rpm-ostree status`. LEOS ne lance aucune commande de rollback, de pinning ou de nettoyage depuis cette page ; toute intervention reste volontaire et doit suivre la procédure ci-dessous.
+
 ## Si le nouveau déploiement ne démarre pas
 
 1. Redémarrer le PC.
