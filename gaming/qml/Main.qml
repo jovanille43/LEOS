@@ -1046,7 +1046,7 @@ ApplicationWindow {
                                             ? "Aucun favori pour le moment."
                                             : window.selectedCategory === "Récemment joués"
                                                 ? "Aucun jeu lancé récemment."
-                                                : "Aucun jeu détecté dans cette catégorie. Installe un jeu dans Steam, Heroic ou Lutris, puis actualise la bibliothèque."
+                                                : "Aucun jeu détecté dans cette catégorie. Installe un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
                                     color: window.muted
                                     font.pixelSize: window.fontBody
                                 }
