@@ -11,7 +11,7 @@ def read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
         cards = sorted(
             card
             for card in (sys_root / "class" / "drm").glob("card[0-9]*")
-            if re.fullmatch(r"card\\d+", card.name)
+            if re.fullmatch(r"card\d+", card.name)
         )
     except OSError:
         cards = []
