@@ -2,6 +2,7 @@
 import os
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from desktop.dock_favourites import DockFavourites, DEFAULT_PINNED_APPS
@@ -53,6 +54,70 @@ class DockFavouritesTests(unittest.TestCase):
             path = Path(directory) / "dock.json"
             DockFavourites(path).pin("org.kde.konsole.desktop")
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+
+    def test_long_lived_instances_observe_changes_from_other_windows(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            first = DockFavourites(path)
+            second = DockFavourites(path)
+            first.pin("org.example.One.desktop")
+            self.assertIn("org.example.One.desktop", second.items())
+            second.pin("org.example.Two.desktop")
+            self.assertIn("org.example.Two.desktop", first.items())
+
+    def test_concurrent_pins_from_separate_instances_do_not_overwrite_each_other(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            first = DockFavourites(path)
+            second = DockFavourites(path)
+            operations = (
+                (first, "org.example.First.desktop"),
+                (second, "org.example.Second.desktop"),
+            )
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                list(executor.map(lambda item: item[0].pin(item[1]), operations))
+            restored = DockFavourites(path)
+            self.assertIn("org.example.First.desktop", restored.items())
+            self.assertIn("org.example.Second.desktop", restored.items())
+
+    def test_invalid_existing_file_is_never_overwritten_by_mutations(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            invalid = '{"items":["../../evil.desktop"]}'
+            path.write_text(invalid, encoding="utf-8")
+            store = DockFavourites(path)
+            self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
+            with self.assertRaises(ValueError):
+                store.pin("org.example.Safe.desktop")
+            self.assertEqual(path.read_text(encoding="utf-8"), invalid)
+
+    def test_lock_file_is_private(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            DockFavourites(path).pin("org.example.Safe.desktop")
+            lock_path = path.with_name(path.name + ".lock")
+            self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
+
+    def test_symlink_store_is_not_followed_or_overwritten(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            target.write_text('{"schema_version":1,"items":[]}', encoding="utf-8")
+            link = root / "dock.json"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            store = DockFavourites(link)
+            self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
+            with self.assertRaises(OSError):
+                store.pin("org.example.Safe.desktop")
+            self.assertEqual(
+                target.read_text(encoding="utf-8"),
+                '{"schema_version":1,"items":[]}',
+            )
 
 
 if __name__ == "__main__":
