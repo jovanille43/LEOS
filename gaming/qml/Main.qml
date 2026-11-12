@@ -891,7 +891,8 @@ ApplicationWindow {
         }
         videoOutput: desktopIntroVideoOutput
         onMediaStatusChanged: {
-            if (mediaStatus === MediaPlayer.EndOfMedia)
+            if (mediaStatus === MediaPlayer.EndOfMedia ||
+                    mediaStatus === MediaPlayer.InvalidMedia)
                 window.finishDesktopReturn()
         }
         onErrorOccurred: function(error, errorString) {
