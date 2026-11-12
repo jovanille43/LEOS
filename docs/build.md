@@ -31,11 +31,11 @@ Préparation à effectuer depuis un poste de confiance disposant de cosign :
 3. Ajouter uniquement `cosign.pub` à la racine du dépôt.
 4. Conserver la clé privée hors du dépôt et en lieu sûr.
 
-Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image.
+Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image. Avant la compilation, le workflow installe Cosign, signe un petit fichier temporaire avec la clé privée fournie par le secret, puis vérifie cette signature avec `cosign.pub`. Cette vérification confirme que les deux clés forment bien une paire. Le fichier privé temporaire est limité aux permissions utilisateur et supprimé à la fin de l'étape ; la clé privée n'est jamais écrite dans le dépôt ni affichée volontairement dans les logs.
 
 ## Avant la première compilation
 
-- Vérifier le contenu du workflow `.github/workflows/build.yml`.
+- Vérifier le contenu du workflow `.github/workflows/build.yml`, notamment le contrôle cryptographique de correspondance entre la clé privée et `cosign.pub`.
 - [x] Valider `recipes/recipe.yml` avec le CLI BlueBuild (`bluebuild validate`) et générer un Containerfile (`bluebuild generate`) dans le workflow GitHub Actions.
 - Vérifier la présence des trois logos et des trois vidéos aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
 - Confirmer que le secret `SIGNING_SECRET` est configuré et que la clé publique correspondante est disponible.
