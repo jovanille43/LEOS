@@ -34,6 +34,7 @@ def main() -> int:
     qml_file = Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
+        controller.shutdown()
         return 1
 
     # Persist Gaming only after its QML window loaded successfully.
@@ -47,7 +48,6 @@ def main() -> int:
     controller.monitor.start()
     app.aboutToQuit.connect(controller.shutdown)
     exit_code = app.exec()
-    controller.monitor.stop()
     return exit_code
 
 
