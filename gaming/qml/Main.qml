@@ -274,7 +274,7 @@ ApplicationWindow {
     }
 
     function quickPanelActionCount() {
-        return leos.availablePowerProfiles.length + 3
+        return leos.availablePowerProfiles.length + 4
     }
 
     function moveQuickPanelFocus(direction) {
@@ -296,6 +296,11 @@ ApplicationWindow {
             pendingPowerProfile = leos.availablePowerProfiles[quickPanelFocusIndex - 1]
             powerProfileDialog.open()
         } else if (quickPanelFocusIndex === profileCount + 1) {
+            if (leos.openControllerCenter())
+                quickPanel.visible = false
+            else
+                statusText.text = "Impossible d’ouvrir le Centre des manettes LEOS."
+        } else if (quickPanelFocusIndex === profileCount + 2) {
             returnDialog.open()
         } else {
             quickPanel.visible = false
@@ -634,10 +639,12 @@ ApplicationWindow {
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     Item { Layout.fillWidth: true }
                     Button {
-                        text: "RETOUR DESKTOP"
+                        text: "CONFIGURER MANETTE"
                         onClicked: {
-                            window.quickPanelFocusIndex = leos.availablePowerProfiles.length + 1
-                            returnDialog.open()
+                            if (leos.openControllerCenter())
+                                quickPanel.visible = false
+                            else
+                                statusText.text = "Impossible d’ouvrir le Centre des manettes LEOS."
                         }
                         background: Rectangle {
                             radius: 7
@@ -647,13 +654,26 @@ ApplicationWindow {
                         }
                     }
                     Button {
-                        text: "FERMER"
-                        onClicked: quickPanel.visible = false
+                        text: "RETOUR DESKTOP"
+                        onClicked: {
+                            window.quickPanelFocusIndex = leos.availablePowerProfiles.length + 2
+                            returnDialog.open()
+                        }
                         background: Rectangle {
                             radius: 7
                             color: "#202630"
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? 2 : 1
                             border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.cyan : "#344052"
+                        }
+                    }
+                    Button {
+                        text: "FERMER"
+                        onClicked: quickPanel.visible = false
+                        background: Rectangle {
+                            radius: 7
+                            color: "#202630"
+                            border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? 2 : 1
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.cyan : "#344052"
                         }
                     }
                 }
