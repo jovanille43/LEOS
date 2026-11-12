@@ -10,10 +10,10 @@ LEOS vise les PC modernes x86_64 démarrant en UEFI. Le système conserve un seu
 
 | Matériel graphique principal | Image à utiliser |
 | --- | --- |
-| AMD Radeon ou graphique intégré AMD | 'leos' |
-| Intel intégré ou Intel Arc | 'leos' |
-| NVIDIA Maxwell / Pascal / Volta | 'leos-nvidia' |
-| NVIDIA Turing ou génération plus récente | 'leos-nvidia-open' |
+| AMD Radeon ou graphique intégré AMD | `leos` |
+| Intel intégré ou Intel Arc | `leos` |
+| NVIDIA Maxwell / Pascal / Volta | `leos-nvidia` |
+| NVIDIA Turing ou génération plus récente | `leos-nvidia-open` |
 
 Les GPU NVIDIA Kepler et plus anciens ne sont pas annoncés comme compatibles Gaming avec les pilotes propriétaires actuels de Bazzite. Les PC portables hybrides (iGPU + NVIDIA) devront être validés individuellement.
 
@@ -21,7 +21,9 @@ Les GPU NVIDIA Kepler et plus anciens ne sont pas annoncés comme compatibles Ga
 
 - Architecture x86_64.
 - Démarrage UEFI ; le mode BIOS Legacy/CSM n'est pas pris en charge par la base ciblée.
-- Espace disque suffisant sur SSD : prévoir au moins 50 Go libres, idéalement 120 Go.
+- Disque cible : SSD interne, partitionnement GPT et au moins 50 Go libres (120 Go recommandés). Un disque actuellement partitionné en MBR n'est pas pris en charge par la base Bazzite.
+- Sauvegarde complète : le partitionnement ou l'installation peut modifier ou effacer les partitions du disque choisi. Vérifie le modèle et la capacité du disque cible avant de confirmer toute opération.
+- Le précontrôle matériel du Centre de contrôle LEOS est disponible après installation ; il ne vérifie pas à l'avance le disque choisi par l'installateur ni sa table GPT.
 - Pour l'usage Gaming, prendre comme repère initial la référence publiée par Bazzite : 8 Go de RAM, processeur quadricœur à 2 GHz et GPU compatible Vulkan 1.3 ou supérieur.
 - La prise en charge Wi-Fi, Bluetooth, audio, veille, écrans multiples et manettes dépend aussi des pilotes et périphériques présents.
 
@@ -31,8 +33,8 @@ Ces repères Gaming ne doivent pas être présentés comme des exigences univers
 
 1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
 2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag de l'image publiée.
-3. Récupérer l'ISO et son fichier SHA-256 dans les artefacts du workflow, puis vérifier la somme avant utilisation.
-4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer.
+3. Récupérer l'ISO et son fichier SHA-256 dans les artefacts du workflow, puis vérifier la somme dans le même dossier avec `sha256sum --check LEOS-standard-latest.iso.sha256` (adapter le nom au fichier récupéré).
+4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer ; l'écriture de l'image efface le contenu de la clé choisie.
 5. Démarrer la machine sur la clé en mode UEFI.
 6. Tester d'abord le démarrage, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
 7. Installer uniquement après validation de ces éléments et en ayant vérifié le disque cible.
