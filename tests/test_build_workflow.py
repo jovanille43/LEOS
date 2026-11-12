@@ -221,6 +221,10 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtmultimedia", recipe)
 
+    def test_recipe_installs_vulkan_tools_for_hardware_preflight(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("vulkan-tools", recipe)
+
     def test_recipe_installs_qt_svg_for_wallpaper_previews(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)

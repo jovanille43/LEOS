@@ -7,6 +7,7 @@ modules:
         - python3-pyside6
         - python3-psutil
         - python3-evdev
+        - vulkan-tools
         - libnotify
         - aurorae
         - qt6-qtmultimedia
