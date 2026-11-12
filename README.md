@@ -2,7 +2,7 @@
 
 **LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État du projet :** prototype en développement. Le dépôt contient des premières applications sources (Gaming, sélecteur de modes, Centre de contrôle, Centre des manettes et boutique), mais elles ne sont pas encore validées sur une session Bazzite réelle ni intégrées dans une ISO installable.
+> **État du projet :** prototype en développement. Le dépôt contient les applications sources (Gaming, sélecteur de modes, Centre de contrôle, Centre des manettes et boutique), les ressources visuelles officielles et les introductions vidéo. Les applications doivent encore être validées sur une session Bazzite réelle et intégrées dans une image installable.
 
 ## Vision
 
@@ -67,7 +67,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
 - Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
 - MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son AAC intégré, réglage sonore indépendant et repli en cas d'erreur ; le transfert des binaires et la validation sur Bazzite restent à effectuer. Les intégrations d'émulateurs restent à développer.
+- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. Les intégrations d'émulateurs restent à développer.
 
 ## Desktop Mode
 
@@ -75,7 +75,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les préférences de dock et profils de disposition sont préparés, mais leur application au véritable panneau Plasma reste désactivée.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran restent à intégrer ; les animations Desktop/Gaming sont raccordées, mais leurs fichiers MP4 doivent encore être transférés dans le dépôt et testés.
+- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran restent à intégrer. Les animations Desktop/Gaming sont raccordées et leurs fichiers sont présents dans le dépôt ; la validation du rendu vidéo et audio sur une session Bazzite réelle reste à effectuer.
 
 ## Bluetooth
 
@@ -138,6 +138,8 @@ LEOS/
 - [x] Architecture générale des deux modes définie.
 - [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
 - [x] Navigation Gaming au clavier et à la manette, profils manette, catégories, favoris, jeux récents, recherche, jaquettes Steam locales et imports Steam, Heroic et Lutris intégrés au code source.
+- [x] Logos officiels Desktop/Gaming et vidéos d'introduction ajoutés au dépôt, avec chemins de déploiement documentés.
+- [x] Lecture des introductions via Qt Multimedia, son intégré configurable et transition de secours en cas d'erreur.
 - [x] Valider la recette BlueBuild et générer le Containerfile par GitHub Actions.
 - [ ] Vérifier la configuration de la clé publique `cosign.pub` et du secret `SIGNING_SECRET`.
 - [ ] Déclencher manuellement le build, construire une image LEOS puis la tester sur un PC de test.
