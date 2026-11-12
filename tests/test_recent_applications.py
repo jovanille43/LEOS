@@ -54,6 +54,19 @@ class RecentApplicationsTests(unittest.TestCase):
                 history.record("org.example.App.desktop")
             self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
 
+    def test_oversized_history_is_rejected_without_overwriting(self):
+        from desktop.recent_applications import MAX_RECENT_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "recent.json"
+            raw = b" " * (MAX_RECENT_FILE_BYTES + 1)
+            path.write_bytes(raw)
+            history = RecentApplications(path)
+            self.assertEqual(history.items(), [])
+            with self.assertRaisesRegex(ValueError, "unreadable"):
+                history.record("org.example.Safe.desktop")
+            self.assertEqual(path.read_bytes(), raw)
+
     def test_history_contains_only_desktop_ids(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "recent.json"
