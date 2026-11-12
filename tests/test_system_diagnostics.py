@@ -61,7 +61,7 @@ class SystemDiagnosticsTests(unittest.TestCase):
             str(thermal_inputs[1].parent / "type"): "cpu-thermal",
         }
         with (
-            patch.object(diagnostics.Path, "glob", side_effect=fake_glob),
+            patch.object(diagnostics.Path, "glob", new=fake_glob),
             patch.object(diagnostics, "_read", side_effect=lambda path: values.get(str(path), "")),
         ):
             self.assertEqual(diagnostics._temperature_celsius(), 76.0)
