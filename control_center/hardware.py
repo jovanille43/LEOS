@@ -43,6 +43,37 @@ def _cpu_details() -> tuple[str, str]:
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
 
 
+def _cpu_topology(data: str | None = None) -> tuple[int | None, int]:
+    """Estimate physical cores from Linux CPU topology without guessing from threads."""
+    cpu_data = _read("/proc/cpuinfo") if data is None else data
+    blocks = re.split(r"\n\s*\n", cpu_data.strip()) if cpu_data.strip() else []
+    logical_ids: set[str] = set()
+    core_pairs: set[tuple[str, str]] = set()
+    core_ids: set[str] = set()
+
+    for block in blocks:
+        processor = re.search(r"^processor\s*:\s*(\S+)", block, re.MULTILINE)
+        package = re.search(r"^physical id\s*:\s*(\S+)", block, re.MULTILINE)
+        core = re.search(r"^core id\s*:\s*(\S+)", block, re.MULTILINE)
+        if processor:
+            logical_ids.add(processor.group(1))
+        if package and core:
+            core_pairs.add((package.group(1), core.group(1)))
+        elif core:
+            core_ids.add(core.group(1))
+
+    physical_cores = len(core_pairs) if core_pairs else (len(core_ids) if core_ids else None)
+    logical_threads = len(logical_ids) or os.cpu_count() or 0
+    return physical_cores, logical_threads
+
+
+def _cpu_core_details(physical_cores: int | None, logical_threads: int) -> str:
+    if physical_cores is None:
+        return "Cœurs physiques indisponibles"
+    suffix = f" · {logical_threads} threads logiques" if logical_threads else ""
+    return f"{physical_cores} cœur(s) physique(s) estimé(s){suffix}"
+
+
 def _memory_details() -> str:
     values: dict[str, int] = {}
     for line in _read("/proc/meminfo").splitlines():
@@ -70,6 +101,62 @@ def _memory_total_details(total_bytes: int) -> str:
     return f"{total_bytes / (1024 ** 3):.1f} Gio"
 
 
+def _storage_details() -> tuple[str, int | None]:
+    """Report free space on /; this does not identify the physical drive type."""
+    try:
+        usage = shutil.disk_usage("/")
+    except OSError:
+        return "Indisponible", None
+    gib = 1024 ** 3
+    return (
+        f"{usage.used / gib:.1f} / {usage.total / gib:.1f} Gio utilisés · "
+        f"{usage.free / gib:.1f} Gio libres sur /",
+        usage.free,
+    )
+
+
+def _parse_vulkan_devices(output: str) -> list[tuple[str, tuple[int, int, int] | None]]:
+    """Parse per-device Vulkan API versions from vulkaninfo --summary."""
+    sections = re.split(r"(?m)^\s*GPU\d+\s*:\s*$", output)
+    devices: list[tuple[str, tuple[int, int, int] | None]] = []
+    for section in sections[1:]:
+        name_match = re.search(r"^\s*deviceName\s*=\s*(.+?)\s*$", section, re.MULTILINE)
+        if not name_match:
+            continue
+        version_match = re.search(
+            r"^\s*apiVersion\s*=\s*(\d+)\.(\d+)\.(\d+)",
+            section,
+            re.MULTILINE,
+        )
+        version = (
+            tuple(int(part) for part in version_match.groups())
+            if version_match
+            else None
+        )
+        devices.append((name_match.group(1).strip().strip('"'), version))
+    return devices
+
+
+def _vulkan_snapshot() -> tuple[str, list[tuple[str, tuple[int, int, int] | None]] | None]:
+    """Read the actual per-GPU Vulkan API version when vulkaninfo is available."""
+    if not shutil.which("vulkaninfo"):
+        return "Non vérifiable (outil vulkaninfo absent)", None
+    output = _run(["vulkaninfo", "--summary"], timeout=4.0)
+    if not output:
+        return "Non vérifiable (Vulkan ou pilote non exposé)", None
+    devices = _parse_vulkan_devices(output)
+    if not devices:
+        return "GPU Vulkan non détaillé par le pilote", None
+
+    labels = []
+    for name, version in devices:
+        if version is None:
+            labels.append(f"{name} · version Vulkan inconnue")
+        else:
+            labels.append(f"{name} · Vulkan {'.'.join(str(part) for part in version)}")
+    return " | ".join(labels), devices
+
+
 def _architecture_details(machine: str | None = None) -> str:
     """Normalize common machine names without implying unsupported architectures work."""
     value = (platform.machine() if machine is None else machine).strip().lower()
@@ -89,28 +176,68 @@ def _firmware_details(path: Path = Path("/sys/firmware/efi")) -> str:
 
 
 def _gaming_baseline_assessment(
-    architecture: str, firmware: str, memory_total_bytes: int
+    architecture: str,
+    firmware: str,
+    memory_total_bytes: int,
+    physical_cores: int | None = None,
+    storage_free_bytes: int | None = None,
+    vulkan_devices: list[tuple[str, tuple[int, int, int] | None]] | None = None,
 ) -> str:
-    """Summarize only the Bazzite baseline checks that LEOS can verify locally."""
+    """Compare observable values with Bazzite's Gaming reference, without certifying a PC."""
     issues: list[str] = []
+    unknown: list[str] = []
+
     if architecture == "Indisponible":
-        issues.append("architecture non vérifiable")
+        unknown.append("architecture non vérifiable")
     elif architecture != "x86_64":
         issues.append(f"architecture {architecture} hors cible x86_64")
-    if firmware != "UEFI":
+
+    if firmware == "Indisponible":
+        unknown.append("mode de démarrage non vérifiable")
+    elif firmware != "UEFI":
         issues.append("démarrage UEFI non détecté")
+
     if memory_total_bytes <= 0:
-        issues.append("quantité de RAM non vérifiable")
+        unknown.append("quantité de RAM non vérifiable")
     elif memory_total_bytes < 8_000_000_000:
         issues.append("moins de 8 Go de RAM")
 
-    if issues:
-        return "À vérifier : " + " · ".join(issues)
-    return (
-        "Contrôles partiels conformes (x86_64, UEFI, au moins 8 Go). "
-        "CPU, GPU Vulkan 1.3+, pilotes et périphériques restent à valider."
-    )
+    if physical_cores is None:
+        unknown.append("nombre de cœurs physiques non vérifiable")
+    elif physical_cores < 4:
+        issues.append("moins de 4 cœurs physiques détectés")
 
+    if storage_free_bytes is None:
+        unknown.append("espace libre sur / non vérifiable")
+    elif storage_free_bytes < 50_000_000_000:
+        issues.append("moins de 50 Go libres sur /")
+
+    if not vulkan_devices:
+        unknown.append("prise en charge Vulkan 1.3+ non vérifiable")
+    else:
+        known_versions = [version for _name, version in vulkan_devices if version is not None]
+        if any(version >= (1, 3, 0) for version in known_versions):
+            pass
+        elif len(known_versions) == len(vulkan_devices):
+            issues.append("aucun GPU détecté n'expose Vulkan 1.3+")
+        else:
+            unknown.append("version Vulkan insuffisamment exposée par le pilote")
+
+    # The published CPU frequency and internal SSD requirements cannot be proven
+    # reliably from a desktop session, so the dashboard never labels them certified.
+    unknown.extend(["fréquence CPU de référence non certifiée", "type de support de stockage non vérifié"])
+
+    if issues:
+        message = "Sous le seuil Gaming de référence : " + " · ".join(issues)
+        if unknown:
+            message += ". À confirmer : " + " · ".join(unknown)
+        return message
+    if unknown:
+        return "Contrôle Gaming incomplet. À confirmer : " + " · ".join(unknown)
+    return (
+        "Seuils matériels Gaming observés comme conformes. "
+        "Cela ne remplace pas un essai réel des pilotes, du Wi-Fi, de l'audio et des jeux."
+    )
 
 def _gpu_details() -> str:
     found: list[str] = []
@@ -244,33 +371,37 @@ def _usb_details() -> str:
 
 
 def collect_hardware_snapshot() -> dict[str, str]:
-    """Collect one consistent UI snapshot without changing system state."""
+    """Collect one consistent, read-only UI snapshot without changing system state."""
     cpu, threads = _cpu_details()
-    try:
-        usage = shutil.disk_usage("/")
-        gib = 1024 ** 3
-        storage = f"{(usage.used / gib):.1f} / {(usage.total / gib):.1f} Gio utilisés"
-    except OSError:
-        storage = "Indisponible"
+    physical_cores, logical_threads = _cpu_topology()
+    storage, storage_free_bytes = _storage_details()
     bluetooth, bluetooth_devices = _bluetooth_details()
     audio_server, audio_output, audio_inputs = _audio_details()
     architecture = _architecture_details()
     firmware = _firmware_details()
     memory_total_bytes = _memory_total_bytes()
+    vulkan, vulkan_devices = _vulkan_snapshot()
     os_release = _read("/etc/os-release")
     pretty_name = re.search(r'^PRETTY_NAME="?([^"\n]+)', os_release, re.MULTILINE)
     return {
         "cpu": cpu,
         "cpuThreads": threads,
+        "cpuCores": _cpu_core_details(physical_cores, logical_threads),
         "memory": _memory_details(),
         "memoryTotal": _memory_total_details(memory_total_bytes),
         "architecture": architecture,
         "firmware": firmware,
         "gamingBaseline": _gaming_baseline_assessment(
-            architecture, firmware, memory_total_bytes
+            architecture,
+            firmware,
+            memory_total_bytes,
+            physical_cores,
+            storage_free_bytes,
+            vulkan_devices,
         ),
         "storage": storage,
         "gpu": _gpu_details(),
+        "vulkan": vulkan,
         "operatingSystem": pretty_name.group(1) if pretty_name else "Linux (distribution non identifiée)",
         "kernel": platform.release() or "Indisponible",
         "bluetooth": bluetooth,
