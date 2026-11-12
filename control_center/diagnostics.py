@@ -66,7 +66,9 @@ def _temperature_celsius() -> float | None:
         label_path = path.with_name(path.name.replace("_input", "_label"))
         label = _read(label_path).strip()
         chip = _read(path.parent / "name").strip()
-        sensor_identity = (label or chip).lower()
+        # Keep both sources: some drivers expose a generic tempN label while
+        # the hwmon chip name still identifies the CPU/GPU sensor.
+        sensor_identity = f"{label} {chip}".lower()
         if not any(token in sensor_identity for token in relevant_tokens):
             continue
         value = _parse_temperature(_read(path))
