@@ -18,6 +18,7 @@ from leos_core.text import normalize_search_text
 RETROARCH_FLATPAK_ID = "org.libretro.RetroArch"
 MAX_PLAYLIST_BYTES = 16 * 1024 * 1024
 MAX_PLAYLIST_ITEMS = 20_000
+MAX_RETROARCH_CONFIG_BYTES = 1024 * 1024
 _IGNORED_PLAYLISTS = {"content_favorites", "content_history", "favorites", "history"}
 
 
@@ -55,9 +56,11 @@ def find_retroarch_playlist_directories(
     for root in config_roots:
         add_directory(root / "playlists")
         try:
-            config = (root / "retroarch.cfg").read_text(
-                encoding="utf-8", errors="replace"
-            )
+            with (root / "retroarch.cfg").open("rb") as stream:
+                raw_config = stream.read(MAX_RETROARCH_CONFIG_BYTES + 1)
+            if len(raw_config) > MAX_RETROARCH_CONFIG_BYTES:
+                continue
+            config = raw_config.decode("utf-8", errors="replace")
         except OSError:
             continue
         match = re.search(
@@ -107,9 +110,11 @@ def find_retroarch_thumbnail_directories(
     for root in config_roots:
         add_directory(root / "thumbnails")
         try:
-            config = (root / "retroarch.cfg").read_text(
-                encoding="utf-8", errors="replace"
-            )
+            with (root / "retroarch.cfg").open("rb") as stream:
+                raw_config = stream.read(MAX_RETROARCH_CONFIG_BYTES + 1)
+            if len(raw_config) > MAX_RETROARCH_CONFIG_BYTES:
+                continue
+            config = raw_config.decode("utf-8", errors="replace")
         except OSError:
             continue
         match = re.search(
@@ -316,9 +321,11 @@ def load_retroarch_games(
     ):
         return []
     try:
-        if playlist_path.stat().st_size > MAX_PLAYLIST_BYTES:
+        with playlist_path.open("rb") as stream:
+            raw_playlist = stream.read(MAX_PLAYLIST_BYTES + 1)
+        if len(raw_playlist) > MAX_PLAYLIST_BYTES:
             return []
-        payload = json.loads(playlist_path.read_text(encoding="utf-8-sig"))
+        payload = json.loads(raw_playlist.decode("utf-8-sig"))
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
         return []
     if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
