@@ -29,6 +29,21 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertTrue((ROOT / "recipes/recipe.yml").is_file())
         self.assertFalse((ROOT / "recipes/recipes/recipe.yml").exists())
 
+    def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
+        recipe = (ROOT / "recipes/recipe.yml").read_text(encoding="utf-8")
+        self.assertIn("src: branding", recipe)
+        self.assertIn("dest: /usr/share/leos/", recipe)
+
+    def test_branding_contract_preserves_original_media_formats(self):
+        manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
+        self.assertIn("desktop-logo.jpeg", manifest)
+        self.assertIn("gaming-logo.jpeg", manifest)
+        self.assertIn("animations/desktop-intro.mp4", manifest)
+        self.assertIn("animations/gaming-intro.mp4", manifest)
+        self.assertIn("piste audio AAC", manifest.lower())
+        self.assertNotIn("desktop-intro.ogg", manifest)
+        self.assertNotIn("gaming-intro.ogg", manifest)
+
     def test_private_cosign_key_is_ignored_but_public_key_is_trackable(self):
         source = (ROOT / ".gitignore").read_text(encoding="utf-8")
         self.assertIn("/cosign.key", source)
