@@ -64,6 +64,7 @@ class ApplicationCatalog(QAbstractListModel):
     notificationCountChanged = Signal()
     categoryChanged = Signal()
     loadingChanged = Signal()
+    categoriesChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -193,8 +194,11 @@ class ApplicationCatalog(QAbstractListModel):
     def _on_scan_completed(self, snapshot) -> None:
         self._scan_task = None
         if snapshot is not None:
+            previous_categories = self.categories()
             self._all = sorted(snapshot, key=lambda item: item["name"].casefold())
             self._apply_filter()
+            if self.categories() != previous_categories:
+                self.categoriesChanged.emit()
         if self._refresh_pending:
             self._refresh_pending = False
             self.refresh()
@@ -231,6 +235,10 @@ class ApplicationCatalog(QAbstractListModel):
         self._category = category
         self._apply_filter()
         self.categoryChanged.emit()
+
+    @Property("QStringList", notify=categoriesChanged)
+    def availableCategories(self) -> list[str]:
+        return self.categories()
 
     @Slot(result="QVariantList")
     def categories(self):
