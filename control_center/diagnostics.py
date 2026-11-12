@@ -96,7 +96,9 @@ def _temperature_celsius() -> float | None:
     ]
     if relevant_zones:
         return max(relevant_zones)
-    return max((value for _zone_type, value in zone_readings), default=None)
+    # Unknown thermal zones may describe a chassis, battery, radio, or
+    # motherboard sensor. Do not present one as a CPU/GPU temperature.
+    return None
 
 def _failed_services() -> tuple[str, list[str]]:
     output = _run(["systemctl", "--failed", "--no-legend", "--plain", "--no-pager"])
