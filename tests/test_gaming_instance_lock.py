@@ -16,11 +16,11 @@ class GamingInstanceLockTests(unittest.TestCase):
             try:
                 self.assertIsNone(acquire_instance_lock("gaming", directory))
             finally:
-                first.unlock()
+                first.release()
 
             third = acquire_instance_lock("gaming", directory)
             self.assertIsNotNone(third)
-            third.unlock()
+            third.release()
 
     def test_lock_identifier_cannot_escape_lock_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -31,7 +31,7 @@ class GamingInstanceLockTests(unittest.TestCase):
                 sorted(path.name for path in directory.iterdir()),
                 ["gaming.lock"],
             )
-            lock.unlock()
+            lock.release()
 
     def test_empty_lock_identifier_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
