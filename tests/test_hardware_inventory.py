@@ -178,6 +178,32 @@ class HardwareInventoryTests(unittest.TestCase):
         self.assertIn("version Vulkan inconnue", label)
         self.assertEqual(devices, [("GPU Test", None)])
 
+    def test_gpu_inventory_includes_multi_digit_drm_card_indices_only(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            card0 = root / "card0" / "device"
+            card10 = root / "card10" / "device"
+            connector = root / "card0-DP-1" / "device"
+            for device, vendor in [
+                (card0, "0x1002"),
+                (card10, "0x10de"),
+                (connector, "0x8086"),
+            ]:
+                device.mkdir(parents=True)
+                (device / "vendor").write_text(vendor, encoding="utf-8")
+
+            with patch.object(
+                hardware.Path, "glob",
+                return_value=[card0, card10, connector],
+            ):
+                self.assertEqual(
+                    hardware._gpu_details(),
+                    "AMD · NVIDIA",
+                )
+
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):
         with patch.object(hardware, "_run", return_value="inactive"):
             self.assertEqual(
