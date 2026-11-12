@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import shutil
 
-from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
+from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess, QTimer
 
 from shop.catalog import CatalogModel
 from shop.flatpak_inventory import (
@@ -22,6 +22,14 @@ from desktop.notifications import post_notification
 
 
 MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024
+OPERATION_TIMEOUTS_MS = {
+    "list": 60_000,
+    "verify-remote": 30_000,
+    "verify-install": 90_000,
+    "recheck-remote": 30_000,
+    "install": 30 * 60 * 1000,
+    "uninstall": 30 * 60 * 1000,
+}
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -45,6 +53,9 @@ class StoreController(QObject):
         self._process.errorOccurred.connect(self._on_error)
         self._process.readyReadStandardOutput.connect(self._read_output)
         self._process.readyReadStandardError.connect(self._read_output)
+        self._timeout_timer = QTimer(self)
+        self._timeout_timer.setSingleShot(True)
+        self._timeout_timer.timeout.connect(self._on_timeout)
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
@@ -101,6 +112,7 @@ class StoreController(QObject):
         self._set_busy(True)
         self._set_status("Vérification ou opération Flatpak en cours…")
         self._process.start(executable, args)
+        self._timeout_timer.start(OPERATION_TIMEOUTS_MS.get(action, 60_000))
 
     @Slot()
     def refreshInstalled(self) -> None:
@@ -173,11 +185,14 @@ class StoreController(QObject):
     def refreshCatalogue(self) -> None:
         self.refreshInstalled()
 
-    def _on_finished(self, exit_code: int, _exit_status) -> None:
+    def _on_finished(self, exit_code: int, exit_status) -> None:
         # FailedToStart and some runtime errors can be followed by a finished
         # signal. The error handler already released this operation.
         if not self._busy:
             return
+        self._timeout_timer.stop()
+        if exit_status != QProcess.ExitStatus.NormalExit:
+            exit_code = -1
         self._append_output(self._stdout, self._process.readAllStandardOutput().data())
         self._append_output(self._stderr, self._process.readAllStandardError().data())
         stdout = bytes(self._stdout).decode("utf-8", errors="replace")
@@ -290,8 +305,31 @@ class StoreController(QObject):
             post_notification("Échec d’une opération Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
 
+    def _on_timeout(self) -> None:
+        if not self._busy or self._process.state() == QProcess.ProcessState.NotRunning:
+            return
+        failed_action = self._action
+        target = self._target
+        self._timeout_timer.stop()
+        self._set_busy(False)
+        self._action = ""
+        self._target = ""
+        self._verified_source_url = ""
+        self._process.kill()
+        if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
+            self._set_verification_details("Le délai de vérification Flatpak est dépassé. La source n'est pas considérée comme vérifiée.")
+        if failed_action in {"install", "uninstall"}:
+            self._set_status(
+                f"L'opération sur {target} dépasse le délai prévu. Son état doit être vérifié dans l'inventaire avant toute nouvelle tentative."
+            )
+        else:
+            self._set_status("La vérification Flatpak a dépassé le délai prévu. Réessaie après avoir vérifié la connexion.")
+        post_notification("Délai Flatpak dépassé", self._status, "warning")
+        self.operationFinished.emit(False, self._status)
+
     def _on_error(self, _error) -> None:
         if self._busy:
+            self._timeout_timer.stop()
             failed_action = self._action
             self._set_busy(False)
             self._action = ""
