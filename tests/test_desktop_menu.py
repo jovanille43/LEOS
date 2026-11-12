@@ -23,7 +23,11 @@ class DesktopMenuTests(unittest.TestCase):
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
         self.assertIn("read_desktop_entry_text(path)", source)
         self.assertIn("MAX_DESKTOP_ENTRY_BYTES = 256 * 1024", entries)
-        self.assertIn("stream.read(max_bytes + 1)", entries)
+        self.assertIn('os.open(path, flags)', entries)
+        self.assertIn('getattr(os, "O_NOFOLLOW", 0)', entries)
+        self.assertIn("stat.S_ISREG(before.st_mode)", entries)
+        self.assertIn("os.read(descriptor", entries)
+        self.assertIn("len(raw) > max_bytes", entries)
 
     def test_menu_catalog_scans_desktop_entries_asynchronously(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
