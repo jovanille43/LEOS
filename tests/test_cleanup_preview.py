@@ -43,6 +43,29 @@ class CleanupPreviewTests(unittest.TestCase):
             self.assertLessEqual(result["scannedEntries"], 5)
             self.assertLessEqual(result["files"], 5)
 
+    def test_cleanup_preview_rejects_symlinked_parent_directories(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home = Path(temporary) / "home"
+            outside = Path(temporary) / "outside"
+            home.mkdir()
+            (outside / "thumbnails").mkdir(parents=True)
+            (outside / "thumbnails" / "private.png").write_bytes(b"private")
+            (outside / "Trash" / "files").mkdir(parents=True)
+            (outside / "Trash" / "files" / "deleted.dat").write_bytes(b"private")
+
+            try:
+                (home / ".cache").symlink_to(outside, target_is_directory=True)
+                local = home / ".local" / "share"
+                local.mkdir(parents=True)
+                (local / "Trash").symlink_to(outside / "Trash", target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links are unavailable")
+
+            result = collect_cleanup_preview(home)
+            self.assertFalse(result["thumbnails"]["available"])
+            self.assertFalse(result["trash"]["available"])
+            self.assertEqual(result["totalBytes"], 0)
+
     def test_symlinks_are_not_followed_or_counted(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
