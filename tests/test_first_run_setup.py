@@ -64,6 +64,7 @@ class FirstRunSetupTests(unittest.TestCase):
             capture_output=True,
             text=True,
             env=env,
+            cwd=str(Path(env["HOME"]).parent),
             timeout=10,
         )
 
@@ -147,6 +148,17 @@ class FirstRunSetupTests(unittest.TestCase):
             self.assertEqual(len(brave_installs), 2)
             self.assertEqual(len(libreoffice_installs), 1)
             self.assertEqual(len(vlc_installs), 1)
+
+    def test_relative_xdg_state_home_falls_back_to_home_state_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            env = self._environment(root)
+            env["XDG_STATE_HOME"] = "relative-state"
+            env["KDLG_RESULT"] = "1"
+            result = self._run(env)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((root / "home/.local/state/leos/default-apps-seeded").is_file())
+            self.assertFalse((root / "relative-state").exists())
 
     def test_missing_graphical_confirmation_never_installs_or_marks_complete(self):
         with tempfile.TemporaryDirectory() as temporary:
