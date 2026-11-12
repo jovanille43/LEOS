@@ -120,29 +120,28 @@ LEOS/
 └── README.md
 ```
 
-## Feuille de route
+## Prochaines étapes
 
-1. **Fondations** — structurer le dépôt et valider la recette BlueBuild.
-2. **Image minimale** — construire et tester une première image LEOS basée sur Bazzite.
-3. **Identité LEOS** — intégrer les premiers éléments visuels et le sélecteur de mode.
-4. **Desktop Mode** — développer progressivement le bureau personnalisé.
-5. **Gaming Mode** — développer l'application plein écran et la bibliothèque.
-6. **Intégrations** — boutique, paramètres et outils LEOS.
-7. **Tests et ISO** — vérifier la compatibilité, la stabilité et préparer une image installable.
+1. **Finaliser Desktop Mode** — intégrer le fond d'écran officiel, achever le dock LEOS sur Plasma avec sauvegarde et confirmation, puis ajouter les raccourcis globaux KDE.
+2. **Finaliser Gaming Mode** — poursuivre les intégrations d'émulateurs et contrôler les profils de manettes ainsi que le comportement sur plusieurs matériels.
+3. **Verrouiller le packaging** — vérifier les dépendances de l'image, préparer les éléments publics/privés Cosign et garder les opérations de publication manuelles.
+4. **Première image signée** — lancer le workflow uniquement après préparation de la signature et d'une machine de test ; résoudre les éventuelles incompatibilités du build.
+5. **Validation matérielle** — tester le premier démarrage, les transitions Desktop/Gaming, la vidéo et l'audio, les manettes, le Bluetooth, le GPU, la boutique, les mises à jour et le rollback.
+6. **ISO installable** — choisir et valider le processus ISO après stabilisation de l'image bootable.
 
 ## État actuel
 
-- [x] Dépôt GitHub créé.
-- [x] Recette BlueBuild structurée dans `recipes/recipe.yml`.
-- [x] Workflows GitHub Actions de tests Python et de validation/génération de la recette BlueBuild exécutés avec succès.
-- [x] Architecture générale des deux modes définie.
-- [x] Premiers prototypes Gaming, Centre de contrôle, Boutique et Centre des manettes ajoutés au dépôt.
-- [x] Navigation Gaming au clavier et à la manette, profils manette, catégories, favoris, jeux récents, recherche, jaquettes Steam locales et imports Steam, Heroic et Lutris intégrés au code source.
-- [x] Logos officiels Desktop/Gaming et vidéos d'introduction ajoutés au dépôt, avec chemins de déploiement documentés.
-- [x] Lecture des introductions via Qt Multimedia, son intégré configurable et transition de secours en cas d'erreur.
-- [x] Valider la recette BlueBuild et générer le Containerfile par GitHub Actions.
-- [ ] Vérifier la configuration de la clé publique `cosign.pub` et du secret `SIGNING_SECRET`.
-- [ ] Déclencher manuellement le build, construire une image LEOS puis la tester sur un PC de test.
+- [x] Architecture commune Bazzite KDE / BlueBuild et deux modes au sein d'une seule session.
+- [x] Prototypes source du sélecteur, Gaming, Desktop, Centre de contrôle, Centre des manettes, boutique et notifications.
+- [x] Imports de bibliothèque Steam, Heroic et Lutris, ajout manuel, favoris, récents et navigation manette.
+- [x] Emblèmes officiels et vidéos Desktop/Gaming présents dans le dépôt et copiés dans la recette.
+- [x] Transitions vidéo via Qt Multimedia avec piste audio configurable et repli en cas d'erreur.
+- [x] Contrôles Python automatisés et validation/génération de la recette BlueBuild réussis sur GitHub Actions.
+- [ ] Fond d'écran officiel et intégration complète du dock au véritable panneau Plasma.
+- [ ] Intégrations d'émulateurs et validation élargie sur plusieurs configurations matérielles.
+- [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
+- [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
+- [ ] Préparer une ISO installable après validation de l'image.
 
 **Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
 
