@@ -90,6 +90,18 @@ class NotificationStoreTests(unittest.TestCase):
             lock_path = path.with_name(path.name + ".lock")
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
+    def test_long_lived_instances_refresh_items_and_unread_count(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "inbox.json"
+            desktop = NotificationStore(path)
+            gaming = NotificationStore(path)
+            identifier = desktop.add("Nouveau message")
+            self.assertEqual(gaming.unread_count(), 1)
+            self.assertEqual(gaming.items()[0]["id"], identifier)
+            self.assertTrue(desktop.mark_read(identifier))
+            self.assertEqual(gaming.unread_count(), 0)
+            self.assertEqual(gaming.items(unread_only=True), [])
+
 
 if __name__ == "__main__":
     unittest.main()
