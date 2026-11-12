@@ -58,13 +58,8 @@ modules:
     dest: /usr/libexec/
 
   - type: copy
-    src: packaging/leos-default-apps.service
-    dest: /usr/lib/systemd/user/
-
-  - type: systemd
-    user:
-      enabled:
-        - leos-default-apps.service
+    src: packaging/leos-default-apps-setup
+    dest: /usr/libexec/
 
   - type: copy
     src: leos_core
