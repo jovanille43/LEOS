@@ -110,7 +110,10 @@ class GamepadBackend:
                 continue
             finally:
                 if device is not None:
-                    device.close()
+                    try:
+                        device.close()
+                    except OSError:
+                        pass
         return found
 
     @staticmethod
@@ -193,8 +196,12 @@ class GamepadBackend:
         return events
 
     def close(self) -> None:
-        if self.device is not None:
-            self.device.close()
-            self.device = None
+        device, self.device = self.device, None
+        if device is not None:
+            try:
+                device.close()
+            except OSError:
+                # A USB/Bluetooth controller may vanish between poll and close.
+                pass
         self.axes = {}
         self.axis_ranges = {}
