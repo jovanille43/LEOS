@@ -128,7 +128,9 @@ ApplicationWindow {
                                 anchors.margins: 12
                                 spacing: 12
                                 Rectangle {
-                                    width: 42; height: 42; radius: 10
+                                    Layout.preferredWidth: 42
+                                    Layout.preferredHeight: 42
+                                    radius: 10
                                     color: "#202c3b"
                                     Label {
                                         anchors.centerIn: parent
@@ -205,7 +207,7 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Rectangle { Layout.fillWidth: true; height: 1; color: "#293342" }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
                         Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
                         Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
