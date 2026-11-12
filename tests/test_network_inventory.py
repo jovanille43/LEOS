@@ -69,6 +69,31 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(result["interfaces"][0]["downloadRate"], "1.0 Ko/s")
         self.assertEqual(result["interfaces"][0]["uploadRate"], "0 o/s")
 
+    def test_wifi_details_are_kept_when_ethernet_is_the_default_route(self):
+        root = network.Path("/sys/class/net")
+        ethernet = root / "enp1s0"
+        wireless = root / "wlan0"
+        with (
+            patch.object(network.Path, "iterdir", return_value=[ethernet, wireless]),
+            patch.object(network.Path, "exists", autospec=True,
+                         side_effect=lambda path: str(path).endswith("/wlan0/wireless")),
+            patch.object(network, "_read", side_effect=lambda path: {
+                "/sys/class/net/enp1s0/operstate": "up",
+                "/sys/class/net/wlan0/operstate": "up",
+                "/sys/class/net/enp1s0/statistics/rx_bytes": "100",
+                "/sys/class/net/enp1s0/statistics/tx_bytes": "100",
+                "/sys/class/net/wlan0/statistics/rx_bytes": "200",
+                "/sys/class/net/wlan0/statistics/tx_bytes": "200",
+            }.get(str(path), "")),
+            patch.object(network, "_default_route", return_value=("enp1s0", "192.168.1.1")),
+            patch.object(network, "_wireless_details", return_value={"ssid": "LEOS-WIFI", "signal": "-48 dBm"}) as wifi_details,
+            patch.object(network, "_run", return_value=""),
+        ):
+            result = network.collect_network_snapshot()
+        wifi_details.assert_called_once_with("wlan0")
+        self.assertEqual(result["defaultInterface"], "enp1s0")
+        self.assertEqual(result["wifiSsid"], "LEOS-WIFI")
+
     def test_missing_interfaces_are_reported_as_offline(self):
         with (
             patch.object(network.Path, "iterdir", side_effect=OSError),
