@@ -78,6 +78,35 @@ class GamingInstanceLockTests(unittest.TestCase):
                 acquire_instance_lock("gaming", directory)
             self.assertEqual(target.read_text(encoding="utf-8"), "do not follow")
 
+    def test_kernel_releases_lock_after_owner_exits_abnormally(self):
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            script = (
+                "import os, sys\n"
+                "from pathlib import Path\n"
+                "from gaming.backend.instance_lock import acquire_instance_lock\n"
+                "lock = acquire_instance_lock('gaming', Path(sys.argv[1]))\n"
+                "if lock is None: os._exit(2)\n"
+                "sys.stdout.write('LOCKED\\n'); sys.stdout.flush()\n"
+                "os._exit(23)\n"
+            )
+            result = subprocess.run(
+                [sys.executable, "-c", script, str(directory)],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=5,
+            )
+            self.assertEqual(result.returncode, 23)
+            self.assertEqual(result.stdout.strip(), "LOCKED")
+
+            replacement = acquire_instance_lock("gaming", directory)
+            self.assertIsNotNone(replacement)
+            replacement.release()
+
 
 if __name__ == "__main__":
     unittest.main()
