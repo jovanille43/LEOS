@@ -246,12 +246,23 @@ ApplicationWindow {
 
                 ColumnLayout {
                     spacing: 1
+                    Image {
+                        id: gamingHeaderLogo
+                        source: "../../branding/gaming-logo.jpeg"
+                        asynchronous: true
+                        smooth: true
+                        fillMode: Image.PreserveAspectFit
+                        Layout.preferredWidth: 118
+                        Layout.preferredHeight: 58
+                        visible: status === Image.Ready
+                    }
                     Label {
                         text: "LEOS"
                         color: "white"
                         font.pixelSize: 29
                         font.weight: Font.Black
                         font.letterSpacing: 5
+                        visible: gamingHeaderLogo.status !== Image.Ready
                     }
                     Label {
                         text: "GAMING MODE"
