@@ -45,7 +45,7 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         rows = connection.execute(
             f'SELECT {quoted_columns} FROM "games" WHERE "installed" = 1 '
             'AND CAST("id" AS INTEGER) > 0 AND "name" IS NOT NULL '
-            'AND TRIM("name") != "" ORDER BY "name" COLLATE NOCASE LIMIT ?',
+            "AND TRIM(\"name\") != '' ORDER BY \"name\" COLLATE NOCASE LIMIT ?",
             (MAX_LUTRIS_GAMES,),
         ).fetchall()
 
