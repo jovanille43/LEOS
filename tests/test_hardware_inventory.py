@@ -71,8 +71,10 @@ class HardwareInventoryTests(unittest.TestCase):
         passed = hardware._gaming_baseline_assessment(
             "x86_64", "UEFI", total, 4, 60_000_000_000, devices
         )
-        self.assertIn("Seuils matériels Gaming observés comme conformes", passed)
+        self.assertIn("Contrôle Gaming incomplet", passed)
+        self.assertIn("fréquence CPU de référence non certifiée", passed)
         self.assertIn("type de support de stockage non vérifié", passed)
+        self.assertNotIn("Sous le seuil Gaming", passed)
 
         unsupported = hardware._gaming_baseline_assessment(
             "ARM64", "UEFI non détecté", 4 * 1024 ** 3,
