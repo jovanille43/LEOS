@@ -135,6 +135,7 @@ class SettingsStore:
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.path.parent.is_symlink() or self.path.is_symlink():
             raise OSError("LEOS settings path cannot be a symbolic link")
+        os.chmod(self.path.parent, 0o700)
         payload = json.dumps(self._values, indent=2, ensure_ascii=False) + "\n"
         fd, temp_name = tempfile.mkstemp(
             prefix="settings.", suffix=".tmp", dir=self.path.parent
