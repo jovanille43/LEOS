@@ -131,6 +131,36 @@ class RecentApplicationsTests(unittest.TestCase):
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
 
+    def test_invalid_history_limits_are_rejected(self):
+        for limit in (0, -1, MAX_RECENT_ENTRIES + 1, True, 1.5, "5"):
+            with self.subTest(limit=limit), self.assertRaises(ValueError):
+                RecentApplications(Path("recent.json"), limit=limit)
+
+    def test_history_reader_rejects_symlinked_parent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            real = root / "real"
+            real.mkdir()
+            (real / "recent.json").write_text("[]", encoding="utf-8")
+            link = root / "linked"
+            try:
+                link.symlink_to(real, target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("Directory symbolic links unavailable")
+            self.assertEqual(RecentApplications(link / "recent.json").items(), [])
+
+    def test_writer_restricts_existing_directory_permissions(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory) / "state"
+            parent.mkdir(mode=0o755)
+            parent.chmod(0o755)
+            history = RecentApplications(parent / "recent.json")
+            history.record("org.example.Editor.desktop")
+            self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
+            self.assertEqual(history.path.stat().st_mode & 0o777, 0o600)
+
     def test_relative_xdg_state_home_falls_back_to_user_state_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
