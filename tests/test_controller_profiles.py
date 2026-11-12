@@ -148,6 +148,16 @@ class ControllerProfileTests(unittest.TestCase):
             self.store.update(self.device_id, profile="xbox")
         self.assertEqual(target.read_text(encoding="utf-8"), '{"version":1,"devices":{}}')
 
+    def test_existing_profile_directory_is_restricted_before_write(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        parent = self.path.parent / "config"
+        parent.mkdir(mode=0o755)
+        parent.chmod(0o755)
+        store = ControllerProfileStore(parent / "controllers.json")
+        store.update(self.device_id, profile="xbox")
+        self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
+
     def test_lock_file_is_private(self):
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
