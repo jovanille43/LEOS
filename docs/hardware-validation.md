@@ -135,7 +135,7 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 - [ ] Les préférences et sauvegardes Plasma ne sont pas appliquées sans accord explicite.
 
 ## 8. Apparence et fonds d'écran
-## 8. Affichage et multi-écrans
+## 9. Affichage et multi-écrans
 
 - [ ] Un écran interne eDP et un écran HDMI/DisplayPort externe sont détectés lorsqu'ils sont exposés par DRM.
 - [ ] La déconnexion et la reconnexion d'un écran mettent à jour l'inventaire sans faire planter le Centre de contrôle.
@@ -160,7 +160,7 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 
 Le Centre de contrôle ouvre uniquement le sélecteur natif ; l'utilisateur garde la décision finale et peut restaurer son fond précédent depuis KDE.
 
-## 9. Boutique LEOS
+## 10. Boutique LEOS
 
 Effectuer les essais avec une application Flatpak non critique.
 
@@ -172,7 +172,7 @@ Effectuer les essais avec une application Flatpak non critique.
 - [ ] Une désinstallation volontaire n'est pas annulée par le service d'installation initiale.
 - [ ] Une opération refusée ou échouée laisse l'état cohérent.
 
-## 10. Mises à jour, rollback et stabilité
+## 11. Mises à jour, rollback et stabilité
 
 Suivre également le [guide de récupération et de retour arrière](recovery.md). Les commandes OSTree doivent être testées uniquement sur une machine ou un disque de test, jamais sur le seul poste de travail.
 
@@ -186,7 +186,7 @@ Suivre également le [guide de récupération et de retour arrière](recovery.md
 
 Ne pas tester un rollback ou une opération OSTree risquée sur le seul PC de travail.
 
-## 11. Compte rendu
+## 12. Compte rendu
 
 Pour chaque anomalie, consigner :
 
