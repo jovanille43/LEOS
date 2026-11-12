@@ -71,7 +71,7 @@ def _temperature_celsius() -> float | None:
         # an unrelated "Ambient" sensor on a CPU hwmon chip could be misread.
         generic_label = (
             not label
-            or re.fullmatch(r"(?:temp(?:erature)?\\s*\\d*|sensor\\s*\\d*)", label, re.IGNORECASE)
+            or re.fullmatch(r"(?:temp(?:erature)?\s*\d*|sensor\s*\d*)", label, re.IGNORECASE)
             is not None
         )
         sensor_identity = f"{label} {chip}".lower() if generic_label else label.lower()
