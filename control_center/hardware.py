@@ -397,12 +397,9 @@ def _gpu_details() -> str:
 
     if found:
         return " · ".join(found)
-    if pci_names:
-        return " · ".join(pci_names.values())
-    lspci = _run(["lspci", "-nn"], timeout=2.0)
     lines = [
         line.split(": ", 1)[-1]
-        for line in lspci.splitlines()
+        for line in pci_output.splitlines()
         if "VGA compatible controller" in line
         or "3D controller" in line
         or "Display controller" in line
