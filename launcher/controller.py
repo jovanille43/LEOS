@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
-from gaming.backend.gamepad import mapper_from_preferences
+from gaming.backend.gamepad import mapper_from_preferences, open_first_available_gamepad
 from leos_core.settings import SettingsStore
 
 
@@ -90,10 +90,17 @@ class ModeSelectorController(QObject):
             self._poll_timer.stop()
 
         if not self._device_path and devices:
-            device = devices[0]
+            # DRM/evdev enumeration can list an event node that is no longer
+            # readable. Try every detected controller before falling back to
+            # keyboard and mouse, rather than letting the first node block all.
+            device, _open_error = open_first_available_gamepad(self._backend, devices)
+            if device is None:
+                self._backend.close()
+                self._device_path = ""
+                self._poll_timer.stop()
+                self._set_status("Manette détectée, aucune accessible · clavier/souris disponibles")
+                return
             try:
-                self._backend.open(device["path"])
-                self._device_path = device["path"]
                 profile_id = device_profile_id(
                     device["name"],
                     device["vendor"],
@@ -103,13 +110,16 @@ class ModeSelectorController(QObject):
                     device["path"],
                 )
                 preferences = self._profiles.get(profile_id)
-                self._mapper = mapper_from_preferences(preferences, device)
+                mapper = mapper_from_preferences(preferences, device)
+                self._device_path = device["path"]
+                self._mapper = mapper
                 self._poll_timer.start()
                 self._set_status(f"Manette connectée : {device['name']}")
-            except (OSError, ValueError):
+            except (OSError, ValueError, TypeError, KeyError, RuntimeError):
                 self._backend.close()
                 self._device_path = ""
-                self._set_status("Manette détectée, lecture indisponible")
+                self._poll_timer.stop()
+                self._set_status("Manette détectée, lecture indisponible · clavier/souris disponibles")
         elif not devices:
             self._set_status("Manette non détectée · clavier/souris disponibles")
 
