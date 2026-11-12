@@ -24,7 +24,7 @@ def json_nesting_within_limit(payload: str, max_depth: int = MAX_JSON_NESTING) -
                 escaped = False
             elif character == "\\":
                 escaped = True
-            elif character == '"' :
+            elif character == '"':
                 in_string = False
             continue
 
