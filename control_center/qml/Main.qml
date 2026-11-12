@@ -157,6 +157,7 @@ ApplicationWindow {
                             { label: "Réseau", page: 9 }
                         ]
                         delegate: Button {
+                            id: settingsNavigationButton
                             required property var modelData
                             Layout.fillWidth: true
                             Layout.preferredHeight: 48
@@ -171,7 +172,7 @@ ApplicationWindow {
                                 border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
                             }
                             contentItem: Label {
-                                text: parent.text
+                                text: settingsNavigationButton.text
                                 color: window.themeColors.text
                                 font.pixelSize: 12
                                 verticalAlignment: Text.AlignVCenter
