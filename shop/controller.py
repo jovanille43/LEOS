@@ -159,11 +159,13 @@ class StoreController(QObject):
         ):
             self._set_status("La vérification doit réussir et l'application ne doit pas déjà être installée.")
             return
+        # Recheck the remote after the user's final confirmation to avoid
+        # installing from a source that changed after the metadata preview.
         self._start(
-            "install",
+            "recheck-remote",
             item["id"],
             "flatpak",
-            ["install", "--user", "--assumeyes", "flathub", item["id"]],
+            ["remotes", "--user", "--columns=name,url"],
         )
 
     @Slot()
@@ -218,6 +220,26 @@ class StoreController(QObject):
                 self._set_verification_details("Le dépôt nommé Flathub est absent ou son adresse n'est pas reconnue comme officielle. Aucune installation n'a été lancée.")
                 self._set_status("Source Flathub non vérifiée : installation bloquée.")
                 post_notification("Source non vérifiée", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
+        if action == "recheck-remote":
+            remote_url = trusted_flathub_remote_url(stdout) if exit_code == 0 else ""
+            if remote_url and remote_url == self._verified_source_url:
+                self._start(
+                    "install",
+                    target,
+                    "flatpak",
+                    ["install", "--user", "--assumeyes", "flathub", target],
+                )
+            else:
+                self._action = ""
+                self._verified_source_url = ""
+                self._set_verification_details(
+                    "Le dépôt Flathub a changé ou n'est plus vérifiable depuis l'aperçu. Aucune installation n'a été lancée."
+                )
+                self._set_status("La source Flathub a changé : installation bloquée.")
+                post_notification("Source modifiée", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
             return
 
