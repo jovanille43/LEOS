@@ -27,8 +27,8 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "surface_elevated": "#E8EEF5",
         "border": "#CFD8E3",
         "text": "#18202B",
-        "muted_text": "#687587",
-        "accent_primary": "#007F9E",
+        "muted_text": "#5D6978",
+        "accent_primary": "#006B83",
         "accent_secondary": "#A329B5",
     },
     "cyan": {

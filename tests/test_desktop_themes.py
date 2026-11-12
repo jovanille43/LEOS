@@ -12,6 +12,21 @@ from desktop.themes import (
 )
 
 
+def _relative_luminance(color: str) -> float:
+    channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
+    linear = [
+        value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+        for value in channels
+    ]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(foreground: str, background: str) -> float:
+    first = _relative_luminance(foreground)
+    second = _relative_luminance(background)
+    return (max(first, second) + 0.05) / (min(first, second) + 0.05)
+
+
 class DesktopThemeTests(unittest.TestCase):
     def test_all_builtin_palettes_have_complete_valid_tokens(self):
         self.assertEqual(
@@ -21,6 +36,22 @@ class DesktopThemeTests(unittest.TestCase):
         for palette in THEME_PALETTES.values():
             self.assertEqual(set(palette), REQUIRED_TOKENS)
             self.assertTrue(validate_palette(palette))
+
+    def test_text_and_muted_text_meet_wcag_aa_on_all_palette_surfaces(self):
+        surfaces = ("background", "surface", "surface_elevated")
+        text_tokens = ("text", "muted_text")
+        for theme_name, palette in THEME_PALETTES.items():
+            for text_token in text_tokens:
+                for surface_token in surfaces:
+                    with self.subTest(
+                        theme=theme_name,
+                        text=text_token,
+                        surface=surface_token,
+                    ):
+                        self.assertGreaterEqual(
+                            _contrast_ratio(palette[text_token], palette[surface_token]),
+                            4.5,
+                        )
 
     def test_unknown_theme_falls_back_to_leos_original(self):
         self.assertEqual(palette_for_theme("not-a-theme"), THEME_PALETTES[DEFAULT_THEME])
