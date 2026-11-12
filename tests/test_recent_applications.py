@@ -67,6 +67,19 @@ class RecentApplicationsTests(unittest.TestCase):
                 history.record("org.example.Safe.desktop")
             self.assertEqual(path.read_bytes(), raw)
 
+    def test_history_rejects_more_entries_than_the_global_limit(self):
+        from desktop.recent_applications import MAX_RECENT_ENTRIES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "recent.json"
+            entries = [f"org.example.App{index}.desktop" for index in range(MAX_RECENT_ENTRIES + 1)]
+            path.write_text(json.dumps(entries), encoding="utf-8")
+            history = RecentApplications(path)
+            self.assertEqual(history.items(), [])
+            with self.assertRaises(ValueError):
+                history.record("org.example.Safe.desktop")
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8")), entries)
+
     def test_history_contains_only_desktop_ids(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "recent.json"
