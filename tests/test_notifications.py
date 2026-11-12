@@ -120,6 +120,24 @@ class NotificationEmissionTests(unittest.TestCase):
                         self.assertIn("--expire-time=8000", args)
                         self.assertIn("--hint=boolean:suppress-sound:true", args)
 
+    def test_native_notification_reads_one_consistent_preference_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
+                from leos_core.settings import SettingsStore
+                settings = SettingsStore()
+                settings.set("notifications_enabled", True)
+                settings.set("notification_minimum_priority", "all")
+                settings.set("last_mode", "desktop")
+                settings.set("silent_notifications_in_gaming", False)
+                settings.set("notification_duration_seconds", 3)
+                settings.set("notification_sounds_enabled", True)
+                with patch.object(SettingsStore, "snapshot", wraps=settings.snapshot) as snapshot:
+                    with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                        with patch("desktop.notifications.subprocess.Popen") as process:
+                            post_notification("Cohérence", "Préférences groupées", "info")
+                    snapshot.assert_called_once()
+                    self.assertIn("--expire-time=3000", process.call_args.args[0])
+
     def test_priority_filter_keeps_event_in_history_without_popup(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
