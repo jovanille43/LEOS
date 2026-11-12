@@ -129,6 +129,11 @@ def _cpu_topology_from_sysfs(root: Path) -> tuple[int | None, int]:
         else:
             core_ids.add(core)
 
+    # A mixed result means some online CPUs expose package/cluster identity
+    # while others expose only a core ID. Those ungrouped IDs may overlap with
+    # the grouped cores, so combining the sets would risk reporting a false count.
+    if core_pairs and core_ids:
+        return None, len(online_ids)
     if core_pairs:
         return len(core_pairs), len(online_ids)
     if core_ids:
