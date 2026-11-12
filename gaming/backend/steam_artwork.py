@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from itertools import islice
 
 
 COVER_NAMES = (
@@ -10,6 +11,7 @@ COVER_NAMES = (
     "library_600x900.jpg",
     "library_capsule.jpg",
 )
+MAX_STEAM_ARTWORK_VARIANTS = 128
 HEADER_NAMES = (
     "library_header.jpg",
     "header.jpg",
@@ -25,9 +27,10 @@ def find_steam_artwork(cache_dir: Path, app_id: str) -> Path | None:
     directories = [app_dir]
     if app_dir.is_dir():
         try:
-            directories.extend(sorted(
-                child for child in app_dir.iterdir() if child.is_dir()
-            ))
+            directories.extend(
+                child for child in islice(app_dir.iterdir(), MAX_STEAM_ARTWORK_VARIANTS)
+                if child.is_dir()
+            )
         except OSError:
             pass
 
