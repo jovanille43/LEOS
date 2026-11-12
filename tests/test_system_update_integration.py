@@ -21,6 +21,13 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertIn('"status", "--json"', update_module)
         self.assertIn("pending_deployment_from_status", update_module)
 
+    def test_failed_deployment_status_reads_discard_cached_recovery_inventory(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("def _reset_deployment_snapshot", controller)
+        self.assertIn("self._reset_deployment_snapshot()", controller)
+        self.assertIn("if inventory is None:", controller)
+        self.assertIn("if _exit_status != QProcess.ExitStatus.NormalExit or exit_code != 0:", controller)
+
     def test_system_update_probes_have_bounded_runtime(self):
         controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
         self.assertIn("SYSTEM_UPDATE_CHECK_TIMEOUT_MS = 120_000", controller)
