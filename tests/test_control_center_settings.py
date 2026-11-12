@@ -69,6 +69,25 @@ class SettingsModuleCommandTests(unittest.TestCase):
         sections = set(re.findall(r'section: "([a-z-]+)"', qml))
         self.assertEqual(sections, set(SETTINGS_MODULES))
 
+    def test_animation_and_sound_preferences_are_exposed_as_shared_controls(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        settings = (root / "leos_core/settings.py").read_text(encoding="utf-8")
+
+        self.assertIn('Label { text: "Animations LEOS"', qml)
+        self.assertIn("checked: controlCenter.animationsEnabled", qml)
+        self.assertIn("controlCenter.setAnimationsEnabled(checked)", qml)
+        self.assertIn('Label { text: "Sons LEOS"', qml)
+        self.assertIn("checked: controlCenter.soundsEnabled", qml)
+        self.assertIn("controlCenter.setSoundsEnabled(checked)", qml)
+        self.assertIn('def animationsEnabled(self)', controller)
+        self.assertIn('def soundsEnabled(self)', controller)
+        self.assertIn('self.settings.set("animations_enabled", enabled)', controller)
+        self.assertIn('self.settings.set("sounds_enabled", enabled)', controller)
+        self.assertIn('"animations_enabled": True', settings)
+        self.assertIn('"sounds_enabled": True', settings)
+
     def test_overview_uses_real_shared_monitor_values(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
