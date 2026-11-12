@@ -96,7 +96,7 @@ def read_bounded_json(path: Path, max_bytes: int = MAX_LIBRARY_STATE_FILE_BYTES)
         if len(raw) > max_bytes:
             return None
         return json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
         return None
 
 
