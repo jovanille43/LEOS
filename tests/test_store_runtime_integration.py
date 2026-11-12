@@ -54,6 +54,19 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("enabled: !store.busy", qml)
         self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
 
+    def test_store_catalog_uses_a_bounded_validated_loader(self):
+        model = (ROOT / "shop/catalog.py").read_text(encoding="utf-8")
+        loader = (ROOT / "shop/catalog_data.py").read_text(encoding="utf-8")
+        controller = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn("load_catalog(catalog_path)", model)
+        self.assertIn("self._items = []", model)
+        self.assertIn("self.catalog.load_error", controller)
+        self.assertIn("MAX_CATALOG_BYTES", loader)
+        self.assertIn("MAX_CATALOG_ITEMS", loader)
+        self.assertIn("O_NOFOLLOW", loader)
+        self.assertIn("json_nesting_within_limit(text)", loader)
+        self.assertIn("APP_ID_RE.fullmatch(app_id)", loader)
+
     def test_flatpak_process_output_is_bounded_per_stream(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024", source)
