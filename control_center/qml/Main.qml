@@ -107,7 +107,7 @@ ApplicationWindow {
         title: "Appliquer le dock LEOS ?"
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
-            text: "LEOS va créer une sauvegarde privée, puis appliquer la position, l'alignement, la hauteur et le masquage du dock. Si un seul panneau KDE existe, il sera réutilisé et ses applets seront conservés. Aucun panneau ne sera supprimé. Les dispositions multi-panneaux et les profils avec widgets actifs sont refusés."
+            text: "LEOS va créer une sauvegarde privée, puis appliquer la position, l'alignement, la hauteur et le masquage du dock. Les favoris du menu LEOS seront synchronisés avec le gestionnaire de tâches lorsque leurs applications sont installées. Si un seul panneau KDE existe, il sera réutilisé et ses applets seront conservés. Aucun panneau ne sera supprimé. Les dispositions multi-panneaux et les profils avec widgets actifs sont refusés."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
             width: 440

@@ -175,7 +175,7 @@ def build_layout_plan(layout: object, inspection: dict[str, Any]) -> dict[str, A
             observations.append(
                 "Un panneau KDE personnel unique sera réutilisé après confirmation ; ses applets existants seront conservés."
             )
-        observations.append("Seuls la position, l'alignement, la hauteur, le masquage et l'effet flottant seront ajustés.")
+        observations.append("Seuls la position, l'alignement, la hauteur et le masquage automatique seront ajustés.")
     else:
         observations.append("Aucun panneau Plasma standard détecté ; un nouveau panneau LEOS pourra être créé.")
 

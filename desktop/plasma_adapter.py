@@ -7,6 +7,7 @@ and never deletes panels or alters multi-panel layouts.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from desktop.layouts import validate_layout
@@ -23,10 +24,26 @@ PANEL_WIDGETS = (
 )
 
 
-def build_panel_management_script(layout: object) -> str:
-    """Build a Plasma 6 JavaScript script; never execute it here."""
+MAX_PINNED_LAUNCHERS = 32
+_DESKTOP_ID_RE = re.compile(r"^[A-Za-z0-9_.+-]{1,240}\.desktop$")
+
+
+def build_panel_management_script(
+    layout: object, pinned_apps: object = ()
+) -> str:
+    """Build a Plasma 6 script with validated launcher IDs; never execute it here."""
     if not validate_layout(layout):
         raise ValueError("Invalid LEOS desktop layout")
+    if (
+        not isinstance(pinned_apps, (list, tuple))
+        or len(pinned_apps) > MAX_PINNED_LAUNCHERS
+        or any(
+            not isinstance(item, str) or not _DESKTOP_ID_RE.fullmatch(item)
+            for item in pinned_apps
+        )
+        or len(set(pinned_apps)) != len(pinned_apps)
+    ):
+        raise ValueError("Invalid LEOS dock favourites")
     assert isinstance(layout, dict)
     config: dict[str, Any] = {
         "enabled": layout["dock"]["enabled"],
@@ -37,7 +54,12 @@ def build_panel_management_script(layout: object) -> str:
     }
     config_json = json.dumps(config, ensure_ascii=True, separators=(",", ":"))
     widgets_json = json.dumps(PANEL_WIDGETS, ensure_ascii=True)
-    return _SCRIPT.replace("__LEOS_CONFIG__", config_json).replace("__LEOS_WIDGETS__", widgets_json)
+    launchers_json = json.dumps(list(pinned_apps), ensure_ascii=True, separators=(",", ":"))
+    return (
+        _SCRIPT.replace("__LEOS_CONFIG__", config_json)
+        .replace("__LEOS_WIDGETS__", widgets_json)
+        .replace("__LEOS_PINNED_APPS__", launchers_json)
+    )
 
 
 _SCRIPT = r'''(function () {
@@ -49,6 +71,7 @@ _SCRIPT = r'''(function () {
 
     var desired = __LEOS_CONFIG__;
     var widgetTypes = __LEOS_WIDGETS__;
+    var pinnedApps = __LEOS_PINNED_APPS__;
     var markerGroup = "LEOS";
     var markerValue = "leos-panel-v1";
     var allPanels = panels();
@@ -57,6 +80,36 @@ _SCRIPT = r'''(function () {
     function isLeosPanel(candidate) {
         candidate.currentConfigGroup = [markerGroup];
         return candidate.readConfig("managedBy", "") === markerValue;
+    }
+
+    function findTaskManager(candidate) {
+        var manager = candidate.widgets("org.kde.plasma.icontasks");
+        if (manager.length === 0) {
+            manager = candidate.widgets("org.kde.plasma.taskmanager");
+        }
+        return manager.length ? manager[0] : null;
+    }
+
+    function snapshotPanel(candidate) {
+        candidate.currentConfigGroup = [markerGroup];
+        var state = {
+            location: candidate.location,
+            alignment: candidate.alignment,
+            hiding: candidate.hiding,
+            height: candidate.height,
+            lengthMode: candidate.lengthMode,
+            length: candidate.length,
+            managedBy: candidate.readConfig("managedBy", ""),
+            taskManager: null,
+            launchers: null
+        };
+        var manager = findTaskManager(candidate);
+        if (manager) {
+            manager.currentConfigGroup = ["General"];
+            state.taskManager = manager;
+            state.launchers = manager.readConfig("launchers", []);
+        }
+        return state;
     }
 
     for (var i = 0; i < allPanels.length; i++) {
@@ -86,35 +139,20 @@ _SCRIPT = r'''(function () {
     var widgetsToAdd = [];
 
     if (panel) {
-        panel.currentConfigGroup = [markerGroup];
-        before = {
-            location: panel.location,
-            alignment: panel.alignment,
-            hiding: panel.hiding,
-            height: panel.height,
-            lengthMode: panel.lengthMode,
-            length: panel.length,
-            managedBy: panel.readConfig("managedBy", "")
-        };
+        before = snapshotPanel(panel);
     } else if (allPanels.length === 1) {
         panel = allPanels[0];
         adopted = true;
-        panel.currentConfigGroup = [markerGroup];
-        before = {
-            location: panel.location,
-            alignment: panel.alignment,
-            hiding: panel.hiding,
-            height: panel.height,
-            lengthMode: panel.lengthMode,
-            length: panel.length,
-            managedBy: panel.readConfig("managedBy", "")
-        };
-        // Keep all existing applets. Add only missing core dock components.
+        before = snapshotPanel(panel);
+        // Keep all existing applets, including a regular task manager.
         var essentialWidgets = [
-            "org.kde.plasma.icontasks",
             "org.kde.plasma.systemtray",
             "org.kde.plasma.digitalclock"
         ];
+        if (!findTaskManager(panel)
+                && knownWidgetTypes.indexOf("org.kde.plasma.icontasks") !== -1) {
+            widgetsToAdd.push("org.kde.plasma.icontasks");
+        }
         for (var e = 0; e < essentialWidgets.length; e++) {
             if (knownWidgetTypes.indexOf(essentialWidgets[e]) !== -1
                     && panel.widgets(essentialWidgets[e]).length === 0) {
@@ -156,6 +194,25 @@ _SCRIPT = r'''(function () {
         panel.height = 56;
         panel.lengthMode = "fit";
 
+        var manager = findTaskManager(panel);
+        if (!manager) {
+            throw new Error("Le gestionnaire de tâches KDE est indisponible ; le dock n'a pas été modifié.");
+        }
+        var resolvedLaunchers = [];
+        for (var p = 0; p < pinnedApps.length; p++) {
+            if (applicationExists(pinnedApps[p])) {
+                resolvedLaunchers.push("applications:" + pinnedApps[p]);
+            }
+        }
+        if (pinnedApps.length === 0 || resolvedLaunchers.length > 0) {
+            manager.currentConfigGroup = ["General"];
+            manager.writeConfig("launchers", resolvedLaunchers);
+            manager.reloadConfig();
+            print("LEOS_PINNED_LAUNCHERS_APPLIED=" + resolvedLaunchers.length);
+        } else {
+            print("LEOS_PINNED_LAUNCHERS_UNAVAILABLE=1");
+        }
+
         panel.currentConfigGroup = [markerGroup];
         panel.writeConfig("managedBy", markerValue);
         panel.writeConfig("schemaVersion", 1);
@@ -183,6 +240,11 @@ _SCRIPT = r'''(function () {
                 panel.height = before.height;
                 panel.lengthMode = before.lengthMode;
                 panel.length = before.length;
+                if (before.taskManager && before.launchers !== null) {
+                    before.taskManager.currentConfigGroup = ["General"];
+                    before.taskManager.writeConfig("launchers", before.launchers);
+                    before.taskManager.reloadConfig();
+                }
                 panel.currentConfigGroup = [markerGroup];
                 panel.writeConfig("managedBy", before.managedBy);
             }

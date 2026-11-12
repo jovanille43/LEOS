@@ -1,8 +1,9 @@
 """Local LEOS dock favourites.
 
-Stores launcher desktop-file IDs only. It never executes commands or edits
-Plasma configuration; a future dock adapter can resolve IDs through the
-freedesktop application database and apply changes with explicit approval.
+Stores launcher desktop-file IDs only. The Plasma dock adapter resolves these
+IDs through Plasma's installed-application database when the user explicitly
+applies a backed-up dock profile. This module never executes commands or
+modifies Plasma configuration itself.
 """
 from __future__ import annotations
 

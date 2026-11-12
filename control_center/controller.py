@@ -10,6 +10,7 @@ from desktop.themes import palette_for_theme
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
+from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
@@ -865,8 +866,12 @@ class ControlCenterController(QObject):
             return format_layout_report(inspection, plan)
 
         try:
+            favourites = DockFavourites()
+            if not favourites.load():
+                raise ValueError("Les favoris LEOS ne peuvent pas être lus en toute sécurité.")
+            pinned_apps = favourites.items()
             backup_id = self.plasmaBackups.create_backup()
-            script = build_panel_management_script(layout)
+            script = build_panel_management_script(layout, pinned_apps)
         except (OSError, RuntimeError, ValueError):
             message = "Préparation ou sauvegarde Plasma impossible ; le dock n'a pas été modifié."
             post_notification("Dock LEOS non appliqué", message, "error")

@@ -79,7 +79,7 @@ confirmation explicite. Avant l'opération, LEOS crée une sauvegarde privée et
 vérifiée. Si un seul panneau KDE existe, il est réutilisé en conservant ses
 applets ; si aucun panneau n'existe, un nouveau panneau LEOS est créé. Les
 propriétés modifiées sont la position, l'alignement, la hauteur, le masquage et
-l'effet flottant. Une configuration contenant plusieurs panneaux ou un profil
+le masquage automatique. Une configuration contenant plusieurs panneaux ou un profil
 avec widgets de bureau activés est refusée sans modification. Les panneaux ne
 sont jamais supprimés et les commandes sont envoyées à Plasma via D-Bus, sans
 shell. La validation réelle sur Bazzite KDE reste obligatoire avant diffusion.
@@ -113,7 +113,7 @@ profil peut être proposé à l'utilisateur : un seul panneau peut être réutil
 ou aucun panneau ne peut être créé, mais les dispositions multi-panneaux et les
 profils avec widgets actifs restent bloqués. L'application passe ensuite par
 une confirmation séparée, une sauvegarde préalable et le service D-Bus de
-Plasma. La fonction doit encore être testée dans une session Bazzite réelle.
+Plasma ; les favoris LEOS sont transmis au gestionnaire de tâches. La fonction doit encore être testée dans une session Bazzite réelle.
 
 
 ## Adaptateur de panneaux LEOS
@@ -132,10 +132,15 @@ peut être créé. Les dispositions multi-panneaux, les profils avec widgets de
 bureau et la désactivation destructive sont refusés. La sauvegarde préalable
 et la confirmation sont obligatoires.
 
+Les favoris ordonnés du menu LEOS sont maintenant synchronisés vers la liste
+`General/launchers` du gestionnaire de tâches Plasma. Les identifiants sont
+résolus par la base d'applications Plasma ; les favoris indisponibles sont
+ignorés, et si aucun favori enregistré n'est installé, la liste Plasma
+existante est conservée.
+
 **Limites restantes :** l'intégration a encore besoin d'une validation sur une
-vraie session Bazzite KDE. Les favoris LEOS ne sont pas encore injectés dans
-les widgets du gestionnaire de tâches, les widgets de bureau ne sont pas
-appliqués, et la suppression du panneau LEOS n'est pas encore proposée.
+vraie session Bazzite KDE. Les widgets de bureau ne sont pas appliqués et la
+suppression du panneau LEOS n'est pas encore proposée.
 
 Références techniques : [API de scripting Plasma](https://develop.kde.org/docs/plasma/scripting/api/)
 et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting/).

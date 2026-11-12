@@ -140,6 +140,8 @@ class PlasmaInspectorTests(unittest.TestCase):
         )
         self.assertIn("_plasma_layout_tasks", controller)
         self.assertIn("onPlasmaLayoutFinished(message)", qml)
+        self.assertIn("favourites = DockFavourites()", controller)
+        self.assertIn("pinned_apps = favourites.items()", controller)
 
     def test_report_explains_read_only_state(self):
         result = inspect_plasma_config(self.path)

@@ -1,8 +1,8 @@
 """Safe, local LEOS desktop layout preferences.
 
-This module records the user's desired layout without applying changes to KDE
-Plasma. A future Plasma adapter must back up the current panel configuration
-and require explicit approval before applying any profile.
+This module records the desired layout. Applying a supported profile is
+handled separately by the Plasma adapter after a private backup and explicit
+user confirmation.
 """
 from __future__ import annotations
 

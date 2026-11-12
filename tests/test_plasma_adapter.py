@@ -23,6 +23,24 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('panel.hiding = desired.autoHide ? "autohide" : "none"', script)
         self.assertIn('panel.lengthMode = "fit"', script)
 
+    def test_saved_favourites_are_resolved_and_written_to_task_manager(self):
+        apps = ["org.kde.dolphin.desktop", "steam.desktop"]
+        script = build_panel_management_script(self.store.get(), apps)
+        self.assertIn('"org.kde.dolphin.desktop","steam.desktop"', script)
+        self.assertIn('applicationExists(pinnedApps[p])', script)
+        self.assertIn('resolvedLaunchers.push("applications:" + pinnedApps[p])', script)
+        self.assertIn('manager.writeConfig("launchers", resolvedLaunchers)', script)
+        self.assertIn('manager.reloadConfig()', script)
+        self.assertIn('before.taskManager.writeConfig("launchers", before.launchers)', script)
+        self.assertIn('candidate.widgets("org.kde.plasma.taskmanager")', script)
+
+    def test_saved_favourites_reject_invalid_or_duplicate_desktop_ids(self):
+        for value in (["../evil.desktop"], ["/tmp/evil.desktop"], ["missing"], ["a.desktop", "a.desktop"]):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                build_panel_management_script(self.store.get(), value)
+        with self.assertRaises(ValueError):
+            build_panel_management_script(self.store.get(), ["a.desktop"] * 33)
+
     def test_script_uses_leos_ownership_marker(self):
         script = build_panel_management_script(self.store.get())
         self.assertIn(LEOS_PANEL_MARKER, script)
