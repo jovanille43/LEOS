@@ -73,6 +73,98 @@ def find_retroarch_playlist_directories(
     return directories
 
 
+def find_retroarch_thumbnail_directories(
+    home: Path | None = None,
+    xdg_config_home: Path | None = None,
+) -> list[Path]:
+    """Find default and explicitly configured local RetroArch thumbnail roots."""
+    home = Path.home() if home is None else Path(home).expanduser()
+    if xdg_config_home is None or not Path(xdg_config_home).expanduser().is_absolute():
+        config_home = home / ".config"
+    else:
+        config_home = Path(xdg_config_home).expanduser()
+
+    config_roots = [
+        config_home / "retroarch",
+        home / ".config" / "retroarch",
+        home / ".var/app/org.libretro.RetroArch/config/retroarch",
+    ]
+    directories: list[Path] = []
+    seen: set[str] = set()
+
+    def add_directory(candidate: Path) -> None:
+        try:
+            if not candidate.is_dir():
+                return
+            resolved = candidate.resolve()
+            key = str(resolved)
+            if key not in seen:
+                seen.add(key)
+                directories.append(resolved)
+        except (OSError, RuntimeError):
+            return
+
+    for root in config_roots:
+        add_directory(root / "thumbnails")
+        try:
+            config = (root / "retroarch.cfg").read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            continue
+        match = re.search(
+            r'^\s*thumbnails_directory\s*=\s*"([^"]+)"',
+            config,
+            re.MULTILINE,
+        )
+        if match and match.group(1).casefold() != "default":
+            configured = Path(match.group(1)).expanduser()
+            if configured.is_absolute():
+                add_directory(configured)
+
+    return directories
+
+
+_THUMBNAIL_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+
+
+def _thumbnail_index(
+    directories: list[Path] | tuple[Path, ...],
+    playlist_name: str,
+) -> dict[str, str]:
+    """Index local Named_Boxarts once per playlist, ignoring symlinks outside each root."""
+    if (
+        not playlist_name
+        or playlist_name in {".", ".."}
+        or "/" in playlist_name
+        or "\\" in playlist_name
+        or "\x00" in playlist_name
+    ):
+        return {}
+
+    index: dict[str, str] = {}
+    for raw_root in directories:
+        try:
+            root = Path(raw_root).resolve(strict=True)
+            boxarts = root / playlist_name / "Named_Boxarts"
+            if not boxarts.is_dir():
+                continue
+            for candidate in boxarts.iterdir():
+                if candidate.suffix.casefold() not in _THUMBNAIL_SUFFIXES:
+                    continue
+                try:
+                    resolved = candidate.resolve(strict=True)
+                    resolved.relative_to(root)
+                    if not resolved.is_file():
+                        continue
+                except (OSError, RuntimeError, ValueError):
+                    continue
+                index.setdefault(candidate.stem.casefold(), resolved.as_uri())
+        except (OSError, RuntimeError):
+            continue
+    return index
+
+
 def _local_content_path(raw_path: Any, base_directory: Any = "") -> str:
     """Resolve a local content path, including RetroArch's archive#member form."""
     if not isinstance(raw_path, str):
@@ -214,6 +306,7 @@ def load_retroarch_games(
     *,
     native_executable: str | None = "retroarch",
     flatpak_available: bool = False,
+    thumbnail_directories: list[Path] | tuple[Path, ...] = (),
 ) -> list[dict[str, Any]]:
     """Read a RetroArch .lpl JSON playlist without modifying it."""
     if (
@@ -234,6 +327,7 @@ def load_retroarch_games(
     default_core = payload.get("default_core_path", "")
     base_directory = payload.get("base_content_directory", "")
     playlist_name = playlist_path.stem.replace("_", " ").strip()
+    artwork_index = _thumbnail_index(thumbnail_directories, playlist_name)
     games: list[dict[str, Any]] = []
     seen: set[str] = set()
 
@@ -283,6 +377,6 @@ def load_retroarch_games(
                 native_executable=native_executable,
                 flatpak_available=flatpak_available and not native_executable,
             ),
-            "artwork": "",
+            "artwork": artwork_index.get(title.casefold(), ""),
         })
     return games
