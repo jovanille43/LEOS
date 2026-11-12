@@ -234,6 +234,7 @@ ApplicationWindow {
                         }
                         Item { Layout.fillHeight: true }
                         Button {
+                            id: installRemoveButton
                             Layout.fillWidth: true
                             enabled: detailsPane.appId.length > 0 && !store.busy
                             text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
@@ -244,7 +245,7 @@ ApplicationWindow {
                                 border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
                             }
                             contentItem: Label {
-                                text: parent.text
+                                text: installRemoveButton.text
                                 color: "white"
                                 font.weight: Font.Bold
                                 horizontalAlignment: Text.AlignHCenter
