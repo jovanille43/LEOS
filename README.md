@@ -19,7 +19,7 @@ L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
-- Les animations et sons LEOS seront configurables et désactivables.
+- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés.
 
 Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
 
@@ -75,7 +75,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les préférences de dock et profils de disposition sont préparés, mais leur application au véritable panneau Plasma reste désactivée.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran restent à intégrer. Les animations Desktop/Gaming sont raccordées et leurs fichiers sont présents dans le dépôt ; la validation du rendu vidéo et audio sur une session Bazzite réelle reste à effectuer.
+- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran Desktop et Gaming 4K sont présents, leurs aperçus sont accessibles dans le Centre de contrôle et le choix passe par les paramètres natifs KDE. Le rendu des SVG avec JPEG liés et leur application restent à valider sur une session Bazzite réelle. Les animations Desktop/Gaming sont raccordées ; leur lecture vidéo et audio reste également à valider sur Bazzite.
 
 ## Bluetooth
 
