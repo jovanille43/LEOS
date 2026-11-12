@@ -141,6 +141,7 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 - [ ] La déconnexion et la reconnexion d'un écran mettent à jour l'inventaire sans faire planter le Centre de contrôle.
 - [ ] Les connecteurs débranchés ne sont pas comptés comme des écrans connectés.
 - [ ] Les modes annoncés par le pilote sont affichés sans être confondus avec le mode actuellement actif.
+- [ ] Lorsque KScreen est disponible, la résolution/fréquence actives, la géométrie et l'échelle sont cohérentes avec les réglages KDE.
 - [ ] Les configurations avec plusieurs écrans de résolutions et fréquences différentes restent gérées par KDE/KScreen.
 - [ ] La mise à l'échelle, l'orientation, l'écran principal, le réveil après veille et les branchements à chaud sont vérifiés manuellement dans KDE.
 - [ ] Une absence de connecteur DRM ou de modes exposés reste une information « non vérifiable » et ne bloque pas LEOS.
