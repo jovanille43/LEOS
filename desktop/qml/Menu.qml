@@ -45,10 +45,35 @@ ApplicationWindow {
 
         RowLayout {
             Layout.fillWidth: true
-            ColumnLayout {
-                spacing: 2
-                Label { text: "LEOS"; color: "white"; font.pixelSize: 27; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "APPLICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 3 }
+            RowLayout {
+                spacing: 10
+                Image {
+                    id: desktopMenuLogo
+                    source: "../../branding/desktop-logo.jpeg"
+                    asynchronous: true
+                    smooth: true
+                    fillMode: Image.PreserveAspectFit
+                    Layout.preferredWidth: 92
+                    Layout.preferredHeight: 52
+                    visible: status === Image.Ready
+                }
+                ColumnLayout {
+                    spacing: 2
+                    Label {
+                        text: "LEOS"
+                        color: "white"
+                        font.pixelSize: 27
+                        font.weight: Font.Black
+                        font.letterSpacing: 5
+                        visible: desktopMenuLogo.status !== Image.Ready
+                    }
+                    Label {
+                        text: "APPLICATIONS"
+                        color: window.cyan
+                        font.pixelSize: 10
+                        font.letterSpacing: 3
+                    }
+                }
             }
             Item { Layout.fillWidth: true }
             Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
