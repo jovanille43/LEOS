@@ -254,6 +254,7 @@ class GamingController(QObject):
         return launched
 
     def shutdown(self) -> None:
+        self.monitor.stop()
         self._notification_refresh_timer.stop()
         self._launcher_refresh_timer.stop()
         self._power_profile_refresh_timer.stop()
