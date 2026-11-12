@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from desktop.desktop_entries import (
-    desktop_application_dirs, desktop_entry_is_visible,
+    desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
     filter_desktop_applications, localized_desktop_value,
 )
 
@@ -113,6 +113,46 @@ class DesktopEntriesTests(unittest.TestCase):
             items, "Récemment utilisées", [], "cafe", ["beta.desktop", "alpha.desktop"]
         )
         self.assertEqual([item["desktopId"] for item in result], ["alpha.desktop"])
+
+    def test_higher_priority_hidden_entry_masks_lower_priority_application(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            system = root / "system" / "applications"
+            user = root / "user" / "applications"
+            system.mkdir(parents=True)
+            user.mkdir(parents=True)
+            system_entry = system / "example.desktop"
+            user_entry = user / "example.desktop"
+            system_entry.write_text(
+                "[Desktop Entry]\\nType=Application\\nName=System App\\n",
+                encoding="utf-8",
+            )
+            user_entry.write_text(
+                "[Desktop Entry]\\nType=Application\\nHidden=true\\nName=Hidden App\\n",
+                encoding="utf-8",
+            )
+
+            selected = desktop_entry_paths((system, user))
+            self.assertEqual(selected, (user_entry,))
+
+    def test_desktop_entry_paths_keep_distinct_ids_and_last_directory_wins(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lower = root / "lower"
+            higher = root / "higher"
+            lower.mkdir()
+            higher.mkdir()
+            lower_shared = lower / "shared.desktop"
+            higher_shared = higher / "shared.desktop"
+            distinct = lower / "distinct.desktop"
+            for path in (lower_shared, higher_shared, distinct):
+                path.write_text("[Desktop Entry]\\n", encoding="utf-8")
+
+            selected = desktop_entry_paths((lower, higher))
+            by_name = {path.name: path for path in selected}
+            self.assertEqual(by_name["shared.desktop"], higher_shared)
+            self.assertEqual(by_name["distinct.desktop"], distinct)
+            self.assertEqual(len(selected), 2)
 
     def test_application_directories_follow_xdg_data_dirs_and_user_override(self):
         with tempfile.TemporaryDirectory() as directory:
