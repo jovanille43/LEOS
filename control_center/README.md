@@ -24,6 +24,10 @@ Le Centre de contrôle peut lancer `uupd update-check` via `pkexec` (uniquement 
 
 Aucune commande d'installation, de déploiement ou de redémarrage n'est appelée par cette page. Le timer automatique livré par Bazzite et la politique rpm-ostree de l'image de base ne sont pas modifiés à ce stade. Cette intégration ne désactive pas les mécanismes automatiques hérités de Bazzite. Sur les images Desktop, Bazzite vérifie quotidiennement les mises à jour et peut préparer un déploiement en arrière-plan lorsque la machine est inactive. LEOS observe ensuite, toutes les dix minutes pendant que le Centre de contrôle est ouvert, l’état local en lecture seule (`rpm-ostree status --json`). Lorsqu’un déploiement est effectivement préparé, LEOS affiche son état et envoie une notification unique par identifiant de déploiement. LEOS ne lance pas lui-même la recherche réseau ni le téléchargement en arrière-plan.
 
+## Inventaire des déploiements OSTree
+
+La page Mises à jour affiche aussi le déploiement démarré, son préfixe de checksum et le nombre d'autres entrées OSTree conservées, préparées ou épinglées. Cet inventaire provient de `rpm-ostree status --json` et reste strictement en lecture seule. Une ancienne entrée n'est pas considérée comme une garantie de récupération ; LEOS ne lance aucun rollback, pinning ou nettoyage.
+
 ## Mises à jour système
 
 La page **Mises à jour** est accessible dans la navigation latérale. La vérification utilise exclusivement la commande en lecture seule `uupd update-check`, via `pkexec` pour les sessions non privilégiées. Elle n'installe pas de mise à jour. Lorsque l'outil officiel `bazzite-updater` est présent, le bouton dédié l'ouvre afin que l'utilisateur consulte les changements et décide lui-même de l'installation.
