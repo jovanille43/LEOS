@@ -14,6 +14,7 @@ from PySide6.QtGui import QGuiApplication  # noqa: E402
 from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
 
 from backend.controller import GamingController  # noqa: E402
+from desktop.notifications import post_notification  # noqa: E402
 
 
 def main() -> int:
@@ -35,6 +36,14 @@ def main() -> int:
     if not engine.rootObjects():
         return 1
 
+    # Persist Gaming only after its QML window loaded successfully.
+    controller.settings.set("last_mode", "gaming")
+    post_notification(
+        "LEOS Gaming Mode",
+        "L'interface Gaming a démarré.",
+        "success",
+        native=False,
+    )
     controller.monitor.start()
     app.aboutToQuit.connect(controller.shutdown)
     exit_code = app.exec()
