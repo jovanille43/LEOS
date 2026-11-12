@@ -21,6 +21,16 @@ class FirstRunSetupTests(unittest.TestCase):
         flatpak.write_text(
             "#!/usr/bin/bash\n"
             'printf "%s\\n" "$*" >> "$FLATPAK_LOG"\n'
+            'if [[ "$1" == remotes ]]; then\n'
+            '  printf "Name URL\\n"\n'
+            '  if [[ -f "$REMOTE_FILE" ]]; then cat "$REMOTE_FILE"; fi\n'
+            '  if [[ -n "$REMOTE_INITIAL_URL" ]]; then printf "flathub %s\\n" "$REMOTE_INITIAL_URL"; fi\n'
+            '  exit 0\n'
+            'fi\n'
+            'if [[ "$1" == remote-add ]]; then\n'
+            '  printf "flathub https://dl.flathub.org/repo/\\n" > "$REMOTE_FILE"\n'
+            '  exit 0\n'
+            'fi\n'
             'if [[ "$1" == info ]]; then\n'
             '  app_id="${@: -1}"\n'
             '  [[ -n "$EXISTING_APP" && ",$EXISTING_APP," == *",$app_id,"* ]] && exit 0\n'
@@ -48,6 +58,8 @@ class FirstRunSetupTests(unittest.TestCase):
             "XDG_STATE_HOME": str(root / "state"),
             "PATH": f"{bindir}:/usr/bin:/bin" if include_kdialog else str(bindir),
             "FLATPAK_LOG": str(root / "flatpak.log"),
+            "REMOTE_FILE": str(root / "remote.log"),
+            "REMOTE_INITIAL_URL": "",
             "INSTALLED_LOG": str(root / "installed.log"),
             "PROMPT_LOG": str(root / "prompt.log"),
             "KDLG_RESULT": "1",
@@ -108,6 +120,35 @@ class FirstRunSetupTests(unittest.TestCase):
             )
             self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
             self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
+
+    def test_untrusted_flathub_remote_blocks_install_until_user_repairs_it(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            env = self._environment(root)
+            env["KDLG_RESULT"] = "0"
+            env["REMOTE_INITIAL_URL"] = "https://example.com/repo/"
+
+            blocked = self._run(env)
+            self.assertNotEqual(blocked.returncode, 0)
+            self.assertIn("URL n'est pas officielle", blocked.stderr)
+            self.assertFalse((root / "state/leos/default-apps-seeded").exists())
+            self.assertTrue((root / "state/leos/default-apps-consent-v1").is_file())
+
+            commands = (root / "flatpak.log").read_text().splitlines()
+            self.assertTrue(any(command.startswith("remotes ") for command in commands))
+            self.assertFalse(any(command.startswith("remote-add ") for command in commands))
+            self.assertFalse(any(command.startswith("install ") for command in commands))
+
+            # After the user corrects the remote, the prior consent remains valid.
+            env["REMOTE_INITIAL_URL"] = "https://dl.flathub.org/repo/"
+            repaired = self._run(env)
+            self.assertEqual(repaired.returncode, 0, repaired.stderr)
+            self.assertTrue((root / "state/leos/default-apps-seeded").is_file())
+            self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
+            self.assertEqual((root / "prompt.log").read_text().splitlines(), ["prompt"])
+            commands = (root / "flatpak.log").read_text().splitlines()
+            self.assertFalse(any(command.startswith("remote-add ") for command in commands))
+            self.assertTrue(any(command.startswith("install ") for command in commands))
 
     def test_accepting_when_all_apps_exist_does_not_add_flathub(self):
         with tempfile.TemporaryDirectory() as temporary:
