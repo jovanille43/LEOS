@@ -15,6 +15,7 @@ class ModeSelectorController(QObject):
 
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
+    onboardingChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -47,6 +48,22 @@ class ModeSelectorController(QObject):
     @Property(bool, constant=False)
     def soundsEnabled(self) -> bool:
         return bool(self._settings.get("sounds_enabled", True))
+
+    @Property(bool, notify=onboardingChanged)
+    def onboardingComplete(self) -> bool:
+        return bool(self._settings.get("onboarding_complete", False))
+
+    @Slot(result=bool)
+    def completeOnboarding(self) -> bool:
+        """Remember that the user has seen the first-run LEOS introduction."""
+        if self.onboardingComplete:
+            return True
+        try:
+            self._settings.set("onboarding_complete", True)
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+        self.onboardingChanged.emit()
+        return True
 
     @Property(str, notify=gamepadStatusChanged)
     def gamepadStatus(self) -> str:
