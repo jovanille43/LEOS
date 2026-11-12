@@ -21,6 +21,7 @@ ApplicationWindow {
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
     property string wallpaperNotice: ""
+    property string diagnosticReportNotice: ""
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -1585,6 +1586,25 @@ ApplicationWindow {
                                             ? ""
                                             : "Le Moniteur système KDE n'est pas disponible sur cette image."
                                     }
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Button {
+                                    text: "COPIER LE RAPPORT"
+                                    onClicked: {
+                                        window.diagnosticReportNotice = controlCenter.copyDiagnosticReport()
+                                            ? "Rapport copié. Vérifie son contenu avant de le partager."
+                                            : "Impossible de copier le rapport sur cette session."
+                                    }
+                                }
+                                Label {
+                                    text: window.diagnosticReportNotice
+                                    visible: text.length > 0
+                                    color: window.muted
+                                    font.pixelSize: 10
+                                    wrapMode: Text.WordWrap
+                                    Layout.fillWidth: true
                                 }
                             }
                             GridLayout {
