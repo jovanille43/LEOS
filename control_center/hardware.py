@@ -111,10 +111,14 @@ def _cpu_topology_from_sysfs(root: Path) -> tuple[int | None, int]:
         topology = root / f"cpu{cpu_id}" / "topology"
         core = _read(topology / "core_id").strip()
         package = _read(topology / "physical_package_id").strip()
+        # Some ARM systems expose cluster_id rather than a physical package ID.
+        # Pairing it with core_id avoids merging cores that reuse IDs in clusters.
+        cluster = _read(topology / "cluster_id").strip()
         if not core:
             continue
-        if package:
-            core_pairs.add((package, core))
+        grouping = package or cluster
+        if grouping:
+            core_pairs.add((grouping, core))
         else:
             core_ids.add(core)
 
