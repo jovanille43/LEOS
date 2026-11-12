@@ -23,6 +23,12 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("[[ ! -s cosign.pub ]]", source)
         self.assertLess(source.index("Check signing prerequisites"), source.index("Build and publish LEOS"))
 
+    def test_image_workflow_uses_the_repository_recipe_path(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("recipe: recipes/recipe.yml", source)
+        self.assertTrue((ROOT / "recipes/recipe.yml").is_file())
+        self.assertFalse((ROOT / "recipe.yml").exists())
+
     def test_private_cosign_key_is_ignored_but_public_key_is_trackable(self):
         source = (ROOT / ".gitignore").read_text(encoding="utf-8")
         self.assertIn("/cosign.key", source)
