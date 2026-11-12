@@ -47,9 +47,9 @@ class GamingAccessibilityTests(unittest.TestCase):
         self.assertIn("Accessible.description:", self.qml)
 
     def test_typography_uses_readable_tokens_and_no_sub_12px_literals(self):
-        self.assertIn("property int fontMicro: 12", self.qml)
-        self.assertIn("property int fontBody: 16", self.qml)
-        self.assertIn("property int fontTitle: 25", self.qml)
+        self.assertIn("property int fontMicro: 14", self.qml)
+        self.assertIn("property int fontBody: 17", self.qml)
+        self.assertIn("property int fontTitle: 26", self.qml)
         pixel_sizes = [
             int(value)
             for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", self.qml)
