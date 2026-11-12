@@ -27,7 +27,7 @@ from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
 from .retroarch import (
     RETROARCH_FLATPAK_ID, find_retroarch_playlist_directories,
-    load_retroarch_games,
+    find_retroarch_thumbnail_directories, load_retroarch_games,
 )
 from .mangohud import build_launch_command
 from .install_state import installation_status
@@ -340,6 +340,10 @@ class GameLibraryModel(QAbstractListModel):
             playlist_directories = self._retroarch_playlist_directories()
         except OSError:
             playlist_directories = []
+        try:
+            thumbnail_directories = find_retroarch_thumbnail_directories()
+        except OSError:
+            thumbnail_directories = []
         for directory in playlist_directories:
             try:
                 playlists = sorted(directory.glob("*.lpl"))
@@ -350,6 +354,7 @@ class GameLibraryModel(QAbstractListModel):
                     playlist,
                     native_executable=native_retroarch,
                     flatpak_available=flatpak_retroarch,
+                    thumbnail_directories=thumbnail_directories,
                 ):
                     discovered.setdefault(game["id"], game)
 
