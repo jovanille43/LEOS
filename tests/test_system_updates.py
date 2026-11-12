@@ -46,28 +46,56 @@ class SystemUpdateCommandTests(unittest.TestCase):
 
     def test_detects_staged_deployment_and_ignores_booted_deployment(self):
         payload = """{"deployments":[
-            {"checksum":"old","booted":true,"staged":false},
-            {"checksum":"next","booted":false,"staged":true,"version":"stable-2026.11"}
+            {"checksum":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","booted":true,"staged":false},
+            {"checksum":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","booted":false,"staged":true,"version":"stable-2026.11"}
         ]}"""
         self.assertEqual(
             pending_deployment_from_status(payload),
-            {"checksum": "next", "version": "stable-2026.11"},
+            {"checksum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "version": "stable-2026.11"},
         )
 
     def test_pending_deployment_without_version_uses_fallback(self):
         self.assertEqual(
             pending_deployment_from_status(
-                '{"deployments":[{"checksum":"next","booted":false,"pending":true}]}'
+                '{"deployments":[{"checksum":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","booted":false,"pending":true}]}'
             ),
-            {"checksum": "next", "version": "Nouvelle version"},
+            {"checksum": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "version": "Nouvelle version"},
         )
 
     def test_invalid_or_non_pending_status_is_ignored(self):
         self.assertIsNone(pending_deployment_from_status("not-json"))
         self.assertIsNone(
             pending_deployment_from_status(
-                '{"deployments":[{"checksum":"current","booted":true,"staged":true}]}'
+                '{"deployments":[{"checksum":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","booted":true,"staged":true}]}'
             )
+        )
+
+    def test_status_parser_rejects_oversized_json(self):
+        from control_center.system_updates import MAX_RPM_OSTREE_STATUS_CHARS
+
+        self.assertIsNone(pending_deployment_from_status(" " * (MAX_RPM_OSTREE_STATUS_CHARS + 1)))
+
+    def test_status_parser_handles_deeply_nested_json(self):
+        payload = "[" * 2000 + "0" + "]" * 2000
+        self.assertIsNone(pending_deployment_from_status(payload))
+
+    def test_status_parser_rejects_excessive_deployment_lists(self):
+        from control_center.system_updates import MAX_RPM_OSTREE_DEPLOYMENTS
+
+        payload = '{"deployments":[' + ",".join("{}" for _ in range(MAX_RPM_OSTREE_DEPLOYMENTS + 1)) + ']}'
+        self.assertIsNone(pending_deployment_from_status(payload))
+
+    def test_status_parser_requires_a_sha256_checksum_and_safe_version(self):
+        self.assertIsNone(
+            pending_deployment_from_status(
+                '{"deployments":[{"checksum":"not-a-checksum","booted":false,"staged":true}]}'
+            )
+        )
+        checksum = "e" * 64
+        payload = '{"deployments":[{"checksum":"' + checksum + '","booted":false,"staged":true,"version":"bad\\u0001version"}]}'
+        self.assertEqual(
+            pending_deployment_from_status(payload),
+            {"checksum": checksum, "version": "Nouvelle version"},
         )
 
     def test_uupd_exit_codes_are_interpreted_correctly(self):
