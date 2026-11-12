@@ -44,6 +44,31 @@ class GamepadActionTests(unittest.TestCase):
         self.assertEqual(backend.opened, ["/dev/input/event0", "/dev/input/event1"])
         self.assertEqual(backend.current, "/dev/input/event1")
 
+    def test_runtime_open_error_does_not_hide_a_later_controller(self):
+        class Backend:
+            def __init__(self):
+                self.current = None
+                self.attempts = []
+
+            def open(self, path):
+                self.attempts.append(path)
+                if path == "/dev/input/event0":
+                    raise RuntimeError("read-only input backend unavailable")
+                self.current = path
+
+            def close(self):
+                self.current = None
+
+        backend = Backend()
+        devices = [
+            {"path": "/dev/input/event0", "name": "Unavailable"},
+            {"path": "/dev/input/event1", "name": "Usable"},
+        ]
+        selected, error = open_first_available_gamepad(backend, devices)
+        self.assertEqual(selected, devices[1])
+        self.assertIsNone(error)
+        self.assertEqual(backend.current, "/dev/input/event1")
+
     def test_gaming_reports_last_error_when_no_controller_can_be_opened(self):
         class Backend:
             def open(self, _path):
