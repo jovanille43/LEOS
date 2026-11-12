@@ -256,3 +256,86 @@ def collect_system_diagnostics() -> dict[str, object]:
         "loadAverage": load_text,
         "topProcesses": _top_processes(),
     }
+
+def _safe_report_value(value: object, limit: int = 240) -> str:
+    """Flatten and bound a value before including it in a shareable report."""
+    if not isinstance(value, (str, int, float, bool)):
+        return ""
+    text = re.sub(r"[\\x00-\\x1f\\x7f]+", " ", str(value))
+    text = " ".join(text.split())
+    return text[:limit]
+
+
+def format_diagnostic_report(
+    hardware: dict[str, object],
+    diagnostics: dict[str, object],
+    deployment: dict[str, object] | None = None,
+) -> str:
+    """Build a concise support report from an explicit privacy-safe allowlist.
+
+    Network addresses, Wi-Fi names, user paths, host names, USB/Bluetooth
+    identifiers, process lists and raw journal contents are intentionally
+    excluded. Only bounded scalar fields are copied into the report.
+    """
+    hardware_fields = (
+        ("Processeur", "cpu"),
+        ("Cœurs physiques", "cpuCores"),
+        ("Threads logiques", "cpuThreads"),
+        ("Mémoire totale", "memoryTotal"),
+        ("Architecture", "architecture"),
+        ("Firmware", "firmware"),
+        ("GPU", "gpu"),
+        ("Écrans", "displayCount"),
+        ("Détails écrans", "displays"),
+        ("Vulkan", "vulkan"),
+        ("Système", "operatingSystem"),
+        ("Noyau", "kernel"),
+        ("Stockage", "storage"),
+        ("Précontrôle Gaming", "gamingBaseline"),
+    )
+    health_fields = (
+        ("Niveau", "severity"),
+        ("Résumé", "summary"),
+        ("Stockage", "storage"),
+        ("Mémoire", "memory"),
+        ("Température", "temperature"),
+        ("Services en échec", "failedServices"),
+        ("Erreurs récentes", "recentErrors"),
+        ("Temps de fonctionnement", "uptime"),
+        ("Charge système", "loadAverage"),
+    )
+
+    lines = ["LEOS — Rapport de diagnostic", "", "MATÉRIEL"]
+    for label, key in hardware_fields:
+        value = _safe_report_value(hardware.get(key))
+        if value:
+            lines.append(f"{label} : {value}")
+
+    lines.extend(["", "ÉTAT DU SYSTÈME"])
+    for label, key in health_fields:
+        value = _safe_report_value(diagnostics.get(key))
+        if value:
+            lines.append(f"{label} : {value}")
+
+    if isinstance(deployment, dict) and deployment.get("available") is True:
+        lines.extend(["", "DÉPLOIEMENT OSTREE"])
+        for label, key in (
+            ("Version démarrée", "bootedVersion"),
+            ("Autres entrées conservées", "otherCount"),
+            ("Entrées préparées", "pendingCount"),
+            ("Entrées épinglées", "pinnedCount"),
+        ):
+            value = _safe_report_value(deployment.get(key))
+            if value:
+                lines.append(f"{label} : {value}")
+
+    lines.extend([
+        "",
+        "CONFIDENTIALITÉ",
+        "Ce rapport exclut les noms d’utilisateur et de machine, les adresses IP, "
+        "les noms des réseaux Wi-Fi, les chemins personnels, les identifiants de "
+        "périphériques, les listes de processus et le contenu détaillé des journaux.",
+        "Vérifie le contenu avant de le partager.",
+    ])
+    return "\\n".join(lines)
+\n
