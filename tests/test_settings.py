@@ -210,6 +210,18 @@ class SettingsStoreTests(unittest.TestCase):
             settings.set("theme", "cyan")
             self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
 
+    def test_deeply_nested_settings_are_ignored_and_never_overwritten(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            invalid = "[" * 2000 + "0" + "]" * 2000
+            path.write_text(invalid, encoding="utf-8")
+
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme"), "leos-original")
+            with self.assertRaisesRegex(ValueError, "unreadable or too large"):
+                settings.set("theme", "cyan")
+            self.assertEqual(path.read_text(encoding="utf-8"), invalid)
+
     def test_settings_lock_file_is_private(self) -> None:
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
