@@ -19,6 +19,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 from desktop.themes import THEME_PALETTES, palette_for_theme, validate_palette
+from leos_core.paths import (
+    config_home as xdg_config_home,
+    data_home as xdg_data_home,
+    state_home as xdg_state_home,
+)
 
 SCHEMA_VERSION = 1
 MANAGED_BY = "LEOS Theme Manager"
@@ -152,13 +157,13 @@ class KdeColorSchemeManager:
         runner: Callable[..., Any] | None = None,
     ) -> None:
         self.data_home = data_home or Path(
-            os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
+            xdg_data_home()
         )
         self.config_home = config_home or Path(
-            os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+            xdg_config_home()
         )
         self.state_home = state_home or Path(
-            os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state")
+            xdg_state_home()
         )
         self.scheme_dir = self.data_home / "color-schemes"
         self.config_file = self.config_home / "kdeglobals"
