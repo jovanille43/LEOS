@@ -16,10 +16,8 @@ ApplicationWindow {
     property color muted: "#929BAD"
 
     function launchApplication(desktopId, applicationName) {
-        if (!applicationCatalog.launch(desktopId)) {
-            status.text = "Impossible de lancer " + applicationName + "."
+        if (!applicationCatalog.launch(desktopId))
             return false
-        }
         status.text = applicationName + " : lancement demandé."
         window.close()
         return true
