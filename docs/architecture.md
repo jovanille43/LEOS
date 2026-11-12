@@ -24,16 +24,16 @@ Le choix d'une couche C++ dédiée pourra être réévalué si un composant néc
 
 La bibliothèque unifie les catalogues locaux exposés par les lanceurs intégrés, sans remplacer ces lanceurs.
 
-- Imports automatiques actuellement présents : manifestes Steam, Heroic (Epic/Legendary, GOG et Amazon Games) et Lutris.
+- Imports automatiques actuellement présents : manifestes Steam, Heroic (Epic/Legendary, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`).
 - Ajout manuel de jeux avec commande d'arguments séparés ; aucun shell n'est utilisé.
 - Jaquettes lues uniquement dans les caches locaux Steam/Lutris ou les chemins d'images locaux référencés par les manifestes Heroic. Aucune image distante n'est téléchargée.
-- Catégories de navigation : PC Gaming, Nintendo, PlayStation, SEGA, Arcade, Favoris et Récemment joués. Les catégories console/arcade sont des emplacements de navigation, pas la preuve d'une intégration d'émulateur.
+- Catégories de navigation : PC Gaming, Nintendo, PlayStation, SEGA, Arcade, Favoris et Récemment joués. Les playlists RetroArch locales alimentent les catégories console/arcade ; aucun dossier ROM n'est parcouru et aucun contenu ou cœur n'est téléchargé/ installé.
 - Fiche de jeu : titre, plateforme, source, identifiant de catalogue, état des fichiers locaux et jaquette disponible. Les chemins privés et arguments de lancement ne sont pas exposés à QML.
 - Les titres sont harmonisés sans réécrire leur présentation ; la recherche ignore casse et accents. Les correspondances exactes sont signalées comme doublons potentiels sans fusion ni suppression.
 - Les imports sont isolés par fournisseur : une erreur d'accès à un catalogue ou à une jaquette ne bloque pas les autres fournisseurs.
 - Les jeux dont les fichiers sont absents peuvent rester affichés pour les disques externes déconnectés ; l'état est présenté comme absent ou inconnu plutôt que supposé installé.
 
-Les introductions vidéo des transitions Desktop/Gaming sont raccordées à Qt Multimedia, avec pistes audio intégrées et comportement de repli. Les animations propres aux jeux, les fiches cinématiques, les métadonnées en ligne, l'import d'émulateurs/consoles et les jaquettes distantes ne sont pas encore intégrés. Les capacités de détection et de lancement dépendent de chaque lanceur et format ; aucune compatibilité universelle n'est revendiquée.
+Les introductions vidéo des transitions Desktop/Gaming sont raccordées à Qt Multimedia, avec pistes audio intégrées et comportement de repli. Les animations propres aux jeux, les fiches cinématiques, les métadonnées en ligne, les autres intégrations d'émulateurs/consoles et les jaquettes distantes ne sont pas encore intégrés. Les capacités de détection et de lancement dépendent de chaque lanceur et format ; aucune compatibilité universelle n'est revendiquée.
 
 ## 5. Contrôles et performances
 
