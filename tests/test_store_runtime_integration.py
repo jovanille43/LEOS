@@ -17,13 +17,14 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
     def test_install_flow_checks_flathub_origin_before_metadata_lookup(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn('"remotes", "--user", "--columns=name,url"', source)
-        self.assertIn("is_trusted_flathub_remote(stdout)", source)
+        self.assertIn("trusted_flathub_remote_url(stdout)", source)
         self.assertIn('"verify-remote"', source)
         self.assertLess(
             source.index('if action == "verify-remote":'),
             source.index('if action == "verify-install":'),
         )
         self.assertIn("Source Flathub non vérifiée : installation bloquée.", source)
+        self.assertIn("Source vérifiée : {self._verified_source_url}", source)
 
     def test_runtime_details_are_visible_before_final_install_confirmation(self):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
