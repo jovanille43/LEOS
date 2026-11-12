@@ -12,7 +12,7 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home, data_home as xdg_data_home
 
-from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt, Slot, QUrl
+from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QByteArray, QModelIndex, Qt, Signal, Slot, QUrl, QThreadPool
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
 
@@ -39,6 +39,28 @@ MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
 MAX_RETROARCH_PLAYLISTS_PER_DIRECTORY = 2_000
 
 
+class _LibraryScanSignals(QObject):
+    completed = Signal(object)
+
+
+class _LibraryScanTask(QRunnable):
+    """Discover local game sources without blocking the Gaming interface."""
+
+    def __init__(self, library: "GameLibraryModel") -> None:
+        super().__init__()
+        self.library = library
+        self.signals = _LibraryScanSignals()
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            snapshot = self.library._collect_library_snapshot()
+        except Exception:
+            # Retain the last good library snapshot and let a later refresh retry.
+            snapshot = None
+        self.signals.completed.emit(snapshot)
+
+
 class GameLibraryModel(QAbstractListModel):
     TitleRole = int(Qt.ItemDataRole.UserRole) + 1
     PlatformRole = TitleRole + 1
@@ -62,6 +84,8 @@ class GameLibraryModel(QAbstractListModel):
         self._category = "Accueil"
         self._search_query = ""
         self._last_launch_status = "Sélectionne un jeu à lancer."
+        self._scan_task: _LibraryScanTask | None = None
+        self._refresh_pending = False
         self.refresh()
 
     def roleNames(self) -> dict[int, QByteArray]:
@@ -290,6 +314,37 @@ class GameLibraryModel(QAbstractListModel):
         write_bounded_json(path, values)
 
     def refresh(self) -> None:
+        """Schedule a library scan away from the QML thread."""
+        if self._scan_task is not None:
+            self._refresh_pending = True
+            return
+        task = _LibraryScanTask(self)
+        task.signals.completed.connect(self._on_library_scan_completed)
+        self._scan_task = task
+        QThreadPool.globalInstance().start(task)
+
+    @Slot(object)
+    def _on_library_scan_completed(self, snapshot: object) -> None:
+        self._scan_task = None
+        if isinstance(snapshot, tuple) and len(snapshot) == 4:
+            games, duplicate_metadata, favorites, recent = snapshot
+            self._games = games
+            self._duplicate_metadata = duplicate_metadata
+            self._favorites = favorites
+            self._recent = recent
+            self._apply_filter()
+        if self._refresh_pending:
+            self._refresh_pending = False
+            self.refresh()
+
+    def _collect_library_snapshot(
+        self,
+    ) -> tuple[
+        list[dict[str, Any]],
+        dict[str, dict[str, Any]],
+        set[str],
+        list[str],
+    ] | None:
         discovered: dict[str, dict[str, Any]] = {}
         # Each provider is isolated: a damaged or temporarily unavailable
         # catalogue must not prevent the remaining sources from loading.
@@ -367,15 +422,15 @@ class GameLibraryModel(QAbstractListModel):
 
         for game in discovered.values():
             game["title"] = normalize_display_title(str(game.get("title", "")))
-        self._games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
-        self._duplicate_metadata = duplicate_title_metadata(self._games)
-        available_ids = {game["id"] for game in self._games}
-        self._favorites = set(self._read_id_list(self._favorites_file)) & available_ids
-        self._recent = [
+        games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
+        duplicate_metadata = duplicate_title_metadata(games)
+        available_ids = {game["id"] for game in games}
+        favorites = set(self._read_id_list(self._favorites_file)) & available_ids
+        recent = [
             game_id for game_id in self._read_id_list(self._recent_file)
             if game_id in available_ids
         ][:50]
-        self._apply_filter()
+        return games, duplicate_metadata, favorites, recent
 
     def _apply_filter(self) -> None:
         self.beginResetModel()
