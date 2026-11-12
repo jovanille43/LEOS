@@ -131,12 +131,13 @@ ApplicationWindow {
                     Repeater {
                         model: applicationCatalog.categories()
                         delegate: Button {
+                            id: categoryMenuButton
                             required property string modelData
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: parent.down ? "#1B2A36" : "transparent"; border.color: parent.down ? window.cyan : "transparent" }
-                            contentItem: Label { text: parent.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
+                            contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
                         }
                     }
                     Item { Layout.fillHeight: true }
@@ -230,27 +231,30 @@ ApplicationWindow {
                                         visible: applicationCatalog.currentCategory === "Favoris"
                                         spacing: 0
                                         ToolButton {
+                                            id: favouriteMoveUpButton
                                             text: "↑"
                                             enabled: visible && search.text.length === 0 && index > 0
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: parent.text; color: parent.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
+                                            id: favouriteMoveDownButton
                                             text: "↓"
                                             enabled: visible && search.text.length === 0 && index < appGrid.count - 1
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: parent.text; color: parent.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
                                     ToolButton {
+                                        id: favouritePinButton
                                         text: isPinned ? "★" : "☆"
                                         onClicked: {
                                             const wasPinned = isPinned
@@ -259,7 +263,7 @@ ApplicationWindow {
                                             else
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
-                                        contentItem: Label { text: parent.text; color: window.magenta; font.pixelSize: 18 }
+                                        contentItem: Label { text: favouritePinButton.text; color: window.magenta; font.pixelSize: 18 }
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
