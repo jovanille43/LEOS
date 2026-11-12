@@ -52,7 +52,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 - **Centre des notifications LEOS** : historique local des événements émis par les composants LEOS. Les notifications système natives et leur historique restent gérés par Plasma ; les événements LEOS en Gaming sont conservés silencieusement pour ne pas interrompre une partie.
 - **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
 - **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
-- **Applications initiales** : Brave, LibreOffice et VLC sont prévues pour une installation unique en Flatpak utilisateur ; le marqueur empêche leur réinstallation automatique après désinstallation.
+- **Premier démarrage** : un guide non bloquant explique Desktop et Gaming dans le sélecteur de mode. Après le choix de Desktop, LEOS peut proposer Brave, LibreOffice et VLC en Flatpak utilisateur ; aucune application n'est installée sans confirmation.
 - **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
 Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
@@ -110,7 +110,7 @@ Les préférences sont enregistrées dans le compte Linux de l'utilisateur et ap
 
 ## Applications fournies et boutique LEOS
 
-Brave, LibreOffice et VLC sont installées une seule fois dans le profil utilisateur au premier démarrage par un service LEOS. Elles peuvent ensuite être désinstallées librement depuis la boutique ; le service mémorise que l'installation initiale a été effectuée et ne les réinstalle pas. Steam est déjà fourni par la base Bazzite Desktop. La boutique distingue les applications utilisateur et système : les deux peuvent être désinstallées depuis la boutique après confirmation ; les applications système peuvent demander une authentification administrateur. Les composants RPM/OSTree constitutifs de Bazzite restent gérés par les outils système.
+Après la sélection de Desktop Mode, le lanceur peut proposer Brave, LibreOffice et VLC dans une fenêtre de consentement KDE. Rien n'est installé sans acceptation explicite. L'offre est mémorisée après acceptation ou refus ; une désinstallation ultérieure depuis la boutique n'entraîne pas de réinstallation automatique. Steam est déjà fourni par la base Bazzite Desktop. La boutique distingue les applications utilisateur et système : les deux peuvent être désinstallées depuis la boutique après confirmation ; les applications système peuvent demander une authentification administrateur. Les composants RPM/OSTree constitutifs de Bazzite restent gérés par les outils système.
 
 La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
 
