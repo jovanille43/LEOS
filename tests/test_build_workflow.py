@@ -235,6 +235,13 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("/cosign.pub", source)
 
 
+    def test_recipe_ci_validates_and_generates_all_hardware_variants(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        for recipe in ("recipe.yml", "recipe-nvidia.yml", "recipe-nvidia-open.yml"):
+            with self.subTest(recipe=recipe):
+                self.assertIn(f"bluebuild validate recipes/{recipe}", source)
+                self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
+
     def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Lint Qt Quick and QML sources", source)
