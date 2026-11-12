@@ -145,14 +145,38 @@ class DesktopEntriesTests(unittest.TestCase):
             lower_shared = lower / "shared.desktop"
             higher_shared = higher / "shared.desktop"
             distinct = lower / "distinct.desktop"
-            for path in (lower_shared, higher_shared, distinct):
+            nested = lower / "kde" / "utilities" / "viewer.desktop"
+            for path in (lower_shared, higher_shared, distinct, nested):
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("[Desktop Entry]\\n", encoding="utf-8")
 
             selected = desktop_entry_paths((lower, higher))
-            by_name = {path.name: path for path in selected}
-            self.assertEqual(by_name["shared.desktop"], higher_shared)
-            self.assertEqual(by_name["distinct.desktop"], distinct)
-            self.assertEqual(len(selected), 2)
+            by_id = {desktop_id: path for desktop_id, path in selected}
+            self.assertEqual(by_id["shared.desktop"], higher_shared)
+            self.assertEqual(by_id["distinct.desktop"], distinct)
+            self.assertEqual(by_id["kde-utilities-viewer.desktop"], nested)
+            self.assertEqual(len(selected), 3)
+
+    def test_hidden_user_entry_masks_lower_priority_system_entry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            system = root / "system"
+            user = root / "user"
+            system.mkdir()
+            user.mkdir()
+            (system / "org.example.App.desktop").write_text(
+                "[Desktop Entry]\\nType=Application\\nName=Visible\\nExec=/usr/bin/true\\n",
+                encoding="utf-8",
+            )
+            (user / "org.example.App.desktop").write_text(
+                "[Desktop Entry]\\nType=Application\\nHidden=true\\n",
+                encoding="utf-8",
+            )
+            selected = desktop_entry_paths((system, user))
+            self.assertEqual(
+                selected,
+                (("org.example.App.desktop", user / "org.example.App.desktop"),),
+            )
 
     def test_application_directories_follow_xdg_data_dirs_and_user_override(self):
         with tempfile.TemporaryDirectory() as directory:
