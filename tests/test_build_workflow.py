@@ -40,7 +40,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("gaming-logo.jpeg", manifest)
         self.assertIn("animations/desktop-intro.mp4", manifest)
         self.assertIn("animations/gaming-intro.mp4", manifest)
-        self.assertIn("piste audio AAC", manifest.lower())
+        self.assertIn("pistes audio aac", manifest.lower())
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
