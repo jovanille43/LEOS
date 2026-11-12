@@ -54,7 +54,11 @@ jobs:
               if root.attrib.get("viewBox") != "0 0 3840 2160":
                   raise SystemExit(f"Invalid 4K viewBox: {wallpaper}")
               images = root.findall(f".//{namespace}image")
-              if len(images) != 1 or images[0].attrib.get(xlink_href) != emblem:
+              if (
+                  len(images) != 1
+                  or images[0].attrib.get("href") != emblem
+                  or images[0].attrib.get(xlink_href) != emblem
+              ):
                   raise SystemExit(f"Unexpected official emblem reference: {wallpaper}")
               target = (wallpaper.parent / emblem).resolve()
               if not target.is_file():
