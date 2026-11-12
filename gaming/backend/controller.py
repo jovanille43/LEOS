@@ -241,6 +241,21 @@ class GamingController(QObject):
             self.notificationCountChanged.emit()
 
     @Slot(result=bool)
+    def openControllerCenter(self) -> bool:
+        """Open the dedicated controller configuration window from Gaming Mode."""
+        entry = Path(__file__).resolve().parents[2] / "controller_center" / "main.py"
+        if not entry.is_file():
+            self._message = "Le Centre des manettes LEOS est introuvable sur cette installation."
+            self.messageChanged.emit(self._message)
+            return False
+        result = QProcess.startDetached("python3", [str(entry)], str(Path.home()))
+        opened = bool(result[0] if isinstance(result, tuple) else result)
+        if not opened:
+            self._message = "Impossible d’ouvrir le Centre des manettes LEOS."
+            self.messageChanged.emit(self._message)
+        return opened
+
+    @Slot(result=bool)
     def openNotificationCentre(self) -> bool:
         entry = Path(__file__).resolve().parents[2] / "desktop" / "notifications_main.py"
         if not entry.is_file():
