@@ -15,7 +15,8 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertNotIn('manager.rememberMode("gaming")', launcher)
         self.assertIn('post_notification("LEOS Desktop Mode"', launcher)
         self.assertNotIn('post_notification("LEOS Gaming Mode"', launcher)
-        self.assertIn('post_notification("LEOS Gaming Mode"', gaming)
+        self.assertIn('"LEOS Gaming Mode",', gaming)
+        self.assertIn('"L\'interface Gaming a démarré."', gaming)
         self.assertLess(
             gaming.index("if not engine.rootObjects():"),
             gaming.index('controller.settings.set("last_mode", "gaming")'),
