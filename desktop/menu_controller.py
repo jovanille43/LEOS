@@ -47,9 +47,12 @@ class ApplicationCatalog(QAbstractListModel):
         self.favourites = DockFavourites()
         self.notifications = NotificationStore()
         self.recentApplications = RecentApplications()
+        self._favourites_snapshot = self.favourites.items()
+        self._recent_snapshot = self.recentApplications.items()
         self._notification_timer = QTimer(self)
         self._notification_timer.setInterval(3000)
         self._notification_timer.timeout.connect(self.refreshNotificationCount)
+        self._notification_timer.timeout.connect(self.refreshSharedStores)
         self._notification_timer.start()
         self.refresh()
 
@@ -192,6 +195,18 @@ class ApplicationCatalog(QAbstractListModel):
         if self.notifications.load():
             self.notificationCountChanged.emit()
 
+
+    @Slot()
+    def refreshSharedStores(self) -> None:
+        """Refresh menu filters when another LEOS process changes shared lists."""
+        favourites = self.favourites.items()
+        recent = self.recentApplications.items()
+        if favourites == self._favourites_snapshot and recent == self._recent_snapshot:
+            return
+        self._favourites_snapshot = favourites
+        self._recent_snapshot = recent
+        self._apply_filter()
+
     @Slot(result=int)
     def applicationCount(self):
         return len(self._all)
@@ -204,6 +219,7 @@ class ApplicationCatalog(QAbstractListModel):
             self.favourites.toggle(desktop_id)
         except (OSError, ValueError):
             return False
+        self._favourites_snapshot = self.favourites.items()
         self._apply_filter()
         return True
 
@@ -214,6 +230,7 @@ class ApplicationCatalog(QAbstractListModel):
             self.recentApplications.clear()
         except (OSError, ValueError):
             return False
+        self._recent_snapshot = self.recentApplications.items()
         self._apply_filter()
         return True
 
@@ -252,6 +269,7 @@ class ApplicationCatalog(QAbstractListModel):
             return False
         try:
             self.recentApplications.record(desktop_id)
+            self._recent_snapshot = self.recentApplications.items()
         except (OSError, ValueError):
             # A history write failure must never turn a successful launch into a failure.
             pass
