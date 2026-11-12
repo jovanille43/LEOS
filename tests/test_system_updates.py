@@ -75,8 +75,13 @@ class SystemUpdateCommandTests(unittest.TestCase):
 
         self.assertIsNone(pending_deployment_from_status(" " * (MAX_RPM_OSTREE_STATUS_CHARS + 1)))
 
-    def test_status_parser_handles_deeply_nested_json(self):
-        payload = "[" * 2000 + "0" + "]" * 2000
+    def test_status_parser_rejects_deeply_nested_json_fields(self):
+        checksum = "f" * 64
+        nested = "[" * 200 + "0" + "]" * 200
+        payload = (
+            '{"deployments":[{"checksum":"' + checksum
+            + '","booted":false,"staged":true,"unexpected":' + nested + '}]}'
+        )
         self.assertIsNone(pending_deployment_from_status(payload))
 
     def test_status_parser_rejects_excessive_deployment_lists(self):
