@@ -21,8 +21,10 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_catalog_uses_desktop_entries_and_never_a_shell(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
-        self.assertIn("/usr/share/applications", source)
-        self.assertIn(".local/share/applications", source)
+        self.assertIn("APP_DIRS = desktop_application_dirs()", source)
+        entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
+        self.assertIn('["/usr/local/share", "/usr/share"]', entries)
+        self.assertIn('xdg_data_home() / "applications"', entries)
         self.assertIn("parse_desktop_exec", source)
         self.assertIn("QProcess.startDetached", source)
         self.assertIn("QProcess.startDetached", source)
