@@ -8,7 +8,8 @@ from pathlib import Path
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer, QLocale
 
 from desktop.desktop_entries import (
-    desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value,
+    desktop_application_dirs, desktop_entry_is_visible,
+    filter_desktop_applications, localized_desktop_value,
 )
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
@@ -16,10 +17,7 @@ from desktop.notification_store import NotificationStore
 from desktop.recent_applications import RecentApplications
 
 
-APP_DIRS = (
-    Path("/usr/share/applications"),
-    Path.home() / ".local/share/applications",
-)
+APP_DIRS = desktop_application_dirs()
 ROLE_NAMES = {
     Qt.ItemDataRole.UserRole + 1: b"name",
     Qt.ItemDataRole.UserRole + 2: b"desktopId",
