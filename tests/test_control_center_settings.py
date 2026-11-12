@@ -113,6 +113,12 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn('"animations_enabled": True', settings)
         self.assertIn('"sounds_enabled": True', settings)
 
+    def test_settings_navigation_button_content_uses_explicit_id(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: settingsNavigationButton", qml)
+        self.assertIn("text: settingsNavigationButton.text", qml)
+        self.assertNotIn("text: parent.text", qml)
+
     def test_overview_uses_real_shared_monitor_values(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
