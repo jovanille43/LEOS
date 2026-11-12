@@ -463,8 +463,14 @@ def _display_details(
         return "Non vérifiable", "Aucun connecteur d'écran exposé par DRM"
 
     connected: list[str] = []
+    known_statuses = 0
+    unknown_statuses = 0
     for connector in connectors:
         status = _read(connector / "status").strip().lower()
+        if status not in {"connected", "disconnected"}:
+            unknown_statuses += 1
+            continue
+        known_statuses += 1
         if status != "connected":
             continue
 
@@ -492,9 +498,17 @@ def _display_details(
         else:
             connected.append(f"{connector_name} · {state} · modes non exposés")
 
+    if not known_statuses:
+        return "Non vérifiable", "État des connecteurs non exposé par DRM"
     if not connected:
-        return "0", "Aucun écran connecté détecté par DRM"
-    return str(len(connected)), " | ".join(connected)
+        detail = "Aucun écran connecté détecté par DRM"
+        if unknown_statuses:
+            detail += f" · {unknown_statuses} connecteur(s) non vérifiable(s)"
+        return "0", detail
+    detail = " | ".join(connected)
+    if unknown_statuses:
+        detail += f" · {unknown_statuses} connecteur(s) non vérifiable(s)"
+    return str(len(connected)), detail
 
 
 def _bluetooth_details() -> tuple[str, str]:
