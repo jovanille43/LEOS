@@ -111,11 +111,11 @@ class SessionFlowTests(unittest.TestCase):
         )
         gaming = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn('onClicked: transitionDialog.open()', selector)
-        self.assertIn('modeManager.requestMode("gaming")', selector)
+        self.assertIn('window.requestModeWithIntro("gaming")', selector)
         self.assertIn('id: returnDialog', gaming)
         self.assertIn('title: "Retourner à Desktop Mode ?"', gaming)
         self.assertIn('returnDialog.open()', gaming)
-        self.assertIn('leos.returnToDesktop()', gaming)
+        self.assertIn('window.requestDesktopReturn()', gaming)
         self.assertIn('text: "CONFIRMER LE RETOUR AU DESKTOP"', gaming)
 
     def test_gaming_mode_is_not_remembered_before_qml_load(self):
