@@ -23,6 +23,18 @@ class RetroArchLibraryIntegrationTests(unittest.TestCase):
         self.assertIn("native_executable=native_retroarch", source)
         self.assertIn("flatpak_available=flatpak_retroarch", source)
 
+    def test_game_library_discovery_runs_off_the_qml_thread(self):
+        source = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        self.assertIn("class _LibraryScanTask(QRunnable)", source)
+        self.assertIn("QThreadPool.globalInstance().start(task)", source)
+        self.assertIn("self.library._collect_library_snapshot()", source)
+        self.assertIn("task.signals.completed.connect(self._on_library_scan_completed)", source)
+        refresh = source[source.index("def refresh(self)"):source.index("def _on_library_scan_completed")]
+        self.assertNotIn("_collect_library_snapshot()", refresh)
+        collector = source[source.index("def _collect_library_snapshot"):source.index("def _apply_filter")]
+        self.assertNotIn("self._apply_filter()", collector)
+        self.assertIn("self._refresh_pending = True", refresh)
+
     def test_importer_stays_read_only_and_does_not_scan_or_download_roms(self):
         source = (ROOT / "gaming/backend/retroarch.py").read_text(encoding="utf-8")
         self.assertIn("MAX_PLAYLIST_BYTES", source)
