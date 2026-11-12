@@ -257,6 +257,69 @@ class HardwareInventoryTests(unittest.TestCase):
                     "AMD · NVIDIA",
                 )
 
+    def test_gpu_inventory_distinguishes_identical_cards_by_pci_address(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            drm = root / "drm"
+            targets = []
+            devices = []
+            for card, pci in [
+                ("card0", "0000:01:00.0"),
+                ("card1", "0000:02:00.0"),
+            ]:
+                target = root / "devices" / "pci0000:00" / pci
+                target.mkdir(parents=True)
+                (target / "vendor").write_text("0x10de", encoding="ascii")
+                (target / "device").write_text("0x2503", encoding="ascii")
+                card_device = drm / card / "device"
+                card_device.parent.mkdir(parents=True)
+                card_device.symlink_to(target)
+                devices.append(card_device)
+                targets.append(target)
+
+            lspci = (
+                "0000:01:00.0 VGA compatible controller [0300]: "
+                "NVIDIA Corporation GA106 [GeForce RTX 3060] [10de:2503]\n"
+                "0000:02:00.0 3D controller [0302]: "
+                "NVIDIA Corporation GA106 [GeForce RTX 3060] [10de:2503]\n"
+            )
+            with patch.object(hardware.Path, "glob", return_value=devices):
+                with patch.object(hardware, "_run", return_value=lspci):
+                    result = hardware._gpu_details()
+
+        self.assertEqual(
+            result,
+            "NVIDIA Corporation GA106 [GeForce RTX 3060] [0000:01:00.0] · "
+            "NVIDIA Corporation GA106 [GeForce RTX 3060] [0000:02:00.0]",
+        )
+
+    def test_gpu_inventory_deduplicates_multiple_drm_nodes_for_one_pci_device(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target = root / "devices" / "pci0000:00" / "0000:01:00.0"
+            target.mkdir(parents=True)
+            (target / "vendor").write_text("0x10de", encoding="ascii")
+            (target / "device").write_text("0x2503", encoding="ascii")
+            devices = []
+            for card in ("card0", "card1"):
+                card_device = root / card / "device"
+                card_device.parent.mkdir(parents=True)
+                card_device.symlink_to(target)
+                devices.append(card_device)
+
+            lspci = (
+                "0000:01:00.0 VGA compatible controller [0300]: "
+                "NVIDIA Corporation GA106 [GeForce RTX 3060] [10de:2503]\n"
+            )
+            with patch.object(hardware.Path, "glob", return_value=devices):
+                with patch.object(hardware, "_run", return_value=lspci):
+                    result = hardware._gpu_details()
+
+        self.assertEqual(
+            result,
+            "NVIDIA Corporation GA106 [GeForce RTX 3060]",
+        )
+
     def test_lspci_gpu_parser_maps_models_by_full_pci_address(self):
         output = (
             "0000:03:00.0 VGA compatible controller [0300]: "
