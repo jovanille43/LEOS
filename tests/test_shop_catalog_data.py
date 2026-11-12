@@ -82,7 +82,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
             long_description["description"] = "x" * 2049
             cases.append(long_description)
             control_character = valid_item()
-            control_character["name"] = "Bad" + chr(0) + "Name"
+            control_character["name"] = "Bad\x00Name"
             cases.append(control_character)
             for item in cases:
                 with self.subTest(item=item):
