@@ -1,6 +1,9 @@
-7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548  branding/desktop-logo.jpeg
-512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb  branding/gaming-logo.jpeg
-eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9  branding/reference-comparison.jpeg
-3b1b5d3775cbbb58a96542df2aafafc943f9782009d07ae2258399c956816bc0  branding/animations/desktop-intro.mp4
-1a622ea8f87faac42cf5e2a782f67425a8482789f0cb289d4b6a48d0a417dfcd  branding/animations/gaming-intro.mp4
-db26fa64ed7658f1f86322bc60e5b08201a6497c1740f439c6df1dc6138af4c9  branding/animations/gaming-roar-reference.mp4
+# SHA-256 des originaux transmis dans la conversation.
+# Ces empreintes identifient les fichiers sources de référence, pas les copies actuellement hébergées sur GitHub.
+# Les tailles des vidéos hébergées diffèrent des originaux ; leur intégrité binaire n'est donc pas certifiée par ce fichier.
+7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548  SOURCE_IMG_2598.jpeg
+512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb  SOURCE_IMG_2599.jpeg
+eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9  SOURCE_IMG_2591.jpeg
+3b1b5d3775cbbb58a96542df2aafafc943f9782009d07ae2258399c956816bc0  SOURCE_desktop-intro.mp4
+1a622ea8f87faac42cf5e2a782f67425a8482789f0cb289d4b6a48d0a417dfcd  SOURCE_gaming-intro.mp4
+db26fa64ed7658f1f86322bc60e5b08201a6497c1740f439c6df1dc6138af4c9  SOURCE_gaming-roar-reference.mp4
