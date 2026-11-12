@@ -16,7 +16,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - `animations/desktop-intro.mov` — entrée Desktop et retour depuis Gaming.
 - `animations/gaming-intro.mp4` — animation principale d'entrée Gaming.
 - `animations/gaming-roar-reference.mp4` — variante secondaire de référence.
-- `wallpapers/` — fonds d'écran Desktop et Gaming.
+- `wallpapers/desktop-leos.svg` — fond d'écran Desktop 4K (3840 × 2160), avec l'emblème officiel référencé depuis `desktop-logo.jpeg` sans modification. Ressource sélectionnable manuellement ; elle n'est pas appliquée automatiquement.
 - `icons/` — icônes et éléments graphiques.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
