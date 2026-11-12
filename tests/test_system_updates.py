@@ -6,6 +6,7 @@ from control_center.system_updates import (
     system_update_check_command,
     system_updater_command,
     pending_deployment_from_status,
+    deployment_inventory_from_status,
     rpm_ostree_status_command,
 )
 
@@ -53,6 +54,61 @@ class SystemUpdateCommandTests(unittest.TestCase):
             pending_deployment_from_status(payload),
             {"checksum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "version": "stable-2026.11"},
         )
+
+    def test_deployment_inventory_reports_booted_and_retained_entries(self):
+        payload = """{"deployments":[
+            {"checksum":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","booted":true,"version":"stable-2026.11"},
+            {"checksum":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","booted":false,"pinned":true,"version":"stable-2026.10"},
+            {"checksum":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","booted":false,"staged":true,"version":"stable-2026.12"}
+        ]}"""
+        self.assertEqual(
+            deployment_inventory_from_status(payload),
+            {
+                "available": True,
+                "bootedVersion": "stable-2026.11",
+                "bootedChecksum": "aaaaaaaaaaaa",
+                "otherCount": 2,
+                "pendingCount": 1,
+                "pinnedCount": 1,
+            },
+        )
+
+    def test_deployment_inventory_requires_one_valid_booted_entry(self):
+        checksum = "d" * 64
+        self.assertIsNone(
+            deployment_inventory_from_status(
+                '{"deployments":[{"checksum":"' + checksum + '","booted":false}]}'
+            )
+        )
+        self.assertIsNone(
+            deployment_inventory_from_status(
+                '{"deployments":['
+                '{"checksum":"' + checksum + '","booted":true},'
+                '{"checksum":"' + checksum + '","booted":true}]}'
+            )
+        )
+        self.assertIsNone(
+            deployment_inventory_from_status(
+                '{"deployments":[{"checksum":"not-a-checksum","booted":true}]}'
+            )
+        )
+
+    def test_deployment_inventory_sanitizes_untrusted_version_text(self):
+        checksum = "e" * 64
+        payload = (
+            '{"deployments":[{"checksum":"' + checksum
+            + '","booted":true,"version":"bad\\u0001version"}]}'
+        )
+        result = deployment_inventory_from_status(payload)
+        self.assertIsNotNone(result)
+        self.assertEqual(result["bootedVersion"], "Version inconnue")
+
+    def test_deployment_inventory_rejects_unbounded_or_invalid_json(self):
+        from control_center.system_updates import MAX_RPM_OSTREE_STATUS_CHARS
+
+        self.assertIsNone(deployment_inventory_from_status(" " * (MAX_RPM_OSTREE_STATUS_CHARS + 1)))
+        self.assertIsNone(deployment_inventory_from_status("not-json"))
+        self.assertIsNone(deployment_inventory_from_status('{"deployments":[]}'))
 
     def test_pending_deployment_without_version_uses_fallback(self):
         self.assertEqual(
