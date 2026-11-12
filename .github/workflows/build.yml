@@ -16,6 +16,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set up Python for pre-build tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run LEOS Python test suite
+        run: |
+          set -euo pipefail
+          python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
+          python -m unittest discover -s tests -v
+
       - name: Verify official LEOS branding assets
         run: |
           set -euo pipefail
