@@ -62,20 +62,24 @@ class GamepadActionMapper:
         self._hat_x = 0
         self._hat_y = 0
         try:
+            if isinstance(deadzone_percent, bool):
+                raise ValueError("Boolean deadzones are invalid")
             deadzone = int(deadzone_percent)
         except (TypeError, ValueError, OverflowError):
             deadzone = 8
         self.deadzone_percent = max(0, min(40, deadzone))
         self.axis_centers = {}
         if isinstance(axis_centers, dict):
-            for axis, center in axis_centers.items():
+            for axis, center in list(axis_centers.items())[:64]:
                 if (
                     isinstance(axis, str) and 0 < len(axis) <= 48
                     and type(center) is int and -65536 <= center <= 65536
                 ):
                     self.axis_centers[axis] = center
         self.profile = (
-            profile if profile in {"standard", "xbox", "playstation", "nintendo", "custom"}
+            profile
+            if isinstance(profile, str)
+            and profile in {"standard", "xbox", "playstation", "nintendo", "custom"}
             else "standard"
         )
         self._stick_states = {"ABS_X": 0, "ABS_Y": 0}
