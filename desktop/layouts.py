@@ -44,6 +44,7 @@ from leos_core.paths import config_home as xdg_config_home
 
 POSITIONS = frozenset({"bottom", "left", "right", "top"})
 ALIGNMENTS = frozenset({"left", "center", "right"})
+MAX_LAYOUT_FILE_BYTES = 64 * 1024
 
 
 def _config_path() -> Path:
@@ -82,9 +83,15 @@ class DesktopLayoutStore:
         self.load()
 
     def load(self) -> None:
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            return
         try:
-            loaded = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            with self.path.open("rb") as stream:
+                raw = stream.read(MAX_LAYOUT_FILE_BYTES + 1)
+            if len(raw) > MAX_LAYOUT_FILE_BYTES:
+                return
+            loaded = json.loads(raw.decode("utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return
         if validate_layout(loaded):
             self._layout = loaded
@@ -139,15 +146,22 @@ class DesktopLayoutStore:
         if not validate_layout(self._layout):
             raise ValueError("Refusing to save invalid LEOS desktop layout")
 
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        payload = json.dumps(self._layout, indent=2, ensure_ascii=False) + "\n"
-        fd, temp_name = tempfile.mkstemp(prefix="desktop-layout.", suffix=".tmp", dir=self.path.parent)
+        payload = (json.dumps(self._layout, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        if len(payload) > MAX_LAYOUT_FILE_BYTES:
+            raise ValueError("LEOS desktop layout exceeds its storage limit")
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("LEOS desktop layout path cannot be a symbolic link")
+        os.chmod(self.path.parent, 0o700)
+        fd, temp_name = tempfile.mkstemp(
+            prefix="desktop-layout.", suffix=".tmp", dir=self.path.parent
+        )
         try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "wb") as stream:
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.chmod(temp_name, 0o600)
             os.replace(temp_name, self.path)
         finally:
             try:
