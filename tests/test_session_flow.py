@@ -131,6 +131,14 @@ class SessionFlowTests(unittest.TestCase):
             entry,
         )
 
+    def test_mode_selector_routes_keyboard_events_through_focused_content(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("id: modeSelectorContent", qml)
+        self.assertIn("focus: true", qml)
+        self.assertIn("modeSelectorContent", qml)
+        self.assertIn("Keys.onPressed: function(event)", qml)
+        self.assertNotIn("    focus: true", qml.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
+
     def test_selector_shows_clock_date_and_remembered_mode(self):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
