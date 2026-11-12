@@ -201,6 +201,30 @@ ApplicationWindow {
                                         fillMode: Image.PreserveAspectFit
                                     }
                                     Item { Layout.fillWidth: true }
+                                    ColumnLayout {
+                                        visible: applicationCatalog.currentCategory === "Favoris"
+                                        spacing: 0
+                                        ToolButton {
+                                            text: "↑"
+                                            enabled: visible && search.text.length === 0 && index > 0
+                                            onClicked: {
+                                                if (!applicationCatalog.moveFavourite(desktopId, -1))
+                                                    status.text = "Impossible de réordonner les favoris."
+                                            }
+                                            contentItem: Label { text: parent.text; color: parent.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            background: Rectangle { color: "transparent" }
+                                        }
+                                        ToolButton {
+                                            text: "↓"
+                                            enabled: visible && search.text.length === 0 && index < appGrid.count - 1
+                                            onClicked: {
+                                                if (!applicationCatalog.moveFavourite(desktopId, 1))
+                                                    status.text = "Impossible de réordonner les favoris."
+                                            }
+                                            contentItem: Label { text: parent.text; color: parent.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            background: Rectangle { color: "transparent" }
+                                        }
+                                    }
                                     ToolButton {
                                         text: isPinned ? "★" : "☆"
                                         onClicked: {
