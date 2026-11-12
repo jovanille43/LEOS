@@ -262,7 +262,6 @@ class HardwareInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             drm = root / "drm"
-            targets = []
             devices = []
             for card, pci in [
                 ("card0", "0000:01:00.0"),
@@ -276,7 +275,6 @@ class HardwareInventoryTests(unittest.TestCase):
                 card_device.parent.mkdir(parents=True)
                 card_device.symlink_to(target)
                 devices.append(card_device)
-                targets.append(target)
 
             lspci = (
                 "0000:01:00.0 VGA compatible controller [0300]: "
