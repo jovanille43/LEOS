@@ -533,6 +533,11 @@ class HardwareInventoryTests(unittest.TestCase):
             self.assertEqual(hardware._battery_details(), "Aucune batterie détectée")
             self.assertEqual(hardware._usb_details(), "Aucun périphérique USB listé")
 
+    def test_subprocess_invalid_output_encoding_is_non_fatal(self):
+        error = UnicodeDecodeError("utf-8", b"\\xff", 0, 1, "invalid byte")
+        with patch.object(hardware.subprocess, "run", side_effect=error):
+            self.assertEqual(hardware._run(["kscreen-doctor", "-o"]), "")
+
     def test_subprocess_timeout_and_missing_commands_are_non_fatal(self):
         with patch.object(hardware.subprocess, "run", side_effect=FileNotFoundError):
             self.assertEqual(hardware._run(["bluetoothctl"]), "")
