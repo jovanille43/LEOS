@@ -27,6 +27,11 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
         self.assertIn("returnDialog.open()", self.qml)
         self.assertIn("quickPanel.visible = false", self.qml)
 
+    def test_power_profile_confirmation_is_gamepad_operable(self):
+        self.assertIn("if (powerProfileDialog.visible)", self.qml)
+        self.assertIn("powerProfileDialog.close()", self.qml)
+        self.assertIn("leos.applyPowerProfile(pendingPowerProfile)", self.qml)
+
     def test_opening_quick_panel_resets_focus(self):
         self.assertGreaterEqual(
             self.qml.count("quickPanelFocusIndex = 0"), 3
