@@ -33,7 +33,7 @@ La bibliothèque unifie les catalogues locaux exposés par les lanceurs intégr�
 - Les imports sont isolés par fournisseur : une erreur d'accès à un catalogue ou à une jaquette ne bloque pas les autres fournisseurs.
 - Les jeux dont les fichiers sont absents peuvent rester affichés pour les disques externes déconnectés ; l'état est présenté comme absent ou inconnu plutôt que supposé installé.
 
-Les fiches cinématiques, métadonnées en ligne, import d'émulateurs/consoles, transitions animées et jaquettes distantes ne sont pas encore intégrés. Les capacités de détection et de lancement dépendent de chaque lanceur et format ; aucune compatibilité universelle n'est revendiquée.
+Les introductions vidéo des transitions Desktop/Gaming sont raccordées à Qt Multimedia, avec pistes audio intégrées et comportement de repli. Les animations propres aux jeux, les fiches cinématiques, les métadonnées en ligne, l'import d'émulateurs/consoles et les jaquettes distantes ne sont pas encore intégrés. Les capacités de détection et de lancement dépendent de chaque lanceur et format ; aucune compatibilité universelle n'est revendiquée.
 
 ## 5. Contrôles et performances
 
