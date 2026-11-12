@@ -9,6 +9,23 @@ from leos_core.paths import data_home as xdg_data_home
 from leos_core.text import normalize_search_text
 
 
+MAX_DESKTOP_ENTRY_BYTES = 256 * 1024
+
+
+def read_desktop_entry_text(path: Path, max_bytes: int = MAX_DESKTOP_ENTRY_BYTES) -> str | None:
+    """Read one local .desktop file without accepting unbounded metadata."""
+    if type(max_bytes) is not int or max_bytes < 0:
+        return None
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(max_bytes + 1)
+    except OSError:
+        return None
+    if len(raw) > max_bytes:
+        return None
+    return raw.decode("utf-8", errors="replace")
+
+
 def desktop_application_dirs() -> tuple[Path, ...]:
     """Return low-to-high priority directories for the menu's last-wins merge.
 
