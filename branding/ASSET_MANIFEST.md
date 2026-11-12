@@ -16,9 +16,10 @@ Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libe
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), fond noir et halos cyan/magenta discrets |
+| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), lion seul, halos cyan/magenta discrets |
+| `branding/wallpapers/gaming-leos.svg` | Fond LEOS Gaming 4K (3840 × 2160), lion avec manette, halos cyan/magenta plus dynamiques |
 
-Le SVG référence `../desktop-logo.jpeg` : l'emblème officiel reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ce chemin relatif. Le fond peut être choisi manuellement dans les paramètres de papier peint KDE ; il n'est jamais appliqué automatiquement. Le rendu SVG avec image liée doit encore être validé dans la session Bazzite réelle.
+Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
 
 ## Animations intégrées
 
