@@ -307,7 +307,7 @@ class GameLibraryModel(QAbstractListModel):
             for game in load_heroic_games(installed_file, runner):
                 discovered.setdefault(game["id"], game)
 
-        data_home = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+        data_home = xdg_data_home()
         try:
             lutris_databases = self._lutris_databases()
         except OSError:
