@@ -2,7 +2,10 @@
 # Offer optional starter applications; never install or add a remote without consent.
 set -euo pipefail
 
-state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+state_home="${XDG_STATE_HOME:-}"
+if [[ -z "$state_home" || "$state_home" != /* ]]; then
+    state_home="$HOME/.local/state"
+fi
 state_dir="$state_home/leos"
 marker="$state_dir/default-apps-seeded"
 # This consent applies only to the fixed v1 application list below. Increment the
