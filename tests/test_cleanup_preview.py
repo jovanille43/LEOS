@@ -33,6 +33,16 @@ class CleanupPreviewTests(unittest.TestCase):
             self.assertFalse(result["trash"]["available"])
             self.assertEqual(result["totalBytes"], 0)
 
+    def test_large_directory_scan_is_bounded_and_reported(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for index in range(12):
+                (root / f"file-{index}.bin").write_bytes(b"x")
+            result = _directory_summary(root, max_entries=5)
+            self.assertTrue(result["truncated"])
+            self.assertLessEqual(result["scannedEntries"], 5)
+            self.assertLessEqual(result["files"], 5)
+
     def test_symlinks_are_not_followed_or_counted(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
