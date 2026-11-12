@@ -35,6 +35,7 @@ ApplicationWindow {
                 ? "../../branding/animations/gaming-intro.mp4"
                 : "../../branding/animations/desktop-intro.mp4"
         )
+        introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
         introPlayer.play()
     }
@@ -276,7 +277,8 @@ ApplicationWindow {
     MediaPlayer {
         id: introPlayer
         audioOutput: AudioOutput {
-            muted: !modeSelectorController.soundsEnabled
+            id: introAudioOutput
+            muted: true
         }
         videoOutput: introVideoOutput
         onMediaStatusChanged: {
