@@ -128,6 +128,19 @@ class ControllerProfileTests(unittest.TestCase):
             self.store.update(self.device_id, profile="xbox")
         self.assertEqual(self.path.read_bytes(), raw)
 
+    def test_number_of_saved_controller_profiles_is_bounded(self):
+        from controller_center.profiles import MAX_CONTROLLER_PROFILES
+
+        devices = {
+            f"device-{index}": {"profile": "auto", "deadzone": 8, "axis_centers": {}}
+            for index in range(MAX_CONTROLLER_PROFILES)
+        }
+        self.path.write_text(json.dumps({"version": 1, "devices": devices}), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Too many"):
+            self.store.update("new-controller", profile="xbox")
+        saved = json.loads(self.path.read_text(encoding="utf-8"))
+        self.assertEqual(len(saved["devices"]), MAX_CONTROLLER_PROFILES)
+
     def test_axis_centres_are_bounded_and_names_are_validated(self):
         with self.assertRaises(ValueError):
             self.store.update(self.device_id, axis_centers={"": 0})
