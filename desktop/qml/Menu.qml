@@ -170,10 +170,7 @@ ApplicationWindow {
                             activeFocusOnTab: true
                             focus: GridView.isCurrentItem
                             function activateApplication() {
-                                if (!applicationCatalog.launch(desktopId))
-                                    status.text = "Lancement impossible. Vérifie l’installation de l’application."
-                                else
-                                    status.text = name + " : lancement demandé."
+                                window.launchApplication(desktopId, name)
                             }
                             Keys.onPressed: {
                                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter
