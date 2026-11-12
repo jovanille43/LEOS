@@ -40,9 +40,9 @@ Les PC portables hybrides (iGPU + GPU dédié) devront être testés séparémen
 - Sur une configuration hybride ou avec plusieurs GPU, les mesures NVIDIA ne sont fusionnées qu'avec la carte dont l'identifiant PCI correspond exactement. En l'absence de correspondance, les mesures restent indisponibles plutôt que d'être attribuées à une autre carte.
 - Si `nvidia-smi`, le pilote propriétaire ou l'accès aux nœuds DRM est absent ou expire, la télémétrie est facultative et ne doit pas empêcher Gaming Mode de démarrer.
 
-La détection matérielle doit rester non bloquante et tolérante aux fonctions absentes :
-L'inventaire des écrans lit les connecteurs exposés par DRM : il distingue les connecteurs connectés et actifs lorsque l'état est fourni, puis affiche les modes annoncés par le pilote. Cette liste de modes ne doit jamais être présentée comme la résolution ou la fréquence actuellement appliquée. LEOS laisse la gestion de la disposition, de la mise à l'échelle, de l'orientation et du taux de rafraîchissement à KDE/KScreen ; aucune valeur n'est modifiée lors d'une analyse matérielle.
+L'inventaire des écrans interroge d'abord `kscreen-doctor -o` dans une session KDE. Lorsque KScreen répond, LEOS affiche les sorties connectées, leur état actif, le mode courant (résolution et fréquence), la géométrie et l'échelle lorsque ces informations sont exposées. Si KScreen est absent ou indisponible, LEOS utilise les connecteurs DRM et affiche les modes disponibles annoncés par le pilote ; ces modes ne sont alors pas présentés comme la résolution active. Cette analyse est en lecture seule : aucune résolution, fréquence, position, échelle ou orientation n'est modifiée. Référence d'implémentation : [KDE libkscreen — kscreen-doctor](https://github.com/KDE/libkscreen/blob/master/src/doctor/doctor.cpp).
 
+La détection matérielle doit rester non bloquante et tolérante aux fonctions absentes :
 
 - l'absence d'un capteur ne doit pas faire échouer l'interface ;
 - une donnée non exposée par le pilote reste « indisponible », jamais simulée ;
