@@ -30,19 +30,32 @@ def _read(path: str | Path) -> str:
 
 
 def _cpu_details() -> tuple[str, str]:
-    """Identify CPUs on x86 and ARM without assuming /proc has x86 field names."""
+    """Identify CPU models and logical threads across x86 and ARM Linux systems."""
     data = _read("/proc/cpuinfo")
     model = ""
-    model_fields = ("model name", "hardware", "processor", "model")
+    processor_entries = 0
+    model_fields = {"model name", "hardware", "processor", "model"}
+
     for line in data.splitlines():
         if ":" not in line:
             continue
         key, value = line.split(":", 1)
-        if key.strip().lower() in model_fields and value.strip():
-            candidate = value.strip().strip("\\x00")
+        key = key.strip().lower()
+        value = value.strip()
+        if not value:
+            continue
+
+        if key == "processor":
+            # ARM commonly uses numeric processor IDs, but some systems put
+            # the human-readable CPU model in this same field.
+            if value.isdigit():
+                processor_entries += 1
+            elif not model:
+                model = value.strip("\\x00")
+        elif key in model_fields and not model:
+            candidate = value.strip("\\x00")
             if candidate.lower() not in {"0", "unknown", "not specified"}:
                 model = candidate
-                break
 
     if not model:
         for path in (
@@ -55,17 +68,13 @@ def _cpu_details() -> tuple[str, str]:
                 model = candidate
                 break
 
-    logical = sum(
-        1 for line in data.splitlines()
-        if ":" in line and line.split(":", 1)[0].strip().lower() == "processor"
-    )
+    logical = processor_entries
     if not logical:
         online = _read("/sys/devices/system/cpu/online")
         logical = len(_parse_cpu_list(online)) if online else 0
     if not logical:
         logical = os.cpu_count() or 0
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
-
 
 def _parse_cpu_list(value: str) -> set[int]:
     """Parse Linux CPU-list syntax such as '0-3,8,10-11'."""
