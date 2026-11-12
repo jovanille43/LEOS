@@ -33,6 +33,8 @@ ApplicationWindow {
     property string pendingPowerProfile: ""
     property bool returningToDesktop: false
     property int quickPanelFocusIndex: 0
+    property int toolbarFocusIndex: 0
+    property int detailsActionIndex: 0
 
     function requestDesktopReturn() {
         if (returningToDesktop)
@@ -147,7 +149,99 @@ ApplicationWindow {
         gameGrid.positionViewAtIndex(next, GridView.Contain)
     }
 
+    function focusToolbar(index) {
+        toolbarFocusIndex = Math.max(0, Math.min(2, index))
+        navigationArea = "toolbar"
+        if (toolbarFocusIndex === 0)
+            searchField.forceActiveFocus()
+        else if (toolbarFocusIndex === 1)
+            refreshLibraryButton.forceActiveFocus()
+        else
+            addGameButton.forceActiveFocus()
+    }
+
+    function focusDetailsAction(index) {
+        if (selectedIndex < 0)
+            return
+        detailsActionIndex = Math.max(0, Math.min(1, index))
+        navigationArea = "details"
+        if (detailsActionIndex === 0)
+            favoriteGameButton.forceActiveFocus()
+        else
+            launchSelectedGameButton.forceActiveFocus()
+    }
+
+    function activateToolbarFocus() {
+        if (toolbarFocusIndex === 0) {
+            searchField.forceActiveFocus()
+        } else if (toolbarFocusIndex === 1) {
+            clearSelection()
+            leos.refreshLibrary()
+            navigationArea = "games"
+            gameGrid.forceActiveFocus()
+        } else {
+            addDialog.open()
+        }
+    }
+
+    function toggleSelectedFavorite() {
+        if (selectedIndex < 0)
+            return
+        const row = selectedIndex
+        const wasFavorite = selectedIsFavorite
+        const nowFavorite = gameLibrary.toggleFavorite(row)
+        if (selectedCategory === "Favoris" && wasFavorite && !nowFavorite) {
+            clearSelection()
+            navigationArea = "games"
+            gameGrid.forceActiveFocus()
+        } else {
+            selectGameAt(row)
+            focusDetailsAction(0)
+        }
+    }
+
+    function launchSelectedGame() {
+        if (selectedIndex < 0)
+            return
+        leos.launchGame(selectedIndex, leos.mangoHudEnabled)
+        statusText.text = leos.lastLaunchStatus
+        navigationArea = "details"
+        detailsActionIndex = 1
+    }
+
     function navigateDirection(action) {
+        if (navigationArea === "toolbar") {
+            if (action === "left") {
+                if (toolbarFocusIndex === 0) {
+                    navigationArea = "categories"
+                    selectedCategoryIndex = categoryNames.indexOf(selectedCategory)
+                } else {
+                    focusToolbar(toolbarFocusIndex - 1)
+                }
+            } else if (action === "right") {
+                focusToolbar(toolbarFocusIndex + 1)
+            } else if (action === "down") {
+                navigationArea = "games"
+                const target = selectedIndex >= 0 ? selectedIndex : 0
+                if (gameGrid.count > 0) {
+                    selectGameAt(target)
+                    gameGrid.positionViewAtIndex(target, GridView.Contain)
+                }
+                gameGrid.forceActiveFocus()
+            }
+            return
+        }
+        if (navigationArea === "details") {
+            if (action === "left") {
+                navigationArea = "games"
+                gameGrid.forceActiveFocus()
+            } else if (action === "up") {
+                focusDetailsAction(detailsActionIndex - 1)
+            } else if (action === "down") {
+                focusDetailsAction(detailsActionIndex + 1)
+            }
+            return
+        }
         if (navigationArea === "categories") {
             if (action === "up" || action === "down")
                 moveCategory(action)
@@ -155,16 +249,26 @@ ApplicationWindow {
                 chooseCategory(selectedCategoryIndex)
                 if (gameGrid.count > 0)
                     selectGameAt(0)
+                gameGrid.forceActiveFocus()
             }
             return
         }
-        if (action === "left") {
-            const columns = Math.max(1, Math.floor(gameGrid.width / gameGrid.cellWidth))
-            if (selectedIndex < 0 || selectedIndex % columns === 0) {
-                navigationArea = "categories"
-                selectedCategoryIndex = categoryNames.indexOf(selectedCategory)
-                return
-            }
+        const columns = Math.max(1, Math.floor(gameGrid.width / gameGrid.cellWidth))
+        if (action === "up" && (selectedIndex < 0 || selectedIndex < columns)) {
+            focusToolbar(0)
+            return
+        }
+        if (action === "right" && selectedIndex >= 0 &&
+                gameGrid.count > 0 &&
+                (selectedIndex % columns === columns - 1 ||
+                 selectedIndex === gameGrid.count - 1)) {
+            focusDetailsAction(0)
+            return
+        }
+        if (action === "left" && (selectedIndex < 0 || selectedIndex % columns === 0)) {
+            navigationArea = "categories"
+            selectedCategoryIndex = categoryNames.indexOf(selectedCategory)
+            return
         }
         moveSelection(action)
     }
@@ -225,6 +329,8 @@ ApplicationWindow {
         if (addDialog.visible) {
             if (action === "back")
                 addDialog.close()
+            else if (action === "confirm")
+                addDialog.accept()
             return
         }
         if (action === "menu") {
@@ -251,17 +357,28 @@ ApplicationWindow {
                 chooseCategory(selectedCategoryIndex)
                 if (gameGrid.count > 0)
                     selectGameAt(0)
+                gameGrid.forceActiveFocus()
+            } else if (navigationArea === "toolbar") {
+                activateToolbarFocus()
+            } else if (navigationArea === "details") {
+                if (detailsActionIndex === 0)
+                    toggleSelectedFavorite()
+                else
+                    launchSelectedGame()
             } else if (selectedIndex >= 0) {
-                leos.launchGame(selectedIndex, leos.mangoHudEnabled)
-                statusText.text = leos.lastLaunchStatus
+                launchSelectedGame()
             } else {
                 moveSelection("right")
             }
         } else if (action === "back") {
-            if (navigationArea === "games" && selectedIndex >= 0)
+            if (navigationArea === "details" || navigationArea === "toolbar") {
+                navigationArea = "games"
+                gameGrid.forceActiveFocus()
+            } else if (navigationArea === "games" && selectedIndex >= 0) {
                 clearSelection()
-            else
+            } else {
                 returnDialog.open()
+            }
         }
     }
 
@@ -622,23 +739,62 @@ ApplicationWindow {
                             placeholderText: "Rechercher un jeu…"
                             color: "white"
                             selectByMouse: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 0
+                                }
+                            }
+                            background: Rectangle {
+                                radius: 8
+                                color: "#121822"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.cyan : "#2a3444"
+                            }
                             onTextChanged: {
                                 gameLibrary.setSearchQuery(text)
                                 window.clearSelection()
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 0
                             }
                         }
                         Button {
+                            id: refreshLibraryButton
                             text: "ACTUALISER"
                             onClicked: {
                                 window.clearSelection()
                                 leos.refreshLibrary()
+                                window.navigationArea = "games"
+                                gameGrid.forceActiveFocus()
+                            }
+                            background: Rectangle {
+                                radius: 8
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? "#1a2c38" : "#151a24"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
+                            }
+                            contentItem: Label {
+                                text: refreshLibraryButton.text
+                                color: "white"
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
                             }
                         }
                         Button {
                             id: addGameButton
                             text: "+ AJOUTER UN JEU"
-                            onClicked: addDialog.open()
-                            background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                            onClicked: {
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 2
+                                addDialog.open()
+                            }
+                            background: Rectangle {
+                                radius: 9
+                                color: "#17313d"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
+                            }
                             contentItem: Label {
                                 text: addGameButton.text
                                 color: "white"
@@ -908,19 +1064,12 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: window.selectedIsFavorite ? "RETIRER DES FAVORIS" : "AJOUTER AUX FAVORIS"
-                                    onClicked: {
-                                        const row = window.selectedIndex
-                                        const wasFavorite = window.selectedIsFavorite
-                                        const nowFavorite = gameLibrary.toggleFavorite(row)
-                                        if (window.selectedCategory === "Favoris" && wasFavorite && !nowFavorite)
-                                            window.clearSelection()
-                                        else
-                                            window.selectGameAt(row)
-                                    }
+                                    onClicked: window.toggleSelectedFavorite()
                                     background: Rectangle {
                                         radius: 9
                                         color: "#191d2a"
-                                        border.color: window.magenta
+                                        border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.magenta
                                     }
                                     contentItem: Label {
                                         text: favoriteGameButton.text
@@ -935,14 +1084,12 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
                                     text: "JOUER"
-                                    onClicked: {
-                                        leos.launchGame(window.selectedIndex, leos.mangoHudEnabled)
-                                        statusText.text = leos.lastLaunchStatus
-                                    }
+                                    onClicked: window.launchSelectedGame()
                                     background: Rectangle {
                                         radius: 10
                                         color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
-                                        border.color: launchSelectedGameButton.enabled ? window.cyan : "#344052"
+                                        border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.cyan : "#344052"
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
