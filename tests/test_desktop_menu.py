@@ -204,6 +204,18 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('window.launchApplication("leos-notifications.desktop"', qml)
         self.assertIn("window.launchApplication(desktopId, name)", qml)
 
+    def test_favourite_toggle_captures_previous_state_before_model_reset(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        start = qml.index('text: isPinned ? "★" : "☆"')
+        end = qml.index("contentItem: Label", start)
+        handler = qml[start:end]
+        self.assertIn("const wasPinned = isPinned", handler)
+        self.assertLess(
+            handler.index("const wasPinned = isPinned"),
+            handler.index("applicationCatalog.toggleFavourite(desktopId)"),
+        )
+        self.assertIn("status.text = wasPinned ?", handler)
+
     def test_favourites_view_exposes_relative_reordering_controls(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         store = (ROOT / "desktop/dock_favourites.py").read_text(encoding="utf-8")
