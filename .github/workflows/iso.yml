@@ -75,7 +75,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          printf '%s' "$GH_TOKEN" | sudo podman login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          sudo mkdir -p /root/.docker
+          printf '%s' "$GH_TOKEN" | sudo podman login --authfile /root/.docker/config.json ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
       - name: Verify published LEOS image signature
         env:
@@ -83,7 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s cosign.pub
-          cosign verify --key cosign.pub "$IMAGE_REF"
+          sudo env DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "$IMAGE_REF"
 
       - name: Generate bootable installer ISO
         env:
@@ -91,7 +92,7 @@ jobs:
           ISO_NAME: ${{ steps.image.outputs.filename }}
         run: |
           set -euo pipefail
-          sudo "$RUNNER_TEMP/bluebuild" generate-iso --iso-name "$ISO_NAME" image "$IMAGE_REF"
+          sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --iso-name "$ISO_NAME" image "$IMAGE_REF"
           test -s "$ISO_NAME"
           sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
 
