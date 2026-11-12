@@ -194,10 +194,7 @@ ApplicationWindow {
                     Button {
                         text: "COMPRIS"
                         Layout.minimumWidth: 112
-                        onClicked: {
-                            if (!modeSelectorController.completeOnboarding())
-                                modeManager.setStatus("Le guide restera affiché : impossible d'enregistrer cette préférence.")
-                        }
+                        onClicked: modeSelectorController.completeOnboarding()
                         background: Rectangle {
                             radius: 8
                             color: "#17313d"
