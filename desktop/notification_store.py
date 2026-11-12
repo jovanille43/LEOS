@@ -14,6 +14,7 @@ from typing import Iterator
 from leos_core.paths import state_home as xdg_state_home
 
 MAX_NOTIFICATIONS = 100
+MAX_NOTIFICATION_FILE_BYTES = 512 * 1024
 MAX_TITLE = 160
 MAX_BODY = 2000
 
@@ -66,16 +67,23 @@ class NotificationStore:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def load(self) -> bool:
+        # Never retain stale in-memory events after a file is removed, replaced,
+        # corrupt, or exceeds the bounded on-disk format.
+        self._items = []
         if self.path.is_symlink() or self.path.parent.is_symlink():
             return False
         try:
-            data = json.loads(self.path.read_text(encoding="utf-8"))
+            with self.path.open("rb") as stream:
+                raw = stream.read(MAX_NOTIFICATION_FILE_BYTES + 1)
+            if len(raw) > MAX_NOTIFICATION_FILE_BYTES:
+                return False
+            data = json.loads(raw.decode("utf-8"))
         except FileNotFoundError:
-            self._items = []
             return True
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return False
-        if (isinstance(data, dict) and data.get("schema_version") == 1
+        if (isinstance(data, dict) and type(data.get("schema_version")) is int
+                and data.get("schema_version") == 1
                 and isinstance(data.get("items"), list)
                 and len(data["items"]) <= MAX_NOTIFICATIONS
                 and all(_valid_record(x) for x in data["items"])
