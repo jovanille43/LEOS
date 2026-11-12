@@ -66,8 +66,28 @@ class ControllerInputStateTests(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1]
         controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
-        self.assertIn("for event in events:", controller)
-        self.assertNotIn("for event in events[-12:]", controller)
+        self.assertIn("self.input_state.consume_all(events)", controller)
+        self.assertNotIn("events[-12:]", controller)
+    def test_queued_press_and_release_in_one_poll_leave_no_button_held(self):
+        description = self.state.consume_all([
+            {"kind": "button", "name": "BTN_SOUTH", "value": 1},
+            {"kind": "button", "name": "BTN_SOUTH", "value": 0},
+        ])
+        self.assertEqual(description, "Bouton relâché : BTN_SOUTH")
+        self.assertEqual(self.state.pressed_buttons, ())
+        self.assertEqual(self.state.buttons_text, "Aucun bouton maintenu.")
+
+    def test_queued_events_update_every_button_but_keep_last_description(self):
+        description = self.state.consume_all([
+            {"kind": "button", "name": "BTN_EAST", "value": 1},
+            {"kind": "axis", "name": "ABS_X", "value": 240},
+            {"kind": "button", "name": "BTN_SOUTH", "value": 1},
+            {"kind": "button", "name": "BTN_EAST", "value": 0},
+        ])
+        self.assertEqual(description, "Bouton relâché : BTN_EAST")
+        self.assertEqual(self.state.pressed_buttons, ("BTN_SOUTH",))
+        self.assertEqual(self.state.buttons_text, "Maintenus : BTN_SOUTH")
+
     def test_disconnect_clears_held_buttons(self):
         self.state.consume({"kind": "button", "name": "BTN_SOUTH", "value": 1})
         self.state.clear()
