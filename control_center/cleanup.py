@@ -6,8 +6,29 @@ import os
 from pathlib import Path
 
 
-def _directory_summary(path: Path, max_entries: int = 50000) -> dict[str, object]:
-    if not path.exists() or path.is_symlink() or not path.is_dir():
+def _has_symlink_component(path: Path, trusted_root: Path) -> bool:
+    """Reject a target whose path traverses a symlink at or below its home root."""
+    if path != trusted_root and trusted_root not in path.parents:
+        return True
+    current = path
+    while True:
+        if current.is_symlink():
+            return True
+        if current == trusted_root:
+            return False
+        parent = current.parent
+        if parent == current:
+            return True
+        current = parent
+
+
+def _directory_summary(
+    path: Path,
+    max_entries: int = 50000,
+    trusted_root: Path | None = None,
+) -> dict[str, object]:
+    unsafe_parent = trusted_root is not None and _has_symlink_component(path, trusted_root)
+    if unsafe_parent or not path.exists() or path.is_symlink() or not path.is_dir():
         return {
             "available": False,
             "path": str(path),
@@ -66,8 +87,8 @@ def collect_cleanup_preview(home: Path | None = None) -> dict[str, object]:
     root = home or Path.home()
     thumbnail_cache = root / ".cache" / "thumbnails"
     trash_files = root / ".local" / "share" / "Trash" / "files"
-    thumbnails = _directory_summary(thumbnail_cache)
-    trash = _directory_summary(trash_files)
+    thumbnails = _directory_summary(thumbnail_cache, trusted_root=root)
+    trash = _directory_summary(trash_files, trusted_root=root)
     total = int(thumbnails["bytes"]) + int(trash["bytes"])
     gib = 1024 ** 3
     if total >= gib:
