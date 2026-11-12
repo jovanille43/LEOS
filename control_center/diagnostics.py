@@ -261,7 +261,7 @@ def _safe_report_value(value: object, limit: int = 240) -> str:
     """Flatten and bound a value before including it in a shareable report."""
     if not isinstance(value, (str, int, float, bool)):
         return ""
-    text = re.sub(r"[\\x00-\\x1f\\x7f]+", " ", str(value))
+    text = re.sub(r"[\x00-\x1f\x7f]+", " ", str(value))
     text = " ".join(text.split())
     return text[:limit]
 
@@ -337,5 +337,4 @@ def format_diagnostic_report(
         "périphériques, les listes de processus et le contenu détaillé des journaux.",
         "Vérifie le contenu avant de le partager.",
     ])
-    return "\\n".join(lines)
-\n
+    return "\n".join(lines)
