@@ -6,13 +6,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ModeNotificationTests(unittest.TestCase):
-    def test_mode_selector_notifies_only_after_successful_mode_selection(self):
-        source = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
-        self.assertIn("from desktop.notifications import post_notification", source)
-        self.assertLess(source.index("manager.rememberMode(mode)"), source.index('post_notification("LEOS Gaming Mode"'))
-        self.assertIn('post_notification("LEOS Desktop Mode"', source)
-        self.assertIn('post_notification("LEOS Gaming Mode"', source)
-        self.assertIn('"success", native=False)', source)
+    def test_desktop_is_remembered_by_selector_and_gaming_after_qml_load(self):
+        launcher = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+
+        self.assertIn('manager.rememberMode("desktop")', launcher)
+        self.assertNotIn('manager.rememberMode("gaming")', launcher)
+        self.assertIn('post_notification("LEOS Desktop Mode"', launcher)
+        self.assertNotIn('post_notification("LEOS Gaming Mode"', launcher)
+        self.assertIn('post_notification("LEOS Gaming Mode"', gaming)
+        self.assertLess(
+            gaming.index("if not engine.rootObjects():"),
+            gaming.index('controller.settings.set("last_mode", "gaming")'),
+        )
+        self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
+
 
     def test_gaming_return_to_desktop_is_recorded(self):
         source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
