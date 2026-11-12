@@ -129,7 +129,7 @@ ApplicationWindow {
                     anchors.margins: 12
                     Label { text: "CATÉGORIES"; color: window.muted; font.pixelSize: 10; font.letterSpacing: 2 }
                     Repeater {
-                        model: applicationCatalog.categories()
+                        model: applicationCatalog.availableCategories
                         delegate: Button {
                             id: categoryMenuButton
                             required property string modelData
