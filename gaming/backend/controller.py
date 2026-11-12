@@ -8,6 +8,7 @@ from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import (
     GamepadActionMapper,
+    gamepad_button_legend,
     mapper_from_preferences,
     open_first_available_gamepad,
 )
@@ -266,6 +267,10 @@ class GamingController(QObject):
     @Property(str, notify=gamepadStatusChanged)
     def gamepadStatus(self) -> str:
         return self._gamepad_status
+
+    @Property(str, notify=gamepadStatusChanged)
+    def gamepadButtonLegend(self) -> str:
+        return gamepad_button_legend(self._gamepad_mapper.profile)
 
     def _set_gamepad_status(self, message: str) -> None:
         if self._gamepad_status != message:
