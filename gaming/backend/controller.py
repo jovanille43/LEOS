@@ -47,7 +47,6 @@ class GamingController(QObject):
         self._power_profile_refresh_timer.timeout.connect(self.refreshPowerProfiles)
         self._power_profile_refresh_timer.start()
         self.settings = SettingsStore()
-        self.settings.set("last_mode", "gaming")
         self._mangohud_path = find_mangohud()
         self._mangohud_enabled = bool(
             self.settings.get("gaming_mangohud_enabled", False)
