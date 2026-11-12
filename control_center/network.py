@@ -114,7 +114,20 @@ def collect_network_snapshot(
         names = []
 
     default_interface, gateway = _default_route()
-    wifi = _wireless_details(default_interface)
+    wireless_names = [
+        name for name in names if (root / name / "wireless").exists()
+    ]
+    # Ethernet may be the default route while Wi-Fi is still connected.
+    # Report the active Wi-Fi link independently from the default interface.
+    wifi_interface = (
+        default_interface if default_interface in wireless_names
+        else next(
+            (name for name in wireless_names
+             if _read(root / name / "operstate").strip() == "up"),
+            wireless_names[0] if wireless_names else "",
+        )
+    )
+    wifi = _wireless_details(wifi_interface)
     for name in names:
         base = root / name
         state = _read(base / "operstate").strip() or "unknown"
