@@ -31,6 +31,15 @@ class ControllerInputState:
             return f"Axe {name} : {event.get('value', '—')}"
         return None
 
+    def consume_all(self, events: list[dict[str, Any]]) -> str | None:
+        """Apply every queued event and return the last user-visible description."""
+        last_description = None
+        for event in events:
+            description = self.consume(event)
+            if description:
+                last_description = description
+        return last_description
+
     @property
     def pressed_buttons(self) -> tuple[str, ...]:
         return tuple(sorted(self._pressed_buttons))
