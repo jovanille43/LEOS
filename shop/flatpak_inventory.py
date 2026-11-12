@@ -45,8 +45,8 @@ def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
 
 
 
-def is_trusted_flathub_remote(output: str) -> bool:
-    """Accept only a Flathub remote with a canonical HTTPS repository URL."""
+def trusted_flathub_remote_url(output: str) -> str:
+    """Return the configured canonical Flathub URL, or an empty string."""
     for line in output.splitlines():
         columns = line.split()
         if len(columns) < 2 or columns[0].casefold() != "flathub":
@@ -67,7 +67,12 @@ def is_trusted_flathub_remote(output: str) -> bool:
                 and not parsed.query
                 and not parsed.fragment
             ):
-                return True
+                return columns[1]
         except ValueError:
             continue
-    return False
+    return ""
+
+
+def is_trusted_flathub_remote(output: str) -> bool:
+    """Accept only a Flathub remote with a canonical HTTPS repository URL."""
+    return bool(trusted_flathub_remote_url(output))
