@@ -12,9 +12,9 @@ L'image comparative des deux emblèmes est une référence interne ; elle ne doi
 
 ## Organisation
 
-- `desktop-logo.png` — emblème Desktop.
-- `gaming-logo.png` — emblème Gaming.
-- `reference-comparison.png` — comparaison interne uniquement.
+- `desktop-logo.webp` — emblème Desktop.
+- `gaming-logo.webp` — emblème Gaming.
+- `reference-comparison.webp` — comparaison interne uniquement.
 - `animations/` — animations d'entrée des deux modes.
 - `sounds/` — signatures sonores et effets LEOS.
 - `wallpapers/` — fonds d'écran Desktop et Gaming.
@@ -33,4 +33,4 @@ Les noms de fichiers, usages, contraintes de fidélité et règles de packaging 
 
 ## État
 
-Les chemins d'intégration sont définis, mais les fichiers binaires des emblèmes séparés, des animations et des signatures sonores ne sont pas encore présents dans le dépôt GitHub. Leur intégration ne sera déclarée terminée qu'après vérification des fichiers et test dans une session Bazzite réelle.
+Les fichiers sources des emblèmes et des trois animations ont été reçus et identifiés le 12 novembre 2026. Leur correspondance, leurs empreintes et les chemins canoniques prévus sont consignés dans `ASSET_MANIFEST.md`. Les binaires canoniques ne sont pas encore présents dans le dépôt GitHub. Leur intégration ne sera déclarée terminée qu'après vérification des fichiers et test dans une session Bazzite réelle.
