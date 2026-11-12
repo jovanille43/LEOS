@@ -383,6 +383,8 @@ ApplicationWindow {
                     launchSelectedGame()
             } else if (selectedIndex >= 0) {
                 launchSelectedGame()
+            } else if (gameGrid.count === 0) {
+                emptyStatePrimaryButton.click()
             } else {
                 moveSelection("right")
             }
@@ -400,6 +402,30 @@ ApplicationWindow {
 
     function metric(value, suffix) {
         return value < 0 ? "—" : Math.round(value) + suffix
+    }
+
+    function emptyStatePrimaryLabel() {
+        if (searchField.text.length > 0)
+            return "EFFACER LA RECHERCHE"
+        if (selectedCategory === "Favoris" || selectedCategory === "Récemment joués")
+            return "VOIR TOUS LES JEUX"
+        return "ACTUALISER LA BIBLIOTHÈQUE"
+    }
+
+    function activateEmptyStatePrimaryAction() {
+        if (searchField.text.length > 0) {
+            searchField.clear()
+            statusText.text = "Recherche effacée."
+        } else if (selectedCategory === "Favoris" || selectedCategory === "Récemment joués") {
+            chooseCategory(0)
+            statusText.text = "Affichage de toute la bibliothèque."
+        } else {
+            clearSelection()
+            leos.refreshLibrary()
+            statusText.text = "Actualisation de la bibliothèque demandée."
+            navigationArea = "games"
+            gameGrid.forceActiveFocus()
+        }
     }
 
     Rectangle {
@@ -1000,23 +1026,84 @@ ApplicationWindow {
                                 }
                             }
 
-                            Label {
+                            ColumnLayout {
                                 anchors.centerIn: parent
-                                Accessible.role: Accessible.StaticText
-                                Accessible.name: text
                                 width: parent.width - 50
                                 visible: gameGrid.count === 0
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                text: searchField.text.length > 0
-                                    ? "Aucun résultat pour « " + searchField.text + " »."
-                                    : window.selectedCategory === "Favoris"
-                                        ? "Aucun favori pour le moment. Sélectionne un jeu et ajoute-le à tes favoris."
-                                        : window.selectedCategory === "Récemment joués"
-                                            ? "Aucun jeu lancé récemment."
-                                            : "Aucun jeu détecté dans cette catégorie.\\n\\nInstalle un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
-                                color: window.muted
-                                font.pixelSize: window.fontBody
+                                spacing: 14
+                                Accessible.role: Accessible.Grouping
+                                Accessible.name: "Bibliothèque vide ou sans résultat"
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    Accessible.role: Accessible.StaticText
+                                    Accessible.name: text
+                                    horizontalAlignment: Text.AlignHCenter
+                                    wrapMode: Text.WordWrap
+                                    text: searchField.text.length > 0
+                                        ? "Aucun résultat pour « " + searchField.text + " »."
+                                        : window.selectedCategory === "Favoris"
+                                            ? "Aucun favori pour le moment."
+                                            : window.selectedCategory === "Récemment joués"
+                                                ? "Aucun jeu lancé récemment."
+                                                : "Aucun jeu détecté dans cette catégorie. Installe un jeu dans Steam, Heroic ou Lutris, puis actualise la bibliothèque."
+                                    color: window.muted
+                                    font.pixelSize: window.fontBody
+                                }
+
+                                Button {
+                                    id: emptyStatePrimaryButton
+                                    Layout.fillWidth: true
+                                    text: window.emptyStatePrimaryLabel()
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: text
+                                    Accessible.description: "Action proposée pour retrouver des jeux dans cette vue."
+                                    onClicked: window.activateEmptyStatePrimaryAction()
+                                    background: Rectangle {
+                                        radius: 9
+                                        color: "#103847"
+                                        border.width: emptyStatePrimaryButton.activeFocus ? 2 : 1
+                                        border.color: emptyStatePrimaryButton.activeFocus ? window.focusColor : window.cyan
+                                    }
+                                    contentItem: Label {
+                                        text: emptyStatePrimaryButton.text
+                                        color: "white"
+                                        font.pixelSize: window.fontCaption
+                                        font.weight: Font.DemiBold
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+
+                                Button {
+                                    id: emptyStateAddButton
+                                    Layout.fillWidth: true
+                                    visible: searchField.text.length === 0
+                                        && window.selectedCategory !== "Favoris"
+                                        && window.selectedCategory !== "Récemment joués"
+                                    text: "AJOUTER UN JEU"
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: text
+                                    onClicked: {
+                                        window.navigationArea = "toolbar"
+                                        window.toolbarFocusIndex = 2
+                                        addDialog.open()
+                                    }
+                                    background: Rectangle {
+                                        radius: 9
+                                        color: "#171d28"
+                                        border.width: emptyStateAddButton.activeFocus ? 2 : 1
+                                        border.color: emptyStateAddButton.activeFocus ? window.focusColor : "#344052"
+                                    }
+                                    contentItem: Label {
+                                        text: emptyStateAddButton.text
+                                        color: "white"
+                                        font.pixelSize: window.fontCaption
+                                        font.weight: Font.DemiBold
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
                             }
                         }
 
