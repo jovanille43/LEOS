@@ -14,7 +14,7 @@ Le Centre des manettes détecte les contrôleurs Linux compatibles via `evdev` e
 
 ## État des boutons
 
-Le panneau « Boutons maintenus » reflète l'état courant : un événement d'appui ajoute un bouton, un événement de relâchement le retire, et une déconnexion vide l'ensemble. Les répétitions d'événements n'ajoutent pas de nouveaux appuis. La zone « Dernière entrée » reste un historique instantané du dernier événement reçu.
+Le panneau « Boutons maintenus » reflète l'état courant : un événement d'appui ajoute un bouton, un événement de relâchement le retire, et une déconnexion vide l'ensemble. Tous les événements reçus dans un même lot sont traités dans l'ordre, y compris une pression suivie d'un relâchement entre deux rafraîchissements de l'interface. Les répétitions d'événements n'ajoutent pas de nouveaux appuis. La zone « Dernière entrée » reste un historique instantané du dernier événement reçu.
 
 ## Limites
 
