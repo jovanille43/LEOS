@@ -46,6 +46,8 @@ class SettingsStore:
         self.load()
 
     def load(self) -> None:
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            return
         if not self.path.is_file():
             return
         try:
@@ -90,12 +92,23 @@ class SettingsStore:
             raise ValueError(f"Invalid value for {key}: {value}")
 
         # Serialize read-modify-write across Desktop, Gaming and Control Center.
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
         lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("LEOS settings lock cannot be a symbolic link")
         with lock_path.open("a", encoding="utf-8") as lock:
             os.chmod(lock_path, 0o600)
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
             try:
+                if self.path.exists():
+                    try:
+                        stored = json.loads(self.path.read_text(encoding="utf-8"))
+                    except (OSError, json.JSONDecodeError) as exc:
+                        raise ValueError("LEOS settings file is unreadable; it was left untouched") from exc
+                    if not isinstance(stored, dict):
+                        raise ValueError("LEOS settings file has an invalid format; it was left untouched")
                 self.load()
                 self._values[key] = value
                 self.save()
@@ -103,7 +116,9 @@ class SettingsStore:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def save(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
         payload = json.dumps(self._values, indent=2, ensure_ascii=False) + "\n"
         fd, temp_name = tempfile.mkstemp(
             prefix="settings.", suffix=".tmp", dir=self.path.parent
