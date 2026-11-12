@@ -74,6 +74,19 @@ jobs:
             ffmpeg -v error -i "${video}" -f null -
           done
 
+      - name: Report deployed branding SHA-256 fingerprints
+        run: |
+          set -euo pipefail
+          sha256sum \
+            branding/desktop-logo.jpeg \
+            branding/gaming-logo.jpeg \
+            branding/reference-comparison.jpeg \
+            branding/animations/desktop-intro.mov \
+            branding/animations/gaming-intro.mp4 \
+            branding/animations/gaming-roar-reference.mp4 \
+            branding/wallpapers/desktop-leos.svg \
+            branding/wallpapers/gaming-leos.svg
+
       - name: Validate wallpaper SVG assets and official emblem links
         run: |
           set -euo pipefail
