@@ -26,6 +26,15 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("Source Flathub non vérifiée : installation bloquée.", source)
         self.assertIn("Source vérifiée : {self._verified_source_url}", source)
 
+    def test_final_install_confirmation_rechecks_the_remote_url(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        confirm = source[source.index("def confirmInstall"):source.index("def refreshCatalogue")]
+        self.assertIn('"recheck-remote"', confirm)
+        self.assertIn('["remotes", "--user", "--columns=name,url"]', confirm)
+        self.assertIn('if action == "recheck-remote":', source)
+        self.assertIn("remote_url == self._verified_source_url", source)
+        self.assertIn("La source Flathub a changé : installation bloquée.", source)
+
     def test_runtime_details_are_visible_before_final_install_confirmation(self):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: store.verificationDetails', qml)
