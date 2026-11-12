@@ -24,7 +24,7 @@ class NotificationEmissionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
                 with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
-                    with patch("desktop.notifications.subprocess.run") as run:
+                    with patch("desktop.notifications.subprocess.Popen") as run:
                         self.assertIsNotNone(post_notification("Desktop notice", "Body", "warning"))
                         args = run.call_args.args[0]
                         self.assertEqual(args[0], "/usr/bin/notify-send")
@@ -35,16 +35,29 @@ class NotificationEmissionTests(unittest.TestCase):
     def test_gaming_can_persist_without_showing_native_popup(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
-                with patch("desktop.notifications.subprocess.run") as run:
+                with patch("desktop.notifications.subprocess.Popen") as run:
                     identifier = post_notification("Gaming event", "Saved locally", native=False)
                     self.assertIsNotNone(identifier)
                     run.assert_not_called()
+
+    def test_native_notifications_are_spawned_without_blocking(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
+                with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
+                    with patch("desktop.notifications.subprocess.Popen") as process:
+                        self.assertIsNotNone(post_notification("Asynchrone", "Test", "info"))
+                        kwargs = process.call_args.kwargs
+                        self.assertTrue(kwargs["start_new_session"])
+                        self.assertTrue(kwargs["close_fds"])
+                        self.assertIs(kwargs["stdin"], __import__("subprocess").DEVNULL)
+                        self.assertIs(kwargs["stdout"], __import__("subprocess").DEVNULL)
+                        self.assertIs(kwargs["stderr"], __import__("subprocess").DEVNULL)
 
     def test_native_notification_failure_does_not_break_persistence(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.dict("os.environ", {"XDG_STATE_HOME": directory}):
                 with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
-                    with patch("desktop.notifications.subprocess.run", side_effect=OSError("no service")):
+                    with patch("desktop.notifications.subprocess.Popen", side_effect=OSError("no service")):
                         self.assertIsNotNone(post_notification("Still saved", "Inbox fallback"))
 
     def test_post_notification_does_not_raise_for_invalid_events(self):
