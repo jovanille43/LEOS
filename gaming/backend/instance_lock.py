@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import os
 import re
+import stat
 from pathlib import Path
 
 
@@ -34,6 +35,8 @@ def acquire_instance_lock(
     safe_id = re.sub(r"[^A-Za-z0-9_.-]+", "-", application_id).strip(".-")
     if not safe_id:
         raise ValueError("application_id must contain a safe filename character")
+    if len(safe_id) > 64:
+        raise ValueError("application_id is too long for a lock filename")
 
     if directory is None:
         runtime = os.environ.get("XDG_RUNTIME_DIR", "").strip()
@@ -43,17 +46,31 @@ def acquire_instance_lock(
         directory = base / "leos"
 
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    lock_path = directory / f"{safe_id}.lock"
-    flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_CLOEXEC", 0)
-    flags |= getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(lock_path, flags, 0o600)
+    if directory.is_symlink() or not directory.is_dir():
+        raise OSError("LEOS lock directory must be a real directory")
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    directory_flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(directory, directory_flags)
+    descriptor: int | None = None
     try:
+        os.fchmod(directory_fd, 0o700)
+        flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_CLOEXEC", 0)
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(f"{safe_id}.lock", flags, 0o600, dir_fd=directory_fd)
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+            raise OSError("LEOS lock file must be a private regular file")
         os.fchmod(descriptor, 0o600)
         fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
-        os.close(descriptor)
+        if descriptor is not None:
+            os.close(descriptor)
         return None
     except OSError:
-        os.close(descriptor)
+        if descriptor is not None:
+            os.close(descriptor)
         raise
+    finally:
+        os.close(directory_fd)
+    assert descriptor is not None
     return InstanceLock(descriptor)
