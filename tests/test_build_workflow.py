@@ -99,6 +99,34 @@ class BuildWorkflowTests(unittest.TestCase):
         for line in entries:
             self.assertRegex(line, r"^[0-9a-f]{64}  branding/.+")
 
+    def test_deployed_checksum_manifest_matches_build_asset_allowlist(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        manifest = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
+        start = source.index("required_assets=(")
+        end = source.index(")", start)
+        required = set(re.findall(r"branding/[A-Za-z0-9_./-]+", source[start:end]))
+        recorded = {
+            line.split("  ", 1)[1]
+            for line in manifest.splitlines()
+            if line and not line.startswith("#")
+        }
+        expected = {
+            "branding/desktop-logo.jpeg",
+            "branding/gaming-logo.jpeg",
+            "branding/reference-comparison.jpeg",
+            "branding/animations/desktop-intro.mov",
+            "branding/animations/gaming-intro.mp4",
+            "branding/animations/gaming-roar-reference.mp4",
+            "branding/wallpapers/desktop-leos.svg",
+            "branding/wallpapers/gaming-leos.svg",
+        }
+        self.assertEqual(required, expected)
+        self.assertEqual(recorded, expected)
+        self.assertLess(
+            source.index("sha256sum --check branding/DEPLOYED_SHA256SUMS"),
+            source.index("Check signing prerequisites"),
+        )
+
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Check out repository", source)
