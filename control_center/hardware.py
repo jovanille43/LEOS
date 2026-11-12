@@ -497,7 +497,9 @@ def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
 
         scale = re.search(r"(?m)^\s*Scale:\s*([0-9]+(?:\.[0-9]+)?)", block)
         if scale:
-            scale_value = scale.group(1).rstrip("0").rstrip(".")
+            scale_value = scale.group(1)
+            if "." in scale_value:
+                scale_value = scale_value.rstrip("0").rstrip(".")
             details.append(f"échelle {scale_value}")
 
         connected.append(" · ".join(details))
