@@ -41,7 +41,7 @@ Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos o
 | `animations/gaming-intro.mp4` | 2 115 657 octets | 6,048 s |
 | `animations/gaming-roar-reference.mp4` | 2 763 575 octets | 6,080 s |
 
-**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. Le contrôle de métadonnées ne remplace pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
+**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
 
 ## Identité visuelle
 
