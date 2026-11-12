@@ -45,7 +45,7 @@ def main() -> int:
     try:
         return _run_locked_session(app, instance_lock)
     finally:
-        instance_lock.unlock()
+        instance_lock.release()
 
 
 def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
