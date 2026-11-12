@@ -263,3 +263,23 @@ ni commandes de lancement ni chemins privés. Seuls les lancements confirmés
 par `QProcess.startDetached` sont enregistrés ; un échec d'écriture n'empêche
 pas l'application de démarrer. Les entrées supprimées du système disparaissent
 simplement de la vue, sans effacer les autres éléments de l'historique.
+
+
+### Résolution XDG et ordre des favoris
+
+Le catalogue parcourt récursivement les répertoires `applications/` définis par
+`XDG_DATA_HOME` et `XDG_DATA_DIRS`. Les chemins imbriqués sont convertis en
+identifiants freedesktop en remplaçant les séparateurs par des tirets
+(`vendor/tools/editor.desktop` devient `vendor-tools-editor.desktop`).
+La priorité XDG est résolue avant la lecture des fichiers : une entrée
+utilisateur `Hidden=true` masque donc bien la version système de même
+identifiant. Les collisions d'identifiants suivent la priorité des répertoires,
+et chaque application n'apparaît qu'une fois dans le catalogue.
+
+Dans la catégorie Favoris, les commandes haut/bas déplacent une entrée d'une
+position à la fois. Elles sont masquées hors de cette catégorie et désactivées
+pendant une recherche pour éviter un ordre ambigu. L'étoile capture l'état
+précédent avant la mise à jour du modèle afin d'afficher le bon retour
+« ajouté » ou « retiré ». Le menu se ferme après un lancement accepté et avec
+Échap ; un lancement refusé laisse le menu ouvert et conserve l'erreur précise
+du backend.
