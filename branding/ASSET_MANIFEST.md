@@ -6,9 +6,9 @@ Ce document définit les noms et conditions d'intégration des ressources offici
 
 | Chemin attendu | Usage |
 | --- | --- |
-| `branding/desktop-logo.jpg` | Lion seul, Desktop Mode |
-| `branding/gaming-logo.jpg` | Lion avec manette, Gaming Mode |
-| `branding/reference-comparison.jpg` | Référence interne uniquement ; jamais affichée comme logo principal |
+| `branding/desktop-logo.jpeg` | Lion seul, Desktop Mode |
+| `branding/gaming-logo.jpeg` | Lion avec manette, Gaming Mode |
+| `branding/reference-comparison.jpeg` | Référence interne uniquement ; jamais affichée comme logo principal |
 
 Les deux emblèmes de mode doivent conserver le lion métallique, les accents cyan et magenta, la typographie et le fond de la référence. Ne pas recadrer les détails distinctifs ni redessiner le lion.
 
@@ -32,7 +32,7 @@ Avant d'activer la lecture dans l'interface, vérifier la disponibilité de Qt M
 | `branding/sounds/desktop-intro.ogg` | Signature Desktop |
 | `branding/sounds/gaming-intro.ogg` | Signature Gaming |
 
-Les signatures sonores restent synchronisées avec leur animation. Elles doivent être désactivables indépendamment du reste des sons LEOS et ne doivent jamais être jouées si les sons sont désactivés.
+Les pistes audio AAC sont intégrées aux vidéos MP4 sources. Leur lecture doit rester synchronisée avec l'image et être désactivable indépendamment du reste des sons LEOS. Aucun fichier OGG séparé n'a été fourni.
 
 ## Ressources complémentaires
 
@@ -50,12 +50,12 @@ Les fichiers sources ont été transmis dans la conversation le 12 novembre 2026
 
 | Source reçue | Rôle canonique | Empreinte SHA-256 du fichier source |
 | --- | --- | --- |
-| `IMG_2598(2).jpeg` | `desktop-logo.jpg` — lion seul, emblème Desktop | `7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548` |
-| `IMG_2599(2).jpeg` | `gaming-logo.jpg` — lion avec manette, emblème Gaming | `512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb` |
-| `IMG_2591(1).jpeg` | `reference-comparison.jpg` — planche comparative, référence uniquement | `eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9` |
-| `6af360efcc8e48ee89610680(1).mp4` | `animations/desktop-intro.webm` — apparition progressive du lion seul puis du mot-symbole LEOS | `3b1b5d3775cbbb58a96542df2aafafc943f9782009d07ae2258399c956816bc0` |
-| `video-6af35d8d3134ec85f320926c(2).mp4` | `animations/gaming-intro.webm` — rugissement, éclat énergétique, apparition de la manette et emblème Gaming final | `1a622ea8f87faac42cf5e2a782f67425a8482789f0cb289d4b6a48d0a417dfcd` |
-| `video-6af36284cc8e48ee89610c5c(1).mp4` | `animations/gaming-roar-reference.webm` — variante de rugissement et transition vers le lion avec manette | `db26fa64ed7658f1f86322bc60e5b08201a6497c1740f439c6df1dc6138af4c9` |
+| `IMG_2598(2).jpeg` | `desktop-logo.jpeg` — lion seul, emblème Desktop | `7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548` |
+| `IMG_2599(2).jpeg` | `gaming-logo.jpeg` — lion avec manette, emblème Gaming | `512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb` |
+| `IMG_2591(1).jpeg` | `reference-comparison.jpeg` — planche comparative, référence uniquement | `eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9` |
+| `6af360efcc8e48ee89610680(1).mp4` | `animations/desktop-intro.mp4` — apparition progressive du lion seul puis du mot-symbole LEOS | `3b1b5d3775cbbb58a96542df2aafafc943f9782009d07ae2258399c956816bc0` |
+| `video-6af35d8d3134ec85f320926c(2).mp4` | `animations/gaming-intro.mp4` — rugissement, éclat énergétique, apparition de la manette et emblème Gaming final | `1a622ea8f87faac42cf5e2a782f67425a8482789f0cb289d4b6a48d0a417dfcd` |
+| `video-6af36284cc8e48ee89610c5c(1).mp4` | `animations/gaming-roar-reference.mp4` — variante de rugissement et transition vers le lion avec manette | `db26fa64ed7658f1f86322bc60e5b08201a6497c1740f439c6df1dc6138af4c9` |
 
 Les trois animations sont des références distinctes. L'animation Gaming principale est celle qui se termine sur le lion tenant la manette, avec l'éclat cyan/magenta. La variante de rugissement est conservée comme référence secondaire et ne remplace pas l'animation principale.
 
