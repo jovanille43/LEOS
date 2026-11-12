@@ -45,7 +45,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 - **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
 - **Sélecteur Desktop/Gaming** : modes au sein d'une seule session KDE, dernier mode mémorisé et navigation par clavier/manette ; les transitions doivent encore être validées en session réelle.
 - **Centre de contrôle LEOS** : pages matériel et connexions, diagnostic système, nettoyage avec aperçu et confirmation, mises à jour, notifications et réseau. Les inventaires matériels et diagnostics sont en lecture seule ; les réglages système s'appuient sur les outils natifs.
-- **Centre des notifications LEOS** : historique persistant, notifications Plasma en Desktop Mode et conservation silencieuse des événements Gaming pour ne pas interrompre une partie.
+- **Centre des notifications LEOS** : historique local des événements émis par les composants LEOS. Les notifications système natives et leur historique restent gérés par Plasma ; les événements LEOS en Gaming sont conservés silencieusement pour ne pas interrompre une partie.
 - **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
 - **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
 - **Applications initiales** : Brave, LibreOffice et VLC sont prévues pour une installation unique en Flatpak utilisateur ; le marqueur empêche leur réinstallation automatique après désinstallation.
@@ -72,10 +72,10 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 ## Desktop Mode
 
 - Bureau KDE personnalisé avec l'identité LEOS.
-- Menu principal LEOS et dock personnalisable avec dispositions prédéfinies.
-- Notifications natives via Plasma et Centre de notifications LEOS pour retrouver l'historique des événements du système et des applications.
+- Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les préférences de dock et profils de disposition sont préparés, mais leur application au véritable panneau Plasma reste désactivée.
+- Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Thèmes, fonds d'écran, sons et animations configurables.
+- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran, sons et animations restent à intégrer complètement.
 
 ## Bluetooth
 
