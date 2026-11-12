@@ -204,7 +204,7 @@ ApplicationWindow {
                             border.color: window.cyan
                         }
                         contentItem: Label {
-                            text: parent.text
+                            text: "COMPRIS"
                             color: "white"
                             font.pixelSize: 10
                             font.weight: Font.Bold
