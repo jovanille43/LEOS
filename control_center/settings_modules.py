@@ -18,6 +18,7 @@ SETTINGS_MODULES: dict[str, str] = {
     "power": "kcm_powerdevilprofilesconfig",
     "keyboard": "kcm_keyboard",
     "mouse": "kcm_mouse",
+    "wallpaper": "kcm_wallpaper",
 }
 
 
