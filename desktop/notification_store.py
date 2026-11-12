@@ -16,8 +16,6 @@ MAX_TITLE = 160
 MAX_BODY = 2000
 from leos_core.paths import state_home as xdg_state_home
 
-from leos_core.paths import state_home as xdg_state_home
-
 LEVELS = {"info", "success", "warning", "error"}
 
 
