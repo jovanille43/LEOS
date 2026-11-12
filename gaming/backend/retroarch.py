@@ -61,7 +61,7 @@ def find_retroarch_playlist_directories(
         except OSError:
             continue
         match = re.search(
-            r'^\\s*playlist_directory\\s*=\\s*"([^"]+)"',
+            r'^\s*playlist_directory\s*=\s*"([^"]+)"',
             config,
             re.MULTILINE,
         )
