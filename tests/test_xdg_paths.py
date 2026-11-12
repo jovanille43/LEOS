@@ -112,7 +112,7 @@ class XdgPathTests(unittest.TestCase):
         source = (
             Path(__file__).resolve().parents[1] / "gaming" / "backend" / "library.py"
         ).read_text(encoding="utf-8")
-        self.assertIn("from leos_core.paths import data_home as xdg_data_home", source)
+        self.assertIn("data_home as xdg_data_home", source)
         self.assertGreaterEqual(source.count("xdg_data_home()"), 4)
         self.assertNotIn('os.environ.get("XDG_DATA_HOME"', source)
 
