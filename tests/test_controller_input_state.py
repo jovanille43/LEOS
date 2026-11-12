@@ -60,6 +60,7 @@ class ControllerInputStateTests(unittest.TestCase):
         controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
         self.assertIn('text: "BOUTONS MAINTENUS"', qml)
         self.assertIn("self.buttons_text = self.input_state.buttons_text", controller)
+
     def test_disconnect_clears_held_buttons(self):
         self.state.consume({"kind": "button", "name": "BTN_SOUTH", "value": 1})
         self.state.clear()
