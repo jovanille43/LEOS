@@ -17,6 +17,7 @@ Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une p
 
 - Une réponse positive autorise l'ajout du dépôt utilisateur Flathub et l'installation des seules applications absentes.
 - Les applications déjà présentes dans l'installation utilisateur ou système sont ignorées.
+- Flathub n'est ajouté au profil utilisateur que si au moins une des applications approuvées manque ; si elles sont toutes déjà installées, aucune modification de dépôt n'est effectuée.
 - Le consentement positif est enregistré avant toute installation dans `~/.local/state/leos/default-apps-consent-v1` (ou sous `$XDG_STATE_HOME` si cette variable est définie). Cette autorisation concerne uniquement la liste versionnée Brave, LibreOffice et VLC.
 - Si une installation échoue, les autres applications sont tout de même traitées. Le consentement est conservé et une prochaine entrée dans Desktop reprend uniquement les applications manquantes, sans afficher une seconde demande d'autorisation.
 - Lorsque toutes les applications sont déjà présentes ou ont été installées, LEOS enregistre `default-apps-seeded` puis supprime le marqueur temporaire de consentement.
