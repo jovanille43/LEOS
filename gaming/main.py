@@ -64,12 +64,22 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         controller.shutdown()
         return 1
 
-    # Persist Gaming only after its QML window loaded successfully.
-    controller.settings.set("last_mode", "gaming")
+    # Persist Gaming only after its QML window loaded successfully. A
+    # read-only/corrupt preference file must not prevent the session itself.
+    try:
+        controller.settings.set("last_mode", "gaming")
+        startup_message = "L'interface Gaming a démarré."
+        startup_priority = "success"
+    except (OSError, ValueError, TypeError, KeyError):
+        startup_message = (
+            "Gaming a démarré, mais le choix du mode au prochain démarrage "
+            "n'a pas pu être enregistré."
+        )
+        startup_priority = "warning"
     post_notification(
         "LEOS Gaming Mode",
-        "L'interface Gaming a démarré.",
-        "success",
+        startup_message,
+        startup_priority,
         native=False,
     )
     controller.monitor.start()
