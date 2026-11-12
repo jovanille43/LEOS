@@ -135,6 +135,20 @@ class DesktopEntriesTests(unittest.TestCase):
             selected = desktop_entry_paths((system, user))
             self.assertEqual(selected, (("example.desktop", user_entry),))
 
+    def test_desktop_entry_discovery_respects_per_directory_limit(self):
+        from unittest.mock import patch
+        from desktop import desktop_entries
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index in range(5):
+                (root / f"entry-{index}.desktop").write_text(
+                    "[Desktop Entry]\\n", encoding="utf-8"
+                )
+            with patch.object(desktop_entries, "MAX_DESKTOP_ENTRIES_PER_DIRECTORY", 2):
+                selected = desktop_entry_paths((root,))
+            self.assertEqual(len(selected), 2)
+
     def test_desktop_entry_paths_keep_distinct_ids_and_last_directory_wins(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
