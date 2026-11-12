@@ -54,7 +54,19 @@ jobs:
         run: bluebuild validate recipes/recipe.yml
 
       - name: Generate Containerfile
-        run: bluebuild generate recipes/recipe.yml -o "$RUNNER_TEMP/LEOS-Containerfile"
+        run: |
+          set -euo pipefail
+          attempt=1
+          max_attempts=3
+          until bluebuild generate recipes/recipe.yml -o "$RUNNER_TEMP/LEOS-Containerfile"; do
+            if [[ "$attempt" -ge "$max_attempts" ]]; then
+              echo "::error::BlueBuild could not generate the Containerfile after ${max_attempts} attempts."
+              exit 1
+            fi
+            echo "BlueBuild schema/network request failed; retrying (${attempt}/${max_attempts})..."
+            sleep "$((attempt * 3))"
+            attempt=$((attempt + 1))
+          done
 
       - name: Confirm generated build file
         run: test -s "$RUNNER_TEMP/LEOS-Containerfile"
