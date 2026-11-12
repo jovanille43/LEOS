@@ -119,11 +119,11 @@ class HeroicGameImportTests(unittest.TestCase):
             }
         }
         encoded = json.dumps(payload).encode("utf-8")
-        self.manifest.write_bytes(b"\\xef\\xbb\\xbf" + encoded)
+        self.manifest.write_bytes(bytes((0xEF, 0xBB, 0xBF)) + encoded)
         games = load_heroic_games(self.manifest, "legendary")
         self.assertEqual([game["title"] for game in games], ["BOM Game"])
 
-        self.manifest.write_bytes(b"\\xff\\xfe\\x80")
+        self.manifest.write_bytes(bytes((0xFF, 0xFE, 0x80)))
         self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
 
     def test_rejects_unsupported_runner_and_corrupt_files(self):
