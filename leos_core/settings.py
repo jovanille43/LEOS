@@ -11,6 +11,21 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home
 
+
+MAX_SETTINGS_BYTES = 256 * 1024
+
+
+def _read_settings_file(path: Path) -> dict[str, Any]:
+    """Read a bounded JSON object without following an untrusted symlink."""
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_SETTINGS_BYTES + 1)
+    if len(raw) > MAX_SETTINGS_BYTES:
+        raise ValueError("LEOS settings file is too large")
+    loaded = json.loads(raw.decode("utf-8"))
+    if not isinstance(loaded, dict):
+        raise ValueError("LEOS settings file has an invalid format")
+    return loaded
+
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
@@ -46,15 +61,16 @@ class SettingsStore:
         self.load()
 
     def load(self) -> None:
+        # Never retain stale values when another LEOS process replaces the
+        # shared preferences with a missing, corrupt, or oversized file.
+        self._values = DEFAULTS.copy()
         if self.path.is_symlink() or self.path.parent.is_symlink():
             return
         if not self.path.is_file():
             return
         try:
-            loaded = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return
-        if not isinstance(loaded, dict):
+            loaded = _read_settings_file(self.path)
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
             return
 
         for key, default in DEFAULTS.items():
@@ -104,11 +120,11 @@ class SettingsStore:
             try:
                 if self.path.exists():
                     try:
-                        stored = json.loads(self.path.read_text(encoding="utf-8"))
-                    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-                        raise ValueError("LEOS settings file is unreadable; it was left untouched") from exc
-                    if not isinstance(stored, dict):
-                        raise ValueError("LEOS settings file has an invalid format; it was left untouched")
+                        _read_settings_file(self.path)
+                    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+                        raise ValueError(
+                            "LEOS settings file is unreadable or too large; it was left untouched"
+                        ) from exc
                 self.load()
                 self._values[key] = value
                 self.save()
