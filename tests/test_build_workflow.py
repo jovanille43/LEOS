@@ -199,6 +199,17 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("/cosign.pub", source)
 
 
+    def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("Lint Qt Quick and QML sources", source)
+        self.assertIn("fedora:45", source)
+        self.assertIn("qt6-qtdeclarative-devel", source)
+        self.assertIn("qt6-qtmultimedia", source)
+        self.assertIn("qt6-qtsvg", source)
+        self.assertIn('find launcher gaming control_center controller_center desktop shop -type f -name "*.qml"', source)
+        self.assertIn('qmllint-qt6 "${file}"', source)
+        self.assertIn('if [[ "${#qml_files[@]}" -eq 0 ]]', source)
+
     def test_recipe_ci_reports_hashes_for_all_deployed_branding_assets(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Report deployed branding SHA-256 fingerprints", source)
