@@ -39,7 +39,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 
 ### Compatibilité matérielle
 
-LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel), `leos-nvidia` pour NVIDIA Maxwell/Pascal/Volta et `leos-nvidia-open` pour NVIDIA Turing et plus récent. Ce sont des variantes matérielles d'un même système, pas des éditions distinctes. Elles doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md).
+LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel), `leos-nvidia` pour NVIDIA Maxwell/Pascal/Volta et `leos-nvidia-open` pour NVIDIA Turing et plus récent. Ce sont des variantes matérielles d'un même système, pas des éditions distinctes. Elles doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
 
 ### Composants source présents dans le dépôt
 
