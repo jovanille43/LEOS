@@ -1,6 +1,7 @@
 """Safety checks for the manual image publication workflow."""
 
 from pathlib import Path
+import re
 import unittest
 
 
@@ -33,6 +34,27 @@ class BuildWorkflowTests(unittest.TestCase):
         for path in expected:
             with self.subTest(path=path):
                 self.assertIn(path, sums)
+
+    def test_branding_checksum_manifest_has_six_unique_valid_entries(self):
+        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(sums), 6)
+        parsed = []
+        for line in sums:
+            match = re.fullmatch(r"([0-9a-f]{64})  (branding/.+)", line)
+            self.assertIsNotNone(match, line)
+            parsed.append(match.groups())
+        self.assertEqual(len({path for _digest, path in parsed}), 6)
+        self.assertEqual(len({digest for digest, _path in parsed}), 6)
+
+    def test_manual_build_required_asset_list_matches_checksum_manifest(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        block_start = source.index("required_assets=(")
+        block_end = source.index(")", block_start)
+        listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
+        hashed = [line.split("  ", 1)[1] for line in sums.splitlines()]
+        self.assertEqual(set(listed), set(hashed))
+        self.assertEqual(len(listed), 6)
 
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
