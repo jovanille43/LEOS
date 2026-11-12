@@ -35,6 +35,9 @@ Bazzite signale des réserves plus importantes pour NVIDIA que pour AMD et des r
 Les PC portables hybrides (iGPU + GPU dédié) devront être testés séparément : affichage sur l'iGPU, lancement des jeux sur le GPU dédié, veille/réveil et écrans externes. LEOS ne doit jamais supposer qu'un GPU est actif uniquement parce qu'il apparaît dans l'inventaire.
 
 ## Adaptation logicielle
+- La télémétrie NVIDIA est associée au périphérique DRM par son identifiant PCI (domain:bus:device.function), jamais par l'ordre des lignes de `nvidia-smi` ou le numéro `cardN`.
+- Sur une configuration hybride ou avec plusieurs GPU, les mesures NVIDIA ne sont fusionnées qu'avec la carte dont l'identifiant PCI correspond exactement. En l'absence de correspondance, les mesures restent indisponibles plutôt que d'être attribuées à une autre carte.
+- Si `nvidia-smi`, le pilote propriétaire ou l'accès aux nœuds DRM est absent ou expire, la télémétrie est facultative et ne doit pas empêcher Gaming Mode de démarrer.
 
 La détection matérielle doit rester non bloquante et tolérante aux fonctions absentes :
 
