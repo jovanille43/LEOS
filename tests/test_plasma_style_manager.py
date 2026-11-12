@@ -107,6 +107,39 @@ class PlasmaStyleManagerTests(unittest.TestCase):
             self.manager.apply_style()
         self.assertEqual(state_file.read_text(encoding="utf-8"), "{broken")
 
+    def test_oversized_plasmarc_is_not_parsed_or_modified(self):
+        from desktop.plasma_style import MAX_PLASMA_CONFIG_BYTES
+
+        original = b"[Theme]\\nname=breeze-dark\\n"
+        path = self.config / "plasmarc"
+        path.write_bytes(original + b" " * MAX_PLASMA_CONFIG_BYTES)
+        self.assertIsNone(self.manager.current_style())
+        with self.assertRaises(RuntimeError):
+            self.manager.apply_style()
+        self.assertEqual(path.read_bytes(), original + b" " * MAX_PLASMA_CONFIG_BYTES)
+        self.assertEqual(self.runner.calls, [])
+
+    def test_oversized_theme_metadata_is_not_accepted(self):
+        from desktop.plasma_style import MAX_PLASMA_METADATA_BYTES
+
+        metadata = self.theme / "metadata.json"
+        metadata.write_bytes(b"{}" + b" " * MAX_PLASMA_METADATA_BYTES)
+        self.assertFalse(self.manager.style_installed())
+
+    def test_oversized_state_is_not_restored_or_overwritten(self):
+        from desktop.plasma_style import MAX_PLASMA_STATE_BYTES
+
+        state_dir = self.state / "leos"
+        state_dir.mkdir(parents=True)
+        state_file = state_dir / "plasma-style.json"
+        original = b" " * (MAX_PLASMA_STATE_BYTES + 1)
+        state_file.write_bytes(original)
+        self.assertFalse(self.manager.can_restore())
+        with self.assertRaises(ValueError):
+            self.manager.apply_style()
+        self.assertEqual(state_file.read_bytes(), original)
+        self.assertEqual(self.runner.calls, [])
+
     def test_control_center_wires_apply_and_restore_with_confirmation(self):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
