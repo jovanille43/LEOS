@@ -514,7 +514,7 @@ ApplicationWindow {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
                                                     source: "../../branding/wallpapers/desktop-leos.svg"
-                                                    fillMode: Image.PreserveAspectCrop
+                                                    fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
                                                 }
@@ -549,7 +549,7 @@ ApplicationWindow {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
                                                     source: "../../branding/wallpapers/gaming-leos.svg"
-                                                    fillMode: Image.PreserveAspectCrop
+                                                    fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
                                                 }
