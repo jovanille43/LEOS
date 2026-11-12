@@ -1355,6 +1355,52 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 210
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "ÉTAT DES DÉPLOIEMENTS OSTREE"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: controlCenter.deploymentSnapshot.available
+                                            ? "Déploiement démarré : " + controlCenter.deploymentSnapshot.bootedVersion
+                                                + " · SHA-256 " + controlCenter.deploymentSnapshot.bootedChecksum
+                                            : "Informations des déploiements indisponibles sur cette session."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 12
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: controlCenter.deploymentSnapshot.available
+                                            ? "Autres entrées conservées : " + controlCenter.deploymentSnapshot.otherCount
+                                                + " · préparées : " + controlCenter.deploymentSnapshot.pendingCount
+                                                + " · épinglées : " + controlCenter.deploymentSnapshot.pinnedCount
+                                            : "LEOS ne peut pas confirmer l'état du déploiement actif ou des anciennes entrées."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Cet inventaire est informatif : une ancienne entrée n'est pas une garantie de démarrage ou de retour arrière. LEOS ne lance aucun rollback, nettoyage ni pinning. Vérifie toujours rpm-ostree status avant toute intervention."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
                             Label {
                                 text: "Bazzite effectue ses vérifications automatiques selon la politique native de l’image. LEOS observe périodiquement les déploiements préparés avec rpm-ostree, sans démarrer de transaction. L’application d’une version préparée se fait au redémarrage."
                                 color: window.muted
