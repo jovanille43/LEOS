@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fcntl
 import hashlib
+from itertools import islice
 import json
 import os
 import tempfile
@@ -66,8 +67,11 @@ def device_profile_id(
     fallback_path: str = "",
 ) -> str:
     """Return a stable, non-reversible identifier for a connected controller."""
-    stable_location = uniq or phys or fallback_path
-    raw = f"{name}|{vendor:04x}|{product:04x}|{stable_location}"
+    # Device metadata comes from kernel/USB descriptors. Bound every component
+    # before hashing so a broken descriptor cannot create excessive work/storage.
+    safe_name = str(name)[:256]
+    stable_location = str(uniq or phys or fallback_path)[:256]
+    raw = f"{safe_name}|{vendor:04x}|{product:04x}|{stable_location}"
     return hashlib.sha256(raw.encode("utf-8", errors="replace")).hexdigest()[:24]
 
 
@@ -139,13 +143,13 @@ class ControllerProfileStore:
         centers = record.get("axis_centers", {})
         if not isinstance(centers, dict):
             centers = {}
-        valid_centers = {
-            axis: value for axis, value in centers.items()
+        valid_centers: dict[str, int] = {}
+        for axis, value in islice(centers.items(), MAX_AXIS_CENTERS):
             if (
                 isinstance(axis, str) and 0 < len(axis) <= MAX_AXIS_NAME_LENGTH
                 and type(value) is int and -65536 <= value <= 65536
-            )
-        }
+            ):
+                valid_centers[axis] = value
         return {"profile": profile, "deadzone": deadzone, "axis_centers": valid_centers}
 
     def update(self, device_id: str, **changes: Any) -> dict[str, Any]:
