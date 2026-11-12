@@ -12,7 +12,11 @@ import shutil
 from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess
 
 from shop.catalog import CatalogModel
-from shop.flatpak_inventory import flatpak_uninstall_args, parse_flatpak_inventory
+from shop.flatpak_inventory import (
+    flatpak_uninstall_args,
+    is_trusted_flathub_remote,
+    parse_flatpak_inventory,
+)
 from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
 
@@ -77,8 +81,8 @@ class StoreController(QObject):
             return
         executable = shutil.which(program)
         if not executable:
-            if action == "verify-install":
-                self._set_verification_details("Flatpak n'est pas disponible : les dépendances n'ont pas pu être vérifiées.")
+            if action in {"verify-remote", "verify-install"}:
+                self._set_verification_details("Flatpak n'est pas disponible : la source et les dépendances n'ont pas pu être vérifiées.")
             self._set_status(f"{program} n'est pas disponible sur ce système.")
             post_notification("Opération impossible", self._status, "error")
             self.operationFinished.emit(False, self._status)
@@ -88,8 +92,8 @@ class StoreController(QObject):
         self._stderr.clear()
         self._process.start(executable, args)
         if not self._process.waitForStarted(1500):
-            if action == "verify-install":
-                self._set_verification_details("Impossible de lire les métadonnées Flathub ; les dépendances n'ont pas été vérifiées.")
+            if action in {"verify-remote", "verify-install"}:
+                self._set_verification_details("Impossible de vérifier la source Flathub et ses métadonnées.")
             self._set_status(f"Impossible de démarrer {program}.")
             self.operationFinished.emit(False, self._status)
             return
@@ -117,12 +121,12 @@ class StoreController(QObject):
         if item.get("installed_scope"):
             self._set_status("Cette application est déjà installée.")
             return
-        self._set_verification_details("Lecture des métadonnées Flathub en cours…")
+        self._set_verification_details("Vérification de l'adresse officielle Flathub…")
         self._start(
-            "verify-install",
+            "verify-remote",
             item["id"],
             "flatpak",
-            ["remote-info", "--user", "--show-metadata", "flathub", item["id"]],
+            ["remotes", "--columns=name,url"],
         )
 
     @Slot(int)
@@ -193,6 +197,23 @@ class StoreController(QObject):
             self.operationFinished.emit(True, self._status)
             return
 
+        if action == "verify-remote":
+            if exit_code == 0 and is_trusted_flathub_remote(stdout):
+                self._set_verification_details("Adresse officielle Flathub confirmée. Lecture des métadonnées et du runtime…")
+                self._start(
+                    "verify-install",
+                    target,
+                    "flatpak",
+                    ["remote-info", "--user", "--show-metadata", "flathub", target],
+                )
+            else:
+                self._action = ""
+                self._set_verification_details("Le dépôt nommé Flathub est absent ou son adresse n'est pas reconnue comme officielle. Aucune installation n'a été lancée.")
+                self._set_status("Source Flathub non vérifiée : installation bloquée.")
+                post_notification("Source non vérifiée", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
         if action == "verify-install":
             if exit_code == 0:
                 self._action = "verified"
@@ -229,7 +250,7 @@ class StoreController(QObject):
         if self._busy:
             failed_action = self._action
             self._set_busy(False)
-            if failed_action == "verify-install":
+            if failed_action in {"verify-remote", "verify-install"}:
                 self._set_verification_details("Erreur pendant la lecture des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
