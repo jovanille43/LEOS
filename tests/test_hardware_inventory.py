@@ -377,6 +377,15 @@ class HardwareInventoryTests(unittest.TestCase):
                 ("Non vérifiable", "Aucun connecteur d'écran exposé par DRM"),
             )
 
+    def test_display_inventory_does_not_treat_missing_connector_status_as_disconnected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "card0-DP-1").mkdir()
+            self.assertEqual(
+                hardware._display_details(root),
+                ("Non vérifiable", "État des connecteurs non exposé par DRM"),
+            )
+
     def test_display_inventory_keeps_connected_screen_when_modes_are_unavailable(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
