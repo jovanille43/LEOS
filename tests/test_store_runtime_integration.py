@@ -61,6 +61,24 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("buffer.extend(chunk[:remaining])", source)
         self.assertIn("self._output_overflowed = True", source)
 
+    def test_flatpak_operations_have_bounded_action_specific_timeouts(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn('"list": 60_000', source)
+        self.assertIn('"verify-install": 90_000', source)
+        self.assertIn('"install": 30 * 60 * 1000', source)
+        self.assertIn('self._timeout_timer.setSingleShot(True)', source)
+        self.assertIn('self._timeout_timer.start(OPERATION_TIMEOUTS_MS.get(action, 60_000))', source)
+        timeout = source[source.index("def _on_timeout"):source.index("def _on_error")]
+        self.assertIn("self._process.kill()", timeout)
+        self.assertIn("vérifié dans l'inventaire", timeout)
+
+    def test_flatpak_crash_exit_is_never_reported_as_success(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        finished = source[source.index("def _on_finished"):source.index("def _on_timeout")]
+        self.assertIn("exit_status != QProcess.ExitStatus.NormalExit", finished)
+        self.assertIn("exit_code = -1", finished)
+        self.assertIn("self._timeout_timer.stop()", finished)
+
     def test_finished_signal_after_process_error_is_ignored(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         finished = source[source.index("def _on_finished"):source.index("def _on_error")]
