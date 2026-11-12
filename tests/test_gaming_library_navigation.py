@@ -66,6 +66,12 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn('window.detailsActionIndex = 0', self.qml)
         self.assertIn('window.detailsActionIndex = 1', self.qml)
 
+    def test_manual_game_loader_rejects_actual_nul_characters(self):
+        source = (
+            Path(__file__).resolve().parents[1] / "gaming/backend/library.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("chr(0) not in part", source)
+
     def test_gamepad_can_accept_the_manual_add_dialog(self):
         self.assertIn("if (addDialog.visible)", self.qml)
         self.assertIn("addDialog.accept()", self.qml)
