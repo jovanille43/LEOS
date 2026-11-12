@@ -20,7 +20,7 @@ def _run(command: Sequence[str], timeout: float = 1.5) -> str:
         result = subprocess.run(
             list(command), capture_output=True, text=True, timeout=timeout, check=False
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except (OSError, UnicodeError, subprocess.TimeoutExpired):
         return ""
     return result.stdout.strip() if result.returncode == 0 else ""
 
