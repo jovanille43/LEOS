@@ -219,6 +219,21 @@ class ApplicationCatalog(QAbstractListModel):
         return True
 
 
+
+    @Slot(str, int, result=bool)
+    def moveFavourite(self, desktop_id: str, offset: int) -> bool:
+        if not any(item["desktopId"] == desktop_id for item in self._all):
+            return False
+        try:
+            moved = self.favourites.move_by(desktop_id, offset)
+        except (OSError, ValueError):
+            return False
+        if not moved:
+            return False
+        self._favourites_snapshot = self.favourites.items()
+        self._apply_filter()
+        return True
+
     @Slot(result=bool)
     def clearRecentApplications(self) -> bool:
         try:
