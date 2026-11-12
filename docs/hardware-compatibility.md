@@ -6,7 +6,7 @@ LEOS doit fonctionner sur un large éventail de PC fixes et portables, sans êtr
 
 La cible de la première version est un PC **x86_64 démarrant en UEFI**. Les architectures ARM et le démarrage BIOS Legacy/CSM ne font pas partie de la cible actuelle, car LEOS hérite des contraintes de sa base Bazzite.
 
-Deux recettes sont désormais prévues à partir d'une liste de modules LEOS partagée : `leos` pour Bazzite standard (AMD/Intel) et `leos-nvidia` pour Bazzite avec pilotes NVIDIA. Le choix de l'image doit être fait selon le GPU principal, comme le recommande Bazzite ; il ne sera pas décidé silencieusement par LEOS pendant l'installation.
+Trois recettes de construction sont prévues à partir d'une liste de modules LEOS partagée : `leos` pour Bazzite standard (AMD/Intel), `leos-nvidia` pour les anciennes générations NVIDIA encore prises en charge par le pilote propriétaire legacy, et `leos-nvidia-open` pour les générations NVIDIA récentes. Ce sont trois variantes matérielles du même système LEOS, pas trois éditions fonctionnelles différentes. Le choix de l'image doit être fait selon le GPU principal ; il ne sera pas décidé silencieusement par LEOS pendant l'installation.
 
 ## Référence minimale pour Gaming
 
@@ -28,7 +28,7 @@ LEOS vise les PC équipés de GPU AMD, Intel ou NVIDIA, mais les modalités de p
 
 - **AMD** : priorité de validation pour l'expérience Gaming, avec les pilotes Mesa/kernel fournis par la base.
 - **Intel** : iGPU et cartes Arc à tester selon génération et prise en charge Vulkan ; ne pas assimiler toutes les générations aux mêmes capacités.
-- **NVIDIA** : nécessite de traiter explicitement la variante Bazzite et le pilote propriétaire lorsqu'ils sont requis. LEOS possède désormais une recette `leos-nvidia` basée sur `ghcr.io/ublue-os/bazzite-nvidia`, qui réutilise exactement les mêmes modules applicatifs que la recette standard. Cette variante doit encore être construite et testée sur des GPU NVIDIA réels avant de revendiquer une prise en charge complète.
+- **NVIDIA** : nécessite de sélectionner la variante Bazzite adaptée à la génération du GPU. `leos-nvidia` (`ghcr.io/ublue-os/bazzite-nvidia`) cible les architectures Maxwell, Pascal et Volta (notamment GTX 900/1000 et Titan V). `leos-nvidia-open` (`ghcr.io/ublue-os/bazzite-nvidia-open`) cible Turing et les générations plus récentes (GTX 16 et RTX). Les deux recettes réutilisent exactement les mêmes modules LEOS que la variante standard. Les GPU Kepler et plus anciens ne disposent plus du pilote propriétaire NVIDIA pris en charge par Bazzite ; ils ne doivent donc pas être annoncés comme compatibles Gaming. Les variantes NVIDIA doivent encore être construites et testées sur des GPU réels avant de revendiquer une prise en charge complète.
 
 Bazzite signale des réserves plus importantes pour NVIDIA que pour AMD et des réserves plus limitées pour Intel Arc. Le choix de l'image Bazzite dépend du fabricant du GPU principal. Références : [guide de compatibilité Bazzite](https://docs.bazzite.gg/Gaming/Hardware_compatibility_for_gaming/) et [dépôt officiel Bazzite](https://github.com/ublue-os/bazzite).
 
@@ -61,7 +61,7 @@ Une image qui compile ou passe les tests automatisés n'est pas pour autant cert
 ## Limites de la première version
 
 - Cible actuelle : x86_64 + UEFI.
-- Les recettes standard et NVIDIA existent dans le dépôt ; leur construction, la signature et les essais matériels restent à réaliser.
+- Les recettes standard, NVIDIA legacy et NVIDIA open existent dans le dépôt ; leur construction, la signature et les essais matériels restent à réaliser.
 - La détection Vulkan et le précontrôle de compatibilité restent partiels.
 - Aucune liste exhaustive de PC compatibles n'est revendiquée.
 - La construction d'une ISO installable et la validation sur plusieurs ordinateurs restent à effectuer.
