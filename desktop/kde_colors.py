@@ -36,9 +36,27 @@ THEME_NAMES = {
 }
 SCHEME_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 THEME_PATTERN = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
+MAX_KDE_CONFIG_BYTES = 1024 * 1024
+MAX_KDE_STATE_BYTES = 64 * 1024
+MAX_KDE_SCHEME_BYTES = 512 * 1024
 NEGATIVE = "240,82,104"
 NEUTRAL = "230,174,69"
 POSITIVE = "61,201,139"
+
+
+def _read_bounded_text(path: Path, max_bytes: int) -> str | None:
+    if type(max_bytes) is not int or max_bytes < 0:
+        return None
+    if path.is_symlink() or path.parent.is_symlink():
+        return None
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(max_bytes + 1)
+        if len(raw) > max_bytes:
+            return None
+        return raw.decode("utf-8")
+    except (OSError, UnicodeError):
+        return None
 
 
 def _rgb(hex_color: str) -> str:
@@ -185,10 +203,13 @@ class KdeColorSchemeManager:
             return None
         parser = configparser.ConfigParser(interpolation=None, strict=False)
         parser.optionxform = str
+        content = _read_bounded_text(self.config_file, MAX_KDE_CONFIG_BYTES)
+        if content is None:
+            return None
         try:
-            parser.read(self.config_file, encoding="utf-8")
+            parser.read_string(content)
             value = parser.get("General", "ColorScheme", fallback="").strip()
-        except (OSError, configparser.Error):
+        except configparser.Error:
             return None
         if not value or len(value) > 80 or any(ch in value for ch in ("/", "\\", "\n", "\r")):
             return None
@@ -197,9 +218,12 @@ class KdeColorSchemeManager:
     def _read_state(self) -> dict[str, Any]:
         if self.state_file.is_symlink() or not self.state_file.is_file():
             return {}
+        content = _read_bounded_text(self.state_file, MAX_KDE_STATE_BYTES)
+        if content is None:
+            return {}
         try:
-            state = json.loads(self.state_file.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            state = json.loads(content)
+        except json.JSONDecodeError:
             return {}
         if (
             not isinstance(state, dict)
@@ -237,7 +261,11 @@ class KdeColorSchemeManager:
         if destination.exists():
             if not destination.is_file():
                 raise ValueError("The existing color-scheme path is not a regular file")
-            existing = destination.read_text(encoding="utf-8")
+            existing = _read_bounded_text(destination, MAX_KDE_SCHEME_BYTES)
+            if existing is None:
+                raise FileExistsError(
+                    "Existing KDE color-scheme file cannot be safely inspected; it was left untouched."
+                )
             if existing != payload:
                 raise FileExistsError(
                     "A different file already uses this LEOS color-scheme name; it was left untouched."
@@ -264,17 +292,22 @@ class KdeColorSchemeManager:
             raise ValueError("Symbolic-link LEOS theme state files are not accepted")
         if self.state_file.exists() and not self._read_state():
             raise ValueError("Existing LEOS KDE theme state is invalid; it was left untouched")
-        self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        self.state_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.state_file.parent.is_symlink():
             raise ValueError("Symbolic-link LEOS theme state directories are not accepted")
-        payload = json.dumps(state, indent=2, ensure_ascii=False) + "\n"
-        fd, temporary = tempfile.mkstemp(prefix="kde-theme.", suffix=".tmp", dir=self.state_file.parent)
+        payload = (json.dumps(state, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        if len(payload) > MAX_KDE_STATE_BYTES:
+            raise ValueError("LEOS KDE theme state exceeds its storage limit")
+        os.chmod(self.state_file.parent, 0o700)
+        fd, temporary = tempfile.mkstemp(
+            prefix="kde-theme.", suffix=".tmp", dir=self.state_file.parent
+        )
         try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "wb") as stream:
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.chmod(temporary, 0o600)
             os.replace(temporary, self.state_file)
         finally:
             try:
