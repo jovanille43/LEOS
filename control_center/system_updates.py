@@ -2,8 +2,13 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 from collections.abc import Callable
+
+
+MAX_RPM_OSTREE_STATUS_CHARS = 2 * 1024 * 1024
+MAX_RPM_OSTREE_DEPLOYMENTS = 1000
 
 
 def system_update_check_command(
@@ -53,22 +58,33 @@ def pending_deployment_from_status(payload: str) -> dict[str, str] | None:
     """Extract an actually staged/pending deployment from rpm-ostree JSON."""
     import json
 
+    if not isinstance(payload, str) or len(payload) > MAX_RPM_OSTREE_STATUS_CHARS:
+        return None
     try:
         status = json.loads(payload)
-    except (TypeError, json.JSONDecodeError):
+    except (TypeError, json.JSONDecodeError, RecursionError):
         return None
     if not isinstance(status, dict) or not isinstance(status.get("deployments"), list):
         return None
-    for deployment in status["deployments"]:
+    deployments = status["deployments"]
+    if len(deployments) > MAX_RPM_OSTREE_DEPLOYMENTS:
+        return None
+    for deployment in deployments:
         if not isinstance(deployment, dict) or deployment.get("booted") is True:
             continue
         if deployment.get("pending") is True or deployment.get("staged") is True:
             checksum = deployment.get("checksum")
-            if not isinstance(checksum, str) or not checksum:
+            if not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", checksum):
                 continue
             version = deployment.get("version")
+            if not isinstance(version, str) or not version.strip() or len(version) > 128:
+                version = "Nouvelle version"
+            elif any(ord(character) < 32 or ord(character) == 127 for character in version):
+                version = "Nouvelle version"
+            else:
+                version = version.strip()
             return {
-                "checksum": checksum,
-                "version": version if isinstance(version, str) and version else "Nouvelle version",
+                "checksum": checksum.lower(),
+                "version": version,
             }
     return None
