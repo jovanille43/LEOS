@@ -111,6 +111,21 @@ class HeroicGameImportTests(unittest.TestCase):
         unsupported.write_text("<svg/>", encoding="utf-8")
         self.assertEqual(find_heroic_artwork({"icon": str(unsupported)}), "")
 
+    def test_accepts_utf8_bom_and_rejects_invalid_utf8(self):
+        payload = {
+            "BOM_GAME": {
+                "app_name": "BOM_GAME",
+                "title": "BOM Game",
+            }
+        }
+        encoded = json.dumps(payload).encode("utf-8")
+        self.manifest.write_bytes(b"\\xef\\xbb\\xbf" + encoded)
+        games = load_heroic_games(self.manifest, "legendary")
+        self.assertEqual([game["title"] for game in games], ["BOM Game"])
+
+        self.manifest.write_bytes(b"\\xff\\xfe\\x80")
+        self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
+
     def test_rejects_unsupported_runner_and_corrupt_files(self):
         self.write_manifest({})
         self.assertEqual(load_heroic_games(self.manifest, "other"), [])
