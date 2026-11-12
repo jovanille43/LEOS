@@ -8,6 +8,9 @@ from pathlib import Path
 
 _FILE_CODES_WITHOUT_INPUT = frozenset({"%f", "%F", "%u", "%U"})
 _DEPRECATED_CODES = frozenset({"%d", "%D", "%n", "%N", "%v", "%m"})
+MAX_EXEC_FIELD_LENGTH = 8192
+MAX_EXEC_ARGUMENTS = 128
+MAX_EXEC_ARGUMENT_LENGTH = 4096
 
 
 def parse_desktop_exec(
@@ -25,11 +28,26 @@ def parse_desktop_exec(
     """
     if not isinstance(command, str) or not command.strip():
         return []
+    if len(command) > MAX_EXEC_FIELD_LENGTH or any(
+        (ord(char) < 32 and char != "\\t") or ord(char) == 127
+        for char in command
+    ):
+        raise ValueError("Desktop Exec field contains invalid or excessive data")
+    for metadata in (name, icon, desktop_file):
+        if not isinstance(metadata, str) or len(metadata) > MAX_EXEC_ARGUMENT_LENGTH:
+            raise ValueError("Desktop Exec metadata is invalid or too long")
+        if any(ord(char) < 32 or ord(char) == 127 for char in metadata):
+            raise ValueError("Desktop Exec metadata contains control characters")
 
     try:
         tokens = shlex.split(command, posix=True)
     except ValueError as exc:
         raise ValueError("Invalid desktop Exec quoting") from exc
+
+    if len(tokens) > MAX_EXEC_ARGUMENTS or any(
+        len(token) > MAX_EXEC_ARGUMENT_LENGTH for token in tokens
+    ):
+        raise ValueError("Desktop Exec field contains too many or oversized arguments")
 
     file_code_count = sum(token in _FILE_CODES_WITHOUT_INPUT for token in tokens)
     if file_code_count > 1:
