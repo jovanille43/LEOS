@@ -14,7 +14,7 @@ from typing import Iterator
 from leos_core.paths import state_home as xdg_state_home
 
 MAX_NOTIFICATIONS = 100
-MAX_NOTIFICATION_FILE_BYTES = 512 * 1024
+MAX_NOTIFICATION_FILE_BYTES = 1024 * 1024
 MAX_TITLE = 160
 MAX_BODY = 2000
 
@@ -172,6 +172,8 @@ class NotificationStore:
             raise OSError("Notification history path cannot be a symbolic link")
         payload = json.dumps({"schema_version": 1, "items": self._items},
                              ensure_ascii=False, indent=2) + "\n"
+        if len(payload.encode("utf-8")) > MAX_NOTIFICATION_FILE_BYTES:
+            raise ValueError("Notification history exceeds its storage limit")
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.chmod(self.path.parent, 0o700)
         fd, temporary = tempfile.mkstemp(prefix="notifications.", suffix=".tmp",
