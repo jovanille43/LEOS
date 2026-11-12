@@ -102,6 +102,15 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "dupliqué"):
                 load_catalog(path)
 
+    def test_catalogue_rejects_sources_not_supported_by_the_store(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.json"
+            item = valid_item()
+            item["source"] = "OtherStore"
+            path.write_text(json.dumps([item]), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Source de catalogue"):
+                load_catalog(path)
+
     def test_bundled_flag_must_be_a_real_boolean(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "catalog.json"
