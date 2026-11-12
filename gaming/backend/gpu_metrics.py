@@ -67,13 +67,17 @@ def _nvidia_smi_devices() -> dict[str, dict[str, object]]:
             check=False,
             timeout=2.0,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except (OSError, UnicodeError, subprocess.TimeoutExpired):
         return {}
     if result.returncode != 0:
         return {}
 
     devices: dict[str, dict[str, object]] = {}
-    for row in csv.reader(result.stdout.splitlines()):
+    try:
+        rows = list(csv.reader(result.stdout.splitlines()))
+    except csv.Error:
+        return {}
+    for row in rows:
         if len(row) != 6:
             continue
         pci_address = _normalize_pci_address(row[0])
