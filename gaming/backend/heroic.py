@@ -34,8 +34,8 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
     if runner not in {"legendary", "gog", "nile"}:
         return []
     try:
-        payload = json.loads(installed_file.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        payload = json.loads(installed_file.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return []
 
     if isinstance(payload, dict):
