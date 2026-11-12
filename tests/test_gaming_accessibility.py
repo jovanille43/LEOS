@@ -92,6 +92,10 @@ class GamingAccessibilityTests(unittest.TestCase):
             gamepad_button_legend("custom"),
             "BOUTON DU BAS · VALIDER   BOUTON DROIT · RETOUR",
         )
+        self.assertEqual(
+            gamepad_button_legend([]),
+            "BOUTON DU BAS · VALIDER   BOUTON DROIT · RETOUR",
+        )
 
 
 if __name__ == "__main__":
