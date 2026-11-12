@@ -5,6 +5,7 @@ import unittest
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
     is_trusted_flathub_remote,
+    trusted_flathub_remote_url,
     parse_flatpak_inventory,
 )
 
@@ -60,6 +61,12 @@ class FlatpakInventoryTests(unittest.TestCase):
                 "Name URL\nflathub https://flathub.org/repo/flathub.flatpakrepo\n"
             )
         )
+        self.assertEqual(
+            trusted_flathub_remote_url(
+                "Name URL\nflathub https://dl.flathub.org/repo/\n"
+            ),
+            "https://dl.flathub.org/repo/",
+        )
 
     def test_rejects_untrusted_or_malformed_flathub_urls(self):
         for url in (
@@ -73,6 +80,7 @@ class FlatpakInventoryTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertFalse(is_trusted_flathub_remote(f"flathub {url}"))
         self.assertFalse(is_trusted_flathub_remote(""))
+        self.assertEqual(trusted_flathub_remote_url("flathub https://example.com/repo/"), "")
 
     def test_named_system_installations_are_system_scope(self):
         user, system = parse_flatpak_inventory(
