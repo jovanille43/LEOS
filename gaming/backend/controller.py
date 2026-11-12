@@ -6,7 +6,11 @@ from PySide6.QtCore import QObject, Property, QRunnable, QProcess, QThreadPool, 
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
-from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
+from gaming.backend.gamepad import (
+    GamepadActionMapper,
+    mapper_from_preferences,
+    open_first_available_gamepad,
+)
 from pathlib import Path
 
 from desktop.notification_store import NotificationStore
@@ -258,9 +262,8 @@ class GamingController(QObject):
             self._gamepad_path = ""
 
         if not self._gamepad_path and devices:
-            candidate = devices[0]
-            try:
-                self._gamepad.open(candidate["path"])
+            candidate, error = open_first_available_gamepad(self._gamepad, devices)
+            if candidate is not None:
                 self._gamepad_path = candidate["path"]
                 profile_id = device_profile_id(
                     candidate["name"],
@@ -273,9 +276,11 @@ class GamingController(QObject):
                 preferences = self._controller_profiles.get(profile_id)
                 self._gamepad_mapper = mapper_from_preferences(preferences, candidate)
                 self._set_gamepad_status(f"Manette : {candidate['name']}")
-            except (OSError, ValueError):
-                self._gamepad.close()
-                self._set_gamepad_status("Manette détectée, lecture non autorisée")
+            else:
+                self._set_gamepad_status(
+                    f"Manettes détectées, lecture impossible : {error}"
+                    if error else "Aucune manette accessible"
+                )
         elif not devices:
             self._set_gamepad_status("Manette non détectée · clavier/souris disponibles")
 

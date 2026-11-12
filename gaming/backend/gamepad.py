@@ -50,6 +50,25 @@ def mapper_from_preferences(
     )
 
 
+def open_first_available_gamepad(
+    backend: Any, devices: list[dict[str, Any]]
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Open the first usable controller, skipping inaccessible devices."""
+    last_error: str | None = None
+    for candidate in devices:
+        path = candidate.get("path") if isinstance(candidate, dict) else None
+        if not isinstance(path, str) or not path:
+            continue
+        try:
+            backend.open(path)
+        except (OSError, ValueError) as error:
+            last_error = str(error)
+            backend.close()
+            continue
+        return candidate, None
+    return None, last_error
+
+
 class GamepadActionMapper:
     """Convert button presses and calibrated stick movement into UI actions."""
 

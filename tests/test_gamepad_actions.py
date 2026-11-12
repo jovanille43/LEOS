@@ -6,12 +6,57 @@ from unittest.mock import patch
 from pathlib import Path
 
 from controller_center.profiles import ControllerProfileStore
-from gaming.backend.gamepad import GamepadActionMapper, mapper_from_preferences
+from gaming.backend.gamepad import (
+    GamepadActionMapper,
+    mapper_from_preferences,
+    open_first_available_gamepad,
+)
 
 
 class GamepadActionTests(unittest.TestCase):
     def setUp(self):
         self.mapper = GamepadActionMapper()
+
+
+    def test_gaming_skips_inaccessible_first_controller_and_opens_next(self):
+        class Backend:
+            def __init__(self):
+                self.opened = []
+                self.current = None
+
+            def open(self, path):
+                self.opened.append(path)
+                if path == "/dev/input/event0":
+                    raise PermissionError("permission denied")
+                self.current = path
+
+            def close(self):
+                self.current = None
+
+        backend = Backend()
+        devices = [
+            {"path": "/dev/input/event0", "name": "Locked controller"},
+            {"path": "/dev/input/event1", "name": "Usable controller"},
+        ]
+        selected, error = open_first_available_gamepad(backend, devices)
+        self.assertEqual(selected, devices[1])
+        self.assertIsNone(error)
+        self.assertEqual(backend.opened, ["/dev/input/event0", "/dev/input/event1"])
+        self.assertEqual(backend.current, "/dev/input/event1")
+
+    def test_gaming_reports_last_error_when_no_controller_can_be_opened(self):
+        class Backend:
+            def open(self, _path):
+                raise PermissionError("permission denied")
+
+            def close(self):
+                pass
+
+        selected, error = open_first_available_gamepad(
+            Backend(), [{"path": "/dev/input/event0"}, {"path": "/dev/input/event1"}]
+        )
+        self.assertIsNone(selected)
+        self.assertEqual(error, "permission denied")
 
     def test_standard_buttons(self):
         self.assertEqual(
