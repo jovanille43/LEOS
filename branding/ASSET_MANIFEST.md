@@ -12,14 +12,14 @@ Ce document définit les noms et conditions d'intégration des ressources offici
 
 Les deux emblèmes de mode doivent conserver le lion métallique, les accents cyan et magenta, la typographie et le fond de la référence. Ne pas recadrer les détails distinctifs ni redessiner le lion.
 
-Les interfaces QML chargent les deux fichiers de mode depuis `branding/`. En leur absence, elles doivent conserver un repli typographique LEOS propre, sans substituer un visuel générique.
+Le sélecteur QML charge les deux emblèmes depuis `branding/` avec un chargement asynchrone. En leur absence, les libellés textuels restent visibles ; aucun visuel générique n'est substitué.
 
 ## Animations officielles
 
 | Chemin attendu | Déclenchement |
 | --- | --- |
 | `branding/animations/desktop-intro.mp4` | Entrée dans Desktop Mode |
-| `branding/animations/gaming-intro.mp4` | Chaque entrée dans Gaming Mode |
+| `branding/animations/gaming-intro.mp4` | Chaque entrée dans Gaming Mode |\n| `branding/animations/gaming-roar-reference.mp4` | Référence secondaire uniquement ; non utilisée comme animation principale |
 
 Les vidéos fournies par Jovan sont les références maîtresses. Leur mouvement, leur durée, leur composition et leur identité sonore ne doivent pas être réinterprétés sans demande. Préserver les fichiers originaux ; toute conversion éventuelle doit être une copie optimisée, jamais un remplacement destructif.
 
