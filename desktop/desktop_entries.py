@@ -10,10 +10,14 @@ from leos_core.text import normalize_search_text
 
 
 def desktop_application_dirs() -> tuple[Path, ...]:
-    """Return system application directories followed by the user override directory."""
+    """Return low-to-high priority directories for the menu's last-wins merge.
+
+    XDG_DATA_HOME has highest precedence. XDG_DATA_DIRS is ordered from
+    highest to lowest precedence, so it is reversed for this caller.
+    """
     configured = os.environ.get("XDG_DATA_DIRS", "").strip()
     roots = configured.split(os.pathsep) if configured else ["/usr/local/share", "/usr/share"]
-    directories: list[Path] = []
+    system_dirs: list[Path] = []
     seen: set[Path] = set()
     for root in roots:
         candidate = Path(root.strip()).expanduser()
@@ -21,12 +25,12 @@ def desktop_application_dirs() -> tuple[Path, ...]:
             continue
         application_dir = candidate / "applications"
         if application_dir not in seen:
-            directories.append(application_dir)
+            system_dirs.append(application_dir)
             seen.add(application_dir)
 
     user_dir = xdg_data_home() / "applications"
-    if user_dir not in seen:
-        directories.append(user_dir)
+    directories = [directory for directory in reversed(system_dirs) if directory != user_dir]
+    directories.append(user_dir)
     return tuple(directories)
 
 
