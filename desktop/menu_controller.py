@@ -201,10 +201,7 @@ class ApplicationCatalog(QAbstractListModel):
         if not any(item["desktopId"] == desktop_id for item in self._all):
             return False
         try:
-            if desktop_id in self.favourites.items():
-                self.favourites.unpin(desktop_id)
-            else:
-                self.favourites.pin(desktop_id)
+            self.favourites.toggle(desktop_id)
         except (OSError, ValueError):
             return False
         self._apply_filter()
