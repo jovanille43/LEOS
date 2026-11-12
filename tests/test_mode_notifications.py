@@ -13,7 +13,7 @@ class ModeNotificationTests(unittest.TestCase):
 
         self.assertIn('manager.rememberMode("desktop")', launcher)
         self.assertNotIn('manager.rememberMode("gaming")', launcher)
-        self.assertIn('post_notification("LEOS Desktop Mode"', launcher)
+        self.assertIn('"LEOS Desktop Mode",', launcher)
         self.assertNotIn('post_notification("LEOS Gaming Mode"', launcher)
         self.assertIn('"LEOS Gaming Mode",', gaming)
         self.assertIn('"L\'interface Gaming a démarré."', gaming)
