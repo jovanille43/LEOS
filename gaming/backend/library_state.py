@@ -14,6 +14,21 @@ from leos_core.text import normalize_search_text
 MAX_LIBRARY_STATE_FILE_BYTES = 2 * 1024 * 1024
 
 
+MAX_LIBRARY_TEXT_FILE_BYTES = 1024 * 1024
+
+
+def read_bounded_text(path: Path, max_bytes: int = MAX_LIBRARY_TEXT_FILE_BYTES) -> str | None:
+    """Read a local text metadata file with a strict byte limit."""
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(max_bytes + 1)
+        if len(raw) > max_bytes:
+            return None
+        return raw.decode("utf-8", errors="replace")
+    except OSError:
+        return None
+
+
 def read_bounded_json(path: Path, max_bytes: int = MAX_LIBRARY_STATE_FILE_BYTES) -> Any | None:
     """Read local library state without allowing oversized files into memory."""
     try:
