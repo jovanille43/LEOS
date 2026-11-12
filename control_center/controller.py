@@ -42,7 +42,14 @@ class _HardwareScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        self.signals.completed.emit(collect_hardware_snapshot())
+        try:
+            snapshot = collect_hardware_snapshot()
+        except Exception:
+            # Always emit completion so the controller releases its in-flight
+            # task slot and its normal timer can retry the scan later.
+            self.signals.completed.emit({"_scan_error": "_HardwareScanTask"})
+            return
+        self.signals.completed.emit(snapshot)
 
 
 class _NetworkScanSignals(QObject):
@@ -58,7 +65,14 @@ class _NetworkScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        self.signals.completed.emit(collect_network_snapshot(self.previous, self.elapsed))
+        try:
+            snapshot = collect_network_snapshot(self.previous, self.elapsed)
+        except Exception:
+            # Always emit completion so the controller releases its in-flight
+            # task slot and its normal timer can retry the scan later.
+            self.signals.completed.emit({"_scan_error": "_NetworkScanTask"})
+            return
+        self.signals.completed.emit(snapshot)
 
 
 class _DiagnosticsScanTask(QRunnable):
@@ -68,7 +82,14 @@ class _DiagnosticsScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        self.signals.completed.emit(collect_system_diagnostics())
+        try:
+            snapshot = collect_system_diagnostics()
+        except Exception:
+            # Always emit completion so the controller releases its in-flight
+            # task slot and its normal timer can retry the scan later.
+            self.signals.completed.emit({"_scan_error": "_DiagnosticsScanTask"})
+            return
+        self.signals.completed.emit(snapshot)
 
 
 class _CleanupScanTask(QRunnable):
@@ -78,7 +99,14 @@ class _CleanupScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        self.signals.completed.emit(collect_cleanup_preview())
+        try:
+            snapshot = collect_cleanup_preview()
+        except Exception:
+            # Always emit completion so the controller releases its in-flight
+            # task slot and its normal timer can retry the scan later.
+            self.signals.completed.emit({"_scan_error": "_CleanupScanTask"})
+            return
+        self.signals.completed.emit(snapshot)
 
 
 class ControlCenterController(QObject):
@@ -228,6 +256,8 @@ class ControlCenterController(QObject):
     @Slot(dict)
     def _on_hardware_scan_completed(self, snapshot: dict) -> None:
         self._hardware_task = None
+        if snapshot.get("_scan_error"):
+            return
         if snapshot != self._hardware_snapshot:
             self._hardware_snapshot = snapshot
             self.hardwareChanged.emit()
@@ -255,6 +285,8 @@ class ControlCenterController(QObject):
     @Slot(dict)
     def _on_network_scan_completed(self, snapshot: dict) -> None:
         self._network_task = None
+        if snapshot.get("_scan_error"):
+            return
         counters = snapshot.get("counters", {})
         if isinstance(counters, dict):
             self._network_previous_counters = {
@@ -283,6 +315,8 @@ class ControlCenterController(QObject):
     @Slot(dict)
     def _on_cleanup_preview_completed(self, snapshot: dict) -> None:
         self._cleanup_task = None
+        if snapshot.get("_scan_error"):
+            return
         if snapshot != self._cleanup_snapshot:
             self._cleanup_snapshot = snapshot
             self.cleanupChanged.emit()
@@ -304,6 +338,8 @@ class ControlCenterController(QObject):
     @Slot(dict)
     def _on_diagnostics_completed(self, snapshot: dict) -> None:
         self._diagnostics_task = None
+        if snapshot.get("_scan_error"):
+            return
         if snapshot != self._diagnostics_snapshot:
             self._diagnostics_snapshot = snapshot
             self.diagnosticsChanged.emit()
