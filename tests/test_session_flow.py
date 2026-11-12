@@ -31,6 +31,8 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("gaming-intro.mp4", qml)
         self.assertIn("desktop-intro.mp4", qml)
         self.assertIn("MediaPlayer.EndOfMedia", qml)
+        self.assertIn("MediaPlayer.InvalidMedia", qml)
+        self.assertIn("MediaPlayer.InvalidMedia", qml)
         self.assertIn("onErrorOccurred", qml)
         self.assertIn("interval: 9000", qml)
         self.assertIn("introAudioOutput.muted = !modeSelectorController.soundsEnabled", qml)
