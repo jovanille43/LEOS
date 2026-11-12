@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home
+from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
@@ -48,7 +49,10 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
             raise ValueError("LEOS settings file changed during reading")
     finally:
         os.close(descriptor)
-    loaded = json.loads(raw.decode("utf-8"))
+    text = raw.decode("utf-8")
+    if not json_nesting_within_limit(text):
+        raise ValueError("LEOS settings JSON nesting is excessive or malformed")
+    loaded = json.loads(text)
     if not isinstance(loaded, dict):
         raise ValueError("LEOS settings file has an invalid format")
     return loaded
