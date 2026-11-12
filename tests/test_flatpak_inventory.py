@@ -52,12 +52,12 @@ class FlatpakInventoryTests(unittest.TestCase):
     def test_accepts_canonical_flathub_repository_urls(self):
         self.assertTrue(
             is_trusted_flathub_remote(
-                "Name URL\\nflathub https://dl.flathub.org/repo/\\n"
+                "Name URL\nflathub https://dl.flathub.org/repo/\n"
             )
         )
         self.assertTrue(
             is_trusted_flathub_remote(
-                "Name URL\\nflathub https://flathub.org/repo/flathub.flatpakrepo\\n"
+                "Name URL\nflathub https://flathub.org/repo/flathub.flatpakrepo\n"
             )
         )
 
