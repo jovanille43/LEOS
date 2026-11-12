@@ -65,10 +65,8 @@ def main() -> int:
             except OSError as error:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
-        manager.rememberMode(mode)
-        if mode == "gaming":
-            post_notification("LEOS Gaming Mode", "La session Gaming a été lancée.", "success", native=False)
-        else:
+        if mode == "desktop":
+            manager.rememberMode("desktop")
             post_notification("LEOS Desktop Mode", "Le bureau KDE est sélectionné.", "success")
         app.quit()
 
