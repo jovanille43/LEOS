@@ -25,7 +25,7 @@ class HardwareInventoryTests(unittest.TestCase):
     def test_snapshot_exposes_all_dashboard_fields(self):
         snapshot = hardware.collect_hardware_snapshot()
         expected = {
-            "cpu", "cpuThreads", "cpuCores", "memory", "storage", "gpu", "vulkan",
+            "cpu", "cpuThreads", "cpuCores", "memory", "storage", "gpu", "displayCount", "displays", "vulkan",
             "memoryTotal", "architecture", "firmware", "gamingBaseline",
             "operatingSystem", "kernel", "bluetooth", "bluetoothDevices",
             "audioServer", "audioOutput", "audioInputs", "controllers", "battery",
@@ -335,6 +335,58 @@ class HardwareInventoryTests(unittest.TestCase):
                 "0000:00:02.0": "Intel Corporation UHD Graphics 770",
             },
         )
+
+    def test_display_inventory_lists_connected_outputs_and_available_modes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name, status, enabled, modes in [
+                ("card0-eDP-1", "connected", "enabled", "1920x1080\\n2560x1440\\n"),
+                ("card1-DP-1", "connected", "disabled", "3840x2160\\n1920x1080\\n"),
+                ("card1-HDMI-A-1", "disconnected", "disabled", ""),
+            ]:
+                connector = root / name
+                connector.mkdir()
+                (connector / "status").write_text(status, encoding="ascii")
+                (connector / "enabled").write_text(enabled, encoding="ascii")
+                (connector / "modes").write_text(modes, encoding="ascii")
+
+            self.assertEqual(
+                hardware._display_details(root),
+                (
+                    "2",
+                    "eDP-1 · actif · modes disponibles : 1920x1080, 2560x1440 | "
+                    "DP-1 · connecté, non activé · modes disponibles : 3840x2160, 1920x1080",
+                ),
+            )
+
+    def test_display_inventory_reports_no_connected_screens_without_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            connector = root / "card0-HDMI-A-1"
+            connector.mkdir()
+            (connector / "status").write_text("disconnected", encoding="ascii")
+            self.assertEqual(
+                hardware._display_details(root),
+                ("0", "Aucun écran connecté détecté par DRM"),
+            )
+
+    def test_display_inventory_reports_unknown_when_drm_has_no_connectors(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            self.assertEqual(
+                hardware._display_details(Path(temporary)),
+                ("Non vérifiable", "Aucun connecteur d'écran exposé par DRM"),
+            )
+
+    def test_display_inventory_keeps_connected_screen_when_modes_are_unavailable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            connector = root / "card0-DP-1"
+            connector.mkdir()
+            (connector / "status").write_text("connected", encoding="ascii")
+            self.assertEqual(
+                hardware._display_details(root),
+                ("1", "DP-1 · connecté · modes non exposés"),
+            )
 
     def test_bluetooth_reports_inactive_service_without_claiming_devices(self):
         with patch.object(hardware, "_run", return_value="inactive"):
