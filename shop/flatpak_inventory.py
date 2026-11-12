@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import urlsplit
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -41,3 +42,32 @@ def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
         else:
             system_apps.add(app_id)
     return user_apps, system_apps
+
+
+
+def is_trusted_flathub_remote(output: str) -> bool:
+    """Accept only a Flathub remote with a canonical HTTPS repository URL."""
+    for line in output.splitlines():
+        columns = line.split()
+        if len(columns) < 2 or columns[0].casefold() != "flathub":
+            continue
+        try:
+            parsed = urlsplit(columns[1])
+            host = (parsed.hostname or "").casefold()
+            valid_host = host in {"dl.flathub.org", "flathub.org"}
+            valid_path = parsed.path.rstrip("/") in {"/repo", "/repo/flathub.flatpakrepo"}
+            no_credentials = parsed.username is None and parsed.password is None
+            no_port = parsed.port is None
+            if (
+                parsed.scheme == "https"
+                and valid_host
+                and valid_path
+                and no_credentials
+                and no_port
+                and not parsed.query
+                and not parsed.fragment
+            ):
+                return True
+        except ValueError:
+            continue
+    return False
