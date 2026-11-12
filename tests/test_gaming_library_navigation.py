@@ -72,6 +72,18 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("chr(0) not in part", source)
 
+    def test_manual_game_fields_match_backend_input_limits(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        backend = (root / "gaming/backend/library_state.py").read_text(encoding="utf-8")
+        dialog_start = qml.index("id: addDialog")
+        dialog_end = qml.index("onAccepted:", dialog_start)
+        dialog = qml[dialog_start:dialog_end]
+        self.assertIn("maximumLength: 256", dialog)
+        self.assertIn("maximumLength: 8192", dialog)
+        self.assertIn("MAX_MANUAL_TITLE_LENGTH = 256", backend)
+        self.assertIn("MAX_MANUAL_COMMAND_LENGTH = 8192", backend)
+
     def test_gamepad_can_accept_the_manual_add_dialog(self):
         self.assertIn("if (addDialog.visible)", self.qml)
         self.assertIn("addDialog.accept()", self.qml)
