@@ -32,14 +32,22 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos ont été déplacées dans `branding/animations/` et renommées sans réencodage effectué par cette opération Git.
 
-| Ressource | Taille GitHub | Vidéo / audio | Résolution | Durée |
-| --- | ---: | --- | ---: | ---: |
-| `desktop-logo.jpeg` | 67 277 octets | — | 1376 × 768 | — |
-| `gaming-logo.jpeg` | 73 084 octets | — | 1376 × 768 | — |
-| `reference-comparison.jpeg` | 105 202 octets | — | 1379 × 752 | — |
-| `animations/desktop-intro.mov` | 2 934 309 octets | H.264 / AAC | 1112 × 834 | 5,354 s |
-| `animations/gaming-intro.mp4` | 2 115 657 octets | H.264 / AAC | 1112 × 828 | 6,048 s |
-| `animations/gaming-roar-reference.mp4` | 2 763 575 octets | H.264 / AAC | 1112 × 834 | 6,080 s |
+| Ressource | Taille GitHub |
+| --- | ---: |
+| `desktop-logo.jpeg` | 67 277 octets |
+| `gaming-logo.jpeg` | 73 084 octets |
+| `reference-comparison.jpeg` | 105 202 octets |
+| `animations/desktop-intro.mov` | 2 934 309 octets |
+| `animations/gaming-intro.mp4` | 2 115 657 octets |
+| `animations/gaming-roar-reference.mp4` | 2 763 575 octets |
+
+Métadonnées relevées par CI pour les vidéos :
+
+| Vidéo | Codec vidéo / audio | Résolution | Durée |
+| --- | --- | ---: | ---: |
+| `desktop-intro.mov` | H.264 / AAC | 1112 × 834 | 5,354 s |
+| `gaming-intro.mp4` | H.264 / AAC | 1112 × 828 | 6,048 s |
+| `gaming-roar-reference.mp4` | H.264 / AAC | 1112 × 834 | 6,080 s |
 
 **Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
 
