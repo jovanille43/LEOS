@@ -140,6 +140,14 @@ et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting
 
 
 
+## Fonds d'écran LEOS
+
+Le Centre de contrôle affiche les aperçus des deux SVG 4K :
+- `/usr/share/leos/branding/wallpapers/desktop-leos.svg`
+- `/usr/share/leos/branding/wallpapers/gaming-leos.svg`
+
+Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper`. L'utilisateur choisit le SVG dans `/usr/share/leos/branding/wallpapers/` puis valide dans KDE. LEOS ne change pas le papier peint sans cette action explicite. Le rendu des SVG avec JPEG liés en chemin relatif reste à confirmer sur une session Bazzite réelle.
+
 ## Schémas de couleurs KDE
 
 Le module `desktop/kde_colors.py` convertit les cinq palettes LEOS en schémas
