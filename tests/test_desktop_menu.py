@@ -25,6 +25,23 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("MAX_DESKTOP_ENTRY_BYTES = 256 * 1024", entries)
         self.assertIn("stream.read(max_bytes + 1)", entries)
 
+    def test_menu_catalog_scans_desktop_entries_asynchronously(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("class _ApplicationScanTask(QRunnable)", source)
+        self.assertIn("QThreadPool.globalInstance().start(task)", source)
+        self.assertIn("def _on_scan_completed(self, snapshot)", source)
+        refresh = source[source.index("def refresh(self):"):source.index("def _on_scan_completed")]
+        self.assertNotIn("desktop_entry_paths(APP_DIRS)", refresh)
+        self.assertIn("applicationCatalog.loading", qml)
+        self.assertIn("Chargement des applications…", qml)
+
+    def test_menu_catalog_coalesces_refreshes_while_a_scan_is_running(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        self.assertIn("self._refresh_pending = True", source)
+        self.assertIn("if self._refresh_pending:", source)
+        self.assertIn("self._refresh_pending = False", source)
+
     def test_menu_entry_is_packaged_as_a_desktop_application(self):
         entry = (ROOT / "desktop/applications/leos-menu.desktop").read_text(encoding="utf-8")
         self.assertIn("Name=LEOS — Applications", entry)
