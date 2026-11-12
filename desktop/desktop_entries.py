@@ -36,24 +36,29 @@ def desktop_application_dirs() -> tuple[Path, ...]:
 
 
 
-def desktop_entry_paths(directories: tuple[Path, ...]) -> tuple[Path, ...]:
-    """Select one Desktop Entry per ID, letting later (higher-priority) dirs win.
+def desktop_entry_paths(
+    directories: tuple[Path, ...],
+) -> tuple[tuple[str, Path], ...]:
+    """Select the highest-priority path for each freedesktop application ID.
 
-    Select paths before parsing them: a user-level Hidden=true entry must mask
-    a system-level entry with the same desktop-file ID rather than exposing the
-    lower-priority application as a fallback.
+    Nested files use the freedesktop rule that converts path separators to
+    hyphens. Select winners before parsing so Hidden=true overrides suppress
+    lower-priority entries instead of revealing them as a fallback.
     """
-    preferred: dict[str, Path] = {}
+    preferred: dict[str, tuple[str, Path]] = {}
     for directory in directories:
         try:
             if not directory.is_dir():
                 continue
-            entries = sorted(directory.glob("*.desktop"))
+            paths = sorted(directory.rglob("*.desktop"))
         except OSError:
             continue
-        for path in entries:
-            preferred[path.name] = path
+        for path in paths:
+            desktop_id = desktop_file_id(path, directory)
+            if desktop_id:
+                preferred[desktop_id] = (desktop_id, path)
     return tuple(preferred.values())
+
 
 def desktop_file_id(path: Path, applications_dir: Path) -> str:
     """Create the freedesktop desktop-file ID, flattening subdirectory slashes."""
