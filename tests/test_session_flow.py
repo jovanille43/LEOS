@@ -67,6 +67,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('leos.returnToDesktop()', gaming)
         self.assertIn('text: "CONFIRMER LE RETOUR AU DESKTOP"', gaming)
 
+    def test_gaming_mode_is_not_remembered_before_qml_load(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
+        self.assertLess(
+            main.index("if not engine.rootObjects():"),
+            main.index('controller.settings.set("last_mode", "gaming")'),
+        )
+        self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
+
 
 if __name__ == "__main__":
     unittest.main()
