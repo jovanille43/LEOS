@@ -24,8 +24,17 @@ class DefaultAppsSetupTests(unittest.TestCase):
         flatpak.write_text(
             """#!/usr/bin/bash
 printf 'flatpak %s\\n' "$*" >> "$COMMAND_LOG"
+if [[ "$1" == "remotes" ]]; then
+    printf 'Name URL\\n'
+    [[ -f "$REMOTE_FILE" ]] && cat "$REMOTE_FILE"
+    exit 0
+fi
 if [[ "$1" == "info" ]]; then exit 1; fi
-if [[ "$FAIL_REMOTE" == "1" && "$1" == "remote-add" ]]; then exit 1; fi
+if [[ "$1" == "remote-add" ]]; then
+    [[ "$FAIL_REMOTE" == "1" ]] && exit 1
+    printf 'flathub https://dl.flathub.org/repo/\\n' > "$REMOTE_FILE"
+    exit 0
+fi
 if [[ "$FAIL_INSTALL" == "1" && "$1" == "install" ]]; then exit 1; fi
 exit 0
 """,
@@ -61,6 +70,7 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
             "XDG_STATE_HOME": str(self.home / ".local/state"),
             "PATH": f"{path}:{env.get('PATH', '')}",
             "COMMAND_LOG": str(self.log),
+            "REMOTE_FILE": str(self.root / "remote.txt"),
             "K_DIALOG_ACCEPT": "1" if accept else "0",
             "FAIL_REMOTE": "1" if fail_remote else "0",
             "FAIL_INSTALL": "1" if fail_install else "0",
