@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 import json
+import os
+import tempfile
 import shlex
 from pathlib import Path
 import re
@@ -22,6 +24,48 @@ MAX_MANUAL_ARGUMENT_LENGTH = 2048
 
 
 MAX_LIBRARY_TEXT_FILE_BYTES = 1024 * 1024
+
+
+def write_bounded_json(
+    path: Path,
+    value: Any,
+    max_bytes: int = MAX_LIBRARY_STATE_FILE_BYTES,
+) -> None:
+    """Atomically write private JSON state with symlink and size protections."""
+    if type(max_bytes) is not int or max_bytes < 1:
+        raise ValueError("Invalid JSON state size limit")
+    payload = (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    if len(payload) > max_bytes:
+        raise ValueError("JSON state exceeds its storage limit")
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if path.parent.is_symlink() or path.is_symlink():
+        raise OSError("JSON state path cannot be a symbolic link")
+    os.chmod(path.parent, 0o700)
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{path.stem}.", suffix=".tmp", dir=path.parent
+    )
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+        try:
+            directory_fd = os.open(
+                path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+            )
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        except OSError:
+            pass
+    finally:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
 
 
 def read_bounded_text(path: Path, max_bytes: int = MAX_LIBRARY_TEXT_FILE_BYTES) -> str | None:
