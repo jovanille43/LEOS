@@ -20,6 +20,29 @@ class HardwareInventoryTests(unittest.TestCase):
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
 
+    def test_cpu_details_reads_arm_processor_field_and_online_cpu_list(self):
+        responses = {
+            "/proc/cpuinfo": "processor : 0\\nProcessor : ARMv8 Processor rev 1 (v8l)\\n",
+            "/sys/devices/system/cpu/online": "0-5",
+        }
+        with patch.object(hardware, "_read", side_effect=lambda path: responses.get(str(path), "")):
+            with patch.object(hardware.os, "cpu_count", return_value=99):
+                self.assertEqual(
+                    hardware._cpu_details(),
+                    ("ARMv8 Processor rev 1 (v8l)", "1 thread(s)"),
+                )
+
+    def test_cpu_details_uses_device_tree_model_when_proc_has_no_model(self):
+        responses = {
+            "/proc/cpuinfo": "processor : 0\\nprocessor : 1\\n",
+            "/sys/firmware/devicetree/base/model": "Example ARM Board\\x00",
+        }
+        with patch.object(hardware, "_read", side_effect=lambda path: responses.get(str(path), "")):
+            self.assertEqual(
+                hardware._cpu_details(),
+                ("Example ARM Board", "2 thread(s)"),
+            )
+
     def test_architecture_normalizes_common_x86_and_arm_names(self):
         self.assertEqual(hardware._architecture_details("AMD64"), "x86_64")
         self.assertEqual(hardware._architecture_details("x64"), "x86_64")
