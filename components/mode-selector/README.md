@@ -23,21 +23,19 @@ Le sélecteur réutilise le backend evdev en lecture seule et les profils sauveg
 
 ## Transition
 
-Après sélection d'un autre mode, LEOS doit demander quoi faire des applications ouvertes :
-- conserver les applications en arrière-plan, lorsque l'architecture et les applications le permettent ;
-- fermer proprement les applications avant de poursuivre.
-
-Aucune application ne doit être fermée sans consentement explicite. La conservation en arrière-plan ne doit pas être promise pour les applications qui ne la prennent pas en charge.
+- **Choix Desktop :** l'introduction Desktop est jouée, puis le sélecteur se ferme et laisse apparaître le bureau KDE déjà actif.
+- **Entrée Gaming :** une confirmation explique que les applications ouvertes resteront en arrière-plan. Après validation, l'introduction Gaming est jouée puis l'application plein écran est lancée.
+- **Retour Desktop :** une confirmation est demandée depuis Gaming ; après validation, l'introduction Desktop est jouée puis Gaming se ferme.
+- Aucune application ouverte n'est terminée automatiquement par LEOS.
+- Si la lecture vidéo échoue ou dépasse son délai de sécurité, la transition se termine quand même.
 
 ## Animation et son
 
-- Desktop : animation sobre du lion seul.
-- Gaming : animation officielle du lion qui croque la manette, utilisée à chaque entrée dans Gaming Mode.
-- La signature sonore de transition est synchronisée avec l'animation.
-- Les animations et les sons doivent pouvoir être désactivés individuellement dans les paramètres.
-
-Les fichiers de référence fournis par le projet seront ajoutés dans `branding/` lorsqu'ils seront disponibles dans le dépôt.
-
+- `desktop-intro.mov` accompagne le choix Desktop et le retour depuis Gaming.
+- `gaming-intro.mp4` accompagne chaque entrée dans Gaming Mode ; l'animation du lion avec manette est la référence principale.
+- `gaming-roar-reference.mp4` est conservée comme référence secondaire et n'est pas jouée automatiquement.
+- Les vidéos sont lues par Qt Multimedia avec leurs pistes audio intégrées. Les réglages LEOS permettent de désactiver séparément les animations et les sons.
+- Le délai de sécurité du lecteur évite de bloquer la transition si le décodage ou la lecture ne se termine pas correctement.
 ## Comportement et accessibilité
 
 - À chaque ouverture de session KDE, affichage du sélecteur après authentification. Le dernier mode utilisé est rappelé à l'écran, mais ne démarre pas automatiquement.
@@ -50,8 +48,8 @@ Les fichiers de référence fournis par le projet seront ajoutés dans `branding
 
 Le sélecteur doit déclencher une transition contrôlée vers l'environnement cible. Il ne doit pas être considéré comme une simple fenêtre graphique : le lancement, l'arrêt ou la conservation des sessions dépendra de l'architecture de session KDE et de l'environnement gaming retenu.
 
-Le lancement de Gaming et le retour vers Desktop sont raccordés à la session KDE existante. Les transitions et les applications en arrière-plan doivent encore être testées dans une vraie session Bazzite. Les raccourcis globaux KDE et les animations officielles restent à intégrer.
+Le lancement de Gaming et le retour vers Desktop sont raccordés à la session KDE existante. Les animations officielles et leurs pistes audio sont intégrées au code ; leur lecture effective et le comportement des applications en arrière-plan doivent encore être testés dans une vraie session Bazzite. Les raccourcis globaux KDE restent à intégrer.
 
 ## État
 
-Sélecteur fonctionnel côté code : écran plein écran, horloge/date, rappel du dernier mode, cartes Desktop/Gaming et navigation souris/clavier/manette. Les emblèmes graphiques et médias officiels ne sont pas encore présents dans le dépôt ; les essais en session KDE réelle restent à faire.
+Sélecteur fonctionnel côté code : écran plein écran, horloge/date, rappel du dernier mode, cartes Desktop/Gaming et navigation souris/clavier/manette. Les emblèmes JPEG officiels et les vidéos Desktop/Gaming sont présents dans `branding/` et leurs chemins sont raccordés au code. Les essais de restitution en session KDE réelle restent à faire.
