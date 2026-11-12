@@ -16,6 +16,8 @@ Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/set
 Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une proposition séparée pour Brave, LibreOffice et VLC.
 
 - Une réponse positive autorise l'ajout du dépôt utilisateur Flathub et l'installation des seules applications absentes.
+- Les applications déjà présentes dans l'installation utilisateur ou système sont ignorées.
+- Si une installation échoue, les autres applications sont tout de même traitées. Le parcours reste en attente et pourra être retenté lors d'une prochaine entrée dans Desktop ; les applications déjà installées seront ignorées.
 - Une réponse négative n'ajoute pas Flathub et ne lance aucune installation.
 - La réponse est mémorisée dans `~/.local/state/leos/default-apps-seeded` (ou sous `$XDG_STATE_HOME` si cette variable est définie).
 - La proposition n'est pas lancée pendant Gaming Mode. Elle sera présentée lors d'une prochaine entrée dans Desktop si aucune réponse n'a encore été mémorisée.
@@ -44,6 +46,7 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 - [ ] La proposition d'applications apparaît uniquement après l'entrée dans Desktop.
 - [ ] Choisir Non n'ajoute pas Flathub et ne lance aucun Flatpak.
 - [ ] Choisir Oui installe seulement les applications manquantes après confirmation.
+- [ ] Une erreur sur une application n'empêche pas les autres installations ; le parcours reste réessayable sans doublonner les applications déjà présentes.
 - [ ] Pendant Gaming Mode, aucune fenêtre d'installation facultative ne s'ouvre.
 - [ ] Une réponse déjà mémorisée n'est pas redemandée.
 - [ ] L'absence de `kdialog` n'entraîne aucune installation silencieuse.
