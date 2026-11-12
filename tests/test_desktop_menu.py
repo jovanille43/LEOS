@@ -231,8 +231,11 @@ class DesktopMenuTests(unittest.TestCase):
     def test_catalog_discovers_nested_application_entries_with_desktop_ids(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
-        self.assertIn('directory.rglob("*.desktop")', source)
-        self.assertIn("desktop_file_id(path, directory)", source)
+        entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
+        self.assertIn("desktop_entry_paths(APP_DIRS)", source)
+        self.assertIn("for desktop_id, path in desktop_entry_paths(APP_DIRS):", source)
+        self.assertIn('directory.rglob("*.desktop")', entries)
+        self.assertIn("desktop_file_id(path, directory)", entries)
         self.assertIn('"desktopId": desktop_id or path.name', source)
         self.assertIn('return "-".join(relative.parts)', entries)
 
