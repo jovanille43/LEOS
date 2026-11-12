@@ -30,14 +30,38 @@ def _read(path: str | Path) -> str:
 
 
 def _cpu_details() -> tuple[str, str]:
+    """Identify CPUs on x86 and ARM without assuming /proc has x86 field names."""
     data = _read("/proc/cpuinfo")
     model = ""
+    model_fields = ("model name", "hardware", "processor", "model")
     for line in data.splitlines():
-        if line.lower().startswith(("model name", "hardware")) and ":" in line:
-            model = line.split(":", 1)[1].strip()
-            if model:
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        if key.strip().lower() in model_fields and value.strip():
+            candidate = value.strip().strip("\\x00")
+            if candidate.lower() not in {"0", "unknown", "not specified"}:
+                model = candidate
                 break
-    logical = sum(1 for line in data.splitlines() if line.lower().startswith("processor"))
+
+    if not model:
+        for path in (
+            "/sys/firmware/devicetree/base/model",
+            "/sys/devices/virtual/dmi/id/product_name",
+            "/sys/devices/virtual/dmi/id/board_name",
+        ):
+            candidate = _read(path).replace("\\x00", "").strip()
+            if candidate and candidate.lower() not in {"unknown", "not specified"}:
+                model = candidate
+                break
+
+    logical = sum(
+        1 for line in data.splitlines()
+        if line.lower().startswith("processor") and ":" in line
+    )
+    if not logical:
+        online = _read("/sys/devices/system/cpu/online")
+        logical = len(_parse_cpu_list(online)) if online else 0
     if not logical:
         logical = os.cpu_count() or 0
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
