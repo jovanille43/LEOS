@@ -20,6 +20,29 @@ class SystemDiagnosticsIntegrationTests(unittest.TestCase):
         self.assertIn("controlCenter.openSystemMonitor()", qml)
         self.assertIn("def openSystemMonitor", controller)
 
+    def test_background_scans_always_release_their_controller_task_slot(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        for task in (
+            "_HardwareScanTask",
+            "_NetworkScanTask",
+            "_DiagnosticsScanTask",
+            "_CleanupScanTask",
+        ):
+            start = controller.index(f"class {task}")
+            end = controller.find("\\nclass ", start + 1)
+            block = controller[start:end if end >= 0 else len(controller)]
+            self.assertIn("except Exception:", block)
+            self.assertIn('{"_scan_error":', block)
+        for handler in (
+            "_on_hardware_scan_completed",
+            "_on_network_scan_completed",
+            "_on_diagnostics_completed",
+            "_on_cleanup_preview_completed",
+        ):
+            start = controller.index(f"def {handler}")
+            block = controller[start:start + 500]
+            self.assertIn('snapshot.get("_scan_error")', block)
+
     def test_diagnostics_module_does_not_define_repair_or_restart_actions(self):
         module = (ROOT / "control_center/diagnostics.py").read_text(encoding="utf-8")
         for forbidden in ('["restart"', '["start"', '["stop"', '["repair"', '"rpm-ostree", "upgrade"'):
