@@ -1032,14 +1032,15 @@ ApplicationWindow {
                                 rowSpacing: 12
                                 Repeater {
                                     model: [
-                                        { title: "PROCESSEUR", value: controlCenter.hardwareSnapshot.cpu, detail: controlCenter.hardwareSnapshot.cpuThreads },
+                                        { title: "PROCESSEUR", value: controlCenter.hardwareSnapshot.cpu, detail: controlCenter.hardwareSnapshot.cpuCores + " · " + controlCenter.hardwareSnapshot.cpuThreads },
                                         { title: "ARCHITECTURE", value: controlCenter.hardwareSnapshot.architecture, detail: "Architecture de l'image Bazzite ciblée : x86_64" },
                                         { title: "MICROLOGICIEL", value: controlCenter.hardwareSnapshot.firmware, detail: "Le démarrage UEFI est requis par la base Bazzite" },
                                         { title: "RAM TOTALE", value: controlCenter.hardwareSnapshot.memoryTotal, detail: "Référence Gaming Bazzite : 8 Go minimum" },
-                                        { title: "PRÉCONTRÔLE GAMING", value: controlCenter.hardwareSnapshot.gamingBaseline, detail: "Indication partielle : le GPU, Vulkan, les pilotes et les périphériques nécessitent des tests." },
+                                        { title: "PRÉCONTRÔLE GAMING", value: controlCenter.hardwareSnapshot.gamingBaseline, detail: "Références : 4 cœurs, 8 Go, 50 Go libres et Vulkan 1.3+. Certains critères ne peuvent pas être certifiés automatiquement." },
                                         { title: "MÉMOIRE VIVE", value: controlCenter.hardwareSnapshot.memory, detail: "RAM détectée par Linux" },
                                         { title: "CARTE GRAPHIQUE", value: controlCenter.hardwareSnapshot.gpu, detail: "Contrôleur graphique détecté" },
-                                        { title: "STOCKAGE", value: controlCenter.hardwareSnapshot.storage, detail: "Système de fichiers racine /" },
+                                        { title: "VULKAN", value: controlCenter.hardwareSnapshot.vulkan, detail: "Version exposée par chaque GPU, si le pilote la fournit" },
+                                        { title: "STOCKAGE", value: controlCenter.hardwareSnapshot.storage, detail: "Espace libre sur / ; le type SSD et la destination d'installation ne sont pas vérifiés" },
                                         { title: "SYSTÈME", value: controlCenter.hardwareSnapshot.operatingSystem, detail: "Noyau " + controlCenter.hardwareSnapshot.kernel },
                                         { title: "BLUETOOTH", value: controlCenter.hardwareSnapshot.bluetooth, detail: controlCenter.hardwareSnapshot.bluetoothDevices },
                                         { title: "SERVEUR AUDIO", value: controlCenter.hardwareSnapshot.audioServer, detail: "Sortie : " + controlCenter.hardwareSnapshot.audioOutput },
