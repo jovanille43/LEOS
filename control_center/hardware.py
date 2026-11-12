@@ -454,7 +454,7 @@ def _display_details(
         connectors = sorted(
             path
             for path in drm_root.glob("card*-*")
-            if re.fullmatch(r"card\\d+-.+", path.name)
+            if re.fullmatch(r"card\d+-.+", path.name)
         )
     except OSError:
         connectors = []
@@ -468,7 +468,7 @@ def _display_details(
         if status != "connected":
             continue
 
-        connector_name = re.sub(r"^card\\d+-", "", connector.name)
+        connector_name = re.sub(r"^card\d+-", "", connector.name)
         enabled = _read(connector / "enabled").strip().lower()
         if enabled == "enabled":
             state = "actif"
@@ -481,7 +481,7 @@ def _display_details(
         modes: list[str] = []
         for line in raw_modes.splitlines():
             mode = line.strip()
-            if re.fullmatch(r"\\d{2,5}x\\d{2,5}", mode) and mode not in modes:
+            if re.fullmatch(r"\d{2,5}x\d{2,5}", mode) and mode not in modes:
                 modes.append(mode)
 
         if modes:
@@ -616,6 +616,7 @@ def collect_hardware_snapshot() -> dict[str, str]:
     firmware = _firmware_details()
     memory_total_bytes = _memory_total_bytes()
     vulkan, vulkan_devices = _vulkan_snapshot()
+    display_count, displays = _display_details()
     os_release = _read("/etc/os-release")
     pretty_name = re.search(r'^PRETTY_NAME="?([^"\n]+)', os_release, re.MULTILINE)
     return {
@@ -636,8 +637,8 @@ def collect_hardware_snapshot() -> dict[str, str]:
         ),
         "storage": storage,
         "gpu": _gpu_details(),
-        "displayCount": _display_details()[0],
-        "displays": _display_details()[1],
+        "displayCount": display_count,
+        "displays": displays,
         "vulkan": vulkan,
         "operatingSystem": pretty_name.group(1) if pretty_name else "Linux (distribution non identifiée)",
         "kernel": platform.release() or "Indisponible",
