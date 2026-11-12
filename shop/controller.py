@@ -75,8 +75,8 @@ class StoreController(QObject):
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
         if self._busy:
-            if action == "verify-install":
-                self._set_verification_details("Une autre opération Flatpak est déjà en cours.")
+            if action in {"verify-remote", "verify-install"}:
+                self._set_verification_details("Une autre opération Flatpak est déjà en cours ; la vérification est annulée.")
             self._set_status("Une opération est déjà en cours.")
             return
         executable = shutil.which(program)
@@ -126,7 +126,7 @@ class StoreController(QObject):
             "verify-remote",
             item["id"],
             "flatpak",
-            ["remotes", "--columns=name,url"],
+            ["remotes", "--user", "--columns=name,url"],
         )
 
     @Slot(int)
@@ -251,7 +251,7 @@ class StoreController(QObject):
             failed_action = self._action
             self._set_busy(False)
             if failed_action in {"verify-remote", "verify-install"}:
-                self._set_verification_details("Erreur pendant la lecture des métadonnées Flathub.")
+                self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
