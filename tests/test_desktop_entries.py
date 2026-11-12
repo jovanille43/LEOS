@@ -133,7 +133,7 @@ class DesktopEntriesTests(unittest.TestCase):
             )
 
             selected = desktop_entry_paths((system, user))
-            self.assertEqual(selected, (user_entry,))
+            self.assertEqual(selected, (("example.desktop", user_entry),))
 
     def test_desktop_entry_paths_keep_distinct_ids_and_last_directory_wins(self):
         with tempfile.TemporaryDirectory() as directory:
