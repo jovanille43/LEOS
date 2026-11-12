@@ -162,6 +162,26 @@ class DockFavourites:
             self._write_unlocked()
             return True
 
+
+    def move_by(self, desktop_id: str, offset: int) -> bool:
+        """Move a pinned application by a relative number of positions atomically."""
+        if not _valid_id(desktop_id):
+            raise ValueError("Expected a valid application .desktop ID")
+        if type(offset) is not int or offset == 0:
+            raise ValueError("Invalid relative dock position")
+        with self._exclusive_lock():
+            self._reload_for_update()
+            if desktop_id not in self._items:
+                raise ValueError("Application is not pinned")
+            current = self._items.index(desktop_id)
+            target = current + offset
+            if not 0 <= target < len(self._items):
+                return False
+            self._items.pop(current)
+            self._items.insert(target, desktop_id)
+            self._write_unlocked()
+            return True
+
     def move(self, desktop_id: str, index: int) -> None:
         with self._exclusive_lock():
             self._reload_for_update()
