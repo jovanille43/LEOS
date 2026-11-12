@@ -48,6 +48,22 @@ jobs:
             exit 1
           fi
 
+      - name: Validate Cosign key pair
+        uses: sigstore/cosign-installer@v3
+      - name: Verify private and public signing keys match
+        env:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          chmod 700 "$workdir"
+          printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
+          chmod 600 "$workdir/cosign.key"
+          printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
+          cosign sign-blob --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+          cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+
       - name: Build and publish LEOS
         uses: blue-build/github-action@v1
         with:
