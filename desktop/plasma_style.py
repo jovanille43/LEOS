@@ -13,6 +13,12 @@ from typing import Any, Callable
 STYLE_ID = "leos"
 STYLE_NAME = "LEOS"
 MANAGED_BY = "LEOS Plasma Style Manager"
+from leos_core.paths import (
+    config_home as xdg_config_home,
+    data_home as xdg_data_home,
+    state_home as xdg_state_home,
+)
+
 SCHEMA_VERSION = 1
 
 
@@ -29,13 +35,13 @@ class PlasmaStyleManager:
         runner: Callable[..., Any] | None = None,
     ) -> None:
         self.data_home = data_home or Path(
-            os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
+            xdg_data_home()
         )
         self.config_home = config_home or Path(
-            os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+            xdg_config_home()
         )
         self.state_home = state_home or Path(
-            os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state")
+            xdg_state_home()
         )
         self.system_theme_root = system_theme_root
         self.user_theme_root = self.data_home / "plasma" / "desktoptheme"
