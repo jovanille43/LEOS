@@ -35,6 +35,7 @@ jobs:
               exit 1
             fi
           done
+          sha256sum --check branding/DEPLOYED_SHA256SUMS
 
       - name: Validate wallpaper SVG assets and official emblem links
         run: |
