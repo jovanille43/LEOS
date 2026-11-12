@@ -127,6 +127,20 @@ class BuildWorkflowTests(unittest.TestCase):
             source.index("Check signing prerequisites"),
         )
 
+    def test_manual_image_build_lints_qml_before_signature_and_publish(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("Lint Qt Quick and QML sources", source)
+        self.assertIn("qt6-qtdeclarative-devel qt6-qtmultimedia qt6-qtsvg", source)
+        self.assertIn('qmllint-qt6 "${file}"', source)
+        self.assertLess(
+            source.index("Lint Qt Quick and QML sources"),
+            source.index("Check signing prerequisites"),
+        )
+        self.assertLess(
+            source.index("Lint Qt Quick and QML sources"),
+            source.index("Build and publish LEOS"),
+        )
+
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Check out repository", source)
