@@ -52,7 +52,7 @@ class RecentApplications:
             if len(raw) > MAX_RECENT_FILE_BYTES:
                 raise ValueError("Recent application history is too large")
             payload = json.loads(raw.decode("utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
             raise ValueError("Recent application history is unreadable or too large") from exc
         if (
             not isinstance(payload, list)
