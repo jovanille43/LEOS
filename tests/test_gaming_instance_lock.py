@@ -38,6 +38,46 @@ class GamingInstanceLockTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 acquire_instance_lock("../...", Path(temporary))
 
+    def test_lock_file_is_private_and_release_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "leos"
+            lock = acquire_instance_lock("gaming", directory)
+            self.assertIsNotNone(lock)
+            lock_path = directory / "gaming.lock"
+            self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
+            lock.release()
+            lock.release()
+
+            replacement = acquire_instance_lock("gaming", directory)
+            self.assertIsNotNone(replacement)
+            replacement.release()
+
+    def test_different_application_ids_have_independent_locks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            gaming = acquire_instance_lock("gaming", directory)
+            selector = acquire_instance_lock("selector", directory)
+            self.assertIsNotNone(gaming)
+            self.assertIsNotNone(selector)
+            gaming.release()
+            selector.release()
+
+    def test_symlink_lock_file_is_rejected(self):
+        import os
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            target = directory / "target"
+            target.write_text("do not follow", encoding="utf-8")
+            link = directory / "gaming.lock"
+            try:
+                os.symlink(target, link)
+            except (NotImplementedError, OSError):
+                self.skipTest("Symlinks unavailable in this environment")
+            with self.assertRaises(OSError):
+                acquire_instance_lock("gaming", directory)
+            self.assertEqual(target.read_text(encoding="utf-8"), "do not follow")
+
 
 if __name__ == "__main__":
     unittest.main()
