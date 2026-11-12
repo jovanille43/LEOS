@@ -37,23 +37,30 @@ def _nvidia_smi_metrics() -> dict[str, object] | None:
             continue
         try:
             usage = float(row[1].strip())
-            temperature = float(row[2].strip())
-            memory_used_mb = float(row[3].strip())
-            memory_total_mb = float(row[4].strip())
+            if not 0 <= usage <= 100:
+                usage = -1.0
         except ValueError:
-            continue
-        if not 0 <= usage <= 100:
             usage = -1.0
-        if not 0 < temperature < 150:
+        try:
+            temperature = float(row[2].strip())
+            if not 0 < temperature < 150:
+                temperature = -1.0
+        except ValueError:
             temperature = -1.0
-        if memory_used_mb < 0:
+        try:
+            memory_used_mb = float(row[3].strip())
+            memory_used = (
+                int(memory_used_mb * 1024 * 1024) if memory_used_mb >= 0 else -1
+            )
+        except ValueError:
             memory_used = -1
-        else:
-            memory_used = int(memory_used_mb * 1024 * 1024)
-        if memory_total_mb <= 0:
+        try:
+            memory_total_mb = float(row[4].strip())
+            memory_total = (
+                int(memory_total_mb * 1024 * 1024) if memory_total_mb > 0 else -1
+            )
+        except ValueError:
             memory_total = -1
-        else:
-            memory_total = int(memory_total_mb * 1024 * 1024)
         return {
             "name": name,
             "usage": usage,
