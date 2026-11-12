@@ -1,5 +1,6 @@
 """Structural tests for the LEOS application menu."""
 import unittest
+import tempfile
 from pathlib import Path
 
 
@@ -8,6 +9,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DesktopMenuTests(unittest.TestCase):
+    def test_desktop_entry_reader_rejects_oversized_files(self):
+        from desktop.desktop_entries import read_desktop_entry_text
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oversized.desktop"
+            path.write_bytes(b"[Desktop Entry]\\n" + b"x" * 64)
+            self.assertIsNone(read_desktop_entry_text(path, max_bytes=32))
+            self.assertEqual(read_desktop_entry_text(path.with_name("missing.desktop")), None)
+
+    def test_menu_catalog_uses_bounded_desktop_entry_reader(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
+        self.assertIn("read_desktop_entry_text(path)", source)
+        self.assertIn("MAX_DESKTOP_ENTRY_BYTES = 256 * 1024", entries)
+        self.assertIn("stream.read(max_bytes + 1)", entries)
+
     def test_menu_entry_is_packaged_as_a_desktop_application(self):
         entry = (ROOT / "desktop/applications/leos-menu.desktop").read_text(encoding="utf-8")
         self.assertIn("Name=LEOS — Applications", entry)
