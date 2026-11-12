@@ -384,7 +384,7 @@ ApplicationWindow {
             } else if (selectedIndex >= 0) {
                 launchSelectedGame()
             } else if (gameGrid.count === 0) {
-                emptyStatePrimaryButton.click()
+                window.activateEmptyStatePrimaryAction()
             } else {
                 moveSelection("right")
             }
