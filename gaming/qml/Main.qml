@@ -876,7 +876,7 @@ ApplicationWindow {
                             id: gameGrid
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            cellWidth: Math.max(240, Math.min(300, Math.floor(gameGrid.width / 3)))
+                            cellWidth: Math.max(220, Math.min(300, Math.floor(gameGrid.width / 3)))
                             cellHeight: 190
                             clip: true
                             model: gameLibrary
@@ -994,6 +994,8 @@ ApplicationWindow {
                                         text: gameCard.platform + "  •  " + gameCard.source
                                         color: window.muted
                                         font.pixelSize: window.fontCaption
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
                                     }
                                 }
                             }
@@ -1216,7 +1218,7 @@ ApplicationWindow {
                     font.weight: Font.Bold
                 }
                 Label {
-                    text: leos.gamepadButtonLegend + "   MENU · PANNEAU"
+                    text: leos.gamepadButtonLegend + "   START / MENU · PANNEAU"
                     color: "white"
                     font.pixelSize: window.fontMicro
                     Accessible.role: Accessible.StaticText
@@ -1230,7 +1232,7 @@ ApplicationWindow {
                     font.weight: Font.Bold
                 }
                 Label {
-                    text: "ENTRÉE / ESPACE · VALIDER    ÉCHAP · RETOUR    F1 · PANNEAU"
+                    text: "FLÈCHES · NAVIGUER    ENTRÉE / ESPACE · VALIDER    ÉCHAP · RETOUR    F1 · PANNEAU    F2 · AJOUTER"
                     color: window.muted
                     font.pixelSize: window.fontMicro
                     Accessible.role: Accessible.StaticText
