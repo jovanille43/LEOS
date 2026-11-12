@@ -135,6 +135,8 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
                         Image {
                             source: "../../branding/desktop-logo.jpeg"
+                            asynchronous: true
+                            smooth: true
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 185
@@ -181,6 +183,8 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
                         Image {
                             source: "../../branding/gaming-logo.jpeg"
+                            asynchronous: true
+                            smooth: true
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 185
