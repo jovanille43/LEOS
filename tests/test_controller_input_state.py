@@ -52,6 +52,14 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertIsNone(self.state.consume({"kind": "other", "name": "BTN_SOUTH", "value": 1}))
         self.assertEqual(self.state.pressed_buttons, ())
 
+    def test_controller_center_labels_the_live_held_button_list(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "controller_center/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn('text: "BOUTONS MAINTENUS"', qml)
+        self.assertIn("self.buttons_text = self.input_state.buttons_text", controller)
     def test_disconnect_clears_held_buttons(self):
         self.state.consume({"kind": "button", "name": "BTN_SOUTH", "value": 1})
         self.state.clear()
