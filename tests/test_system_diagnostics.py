@@ -33,8 +33,6 @@ class SystemDiagnosticsTests(unittest.TestCase):
             self.assertEqual(diagnostics._temperature_celsius(), 42.0)
 
     def test_temperature_prefers_labelled_cpu_sensor_over_unrelated_hot_zone(self):
-        hwmon_root = diagnostics.Path("/sys/class/hwmon")
-        thermal_root = diagnostics.Path("/sys/class/thermal")
         hwmon_inputs = [
             diagnostics.Path("/sys/class/hwmon/hwmon0/temp1_input"),
             diagnostics.Path("/sys/class/hwmon/hwmon0/temp2_input"),
@@ -44,10 +42,10 @@ class SystemDiagnosticsTests(unittest.TestCase):
             diagnostics.Path("/sys/class/thermal/thermal_zone1/temp"),
         ]
 
-        def fake_glob(root, pattern):
-            if root == hwmon_root:
+        def fake_glob(pattern):
+            if pattern == "hwmon*/temp*_input":
                 return hwmon_inputs
-            if root == thermal_root:
+            if pattern == "thermal_zone*/temp":
                 return thermal_inputs
             return []
 
