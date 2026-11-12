@@ -58,10 +58,6 @@ modules:
     dest: /usr/libexec/
 
   - type: copy
-    src: packaging/leos-default-apps-setup
-    dest: /usr/libexec/
-
-  - type: copy
     src: leos_core
     dest: /usr/share/leos/
 
