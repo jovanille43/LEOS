@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 from leos_core.paths import state_home as xdg_state_home
+from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_RECENT_FILE_BYTES = 64 * 1024
@@ -51,7 +52,10 @@ class RecentApplications:
                 raw = stream.read(MAX_RECENT_FILE_BYTES + 1)
             if len(raw) > MAX_RECENT_FILE_BYTES:
                 raise ValueError("Recent application history is too large")
-            payload = json.loads(raw.decode("utf-8"))
+            text = raw.decode("utf-8")
+            if not json_nesting_within_limit(text):
+                raise ValueError("Recent application history has excessive JSON nesting")
+            payload = json.loads(text)
         except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
             raise ValueError("Recent application history is unreadable or too large") from exc
         if (
