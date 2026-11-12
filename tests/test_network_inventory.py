@@ -1,12 +1,25 @@
 """Tests for read-only LEOS network inventory."""
 
 import unittest
+import tempfile
 from unittest.mock import patch
 
 from control_center import network
 
 
 class NetworkTests(unittest.TestCase):
+    def test_network_text_reader_rejects_oversized_files(self):
+        with tempfile.NamedTemporaryFile() as stream:
+            stream.write(b"x" * (network.MAX_NETWORK_TEXT_BYTES + 1))
+            stream.flush()
+            self.assertEqual(network._read(stream.name), "")
+
+    def test_network_text_reader_decodes_kernel_files(self):
+        with tempfile.NamedTemporaryFile() as stream:
+            stream.write(b"nameserver 1.1.1.1\\n")
+            stream.flush()
+            self.assertEqual(network._read(stream.name), "nameserver 1.1.1.1\\n")
+
     def test_default_route_is_decoded_from_proc(self):
         route = "Iface Destination Gateway Flags RefCnt Use Metric\nwlan0 00000000 0101A8C0 0003 0 0 0\n"
         with patch.object(network, "_read", return_value=route):
