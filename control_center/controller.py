@@ -387,7 +387,7 @@ class ControlCenterController(QObject):
         if self._deployment_timed_out:
             self._deployment_timed_out = False
             return
-        if exit_code != 0:
+        if _exit_status != QProcess.ExitStatus.NormalExit or exit_code != 0:
             return
         payload = bytes(self._deployment_process.readAllStandardOutput()).decode("utf-8", errors="replace")
         pending = pending_deployment_from_status(payload)
@@ -445,7 +445,11 @@ class ControlCenterController(QObject):
             self._set_system_update_status(message)
             post_notification("Vérification trop longue", message, "warning")
             return
-        result = interpret_update_check_exit_code(exit_code)
+        result = (
+            interpret_update_check_exit_code(exit_code)
+            if _exit_status == QProcess.ExitStatus.NormalExit
+            else "error"
+        )
         if result == "available":
             message = "Une mise à jour système est disponible. Ouvre Bazzite Updater pour la consulter et choisir de l’installer."
             self._set_system_update_status(message)
