@@ -11,7 +11,6 @@ ApplicationWindow {
     visibility: Window.FullScreen
     title: "LEOS Gaming"
     color: "#08090d"
-    focus: true
 
     property color cyan: "#00d9ff"
     property color magenta: "#e33bff"
@@ -271,8 +270,10 @@ ApplicationWindow {
     }
 
     Rectangle {
+        id: gamingContent
         anchors.fill: parent
         color: window.color
+        focus: true
 
         Rectangle {
             width: 620; height: 620; radius: 310
@@ -332,6 +333,7 @@ ApplicationWindow {
                 }
 
                 Button {
+                    id: notificationCenterButton
                     text: leos.unreadNotificationCount > 0
                           ? "NOTIFICATIONS · " + leos.unreadNotificationCount
                           : "NOTIFICATIONS"
@@ -341,11 +343,11 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: parent.down ? "#26313e" : "#171d28"
+                        color: notificationCenterButton.down ? "#26313e" : "#171d28"
                         border.color: "#344052"
                     }
                     contentItem: Label {
-                        text: parent.text
+                        text: notificationCenterButton.text
                         color: "white"
                         font.pixelSize: 11
                         font.weight: Font.DemiBold
@@ -355,15 +357,16 @@ ApplicationWindow {
                 }
 
                 Button {
+                    id: notificationSilenceButton
                     text: leos.silentNotificationsInGaming ? "SILENCE ACTIVÉ" : "ALERTES AUTORISÉES"
                     onClicked: leos.toggleSilentNotifications()
                     background: Rectangle {
                         radius: 10
-                        color: parent.down ? "#26313e" : "#171d28"
+                        color: notificationSilenceButton.down ? "#26313e" : "#171d28"
                         border.color: leos.silentNotificationsInGaming ? window.cyan : "#344052"
                     }
                     contentItem: Label {
-                        text: parent.text
+                        text: notificationSilenceButton.text
                         color: leos.silentNotificationsInGaming ? window.cyan : "white"
                         font.pixelSize: 10
                         font.weight: Font.DemiBold
@@ -373,6 +376,7 @@ ApplicationWindow {
                 }
 
                 Button {
+                    id: quickPanelButton
                     text: "PANNEAU RAPIDE  ☰"
                     onClicked: {
                         quickPanel.visible = !quickPanel.visible
@@ -380,11 +384,11 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: parent.down ? "#26313e" : "#171d28"
+                        color: quickPanelButton.down ? "#26313e" : "#171d28"
                         border.color: "#344052"
                     }
                     contentItem: Label {
-                        text: parent.text
+                        text: quickPanelButton.text
                         color: "white"
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
@@ -416,7 +420,7 @@ ApplicationWindow {
                         Label { text: systemMonitor.gpuName; color: window.muted; font.pixelSize: 9; elide: Text.ElideRight; Layout.maximumWidth: 210 }
                         Label { text: systemMonitor.gpuMemoryTotal > 0 && systemMonitor.gpuMemoryUsed >= 0 ? "VRAM  " + Math.round(systemMonitor.gpuMemoryUsed / 1048576) + " / " + Math.round(systemMonitor.gpuMemoryTotal / 1048576) + " Mo" : "VRAM  —"; color: window.muted; font.pixelSize: 10 }
                     }
-                    Rectangle { width: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
                         Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
@@ -956,7 +960,40 @@ ApplicationWindow {
                 }
             }
         }
+        Keys.onPressed: function(event) {
+            if (window.returningToDesktop) {
+                event.accepted = true
+                return
+            }
+            if (event.key === Qt.Key_Left) {
+                window.navigateDirection("left")
+                event.accepted = true
+            } else if (event.key === Qt.Key_Right) {
+                window.navigateDirection("right")
+                event.accepted = true
+            } else if (event.key === Qt.Key_Up) {
+                window.navigateDirection("up")
+                event.accepted = true
+            } else if (event.key === Qt.Key_Down) {
+                window.navigateDirection("down")
+                event.accepted = true
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
+                       event.key === Qt.Key_Space) {
+                window.handleGamepadAction("confirm")
+                event.accepted = true
+            } else if (event.key === Qt.Key_F1) {
+                window.handleGamepadAction("menu")
+                event.accepted = true
+            } else if (event.key === Qt.Key_F2) {
+                addDialog.open()
+                event.accepted = true
+            } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
+                window.handleGamepadAction("back")
+                event.accepted = true
+            }
+        }
     }
+
 
     MediaPlayer {
         id: desktopIntroPlayer
@@ -1016,6 +1053,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Button {
+                id: returnToDesktopButton
                 text: "CONFIRMER LE RETOUR AU DESKTOP"
                 Layout.fillWidth: true
                 onClicked: {
@@ -1024,7 +1062,7 @@ ApplicationWindow {
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
-                    text: parent.text
+                    text: returnToDesktopButton.text
                     color: "white"
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
@@ -1131,36 +1169,4 @@ ApplicationWindow {
         }
     }
 
-    Keys.onPressed: function(event) {
-        if (window.returningToDesktop) {
-            event.accepted = true
-            return
-        }
-        if (event.key === Qt.Key_Left) {
-            window.navigateDirection("left")
-            event.accepted = true
-        } else if (event.key === Qt.Key_Right) {
-            window.navigateDirection("right")
-            event.accepted = true
-        } else if (event.key === Qt.Key_Up) {
-            window.navigateDirection("up")
-            event.accepted = true
-        } else if (event.key === Qt.Key_Down) {
-            window.navigateDirection("down")
-            event.accepted = true
-        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
-                   event.key === Qt.Key_Space) {
-            window.handleGamepadAction("confirm")
-            event.accepted = true
-        } else if (event.key === Qt.Key_F1) {
-            window.handleGamepadAction("menu")
-            event.accepted = true
-        } else if (event.key === Qt.Key_F2) {
-            addDialog.open()
-            event.accepted = true
-        } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
-            window.handleGamepadAction("back")
-            event.accepted = true
-        }
-    }
 }
