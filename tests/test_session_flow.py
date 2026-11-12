@@ -39,6 +39,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("window.requestModeWithIntro(\"gaming\")", qml)
         self.assertIn("window.requestModeWithIntro(\"desktop\")", qml)
 
+    def test_selector_ignores_keyboard_input_during_mode_intro(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        start = qml.index("Keys.onPressed: function(event)")
+        end = qml.index("\n    }", start)
+        handler = qml[start:end]
+        self.assertIn("if (window.transitionInProgress)", handler)
+        self.assertIn("event.accepted = true", handler)
+        self.assertLess(
+            handler.index("if (window.transitionInProgress)"),
+            handler.index("if (event.key === Qt.Key_G)"),
+        )
+
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
