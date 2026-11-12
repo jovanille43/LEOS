@@ -86,8 +86,8 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("readyReadStandardOutput.connect(self._read_output)", source)
         self.assertIn("readyReadStandardError.connect(self._read_output)", source)
-        self.assertIn("self._stdout.extend(self._process.readAllStandardOutput().data())", source)
-        self.assertIn("self._stderr.extend(self._process.readAllStandardError().data())", source)
+        self.assertIn("self._append_output(self._stdout, self._process.readAllStandardOutput().data())", source)
+        self.assertIn("self._append_output(self._stderr, self._process.readAllStandardError().data())", source)
 
     def test_store_search_normalizes_accents_spaces_and_searches_metadata(self):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
