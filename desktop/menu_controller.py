@@ -9,7 +9,7 @@ from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Pr
 
 from desktop.desktop_entries import (
     desktop_application_dirs, desktop_entry_is_visible, desktop_entry_paths,
-    filter_desktop_applications, localized_desktop_value,
+    filter_desktop_applications, localized_desktop_value, read_desktop_entry_text,
 )
 from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_directory
 from desktop.dock_favourites import DockFavourites
@@ -81,10 +81,10 @@ class ApplicationCatalog(QAbstractListModel):
     def _read_entry(path: Path, desktop_id: str | None = None) -> dict[str, str] | None:
         values: dict[str, str] = {}
         in_entry = False
-        try:
-            lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-        except OSError:
+        content = read_desktop_entry_text(path)
+        if content is None:
             return None
+        lines = content.splitlines()
         for line in lines:
             line = line.strip()
             if line == "[Desktop Entry]":
