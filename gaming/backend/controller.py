@@ -336,6 +336,21 @@ class GamingController(QObject):
 
     @Slot()
     def returnToDesktop(self) -> None:
-        self.settings.set("last_mode", "desktop")
-        post_notification("Retour à Desktop Mode", "Retour vers le bureau KDE demandé.", "info", native=False)
-        self.desktopRequested.emit()
+        try:
+            self.settings.set("last_mode", "desktop")
+        except (OSError, ValueError, TypeError, KeyError):
+            message = (
+                "Retour vers le bureau KDE demandé. "
+                "Le choix de démarrage n'a pas pu être mémorisé."
+            )
+            level = "warning"
+        else:
+            message = "Retour vers le bureau KDE demandé."
+            level = "info"
+
+        try:
+            post_notification("Retour à Desktop Mode", message, level, native=False)
+        finally:
+            # Returning to KDE is the requested action; neither a preference
+            # write nor best-effort notification storage may block it.
+            self.desktopRequested.emit()

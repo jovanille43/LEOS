@@ -43,6 +43,16 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertIn("startup_priority = \"warning\"", gaming)
         self.assertIn("controller.monitor.start()", gaming)
 
+
+    def test_gaming_return_to_desktop_is_not_blocked_by_settings_write_failure(self):
+        source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        handler = source[source.index("    def returnToDesktop(self)") :]
+        self.assertIn("except (OSError, ValueError, TypeError, KeyError)", handler)
+        self.assertIn('level = "warning"', handler)
+        self.assertIn("finally:", handler)
+        self.assertIn("self.desktopRequested.emit()", handler)
+        self.assertLess(handler.index("finally:"), handler.index("self.desktopRequested.emit()"))
+
     def test_mode_manager_rejects_non_string_and_unknown_mode_values(self):
         manager = (ROOT / "launcher/mode_manager.py").read_text(encoding="utf-8")
         self.assertIn('if not isinstance(mode, str) or mode not in {"desktop", "gaming"}:', manager)
