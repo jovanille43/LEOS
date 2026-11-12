@@ -52,7 +52,7 @@ class BuildWorkflowTests(unittest.TestCase):
     def test_branding_readme_does_not_require_nonexistent_separate_audio_files(self):
         readme = (ROOT / "branding/README.md").read_text(encoding="utf-8")
         self.assertIn("pistes AAC des vidéos MP4", readme)
-        self.assertNotIn("`sounds/`", readme)
+        self.assertIn("aucun dossier `sounds/` séparé", readme)
 
     def test_private_cosign_key_is_ignored_but_public_key_is_trackable(self):
         source = (ROOT / ".gitignore").read_text(encoding="utf-8")
