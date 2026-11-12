@@ -218,6 +218,7 @@ ApplicationWindow {
         }
         if (action === "menu") {
             quickPanel.visible = !quickPanel.visible
+            quickPanelFocusIndex = 0
             return
         }
         if (quickPanel.visible) {
