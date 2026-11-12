@@ -40,7 +40,7 @@ class ControllerCenterController(QObject):
             if backend_available()
             else "Module evdev indisponible. La détection sera activée après son installation."
         )
-        self.buttons_text = "Aucun bouton détecté pour le moment."
+        self.buttons_text = "Aucun bouton maintenu."
         self.axes_text = "Aucun axe détecté pour le moment."
         self._profile = "auto"
         self._deadzone = 8
