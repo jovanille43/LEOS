@@ -19,7 +19,7 @@ from PySide6.QtCore import QProcess
 
 from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
-    duplicate_title_metadata, upsert_manual_game,
+    duplicate_title_metadata, upsert_manual_game, read_bounded_json,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -227,24 +227,21 @@ class GameLibraryModel(QAbstractListModel):
         )
 
     def _load_manual_games(self) -> list[dict[str, Any]]:
-        try:
-            raw = json.loads(self._manual_file.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return []
+        raw = read_bounded_json(self._manual_file)
         if not isinstance(raw, list):
             return []
         valid: list[dict[str, Any]] = []
-        for item in raw:
+        for item in raw[:5000]:
             if not isinstance(item, dict):
                 continue
             title = item.get("title")
             launch = item.get("launch")
             if (
                 isinstance(title, str)
-                and title.strip()
+                and 0 < len(title.strip()) <= 256
                 and isinstance(launch, list)
-                and launch
-                and all(isinstance(part, str) for part in launch)
+                and 0 < len(launch) <= 32
+                and all(isinstance(part, str) and len(part) <= 2048 for part in launch)
             ):
                 valid.append({
                     "id": str(item.get("id", f"manual:{title}")),
@@ -258,15 +255,12 @@ class GameLibraryModel(QAbstractListModel):
 
     @staticmethod
     def _read_id_list(path: Path) -> list[str]:
-        try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return []
+        raw = read_bounded_json(path)
         if not isinstance(raw, list):
             return []
         return list(dict.fromkeys(
-            item.strip() for item in raw
-            if isinstance(item, str) and item.strip()
+            item.strip() for item in raw[:5000]
+            if isinstance(item, str) and 0 < len(item.strip()) <= 512
         ))
 
     @staticmethod
