@@ -2,6 +2,23 @@
 
 Cette checklist est destinée au premier démarrage d'une image LEOS sur un **PC de test**. Elle complète les tests Python et la validation BlueBuild ; elle ne doit pas être considérée comme exécutée tant que les contrôles n'ont pas été réalisés sur le matériel.
 
+## Matrice de compatibilité à couvrir
+
+La cible est la famille des PC modernes compatibles avec Bazzite, pas un assemblage matériel unique. Réaliser les validations sur plusieurs familles avant d'annoncer une compatibilité générale :
+
+| Famille | Configuration à tester | Point de vigilance |
+| --- | --- | --- |
+| Intel intégré | iGPU Intel récent | Accélération, vidéo, multi-écran |
+| AMD intégré | APU Ryzen avec Radeon intégrée | Accélération, veille et sorties vidéo |
+| AMD dédié | Radeon RX | Pilote, VRAM, jeux et télémétrie |
+| NVIDIA dédié | GeForce avec image/variante Bazzite adaptée | Pilote propriétaire, Secure Boot selon configuration |
+| Portable hybride | iGPU + GPU dédié | Sélection GPU, consommation, veille |
+| PC bureautique | GPU intégré, RAM et stockage modestes mais conformes aux prérequis Bazzite | Desktop fluide, absence de GPU dédié |
+| Multi-écran | Résolutions et fréquences différentes | Mise à l'échelle, orientation et réveil |
+| Périphériques | Wi-Fi, Bluetooth, audio USB/Bluetooth, manettes USB/Bluetooth | Détection et reconnexion |
+
+Ne pas transformer ce tableau en liste de matériels minimaux imposés. Les prérequis d'installation et de pilotes restent ceux de la version Bazzite utilisée. Le projet doit détecter les fonctions indisponibles et préserver un mode Desktop utilisable.
+
 ## 1. Préparer un environnement sûr
 
 - [ ] Utiliser un PC de test ou un disque de test, pas l'installation principale.
