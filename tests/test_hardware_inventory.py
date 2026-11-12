@@ -340,8 +340,8 @@ class HardwareInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             for name, status, enabled, modes in [
-                ("card0-eDP-1", "connected", "enabled", "1920x1080\\n2560x1440\\n"),
-                ("card1-DP-1", "connected", "disabled", "3840x2160\\n1920x1080\\n"),
+                ("card0-eDP-1", "connected", "enabled", "1920x1080\n2560x1440\n"),
+                ("card1-DP-1", "connected", "disabled", "3840x2160\n1920x1080\n"),
                 ("card1-HDMI-A-1", "disconnected", "disabled", ""),
             ]:
                 connector = root / name
