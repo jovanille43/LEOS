@@ -33,7 +33,7 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 
 ## Lisibilité et accessibilité de Gaming
 
-L'interface utilise une échelle typographique commune (texte courant 16 px, texte secondaire 13 px, microcopie 12 px et titres 25–29 px). Qt Quick interprète ces tailles comme des pixels indépendants de la densité et applique la mise à l'échelle haute densité du système ; LEOS ne multiplie pas ces valeurs manuellement par le facteur DPI.
+L'interface utilise une échelle typographique commune (texte courant 17 px, légendes 15 px, microcopie 14 px et titres 26–30 px). Qt Quick interprète ces tailles comme des pixels indépendants de la densité et applique la mise à l'échelle haute densité du système ; LEOS ne multiplie pas ces valeurs manuellement par le facteur DPI.
 
 La bibliothèque expose une liste accessible, des cartes de jeu nommées avec leur plateforme/source et leur état de sélection, un champ de recherche éditable, le panneau rapide et la fiche du jeu. Les messages d'état et les états vides sont également exposés comme texte accessible. Les boutons des contrôles Qt Quick conservent leurs comportements clavier natifs ; les cartes personnalisées de la bibliothèque déclarent explicitement leur rôle et leur nom.
 
