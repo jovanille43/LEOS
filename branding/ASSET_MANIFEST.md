@@ -37,6 +37,10 @@ Le sélecteur et Gaming utilisent Qt Multimedia. Les pistes audio des vidéos so
 
 La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/share/leos/branding/`. Depuis les QML installés sous `/usr/share/leos/launcher/qml/` et `/usr/share/leos/gaming/qml/`, les chemins relatifs `../../branding/` résolvent vers ce dossier.
 
+## Intégrité des fichiers déployés
+
+Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des huit ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+
 ## État des fichiers présents sur GitHub
 
 Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos ont été déplacées dans `branding/animations/` et renommées sans réencodage effectué par cette opération Git.
