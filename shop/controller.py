@@ -21,6 +21,9 @@ from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
 
 
+MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024
+
+
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
 
 
@@ -47,6 +50,7 @@ class StoreController(QObject):
         self._verified_source_url = ""
         self._stdout = bytearray()
         self._stderr = bytearray()
+        self._output_overflowed = False
 
     @Property(str, notify=statusChanged)
     def status(self) -> str:
@@ -91,6 +95,7 @@ class StoreController(QObject):
         self._action, self._target = action, target
         self._stdout.clear()
         self._stderr.clear()
+        self._output_overflowed = False
         # QProcess reports startup failures through errorOccurred. Do not
         # block the GUI thread while Flatpak initializes.
         self._set_busy(True)
@@ -169,14 +174,25 @@ class StoreController(QObject):
         self.refreshInstalled()
 
     def _on_finished(self, exit_code: int, _exit_status) -> None:
-        stdout = bytes(self._stdout + self._process.readAllStandardOutput().data()).decode(
-            "utf-8", errors="replace"
-        )
-        stderr = bytes(self._stderr + self._process.readAllStandardError().data()).decode(
-            "utf-8", errors="replace"
-        )
+        # FailedToStart and some runtime errors can be followed by a finished
+        # signal. The error handler already released this operation.
+        if not self._busy:
+            return
+        self._append_output(self._stdout, self._process.readAllStandardOutput().data())
+        self._append_output(self._stderr, self._process.readAllStandardError().data())
+        stdout = bytes(self._stdout).decode("utf-8", errors="replace")
+        stderr = bytes(self._stderr).decode("utf-8", errors="replace")
         action, target = self._action, self._target
         self._set_busy(False)
+
+        if self._output_overflowed:
+            self._action = ""
+            self._target = ""
+            self._verified_source_url = ""
+            self._set_status("Flatpak a produit trop de données ; l'opération a été interrompue.")
+            self.operationFinished.emit(False, self._status)
+            post_notification("Sortie Flatpak trop volumineuse", self._status, "warning")
+            return
 
         if action == "list":
             if exit_code != 0:
@@ -278,12 +294,22 @@ class StoreController(QObject):
         if self._busy:
             failed_action = self._action
             self._set_busy(False)
+            self._action = ""
+            self._target = ""
+            self._verified_source_url = ""
             if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
 
+    def _append_output(self, buffer: bytearray, chunk: bytes) -> None:
+        remaining = MAX_PROCESS_OUTPUT_BYTES - len(buffer)
+        if len(chunk) > remaining:
+            self._output_overflowed = True
+        if remaining > 0:
+            buffer.extend(chunk[:remaining])
+
     def _read_output(self) -> None:
-        self._stdout.extend(self._process.readAllStandardOutput().data())
-        self._stderr.extend(self._process.readAllStandardError().data())
+        self._append_output(self._stdout, self._process.readAllStandardOutput().data())
+        self._append_output(self._stderr, self._process.readAllStandardError().data())
