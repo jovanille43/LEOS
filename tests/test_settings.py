@@ -158,6 +158,33 @@ class SettingsStoreTests(unittest.TestCase):
                 settings.set("theme", "cyan")
             self.assertEqual(path.read_bytes(), invalid)
 
+    def test_oversized_settings_are_ignored_and_never_overwritten(self) -> None:
+        from leos_core.settings import MAX_SETTINGS_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            invalid = b" " * (MAX_SETTINGS_BYTES + 1)
+            path.write_bytes(invalid)
+
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme"), "leos-original")
+            self.assertEqual(path.read_bytes(), invalid)
+
+            with self.assertRaisesRegex(ValueError, "too large"):
+                settings.set("theme", "cyan")
+            self.assertEqual(path.read_bytes(), invalid)
+
+    def test_corrupt_reload_resets_values_to_safe_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme", "magenta")
+            self.assertEqual(settings.get("theme"), "magenta")
+
+            path.write_text("{broken", encoding="utf-8")
+            self.assertEqual(settings.get("theme"), "leos-original")
+            self.assertEqual(settings.get("last_mode"), "desktop")
+
     def test_symbolic_link_settings_file_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
