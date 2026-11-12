@@ -118,6 +118,25 @@ class ControllerProfileTests(unittest.TestCase):
             self.store.update(self.device_id, profile="xbox")
         self.assertEqual(self.path.read_text(encoding="utf-8"), invalid)
 
+    def test_oversized_profile_file_is_rejected_and_never_overwritten(self):
+        from controller_center.profiles import MAX_PROFILE_FILE_BYTES
+
+        raw = b" " * (MAX_PROFILE_FILE_BYTES + 1)
+        self.path.write_bytes(raw)
+        self.assertEqual(self.store.get(self.device_id)["profile"], "auto")
+        with self.assertRaisesRegex(ValueError, "too large"):
+            self.store.update(self.device_id, profile="xbox")
+        self.assertEqual(self.path.read_bytes(), raw)
+
+    def test_axis_centres_are_bounded_and_names_are_validated(self):
+        with self.assertRaises(ValueError):
+            self.store.update(self.device_id, axis_centers={"": 0})
+        with self.assertRaises(ValueError):
+            self.store.update(self.device_id, axis_centers={"X" * 49: 0})
+        centres = {f"ABS_{index}": 0 for index in range(65)}
+        with self.assertRaisesRegex(ValueError, "Too many"):
+            self.store.update(self.device_id, axis_centers=centres)
+
     def test_symbolic_link_profile_file_is_rejected(self):
         target = self.path.with_name("target.json")
         target.write_text('{"version":1,"devices":{}}', encoding="utf-8")
