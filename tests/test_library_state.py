@@ -18,6 +18,16 @@ class LibraryStateTests(unittest.TestCase):
             {"id": "manual:sega", "title": "Sonic", "platform": "SEGA"},
         ]
 
+    def test_bounded_text_reader_rejects_oversized_metadata(self):
+        from gaming.backend.library_state import read_bounded_text
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "libraryfolders.vdf"
+            path.write_text('"path" "/games"', encoding="utf-8")
+            self.assertIn("/games", read_bounded_text(path))
+            self.assertIsNone(read_bounded_text(path, max_bytes=2))
+            self.assertIsNone(read_bounded_text(path.with_name("missing.vdf")))
+
     def test_bounded_json_reader_accepts_valid_json(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "state.json"
