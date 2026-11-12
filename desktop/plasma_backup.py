@@ -23,6 +23,7 @@ from leos_core.paths import config_home as xdg_config_home, state_home as xdg_st
 BACKUP_SCHEMA_VERSION = 1
 _BACKUP_ID = re.compile(r"^[0-9a-f]{32}$")
 MAX_BACKUP_BYTES = 32 * 1024 * 1024
+MAX_BACKUP_MANIFEST_BYTES = 64 * 1024
 
 
 def _config_root() -> Path:
@@ -40,6 +41,18 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _read_manifest(path: Path) -> Any | None:
+    """Read a bounded backup manifest; malformed or oversized files are ignored."""
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(MAX_BACKUP_MANIFEST_BYTES + 1)
+        if len(raw) > MAX_BACKUP_MANIFEST_BYTES:
+            return None
+        return json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
 
 
 def _atomic_json(path: Path, value: dict[str, Any]) -> None:
@@ -118,9 +131,8 @@ class PlasmaBackupManager:
         for manifest_path in self.backup_dir.glob("*.json"):
             if manifest_path.is_symlink() or not _BACKUP_ID.fullmatch(manifest_path.stem):
                 continue
-            try:
-                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
+            manifest = _read_manifest(manifest_path)
+            if manifest is None:
                 continue
             backup_path = self.backup_dir / f"{manifest_path.stem}.bak"
             if (
@@ -163,10 +175,9 @@ class PlasmaBackupManager:
         manifest_path = self.backup_dir / f"{backup_id}.json"
         if backup_path.is_symlink() or manifest_path.is_symlink():
             raise ValueError("Symbolic-link backups are not accepted")
-        try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise FileNotFoundError("Plasma backup manifest is unavailable") from exc
+        manifest = _read_manifest(manifest_path)
+        if manifest is None:
+            raise FileNotFoundError("Plasma backup manifest is unavailable")
         if (
             not isinstance(manifest, dict)
             or type(manifest.get("schema_version")) is not int
