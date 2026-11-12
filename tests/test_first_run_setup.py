@@ -160,6 +160,18 @@ class FirstRunSetupTests(unittest.TestCase):
             self.assertTrue((root / "home/.local/state/leos/default-apps-seeded").is_file())
             self.assertFalse((root / "relative-state").exists())
 
+    def test_dialog_failure_is_not_recorded_as_a_decline(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            env = self._environment(root)
+            env["KDLG_RESULT"] = "2"
+            result = self._run(env)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / "flatpak.log").exists())
+            self.assertFalse((root / "state/leos/default-apps-seeded").exists())
+            self.assertFalse((root / "state/leos/default-apps-consent-v1").exists())
+            self.assertIn("fenêtre de consentement a échoué", result.stderr)
+
     def test_missing_graphical_confirmation_never_installs_or_marks_complete(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
