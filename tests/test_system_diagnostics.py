@@ -42,13 +42,6 @@ class SystemDiagnosticsTests(unittest.TestCase):
             diagnostics.Path("/sys/class/thermal/thermal_zone1/temp"),
         ]
 
-        def fake_glob(pattern):
-            if pattern == "hwmon*/temp*_input":
-                return hwmon_inputs
-            if pattern == "thermal_zone*/temp":
-                return thermal_inputs
-            return []
-
         values = {
             str(hwmon_inputs[0]): "76000",
             str(hwmon_inputs[0].with_name("temp1_label")): "Package id 0",
@@ -61,7 +54,7 @@ class SystemDiagnosticsTests(unittest.TestCase):
             str(thermal_inputs[1].parent / "type"): "cpu-thermal",
         }
         with (
-            patch.object(diagnostics.Path, "glob", side_effect=fake_glob),
+            patch.object(diagnostics.Path, "glob", side_effect=[hwmon_inputs, thermal_inputs]),
             patch.object(diagnostics, "_read", side_effect=lambda path: values.get(str(path), "")),
         ):
             self.assertEqual(diagnostics._temperature_celsius(), 76.0)
