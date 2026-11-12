@@ -20,6 +20,7 @@ ApplicationWindow {
     property string launchNotice: ""
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
+    property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
 
@@ -33,6 +34,9 @@ ApplicationWindow {
 
     Connections {
         target: controlCenter
+        function onPlasmaLayoutFinished(message) {
+            window.plasmaDockNotice = message
+        }
         function onSettingsChanged() {
             const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
@@ -95,6 +99,21 @@ ApplicationWindow {
             else
                 window.plasmaStyleNotice = controlCenter.restorePreviousPlasmaStyle()
         }
+    }
+
+    Dialog {
+        id: plasmaDockConfirmation
+        modal: true
+        title: "Appliquer le dock LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va créer une sauvegarde privée, puis appliquer la position, l'alignement, la hauteur et le masquage du dock. Si un seul panneau KDE existe, il sera réutilisé et ses applets seront conservés. Aucun panneau ne sera supprimé. Les dispositions multi-panneaux et les profils avec widgets actifs sont refusés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.plasmaDockNotice = controlCenter.applyPlasmaLayout(true)
     }
 
     Rectangle {
@@ -925,6 +944,21 @@ ApplicationWindow {
                                     Button {
                                         text: "Analyser la configuration Plasma"
                                         onClicked: plasmaInspectionReport.text = controlCenter.inspectPlasmaLayout()
+                                    }
+                                    Button {
+                                        text: "Appliquer le dock LEOS"
+                                        enabled: controlCenter.plasmaConfigAvailable
+                                            && controlCenter.dockEnabled
+                                            && !controlCenter.desktopWidgetsEnabled
+                                        onClicked: plasmaDockConfirmation.open()
+                                    }
+                                    Label {
+                                        id: plasmaDockNotice
+                                        text: window.plasmaDockNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     Label {
                                         id: plasmaInspectionReport

@@ -74,14 +74,15 @@ Les données sont validées, écrites atomiquement et protégées par des permis
 utilisateur privées. Un fichier invalide est ignoré sans être écrasé. Le Centre
 de contrôle expose ces préférences et les conserve entre les sessions.
 
-**Limite actuelle :** ces réglages décrivent la disposition souhaitée, mais ne
-reconfigurent pas encore le panneau Plasma. L'intégration Plasma devra détecter
-la configuration active, créer une sauvegarde restaurable, vérifier les
-applications épinglées et demander une confirmation explicite avant toute
-modification. Le Centre de contrôle expose la création d'une sauvegarde. La restauration
-reste une opération de maintenance explicite : elle n'est pas déclenchée depuis
-l'interface tant que le comportement de Plasma pendant une session active n'a
-pas été validé. Aucune commande de configuration KDE n'est exécutée par ce module.
+Le Centre de contrôle peut maintenant appliquer le profil du dock après une
+confirmation explicite. Avant l'opération, LEOS crée une sauvegarde privée et
+vérifiée. Si un seul panneau KDE existe, il est réutilisé en conservant ses
+applets ; si aucun panneau n'existe, un nouveau panneau LEOS est créé. Les
+propriétés modifiées sont la position, l'alignement, la hauteur, le masquage et
+l'effet flottant. Une configuration contenant plusieurs panneaux ou un profil
+avec widgets de bureau activés est refusée sans modification. Les panneaux ne
+sont jamais supprimés et les commandes sont envoyées à Plasma via D-Bus, sans
+shell. La validation réelle sur Bazzite KDE reste obligatoire avant diffusion.
 
 
 ## Sauvegarde et restauration Plasma
@@ -107,33 +108,34 @@ puis compare ces éléments aux préférences de disposition LEOS enregistrées.
 L'interface affiche un rapport synthétique et une empreinte SHA-256 du fichier
 inspecté.
 
-Cette étape n'exécute aucune commande KDE et n'écrit aucun fichier. L'aperçu
-indique les points à traiter, mais ne prétend pas produire un patch Plasma
-applicable. Le moteur d'application reste désactivé (`can_apply=false`) tant
-qu'il n'a pas été validé sur une véritable session Bazzite KDE. Une sauvegarde
-préalable et une confirmation explicite resteront obligatoires.
+L'inspection elle-même reste strictement en lecture seule. Elle indique si le
+profil peut être proposé à l'utilisateur : un seul panneau peut être réutilisé
+ou aucun panneau ne peut être créé, mais les dispositions multi-panneaux et les
+profils avec widgets actifs restent bloqués. L'application passe ensuite par
+une confirmation séparée, une sauvegarde préalable et le service D-Bus de
+Plasma. La fonction doit encore être testée dans une session Bazzite réelle.
 
 
-## Adaptateur de panneaux LEOS (préparé, non activé)
+## Adaptateur de panneaux LEOS
 
 Le module `desktop/plasma_adapter.py` génère un script utilisant l'API officielle
-de scripting Plasma 6 pour créer un panneau LEOS ou actualiser un panneau déjà
-marqué comme appartenant à LEOS. Chaque panneau créé reçoit un marqueur privé
-`LEOS/managedBy=leos-panel-v1`.
+de scripting Plasma 6 pour créer un panneau LEOS ou réutiliser le panneau unique
+présent après confirmation. Chaque panneau pris en charge reçoit un marqueur
+privé `LEOS/managedBy=leos-panel-v1`.
 
 En cas d'échec pendant la création d'un nouveau panneau, l'adaptateur retire uniquement ce panneau créé par l'opération en cours. Lorsqu'il actualise un panneau LEOS existant, il restaure les propriétés précédentes en cas d'erreur. Aucun panneau personnel ne passe dans le chemin de suppression.
 
-L'adaptateur refuse de toucher à un panneau KDE personnel et refuse de créer
-un second dock lorsqu'un panneau non géré existe déjà. Il refuse également les
-versions antérieures à Plasma 6. Lors de la création, il vérifie la disponibilité
-des widgets KDE ; lors d'une mise à jour, il ne cible que le panneau marqué LEOS.
+L'application est exécutée depuis le Centre de contrôle via D-Bus, sans shell.
+Lorsqu'un seul panneau KDE existe, ses applets sont conservés et les widgets
+essentiels absents peuvent être ajoutés ; s'il n'existe aucun panneau, un dock
+peut être créé. Les dispositions multi-panneaux, les profils avec widgets de
+bureau et la désactivation destructive sont refusés. La sauvegarde préalable
+et la confirmation sont obligatoires.
 
-**Limites de sécurité actuelles :** l'adaptateur n'est pas exécuté par le Centre
-de contrôle et n'a pas été validé sur une vraie session Bazzite KDE. La
-désactivation/suppression d'un panneau LEOS n'est pas encore implémentée ; les
-panneaux existants restent intacts. Les widgets de bureau ne sont pas encore
-appliqués. Toute future activation exigera une sauvegarde et une confirmation
-explicite.
+**Limites restantes :** l'intégration a encore besoin d'une validation sur une
+vraie session Bazzite KDE. Les favoris LEOS ne sont pas encore injectés dans
+les widgets du gestionnaire de tâches, les widgets de bureau ne sont pas
+appliqués, et la suppression du panneau LEOS n'est pas encore proposée.
 
 Références techniques : [API de scripting Plasma](https://develop.kde.org/docs/plasma/scripting/api/)
 et [exécution des scripts Plasma](https://develop.kde.org/docs/plasma/scripting/).

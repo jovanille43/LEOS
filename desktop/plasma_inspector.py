@@ -1,9 +1,8 @@
-"""Read-only inspection and preview planning for KDE Plasma layouts.
+"""Read-only inspection and guarded eligibility planning for KDE Plasma layouts.
 
 This module never writes to Plasma configuration. It inventories panel
-containments, records the source fingerprint, and prepares a human-readable
-LEOS layout preview. Applying a plan is intentionally not implemented until
-it has been validated on a real Bazzite KDE session.
+containments, records the source fingerprint, and decides whether the saved
+LEOS dock profile can be offered for explicit, backed-up application.
 """
 from __future__ import annotations
 
@@ -147,42 +146,49 @@ def inspect_plasma_config(path: Path | None = None) -> dict[str, Any]:
 
 
 def build_layout_plan(layout: object, inspection: dict[str, Any]) -> dict[str, Any]:
-    """Build a safe preview; this version deliberately contains no write steps."""
+    """Prepare a guarded application plan; never modify Plasma from this module."""
     if not validate_layout(layout):
         raise ValueError("Invalid LEOS desktop layout")
     assert isinstance(layout, dict)
     dock = dict(layout["dock"])
     panels = inspection.get("panels", []) if inspection.get("available") else []
     observations: list[str] = []
+    blocked_reason = ""
 
     if not inspection.get("available"):
+        blocked_reason = "La configuration Plasma n'a pas pu être inspectée ; application bloquée."
         observations.append("La configuration Plasma n'a pas pu être inspectée ; sauvegarde et contrôle manuel requis.")
-    elif dock["enabled"] and panels:
-        managed_count = sum(1 for panel in panels if panel.get("leos_managed"))
-        unmanaged_count = len(panels) - managed_count
-        if managed_count:
+    elif not dock["enabled"]:
+        blocked_reason = "Le dock est désactivé dans les préférences LEOS ; aucun panneau ne sera supprimé."
+        observations.append("Le dock LEOS est désactivé dans les préférences ; les panneaux KDE existants resteront intacts.")
+    elif layout["widgets_enabled"]:
+        blocked_reason = "Les widgets du bureau ne sont pas encore intégrés à l'application des profils."
+        observations.append("Les widgets du bureau sont activés dans le profil, mais leur intégration reste à terminer.")
+    elif len(panels) > 1:
+        blocked_reason = "Plusieurs panneaux KDE sont présents ; la disposition multi-panneaux est laissée intacte."
+        observations.append("Plusieurs panneaux KDE ont été détectés ; LEOS refuse de choisir lequel modifier.")
+    elif len(panels) == 1:
+        panel = panels[0]
+        if panel.get("leos_managed"):
+            observations.append("Le panneau LEOS existant sera actualisé.")
+        else:
             observations.append(
-                f"{managed_count} panneau(x) LEOS géré(s) détecté(s) ; seuls ces panneaux pourront être actualisés."
+                "Un panneau KDE personnel unique sera réutilisé après confirmation ; ses applets existants seront conservés."
             )
-        if unmanaged_count:
-            observations.append(
-                f"{unmanaged_count} panneau(x) KDE personnel(s) détecté(s) ; ils resteront intacts."
-            )
-    elif dock["enabled"]:
-        observations.append("Aucun panneau Plasma standard détecté ; une création serait nécessaire.")
+        observations.append("Seuls la position, l'alignement, la hauteur, le masquage et l'effet flottant seront ajustés.")
     else:
-        observations.append(
-            "Le dock LEOS est désactivé dans les préférences ; les panneaux KDE existants ne seront pas supprimés."
-        )
+        observations.append("Aucun panneau Plasma standard détecté ; un nouveau panneau LEOS pourra être créé.")
 
-    observations.append(
-        "L'alignement et le masquage automatique demandés sont enregistrés, "
-        "mais leur traduction en paramètres Plasma reste à valider."
-    )
+    can_apply = not blocked_reason
+    if can_apply:
+        observations.append("Le profil peut être appliqué après confirmation explicite et création d'une sauvegarde.")
+    else:
+        observations.append("Aucune modification ne sera effectuée tant que le point bloquant n'est pas résolu.")
+
     return {
         "schema_version": 1,
-        "mode": "preview-only",
-        "can_apply": False,
+        "mode": "ready-for-confirmation" if can_apply else "preview-only",
+        "can_apply": can_apply,
         "requires_backup": True,
         "desired": {
             "profile": layout["profile"],
@@ -191,12 +197,8 @@ def build_layout_plan(layout: object, inspection: dict[str, Any]) -> dict[str, A
         },
         "detected_panel_count": len(panels),
         "observations": observations,
-        "blocked_reason": (
-            "L'application automatique est volontairement désactivée jusqu'à validation "
-            "sur une vraie session Bazzite KDE."
-        ),
+        "blocked_reason": blocked_reason,
     }
-
 
 def format_layout_report(inspection: dict[str, Any], plan: dict[str, Any]) -> str:
     """Create a compact French report suitable for the Control Center."""
@@ -225,6 +227,9 @@ def format_layout_report(inspection: dict[str, Any], plan: dict[str, Any]) -> st
     lines.append("")
     lines.append("APERÇU DU PROFIL LEOS")
     lines.extend(f"• {item}" for item in plan["observations"])
-    lines.append(plan["blocked_reason"])
-    lines.append("Aucune modification du bureau n'a été effectuée.")
+    if plan["blocked_reason"]:
+        lines.append(plan["blocked_reason"])
+    else:
+        lines.append("Prêt pour une application après confirmation explicite.")
+    lines.append("Aucune modification du bureau n'a été effectuée pendant cette analyse.")
     return "\n".join(lines)

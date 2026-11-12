@@ -77,7 +77,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 ## Desktop Mode
 
 - Bureau KDE personnalisé avec l'identité LEOS.
-- Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les préférences de dock et profils de disposition sont préparés, mais leur application au véritable panneau Plasma reste désactivée.
+- Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les profils de dock peuvent être appliqués au panneau Plasma après sauvegarde et confirmation ; les configurations multi-panneaux restent protégées.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
 - Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran Desktop et Gaming 4K sont présents, leurs aperçus sont accessibles dans le Centre de contrôle et le choix passe par les paramètres natifs KDE. Le rendu des SVG avec JPEG liés et leur application restent à valider sur une session Bazzite réelle. Les animations Desktop/Gaming sont raccordées ; leur lecture vidéo et audio reste également à valider sur Bazzite.
@@ -144,7 +144,7 @@ LEOS/
 
 ## Prochaines étapes
 
-1. **Finaliser Desktop Mode** — valider le rendu des fonds d'écran officiels sur Bazzite, achever le dock LEOS sur Plasma avec sauvegarde et confirmation, puis ajouter les raccourcis globaux KDE.
+1. **Finaliser Desktop Mode** — valider le dock LEOS et le rendu des fonds d'écran sur une session Bazzite, puis ajouter les raccourcis globaux KDE.
 2. **Finaliser Gaming Mode** — poursuivre les intégrations d'émulateurs et contrôler les profils de manettes ainsi que le comportement sur plusieurs matériels.
 3. **Verrouiller le packaging** — vérifier les dépendances de l'image, préparer les éléments publics/privés Cosign et garder les opérations de publication manuelles.
 4. **Première image signée** — lancer le workflow uniquement après préparation de la signature et d'une machine de test ; résoudre les éventuelles incompatibilités du build.
@@ -160,7 +160,7 @@ LEOS/
 - [x] Transitions vidéo via Qt Multimedia avec piste audio configurable et repli en cas d'erreur.
 - [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
-- [ ] Intégration complète du dock au véritable panneau Plasma.
+- [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
 - [ ] Intégrations d'émulateurs.
 - [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
 - [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.

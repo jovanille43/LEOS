@@ -54,25 +54,26 @@ class PlasmaInspectorTests(unittest.TestCase):
         result = inspect_plasma_config(self.path)
         self.assertTrue(result["panels"][0]["leos_managed"])
 
-    def test_unmarked_existing_panel_is_reported_as_personal(self):
+    def test_unmarked_existing_panel_is_reported_as_personal_and_reusable(self):
         result = inspect_plasma_config(self.path)
         self.assertFalse(result["panels"][0]["leos_managed"])
         store = DesktopLayoutStore(self.path.parent / "desktop-layout.json")
         plan = build_layout_plan(store.get(), result)
-        self.assertTrue(any("panneau(x) KDE personnel(s)" in item for item in plan["observations"]))
+        self.assertTrue(any("panneau KDE personnel unique" in item for item in plan["observations"]))
+        self.assertTrue(plan["can_apply"])
 
     def test_inspection_is_read_only(self):
         before = self.path.read_bytes()
         inspect_plasma_config(self.path)
         self.assertEqual(self.path.read_bytes(), before)
 
-    def test_plan_is_preview_only_and_respects_requested_layout(self):
+    def test_single_panel_plan_is_ready_only_for_explicit_confirmation(self):
         store = DesktopLayoutStore(self.path.parent / "desktop-layout.json")
         store.apply_profile("minimal")
         inspection = inspect_plasma_config(self.path)
         plan = build_layout_plan(store.get(), inspection)
-        self.assertEqual(plan["mode"], "preview-only")
-        self.assertFalse(plan["can_apply"])
+        self.assertEqual(plan["mode"], "ready-for-confirmation")
+        self.assertTrue(plan["can_apply"])
         self.assertTrue(plan["requires_backup"])
         self.assertTrue(plan["desired"]["dock"]["auto_hide"])
         self.assertEqual(plan["detected_panel_count"], 1)
@@ -82,7 +83,26 @@ class PlasmaInspectorTests(unittest.TestCase):
         store.set_dock(enabled=False)
         plan = build_layout_plan(store.get(), inspect_plasma_config(self.path))
         self.assertFalse(plan["can_apply"])
-        self.assertIn("ne seront pas supprimés", plan["observations"][0])
+        self.assertIn("resteront intacts", plan["observations"][0])
+
+    def test_multiple_panels_are_never_modified_automatically(self):
+        self.path.write_text(
+            PLASMA_CONFIG + "\n[Containments][3]\nplugin=org.kde.plasma.panel\nlocation=4\nformfactor=2\n",
+            encoding="utf-8",
+        )
+        plan = build_layout_plan(
+            DesktopLayoutStore(self.path.parent / "desktop-layout.json").get(),
+            inspect_plasma_config(self.path),
+        )
+        self.assertFalse(plan["can_apply"])
+        self.assertIn("Plusieurs panneaux", plan["blocked_reason"])
+
+    def test_workspace_widgets_profile_is_not_applied_prematurely(self):
+        store = DesktopLayoutStore(self.path.parent / "desktop-layout.json")
+        store.apply_profile("workspace")
+        plan = build_layout_plan(store.get(), inspect_plasma_config(self.path))
+        self.assertFalse(plan["can_apply"])
+        self.assertIn("widgets", plan["blocked_reason"])
 
     def test_missing_config_is_reported(self):
         result = inspect_plasma_config(self.path.with_name("missingrc"))
@@ -101,14 +121,22 @@ class PlasmaInspectorTests(unittest.TestCase):
         self.assertEqual(result["status"], "unsafe")
         self.assertFalse(result["available"])
 
-    def test_control_center_exposes_inspection_but_not_apply(self):
+    def test_control_center_requires_confirmation_before_applying(self):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("def inspectPlasmaLayout(self)", controller)
-        self.assertIn("controlCenter.inspectPlasmaLayout()", qml)
+        self.assertIn("def applyPlasmaLayout(self, confirmed: bool)", controller)
+        self.assertIn("if confirmed is not True", controller)
+        self.assertIn("controlCenter.applyPlasmaLayout(true)", qml)
+        self.assertIn("plasmaDockConfirmation.open()", qml)
         self.assertIn("INSPECTION DU BUREAU KDE", qml)
-        self.assertNotIn("applyPlasmaLayout", controller + qml)
+        self.assertLess(
+            controller.index("backup_id = self.plasmaBackups.create_backup()"),
+            controller.index("QThreadPool.globalInstance().start(task)"),
+        )
+        self.assertIn("_plasma_layout_tasks", controller)
+        self.assertIn("onPlasmaLayoutFinished(message)", qml)
 
     def test_report_explains_read_only_state(self):
         result = inspect_plasma_config(self.path)

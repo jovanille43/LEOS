@@ -1,9 +1,8 @@
-"""Generate guarded Plasma scripting commands for LEOS-owned panels.
+"""Generate guarded Plasma scripting commands for the LEOS dock.
 
-The returned JavaScript is never executed by this module. It uses KDE's
-documented Plasma 6 scripting API and only updates panels carrying the
-LEOS-specific ownership marker. Existing user panels are never adopted,
-moved, or removed.
+The returned JavaScript is executed only by the explicit Control Center action
+after a private backup and user confirmation. It supports only a single panel
+and never deletes panels or alters multi-panel layouts.
 """
 from __future__ import annotations
 
@@ -52,8 +51,8 @@ _SCRIPT = r'''(function () {
     var widgetTypes = __LEOS_WIDGETS__;
     var markerGroup = "LEOS";
     var markerValue = "leos-panel-v1";
-    var existing = [];
     var allPanels = panels();
+    var existing = [];
 
     function isLeosPanel(candidate) {
         candidate.currentConfigGroup = [markerGroup];
@@ -69,42 +68,67 @@ _SCRIPT = r'''(function () {
     if (existing.length > 1) {
         throw new Error("Plusieurs panneaux LEOS sont marqués ; intervention manuelle requise.");
     }
+    if (allPanels.length > 1) {
+        throw new Error("Plusieurs panneaux KDE sont présents. LEOS refuse de modifier une disposition multi-panneaux.");
+    }
+    if (!desired.enabled) {
+        throw new Error("Le dock LEOS est désactivé dans les préférences ; aucun panneau ne sera supprimé.");
+    }
+    if (desired.widgetsEnabled) {
+        throw new Error("L'activation des widgets du bureau n'est pas encore prise en charge par cet adaptateur.");
+    }
 
     var panel = existing.length === 1 ? existing[0] : null;
-
-    if (!desired.enabled) {
-        print("LEOS_PANEL_DISABLE_NOT_IMPLEMENTED=1");
-        print("Le panneau KDE est conservé ; aucune suppression n'est effectuée.");
-        return;
-    }
-
-    if (!panel && allPanels.length > 0) {
-        throw new Error(
-            "Un panneau KDE non géré existe déjà. LEOS refuse de créer un doublon ou de l'adopter automatiquement."
-        );
-    }
-
     var created = false;
+    var adopted = false;
     var before = null;
-    var newPanelWidgets = [];
+    var addedWidgets = [];
+    var widgetsToAdd = [];
 
     if (panel) {
+        panel.currentConfigGroup = [markerGroup];
         before = {
             location: panel.location,
             alignment: panel.alignment,
             hiding: panel.hiding,
             height: panel.height,
             lengthMode: panel.lengthMode,
-            length: panel.length
+            length: panel.length,
+            managedBy: panel.readConfig("managedBy", "")
         };
-    } else {
+    } else if (allPanels.length === 1) {
+        panel = allPanels[0];
+        adopted = true;
+        panel.currentConfigGroup = [markerGroup];
+        before = {
+            location: panel.location,
+            alignment: panel.alignment,
+            hiding: panel.hiding,
+            height: panel.height,
+            lengthMode: panel.lengthMode,
+            length: panel.length,
+            managedBy: panel.readConfig("managedBy", "")
+        };
+        // Keep all existing applets. Add only missing core dock components.
+        var essentialWidgets = [
+            "org.kde.plasma.icontasks",
+            "org.kde.plasma.systemtray",
+            "org.kde.plasma.digitalclock"
+        ];
+        for (var e = 0; e < essentialWidgets.length; e++) {
+            if (knownWidgetTypes.indexOf(essentialWidgets[e]) !== -1
+                    && panel.widgets(essentialWidgets[e]).length === 0) {
+                widgetsToAdd.push(essentialWidgets[e]);
+            }
+        }
+    } else if (allPanels.length === 0) {
         var availableTypes = knownWidgetTypes;
         for (var a = 0; a < widgetTypes.length; a++) {
             if (availableTypes.indexOf(widgetTypes[a]) !== -1) {
-                newPanelWidgets.push(widgetTypes[a]);
+                widgetsToAdd.push(widgetTypes[a]);
             }
         }
-        if (newPanelWidgets.length < 2) {
+        if (widgetsToAdd.length < 2) {
             throw new Error("Pas assez de widgets KDE sont disponibles pour créer le dock LEOS.");
         }
     }
@@ -118,43 +142,49 @@ _SCRIPT = r'''(function () {
             created = true;
         }
 
+        for (var w = 0; w < widgetsToAdd.length; w++) {
+            var added = panel.addWidget(widgetsToAdd[w]);
+            if (!added) {
+                throw new Error("Échec de l'ajout du widget " + widgetsToAdd[w]);
+            }
+            addedWidgets.push(added);
+        }
+
         panel.location = desired.position;
         panel.alignment = desired.alignment;
         panel.hiding = desired.autoHide ? "autohide" : "none";
-        panel.height = 52;
+        panel.height = 56;
         panel.lengthMode = "fit";
-
-        if (created) {
-            for (var w = 0; w < newPanelWidgets.length; w++) {
-                var added = panel.addWidget(newPanelWidgets[w]);
-                if (!added) {
-                    throw new Error("Échec de l'ajout du widget " + newPanelWidgets[w]);
-                }
-            }
-        }
 
         panel.currentConfigGroup = [markerGroup];
         panel.writeConfig("managedBy", markerValue);
         panel.writeConfig("schemaVersion", 1);
 
-        if (desired.widgetsEnabled) {
-            print("LEOS_DESKTOP_WIDGETS_PENDING=1");
+        if (adopted) {
+            print("LEOS_PANEL_ADOPTED=" + panel.id);
+        } else if (created) {
+            print("LEOS_PANEL_CREATED=" + panel.id);
+        } else {
+            print("LEOS_PANEL_UPDATED=" + panel.id);
         }
-        print("LEOS_PANEL_APPLIED=" + panel.id);
     } catch (error) {
         try {
             if (created && panel) {
-                // This exact panel was created by this transaction; no user
-                // panel can enter this branch.
+                // This exact panel was created by this transaction.
                 panel.remove();
                 print("LEOS_PARTIAL_PANEL_ROLLED_BACK=1");
             } else if (panel && before) {
+                for (var r = 0; r < addedWidgets.length; r++) {
+                    addedWidgets[r].remove();
+                }
                 panel.location = before.location;
                 panel.alignment = before.alignment;
                 panel.hiding = before.hiding;
                 panel.height = before.height;
                 panel.lengthMode = before.lengthMode;
                 panel.length = before.length;
+                panel.currentConfigGroup = [markerGroup];
+                panel.writeConfig("managedBy", before.managedBy);
             }
         } catch (rollbackError) {
             print("LEOS_ROLLBACK_WARNING=" + rollbackError);
@@ -172,7 +202,8 @@ def adapter_capabilities() -> dict[str, Any]:
         "can_create_dock": True,
         "can_update_leos_owned_dock": True,
         "can_remove_leos_owned_dock": False,
-        "touches_unmanaged_panels": False,
+        "touches_unmanaged_panels": True,
+        "adopts_single_unmanaged_panel_with_backup": True,
         "desktop_widgets_applied": False,
         "runtime_validated_on_bazzite": False,
         "requires_backup_and_explicit_confirmation": True,

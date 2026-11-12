@@ -9,6 +9,8 @@ from control_center.settings_modules import general_settings_command, settings_m
 from desktop.themes import palette_for_theme
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
+from desktop.plasma_adapter import build_panel_management_script
+from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
@@ -111,8 +113,31 @@ class _CleanupScanTask(QRunnable):
         self.signals.completed.emit(snapshot)
 
 
+class _PlasmaScriptSignals(QObject):
+    completed = Signal(str, bool, str)
+
+
+class _PlasmaScriptTask(QRunnable):
+    """Run a Plasma D-Bus script away from the Control Center UI thread."""
+
+    def __init__(self, backup_id: str, script: str) -> None:
+        super().__init__()
+        self.backup_id = backup_id
+        self.script = script
+        self.signals = _PlasmaScriptSignals()
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            succeeded, message = execute_plasma_script(self.script, timeout=30.0)
+        except (OSError, RuntimeError, ValueError):
+            succeeded, message = False, "Une erreur a empêché l'application du dock."
+        self.signals.completed.emit(self.backup_id, succeeded, message)
+
+
 class ControlCenterController(QObject):
     settingsChanged = Signal()
+    plasmaLayoutFinished = Signal(str)
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
     networkChanged = Signal()
@@ -129,6 +154,7 @@ class ControlCenterController(QObject):
         self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
         self.plasmaBackups = PlasmaBackupManager()
+        self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.monitor = SystemMonitor(self)
@@ -825,6 +851,55 @@ class ControlCenterController(QObject):
         inspection = inspect_plasma_config(self.plasmaBackups.config_path)
         plan = build_layout_plan(self.desktopLayout.get(), inspection)
         return format_layout_report(inspection, plan)
+
+    @Slot(bool, result=str)
+    def applyPlasmaLayout(self, confirmed: bool) -> str:
+        """Queue the dock update only after explicit UI confirmation and backup."""
+        if confirmed is not True:
+            return "Confirmation explicite requise ; aucune modification n'a été effectuée."
+
+        layout = self.desktopLayout.get()
+        inspection = inspect_plasma_config(self.plasmaBackups.config_path)
+        plan = build_layout_plan(layout, inspection)
+        if not plan["can_apply"]:
+            return format_layout_report(inspection, plan)
+
+        try:
+            backup_id = self.plasmaBackups.create_backup()
+            script = build_panel_management_script(layout)
+        except (OSError, RuntimeError, ValueError):
+            message = "Préparation ou sauvegarde Plasma impossible ; le dock n'a pas été modifié."
+            post_notification("Dock LEOS non appliqué", message, "error")
+            return message
+
+        task = _PlasmaScriptTask(backup_id, script)
+        task.signals.completed.connect(self._on_plasma_layout_completed)
+        self._plasma_layout_tasks[backup_id] = task
+        QThreadPool.globalInstance().start(task)
+        return (
+            f"Demande transmise à Plasma en arrière-plan. Sauvegarde créée ({backup_id[:8]}). "
+            "Le résultat sera affiché ici."
+        )
+
+    @Slot(str, bool, str)
+    def _on_plasma_layout_completed(
+        self, backup_id: str, succeeded: bool, result_message: str
+    ) -> None:
+        """Report asynchronous D-Bus completion without overstating panel state."""
+        self._plasma_layout_tasks.pop(backup_id, None)
+        if succeeded:
+            message = (
+                f"{result_message} Sauvegarde conservée ({backup_id[:8]}). "
+                "Vérifie visuellement la disposition dans Plasma."
+            )
+            post_notification("Requête du dock transmise", message, "success")
+        else:
+            message = (
+                f"{result_message} La sauvegarde préalable ({backup_id[:8]}) est conservée. "
+                "Aucun panneau personnel n'a été supprimé par LEOS."
+            )
+            post_notification("Dock LEOS non appliqué", message, "warning")
+        self.plasmaLayoutFinished.emit(message)
 
     @Slot(str, result=bool)
     def openSettingsModule(self, section: str) -> bool:
