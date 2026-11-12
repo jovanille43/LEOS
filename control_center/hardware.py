@@ -312,7 +312,11 @@ def _gpu_details() -> str:
     found: list[str] = []
     vendor_names = {"0x10de": "NVIDIA", "0x1002": "AMD", "0x8086": "Intel"}
     try:
-        devices = sorted(Path("/sys/class/drm").glob("card[0-9]/device"))
+        devices = sorted(
+            device
+            for device in Path("/sys/class/drm").glob("card*/device")
+            if re.fullmatch(r"card\\d+", device.parent.name)
+        )
     except OSError:
         devices = []
     for device in devices:
