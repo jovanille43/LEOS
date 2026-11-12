@@ -2,7 +2,10 @@
 
 import unittest
 
-from gaming.backend.library_state import filter_games
+from pathlib import Path
+import tempfile
+
+from gaming.backend.library_state import filter_games, read_bounded_json
 
 
 class LibraryStateTests(unittest.TestCase):
@@ -14,6 +17,21 @@ class LibraryStateTests(unittest.TestCase):
             {"id": "manual:arcade", "title": "Arcade", "platform": "Arcade"},
             {"id": "manual:sega", "title": "Sonic", "platform": "SEGA"},
         ]
+
+    def test_bounded_json_reader_accepts_valid_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            path.write_text('["steam:1"]', encoding="utf-8")
+            self.assertEqual(read_bounded_json(path), ["steam:1"])
+
+    def test_bounded_json_reader_rejects_oversized_and_malformed_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            path.write_bytes(b"12345")
+            self.assertIsNone(read_bounded_json(path, max_bytes=4))
+            path.write_text("{broken", encoding="utf-8")
+            self.assertIsNone(read_bounded_json(path))
+            self.assertIsNone(read_bounded_json(path.with_name("missing.json")))
 
     def test_home_returns_all_games(self):
         self.assertEqual(len(filter_games(self.games, "Accueil", set(), [])), 5)
