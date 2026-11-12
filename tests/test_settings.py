@@ -199,6 +199,17 @@ class SettingsStoreTests(unittest.TestCase):
                 SettingsStore(path).set("theme", "cyan")
             self.assertEqual(target.read_text(encoding="utf-8"), '{"theme":"magenta"}')
 
+    def test_existing_settings_directory_is_restricted_before_write(self) -> None:
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory) / "config"
+            parent.mkdir(mode=0o755)
+            parent.chmod(0o755)
+            settings = SettingsStore(parent / "settings.json")
+            settings.set("theme", "cyan")
+            self.assertEqual(parent.stat().st_mode & 0o777, 0o700)
+
     def test_settings_lock_file_is_private(self) -> None:
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
