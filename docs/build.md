@@ -60,4 +60,6 @@ La checklist détaillée du premier démarrage, des transitions, du Bluetooth, d
 
 ## Construction ISO
 
-L'ISO installable est une étape ultérieure. La priorité est d'abord de produire une image bootable signée, de la tester et de vérifier les mises à jour/rollback. La procédure ISO sera choisie après validation de l'image de base, en suivant le processus BlueBuild pour les images Fedora Atomic.
+Le workflow manuel `.github/workflows/iso.yml` prépare désormais cette étape à partir d'une image LEOS déjà publiée dans GHCR. Il demande explicitement la variante matérielle (standard, NVIDIA legacy ou NVIDIA moderne) et le tag de l'image, valide le format du tag, s'authentifie au registre puis appelle `bluebuild generate-iso` sur l'image distante. L'ISO et sa somme SHA-256 sont conservées comme artefacts GitHub Actions pendant 14 jours. Ce workflow ne publie pas automatiquement une ISO et ne doit être lancé qu'après la réussite du build signé correspondant.
+
+Cette méthode suit la documentation BlueBuild : générer l'ISO à partir de l'image publiée est le flux recommandé lorsque les images sont construites et publiées dans le cloud. L'ISO générée doit encore être testée en machine virtuelle UEFI puis sur matériel physique avant toute diffusion publique. Voir [le guide d'installation](installation.md) et [la procédure BlueBuild de génération ISO](https://blue-build.org/how-to/generate-iso/).
