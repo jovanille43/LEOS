@@ -13,7 +13,7 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
 
     def test_quick_panel_has_a_bounded_action_sequence(self):
         self.assertIn("function quickPanelActionCount()", self.qml)
-        self.assertIn("return leos.availablePowerProfiles.length + 3", self.qml)
+        self.assertIn("return leos.availablePowerProfiles.length + 4", self.qml)
         self.assertIn("(quickPanelFocusIndex + delta + count) % count", self.qml)
 
     def test_gamepad_directions_and_confirm_operate_quick_panel(self):
@@ -25,6 +25,8 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
         self.assertIn("leos.setMangoHudEnabled(!leos.mangoHudEnabled)", self.qml)
         self.assertIn("powerProfileDialog.open()", self.qml)
         self.assertIn("returnDialog.open()", self.qml)
+        self.assertIn("leos.openControllerCenter()", self.qml)
+        self.assertIn("CONFIGURER MANETTE", self.qml)
         self.assertIn("quickPanel.visible = false", self.qml)
 
     def test_power_profile_confirmation_is_gamepad_operable(self):
@@ -41,7 +43,16 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
         self.assertIn("window.quickPanelFocusIndex === 0", self.qml)
         self.assertIn("window.quickPanelFocusIndex === index + 1", self.qml)
         self.assertIn(
+            "window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2",
+            self.qml,
+        )
+
+        self.assertIn(
             "window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1",
+            self.qml,
+        )
+        self.assertIn(
+            "window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3",
             self.qml,
         )
 
