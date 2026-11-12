@@ -254,7 +254,7 @@ ApplicationWindow {
                                 }
                             }
                             Label {
-                                text: "BOUTONS"
+                                text: "BOUTONS MAINTENUS"
                                 color: window.muted
                                 font.pixelSize: 10
                                 font.letterSpacing: 2
