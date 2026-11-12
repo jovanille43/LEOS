@@ -118,7 +118,7 @@ class GamepadActionMapper:
         if current != previous:
             self._repeat_started_at = now
             self._repeat_last_at = now
-            return current
+            return current if action is not None else None
         return None
 
     def repeat_action(self, now: float | None = None) -> str | None:
