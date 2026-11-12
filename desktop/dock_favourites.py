@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Iterator
 
 from leos_core.paths import config_home as xdg_config_home
+from leos_core.json_utils import json_nesting_within_limit
 
 
 DEFAULT_PINNED_APPS = (
@@ -86,7 +87,10 @@ class DockFavourites:
                 raw = stream.read(MAX_DOCK_FILE_BYTES + 1)
             if len(raw) > MAX_DOCK_FILE_BYTES:
                 return False
-            data = json.loads(raw.decode("utf-8"))
+            text = raw.decode("utf-8")
+            if not json_nesting_within_limit(text):
+                return False
+            data = json.loads(text)
         except FileNotFoundError:
             self._items = list(DEFAULT_PINNED_APPS)
             return True
