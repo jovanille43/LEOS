@@ -19,7 +19,7 @@ from PySide6.QtCore import QProcess
 
 from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
-    duplicate_title_metadata, upsert_manual_game, read_bounded_json,
+    duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -137,10 +137,7 @@ class GameLibraryModel(QAbstractListModel):
         for root in self._steam_roots():
             candidates = [root / "steamapps"]
             library_file = root / "steamapps" / "libraryfolders.vdf"
-            try:
-                text = library_file.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                text = ""
+            text = read_bounded_text(library_file) or ""
             for library_path in re.findall(r'"path"\s+"([^"]+)"', text):
                 candidates.append(Path(library_path).expanduser() / "steamapps")
             for candidate in candidates:
