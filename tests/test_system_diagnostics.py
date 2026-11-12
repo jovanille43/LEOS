@@ -1,5 +1,6 @@
 """Tests for read-only LEOS system diagnostics."""
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 from types import SimpleNamespace
 
@@ -136,6 +137,83 @@ class SystemDiagnosticsTests(unittest.TestCase):
             "pid": "1", "name": "process1", "cpu": "12.5%",
             "memory": "3.2%", "resident": "2 Mio",
         })
+
+    def test_shareable_report_includes_only_bounded_diagnostic_fields(self):
+        report = diagnostics.format_diagnostic_report(
+            {
+                "cpu": "AMD Ryzen Test",
+                "cpuCores": "8 cœurs",
+                "cpuThreads": "16 threads",
+                "memoryTotal": "32 Gio",
+                "architecture": "x86_64",
+                "firmware": "UEFI",
+                "gpu": "AMD Radeon Test",
+                "displayCount": "2",
+                "displays": "DP-1 actif · 2560x1440",
+                "vulkan": "Vulkan 1.3",
+                "operatingSystem": "Bazzite",
+                "kernel": "Linux 6.x",
+                "storage": "120 Gio libres",
+                "gamingBaseline": "Indicateurs suffisants",
+                "network": "10.0.0.1",
+                "wifiSsid": "Maison privée",
+                "usbDevices": "/home/jovan/device",
+            },
+            {
+                "severity": "Attention",
+                "summary": "Espace disque à surveiller",
+                "storage": "82% utilisés",
+                "memory": "40% utilisée",
+                "temperature": "65 °C",
+                "failedServices": "1 unité en échec",
+                "recentErrors": "2 entrées d'erreur",
+                "uptime": "2 h",
+                "loadAverage": "0.5 · 0.4 · 0.3",
+                "topProcesses": [{"name": "private-process"}],
+                "failedServiceNames": ["private-user.service"],
+            },
+            {
+                "available": True,
+                "bootedVersion": "stable-test",
+                "bootedChecksum": "0123456789ab",
+                "otherCount": 2,
+                "pendingCount": 1,
+                "pinnedCount": 1,
+            },
+        )
+        self.assertIn("AMD Ryzen Test", report)
+        self.assertIn("AMD Radeon Test", report)
+        self.assertIn("Espace disque à surveiller", report)
+        self.assertIn("stable-test", report)
+        self.assertIn("Autres entrées conservées : 2", report)
+        for private_value in (
+            "10.0.0.1",
+            "Maison privée",
+            "/home/jovan",
+            "private-process",
+            "private-user.service",
+            "0123456789ab",
+        ):
+            with self.subTest(private_value=private_value):
+                self.assertNotIn(private_value, report)
+
+    def test_report_formatter_removes_control_characters_and_bounds_values(self):
+        value = diagnostics._safe_report_value("CPU\\x00\\nmodel" + "x" * 400)
+        self.assertNotIn("\\x00", value)
+        self.assertNotIn("\\n", value)
+        self.assertEqual(len(value), 240)
+        self.assertEqual(diagnostics._safe_report_value({"unexpected": "value"}), "")
+
+    def test_diagnostic_report_copy_is_exposed_in_control_center(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def copyDiagnosticReport", controller)
+        self.assertIn("QGuiApplication.clipboard()", controller)
+        self.assertIn("format_diagnostic_report", controller)
+        self.assertIn("controlCenter.copyDiagnosticReport()", qml)
+        self.assertIn("COPIER LE RAPPORT", qml)
+        self.assertIn("Vérifie son contenu avant de le partager", qml)
 
     def test_missing_commands_and_timeouts_are_safe(self):
         with patch.object(diagnostics.subprocess, "run", side_effect=FileNotFoundError):
