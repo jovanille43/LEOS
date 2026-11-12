@@ -19,9 +19,6 @@ DEFAULT_PINNED_APPS = (
 from leos_core.paths import config_home as xdg_config_home
 
 
-from leos_core.paths import config_home as xdg_config_home
-
-
 MAX_PINNED_APPS = 32
 
 
