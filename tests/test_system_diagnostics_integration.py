@@ -29,7 +29,7 @@ class SystemDiagnosticsIntegrationTests(unittest.TestCase):
             "_CleanupScanTask",
         ):
             start = controller.index(f"class {task}")
-            end = controller.find("\\nclass ", start + 1)
+            end = controller.find("\nclass ", start + 1)
             block = controller[start:end if end >= 0 else len(controller)]
             self.assertIn("except Exception:", block)
             self.assertIn('{"_scan_error":', block)
