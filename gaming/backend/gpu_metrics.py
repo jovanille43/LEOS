@@ -1,7 +1,67 @@
 """Read-only GPU telemetry from Linux DRM sysfs."""
 
+import csv
 import re
+import shutil
+import subprocess
 from pathlib import Path
+
+
+def _nvidia_smi_metrics() -> dict[str, object] | None:
+    """Read NVIDIA proprietary-driver telemetry when nvidia-smi is available."""
+    executable = shutil.which("nvidia-smi")
+    if not executable:
+        return None
+    try:
+        result = subprocess.run(
+            [
+                executable,
+                "--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=2.0,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+
+    for row in csv.reader(result.stdout.splitlines()):
+        if len(row) != 5:
+            continue
+        name = row[0].strip()
+        if not name:
+            continue
+        try:
+            usage = float(row[1].strip())
+            temperature = float(row[2].strip())
+            memory_used_mb = float(row[3].strip())
+            memory_total_mb = float(row[4].strip())
+        except ValueError:
+            continue
+        if not 0 <= usage <= 100:
+            usage = -1.0
+        if not 0 < temperature < 150:
+            temperature = -1.0
+        if memory_used_mb < 0:
+            memory_used = -1
+        else:
+            memory_used = int(memory_used_mb * 1024 * 1024)
+        if memory_total_mb <= 0:
+            memory_total = -1
+        else:
+            memory_total = int(memory_total_mb * 1024 * 1024)
+        return {
+            "name": name,
+            "usage": usage,
+            "temperature": temperature,
+            "memory_used": memory_used,
+            "memory_total": memory_total,
+        }
+    return None
 
 
 def read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
@@ -97,7 +157,23 @@ def read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
         candidates.append((score, snapshot))
 
     if candidates:
-        return max(candidates, key=lambda item: item[0])[1]
+        selected = max(candidates, key=lambda item: item[0])[1]
+        # NVIDIA's proprietary driver does not consistently expose utilization
+        # through DRM sysfs; use its supported CLI only when the matching
+        # telemetry fields are missing.
+        if str(selected["name"]).startswith("NVIDIA"):
+            nvidia = _nvidia_smi_metrics()
+            if nvidia is not None:
+                for key in ("usage", "temperature", "memory_used", "memory_total"):
+                    unavailable = -1 if key.startswith("memory_") else -1.0
+                    if selected[key] == unavailable and nvidia[key] != unavailable:
+                        selected[key] = nvidia[key]
+                if selected["name"] == "NVIDIA · PCI " or "PCI" in str(selected["name"]):
+                    selected["name"] = str(nvidia["name"])
+        return selected
+    nvidia = _nvidia_smi_metrics()
+    if nvidia is not None:
+        return nvidia
     return {
         "name": "GPU non détecté",
         "usage": -1.0,
