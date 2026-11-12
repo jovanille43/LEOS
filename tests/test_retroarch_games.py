@@ -34,6 +34,88 @@ class RetroArchPlaylistTests(unittest.TestCase):
         payload = {"version": "1.0", "items": items, **extra}
         self.playlist.write_text(json.dumps(payload), encoding="utf-8")
 
+    def test_discovers_default_and_custom_thumbnail_directories(self):
+        home = self.root / "home"
+        config_home = self.root / "xdg-config"
+        default_root = config_home / "retroarch" / "thumbnails"
+        custom_root = self.root / "custom-thumbnails"
+        default_root.mkdir(parents=True)
+        custom_root.mkdir()
+        retroarch_config = config_home / "retroarch" / "retroarch.cfg"
+        retroarch_config.write_text(
+            f'thumbnails_directory = "{custom_root}"\n',
+            encoding="utf-8",
+        )
+
+        directories = find_retroarch_thumbnail_directories(home, config_home)
+        self.assertEqual(directories, [default_root.resolve(), custom_root.resolve()])
+
+    def test_imports_local_box_art_from_configured_retroarch_thumbnail_root(self):
+        thumbnail_root = self.root / "thumbnails"
+        boxarts = (
+            thumbnail_root
+            / self.playlist.stem
+            / "Named_Boxarts"
+        )
+        boxarts.mkdir(parents=True)
+        artwork = boxarts / "Super Mario World.png"
+        artwork.write_bytes(b"image")
+        self.write_playlist([{
+            "path": str(self.rom),
+            "label": "Super Mario World",
+            "core_path": "DETECT",
+            "db_name": "Nintendo - Super Nintendo.lpl",
+        }])
+
+        game = load_retroarch_games(
+            self.playlist,
+            thumbnail_directories=[thumbnail_root],
+        )[0]
+        self.assertEqual(game["artwork"], artwork.resolve().as_uri())
+
+    def test_thumbnail_matching_is_case_insensitive_and_skips_missing_art(self):
+        thumbnail_root = self.root / "thumbnails"
+        boxarts = thumbnail_root / self.playlist.stem / "Named_Boxarts"
+        boxarts.mkdir(parents=True)
+        artwork = boxarts / "super mario world.PNG"
+        artwork.write_bytes(b"image")
+        self.write_playlist([
+            {"path": str(self.rom), "label": "SUPER MARIO WORLD"},
+            {"path": str(self.rom) + ".missing", "label": "Unlisted Game"},
+        ])
+
+        games = load_retroarch_games(
+            self.playlist,
+            thumbnail_directories=[thumbnail_root],
+        )
+        by_title = {game["title"]: game["artwork"] for game in games}
+        self.assertEqual(by_title["SUPER MARIO WORLD"], artwork.resolve().as_uri())
+        self.assertEqual(by_title["Unlisted Game"], "")
+
+    def test_thumbnail_symlink_cannot_escape_configured_root(self):
+        import os
+
+        thumbnail_root = self.root / "thumbnails"
+        boxarts = thumbnail_root / self.playlist.stem / "Named_Boxarts"
+        boxarts.mkdir(parents=True)
+        outside = self.root / "outside.png"
+        outside.write_bytes(b"private")
+        link = boxarts / "Super Mario World.png"
+        try:
+            os.symlink(outside, link)
+        except (NotImplementedError, OSError):
+            self.skipTest("Symlinks unavailable in this environment")
+        self.write_playlist([{
+            "path": str(self.rom),
+            "label": "Super Mario World",
+        }])
+
+        game = load_retroarch_games(
+            self.playlist,
+            thumbnail_directories=[thumbnail_root],
+        )[0]
+        self.assertEqual(game["artwork"], "")
+
     def test_classifies_playstation_and_sega_playlist_databases(self):
         playstation = self.playlists / "Sony - PlayStation.lpl"
         playstation.write_text(json.dumps({"items": [{
