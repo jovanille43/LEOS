@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
+
+
+MAX_LUTRIS_GAMES = 20_000
+MAX_LUTRIS_QUERY_SECONDS = 2.0
 
 
 def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
@@ -17,6 +22,11 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
     try:
         connection = sqlite3.connect(uri, uri=True, timeout=1.0)
         connection.execute("PRAGMA query_only = ON")
+        deadline = time.monotonic() + MAX_LUTRIS_QUERY_SECONDS
+        connection.set_progress_handler(
+            lambda: 1 if time.monotonic() > deadline else 0,
+            1000,
+        )
     except (sqlite3.Error, OSError):
         return []
 
@@ -34,7 +44,7 @@ def load_lutris_games(database_path: Path) -> list[dict[str, Any]]:
         quoted_columns = ", ".join(f'"{column}"' for column in selected)
         rows = connection.execute(
             f'SELECT {quoted_columns} FROM "games" WHERE "installed" = 1 ORDER BY "name" COLLATE NOCASE'
-        ).fetchall()
+        ).fetchmany(MAX_LUTRIS_GAMES)
 
         games: list[dict[str, Any]] = []
         for row in rows:
