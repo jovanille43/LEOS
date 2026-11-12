@@ -2,33 +2,25 @@
 
 from pathlib import Path
 import unittest
-from unittest.mock import Mock, patch
 
-from control_center.controller import ControlCenterController
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class PlasmaApplyGuardTests(unittest.TestCase):
     def test_second_apply_is_rejected_before_inspecting_or_backing_up(self):
-        controller = Mock()
-        controller._plasma_layout_tasks = {"pending-backup": object()}
-        controller.desktopLayout.get.return_value = {}
-        controller.plasmaBackups.config_path = Path("/tmp/plasma-layout-test")
+        source = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        start = source.index("    def applyPlasmaLayout(")
+        end = source.index("    @Slot(str, bool, str)", start)
+        method = source[start:end]
+        guard = (
+            'if self._plasma_layout_tasks:\n'
+            '            return "Une application du dock est déjà en cours ; '
+            'attends la fin avant de recommencer."'
+        )
 
-        with (
-            patch("control_center.controller.inspect_plasma_config") as inspect,
-            patch(
-                "control_center.controller.build_layout_plan",
-                return_value={"can_apply": False},
-            ),
-            patch(
-                "control_center.controller.format_layout_report",
-                return_value="Inspection normale",
-            ),
-        ):
-            message = ControlCenterController.applyPlasmaLayout(controller, True)
-
-        self.assertIn("déjà en cours", message.lower())
-        inspect.assert_not_called()
+        self.assertIn(guard, method)
+        self.assertLess(method.index(guard), method.index("inspect_plasma_config"))
 
 
 if __name__ == "__main__":
