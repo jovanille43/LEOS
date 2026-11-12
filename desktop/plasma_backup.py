@@ -10,7 +10,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import stat
 import tempfile
 import uuid
@@ -37,26 +36,55 @@ def _backup_root() -> Path:
     return state / "leos" / "plasma-backups"
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _read_regular_file(path: Path, maximum: int) -> bytes:
+    """Read one bounded regular file without following a final symlink."""
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    descriptor = os.open(path, flags)
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise OSError("Expected a regular file")
+        if before.st_size <= 0 or before.st_size > maximum:
+            raise ValueError("File has an unsupported size")
+        chunks: list[bytes] = []
+        remaining = maximum + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(1024 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        data = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(data) > maximum
+            or len(data) != before.st_size
+            or before.st_dev != after.st_dev
+            or before.st_ino != after.st_ino
+            or before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or before.st_ctime_ns != after.st_ctime_ns
+        ):
+            raise OSError("File changed while it was being read")
+        return data
+    finally:
+        os.close(descriptor)
+
+
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def _read_manifest(path: Path) -> Any | None:
-    """Read a bounded backup manifest; malformed or oversized files are ignored."""
+    """Read a bounded, regular backup manifest without following symlinks."""
     try:
-        with path.open("rb") as stream:
-            raw = stream.read(MAX_BACKUP_MANIFEST_BYTES + 1)
-        if len(raw) > MAX_BACKUP_MANIFEST_BYTES:
-            return None
+        raw = _read_regular_file(path, MAX_BACKUP_MANIFEST_BYTES)
         text = raw.decode("utf-8")
         if not json_nesting_within_limit(text):
             return None
         return json.loads(text)
-    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
+    except (OSError, ValueError, UnicodeError, json.JSONDecodeError, RecursionError):
         return None
 
 
@@ -86,11 +114,14 @@ class PlasmaBackupManager:
 
     def create_backup(self) -> str:
         source = self.config_path
-        if source.is_symlink() or source.parent.is_symlink() or not source.is_file():
+        if source.is_symlink() or source.parent.is_symlink():
             raise FileNotFoundError("KDE Plasma layout configuration was not found")
-        size = source.stat().st_size
-        if size <= 0 or size > MAX_BACKUP_BYTES:
-            raise ValueError("KDE Plasma configuration has an unsupported size")
+        try:
+            source_data = _read_regular_file(source, MAX_BACKUP_BYTES)
+        except FileNotFoundError:
+            raise FileNotFoundError("KDE Plasma layout configuration was not found") from None
+        except ValueError:
+            raise ValueError("KDE Plasma configuration has an unsupported size") from None
 
         if self.backup_dir.is_symlink() or self.backup_dir.parent.is_symlink():
             raise ValueError("Symbolic-link backup directories are not accepted")
@@ -100,14 +131,11 @@ class PlasmaBackupManager:
         backup_path = self.backup_dir / f"{backup_id}.bak"
         fd, temporary = tempfile.mkstemp(prefix="plasma.", suffix=".tmp", dir=self.backup_dir)
         try:
-            with os.fdopen(fd, "wb") as dst, source.open("rb") as src:
-                shutil.copyfileobj(src, dst)
+            with os.fdopen(fd, "wb") as dst:
+                dst.write(source_data)
                 dst.flush()
                 os.fsync(dst.fileno())
             os.chmod(temporary, 0o600)
-            copied_size = Path(temporary).stat().st_size
-            if copied_size <= 0 or copied_size > MAX_BACKUP_BYTES:
-                raise ValueError("KDE Plasma configuration changed to an unsupported size")
             os.replace(temporary, backup_path)
         finally:
             try:
@@ -119,8 +147,8 @@ class PlasmaBackupManager:
             "schema_version": BACKUP_SCHEMA_VERSION,
             "backup_id": backup_id,
             "created_utc": datetime.now(timezone.utc).isoformat(),
-            "size": backup_path.stat().st_size,
-            "sha256": _sha256(backup_path),
+            "size": len(source_data),
+            "sha256": _sha256(source_data),
         }
         try:
             _atomic_json(self.backup_dir / f"{backup_id}.json", manifest)
@@ -154,12 +182,13 @@ class PlasmaBackupManager:
                 or type(manifest.get("size")) is not int
                 or not isinstance(manifest.get("sha256"), str)
                 or not re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"])
-                or backup_path.is_symlink()
-                or not backup_path.is_file()
-                or backup_path.stat().st_size > MAX_BACKUP_BYTES
-                or backup_path.stat().st_size != manifest["size"]
-                or _sha256(backup_path) != manifest["sha256"]
             ):
+                continue
+            try:
+                backup_data = _read_regular_file(backup_path, MAX_BACKUP_BYTES)
+            except (OSError, ValueError):
+                continue
+            if len(backup_data) != manifest["size"] or _sha256(backup_data) != manifest["sha256"]:
                 continue
             entries.append(manifest)
         return sorted(entries, key=lambda item: str(item.get("created_utc", "")), reverse=True)
@@ -186,8 +215,6 @@ class PlasmaBackupManager:
             raise ValueError("Symbolic-link Plasma configuration directories are not accepted")
         backup_path = self.backup_dir / f"{backup_id}.bak"
         manifest_path = self.backup_dir / f"{backup_id}.json"
-        if backup_path.is_symlink() or manifest_path.is_symlink():
-            raise ValueError("Symbolic-link backups are not accepted")
         manifest = _read_manifest(manifest_path)
         if manifest is None:
             raise FileNotFoundError("Plasma backup manifest is unavailable")
@@ -201,9 +228,11 @@ class PlasmaBackupManager:
             or not re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"])
         ):
             raise ValueError("Invalid Plasma backup manifest")
-        if not backup_path.is_file() or backup_path.stat().st_size > MAX_BACKUP_BYTES:
-            raise ValueError("Plasma backup file is missing or too large")
-        if backup_path.stat().st_size != manifest["size"] or _sha256(backup_path) != manifest["sha256"]:
+        try:
+            backup_data = _read_regular_file(backup_path, MAX_BACKUP_BYTES)
+        except (OSError, ValueError):
+            raise ValueError("Plasma backup file is missing, unsafe, or too large") from None
+        if len(backup_data) != manifest["size"] or _sha256(backup_data) != manifest["sha256"]:
             raise ValueError("Plasma backup integrity check failed")
 
         previous_backup: str | None = None
@@ -214,8 +243,8 @@ class PlasmaBackupManager:
         mode = stat.S_IMODE(self.config_path.stat().st_mode) if self.config_path.exists() else 0o600
         fd, temporary = tempfile.mkstemp(prefix="plasma-restore.", suffix=".tmp", dir=self.config_path.parent)
         try:
-            with os.fdopen(fd, "wb") as dst, backup_path.open("rb") as src:
-                shutil.copyfileobj(src, dst)
+            with os.fdopen(fd, "wb") as dst:
+                dst.write(backup_data)
                 dst.flush()
                 os.fsync(dst.fileno())
             os.chmod(temporary, mode)

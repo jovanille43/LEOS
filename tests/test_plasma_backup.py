@@ -142,6 +142,44 @@ class PlasmaBackupTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             self.manager.restore_backup(backup_id, confirmed=True)
 
+    def test_manifest_symlink_is_not_followed(self):
+        backup_id = self.manager.create_backup()
+        manifest = self.backups / f"{backup_id}.json"
+        original = self.backups / "outside.json"
+        original.write_text(manifest.read_text(encoding="utf-8"), encoding="utf-8")
+        manifest.unlink()
+        try:
+            manifest.symlink_to(original)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        self.assertIsNone(self.manager.latest_backup_id())
+        with self.assertRaises(FileNotFoundError):
+            self.manager.restore_backup(backup_id, confirmed=True)
+
+    def test_non_regular_backup_file_is_rejected(self):
+        backup_id = self.manager.create_backup()
+        backup = self.backups / f"{backup_id}.bak"
+        backup.unlink()
+        try:
+            os.mkfifo(backup)
+        except (AttributeError, NotImplementedError, OSError):
+            self.skipTest("Named pipes unavailable")
+        self.assertIsNone(self.manager.latest_backup_id())
+        with self.assertRaises(ValueError):
+            self.manager.restore_backup(backup_id, confirmed=True)
+
+    def test_source_fifo_is_rejected_without_blocking(self):
+        import time
+        self.config.unlink()
+        try:
+            os.mkfifo(self.config)
+        except (AttributeError, NotImplementedError, OSError):
+            self.skipTest("Named pipes unavailable")
+        started = time.monotonic()
+        with self.assertRaises((OSError, ValueError)):
+            self.manager.create_backup()
+        self.assertLess(time.monotonic() - started, 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()
