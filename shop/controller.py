@@ -189,7 +189,7 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
-            self._set_status("Flatpak a produit trop de données ; l'opération a été interrompue.")
+            self._set_status("La sortie Flatpak dépasse la limite ; le résultat n'est pas vérifiable. Vérifie l'état de l'application avant de réessayer.")
             self.operationFinished.emit(False, self._status)
             post_notification("Sortie Flatpak trop volumineuse", self._status, "warning")
             return
