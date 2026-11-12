@@ -41,7 +41,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
     def test_rejects_invalid_utf8_and_malformed_json(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "catalog.json"
-            path.write_bytes(b"\\xff")
+            path.write_bytes(bytes((0xFF,)))
             with self.assertRaisesRegex(ValueError, "UTF-8"):
                 load_catalog(path)
             path.write_text("{broken", encoding="utf-8")
@@ -82,7 +82,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
             long_description["description"] = "x" * 2049
             cases.append(long_description)
             control_character = valid_item()
-            control_character["name"] = "Bad\\x00Name"
+            control_character["name"] = "Bad" + chr(0) + "Name"
             cases.append(control_character)
             for item in cases:
                 with self.subTest(item=item):
