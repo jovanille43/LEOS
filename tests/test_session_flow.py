@@ -62,6 +62,7 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
+        self.assertEqual(image.attrib.get("href"), "../desktop-logo.jpeg")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
             "../desktop-logo.jpeg",
@@ -77,6 +78,7 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
+        self.assertEqual(image.attrib.get("href"), "../gaming-logo.jpeg")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
             "../gaming-logo.jpeg",
