@@ -65,6 +65,9 @@ class DesktopExecTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_desktop_exec("app " + " ".join(f"--arg{i}" for i in range(130)))
 
+    def test_empty_quoted_executable_returns_no_arguments(self):
+        self.assertEqual(parse_desktop_exec('""'), [])
+
     def test_rejects_invalid_quoting(self):
         with self.assertRaises(ValueError):
             parse_desktop_exec('app "unclosed')
