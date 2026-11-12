@@ -1,6 +1,7 @@
 """Tests for the read-only hardware inventory."""
 
 import unittest
+import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -8,6 +9,18 @@ from control_center import hardware
 
 
 class HardwareInventoryTests(unittest.TestCase):
+    def test_hardware_text_reader_rejects_oversized_files(self):
+        with tempfile.NamedTemporaryFile() as stream:
+            stream.write(b"x" * (hardware.MAX_HARDWARE_TEXT_BYTES + 1))
+            stream.flush()
+            self.assertEqual(hardware._read(stream.name), "")
+
+    def test_hardware_text_reader_keeps_valid_utf8_and_tolerates_kernel_bytes(self):
+        with tempfile.NamedTemporaryFile() as stream:
+            stream.write(b"Model: Test CPU\\xff")
+            stream.flush()
+            self.assertEqual(hardware._read(stream.name), "Model: Test CPU\\ufffd")
+
     def test_snapshot_exposes_all_dashboard_fields(self):
         snapshot = hardware.collect_hardware_snapshot()
         expected = {
