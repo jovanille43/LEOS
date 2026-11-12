@@ -13,6 +13,27 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", source)
         self.assertNotIn("branches: [main]", source)
 
+    def test_image_workflow_verifies_original_branding_assets_before_publication(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        self.assertIn("Verify official LEOS branding assets", source)
+        self.assertIn("sha256sum --check branding/SHA256SUMS", source)
+        self.assertLess(
+            source.index("Verify official LEOS branding assets"),
+            source.index("Check signing prerequisites"),
+        )
+        expected = (
+            "branding/desktop-logo.jpeg",
+            "branding/gaming-logo.jpeg",
+            "branding/reference-comparison.jpeg",
+            "branding/animations/desktop-intro.mp4",
+            "branding/animations/gaming-intro.mp4",
+            "branding/animations/gaming-roar-reference.mp4",
+        )
+        for path in expected:
+            with self.subTest(path=path):
+                self.assertIn(path, sums)
+
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Check out repository", source)
