@@ -7,6 +7,7 @@ existing .lpl playlists and builds argument arrays for the installed launcher.
 from __future__ import annotations
 
 import hashlib
+from itertools import islice
 import json
 import re
 from pathlib import Path
@@ -19,6 +20,7 @@ RETROARCH_FLATPAK_ID = "org.libretro.RetroArch"
 MAX_PLAYLIST_BYTES = 16 * 1024 * 1024
 MAX_PLAYLIST_ITEMS = 20_000
 MAX_RETROARCH_CONFIG_BYTES = 1024 * 1024
+MAX_RETROARCH_THUMBNAILS_PER_PLAYLIST = 4096
 _IGNORED_PLAYLISTS = {"content_favorites", "content_history", "favorites", "history"}
 
 
@@ -154,7 +156,7 @@ def _thumbnail_index(
             boxarts = root / playlist_name / "Named_Boxarts"
             if not boxarts.is_dir():
                 continue
-            for candidate in boxarts.iterdir():
+            for candidate in islice(boxarts.iterdir(), MAX_RETROARCH_THUMBNAILS_PER_PLAYLIST):
                 if candidate.suffix.casefold() not in _THUMBNAIL_SUFFIXES:
                     continue
                 try:
