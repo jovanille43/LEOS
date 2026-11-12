@@ -14,6 +14,16 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", source)
         self.assertNotIn("branches: [main]", source)
 
+    def test_manual_image_build_runs_python_suite_before_publishing(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("Run LEOS Python test suite", source)
+        self.assertIn('python -m unittest discover -s tests -v', source)
+        self.assertIn("python-version: \"3.12\"", source)
+        self.assertLess(
+            source.index("Run LEOS Python test suite"),
+            source.index("Build and publish LEOS"),
+        )
+
     def test_image_workflow_verifies_original_branding_assets_before_publication(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
