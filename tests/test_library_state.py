@@ -76,6 +76,24 @@ class LibraryStateTests(unittest.TestCase):
             self.assertIsNone(read_bounded_text(path, max_bytes=2))
             self.assertIsNone(read_bounded_text(path.with_name("missing.vdf")))
 
+    def test_bounded_readers_reject_invalid_limits_and_symbolic_links(self):
+        from gaming.backend.library_state import read_bounded_text
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            target.write_text('{"keep":true}', encoding="utf-8")
+            link = root / "linked.json"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            self.assertIsNone(read_bounded_json(link))
+            self.assertIsNone(read_bounded_text(link))
+            self.assertIsNone(read_bounded_json(target, max_bytes=-1))
+            self.assertIsNone(read_bounded_text(target, max_bytes=-1))
+            self.assertEqual(target.read_text(encoding="utf-8"), '{"keep":true}')
+
     def test_bounded_json_reader_accepts_valid_json(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "state.json"
