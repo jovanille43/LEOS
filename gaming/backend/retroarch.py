@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from leos_core.json_utils import json_nesting_within_limit
 from leos_core.text import normalize_search_text
 
 
@@ -327,8 +328,11 @@ def load_retroarch_games(
             raw_playlist = stream.read(MAX_PLAYLIST_BYTES + 1)
         if len(raw_playlist) > MAX_PLAYLIST_BYTES:
             return []
-        payload = json.loads(raw_playlist.decode("utf-8-sig"))
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        text = raw_playlist.decode("utf-8-sig")
+        if not json_nesting_within_limit(text):
+            return []
+        payload = json.loads(text)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
         return []
     if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
         return []

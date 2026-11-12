@@ -7,6 +7,7 @@ from pathlib import Path
 
 from gaming.backend.heroic import find_heroic_artwork, load_heroic_games
 from gaming.backend.install_state import installation_status
+from leos_core.json_utils import MAX_JSON_NESTING
 
 
 class HeroicGameImportTests(unittest.TestCase):
@@ -124,6 +125,11 @@ class HeroicGameImportTests(unittest.TestCase):
         self.assertEqual([game["title"] for game in games], ["BOM Game"])
 
         self.manifest.write_bytes(bytes((0xFF, 0xFE, 0x80)))
+        self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
+
+    def test_rejects_excessively_nested_manifest_before_json_decoding(self):
+        nested = "[" * (MAX_JSON_NESTING + 1) + "0" + "]" * (MAX_JSON_NESTING + 1)
+        self.manifest.write_text('{"unexpected":' + nested + '}', encoding="utf-8")
         self.assertEqual(load_heroic_games(self.manifest, "legendary"), [])
 
     def test_rejects_oversized_manifest_before_parsing(self):

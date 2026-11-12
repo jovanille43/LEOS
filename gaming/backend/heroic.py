@@ -7,6 +7,8 @@ from pathlib import Path
 from urllib.parse import quote
 from typing import Any
 
+from leos_core.json_utils import json_nesting_within_limit
+
 
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 MAX_HEROIC_MANIFEST_BYTES = 16 * 1024 * 1024
@@ -42,8 +44,11 @@ def load_heroic_games(installed_file: Path, runner: str) -> list[dict[str, Any]]
             raw = stream.read(MAX_HEROIC_MANIFEST_BYTES + 1)
         if len(raw) > MAX_HEROIC_MANIFEST_BYTES:
             return []
-        payload = json.loads(raw.decode("utf-8-sig"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+        text = raw.decode("utf-8-sig")
+        if not json_nesting_within_limit(text):
+            return []
+        payload = json.loads(text)
+    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
         return []
 
     if isinstance(payload, dict):

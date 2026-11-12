@@ -11,6 +11,7 @@ from gaming.backend.retroarch import (
     load_retroarch_games,
 )
 from gaming.backend.install_state import installation_status
+from leos_core.json_utils import MAX_JSON_NESTING
 
 
 class RetroArchPlaylistTests(unittest.TestCase):
@@ -337,6 +338,11 @@ class RetroArchPlaylistTests(unittest.TestCase):
                 "path": str(self.rom), "label": "Duplicate"
             }]}), encoding="utf-8")
             self.assertEqual(load_retroarch_games(path), [])
+
+    def test_rejects_excessively_nested_json_before_decoding(self):
+        nested = "[" * (MAX_JSON_NESTING + 1) + "0" + "]" * (MAX_JSON_NESTING + 1)
+        self.playlist.write_text('{"items":[],"unexpected":' + nested + '}', encoding="utf-8")
+        self.assertEqual(load_retroarch_games(self.playlist), [])
 
     def test_corrupt_oversized_or_non_json_playlists_are_ignored(self):
         self.playlist.write_text("{broken", encoding="utf-8")
