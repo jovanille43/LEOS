@@ -43,6 +43,19 @@ class NetworkTests(unittest.TestCase):
         with patch.object(network, "_read", return_value=content):
             self.assertEqual(network._dns_servers(), ["1.1.1.1", "8.8.8.8"])
 
+    def test_dns_parser_rejects_invalid_addresses_and_accepts_ipv6(self):
+        content = (
+            "nameserver 1.1.1.1\n"
+            "nameserver not-an-ip\n"
+            "nameserver 2001:4860:4860::8888\n"
+            "nameserver 1.1.1.1\n"
+        )
+        with patch.object(network, "_read", return_value=content):
+            self.assertEqual(
+                network._dns_servers(),
+                ["1.1.1.1", "2001:4860:4860::8888"],
+            )
+
     def test_wireless_details_parse_ssid_and_signal(self):
         output = "Connected to aa:bb\n\tSSID: LEOS-WIFI\n\tsignal: -52 dBm\n"
         with patch.object(network, "_run", return_value=output):
