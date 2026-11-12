@@ -66,7 +66,7 @@ class LibraryStateTests(unittest.TestCase):
             ("Game", "PC", '"unterminated'),
             ("Game", "PC", "game " + " ".join(f"arg{i}" for i in range(MAX_MANUAL_ARGUMENTS))),
             ("Game", "PC", "game " + "x" * (MAX_MANUAL_ARGUMENT_LENGTH + 1)),
-            ("Game", "PC", "game\\x00bad"),
+            ("Game", "PC", "game\x00bad"),
         ]
         for values in invalid:
             with self.subTest(values=values):
