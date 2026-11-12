@@ -34,6 +34,19 @@ class SystemDiagnosticsTests(unittest.TestCase):
         ):
             self.assertEqual(diagnostics._temperature_celsius(), 42.0)
 
+    def test_temperature_uses_chip_name_when_sensor_label_is_generic(self):
+        sensor = diagnostics.Path("/sys/class/hwmon/hwmon0/temp1_input")
+        values = {
+            str(sensor): "68000",
+            str(sensor.with_name("temp1_label")): "temp1",
+            str(sensor.parent / "name"): "k10temp",
+        }
+        with (
+            patch.object(diagnostics.Path, "glob", side_effect=[[sensor], []]),
+            patch.object(diagnostics, "_read", side_effect=lambda path: values.get(str(path), "")),
+        ):
+            self.assertEqual(diagnostics._temperature_celsius(), 68.0)
+
     def test_temperature_does_not_mislabel_unknown_thermal_zone_as_cpu(self):
         path = diagnostics.Path("/sys/class/thermal/thermal_zone0/temp")
         values = {
