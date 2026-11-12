@@ -29,9 +29,10 @@ La navigation fonctionne à la souris, au clavier et avec les manettes reconnues
 ## Limites à ce stade
 
 - Les raccourcis du sélecteur sont des raccourcis de fenêtre, pas encore des raccourcis globaux KDE.
-- Les animations officielles Desktop/Gaming et leurs pistes audio AAC intégrées ne sont pas intégrées à ce parcours tant que les fichiers média officiels ne sont pas présents dans le dépôt.
-- Les logos individuels sont attendus dans `branding/desktop-logo.jpeg` et `branding/gaming-logo.jpeg`. En leur absence, les noms des modes restent lisibles.
-- Le sélecteur et les transitions doivent encore être testés dans une session Bazzite KDE réelle.
+- Le sélecteur joue `gaming-intro.mp4` avant d'ouvrir Gaming et `desktop-intro.mp4` avant de revenir au bureau. Les pistes AAC sont lues avec la vidéo et peuvent être coupées indépendamment des animations.
+- Le retour depuis Gaming joue également l'introduction Desktop avant de fermer l'application.
+- Les binaires JPEG/MP4 officiels ne sont pas encore présents dans l'arbre GitHub. Si un fichier est absent, si le décodage échoue ou si le lecteur dépasse son délai de sécurité, LEOS poursuit la transition sans rester bloqué.
+- Le sélecteur, le rendu vidéo, le son et les transitions doivent encore être testés dans une session Bazzite KDE réelle.
 
 ## Notifications des modes LEOS
 
