@@ -19,6 +19,8 @@ Cette procédure concerne les images LEOS basées sur Bazzite avec OSTree. Les i
 4. Vérifier qu'un déploiement précédent est encore disponible dans la liste. Ne pas lancer de nettoyage manuel des anciens déploiements avant d'avoir validé la mise à jour.
 5. Effectuer la mise à jour par le mécanisme natif Bazzite/OSTree et redémarrer lorsque le système le demande.
 
+Pour une mise à jour à risque, il est possible de préserver un déploiement connu comme fonctionnel avec le mécanisme de pinning OSTree. Consulte d'abord `rpm-ostree status -v`, identifie précisément l'index du déploiement, puis utilise `sudo ostree admin pin <index>`. **Ne réutilise jamais un ancien index sans relire l'état** : les index peuvent changer après une transaction. Cette protection conserve un déploiement système, pas les données personnelles.
+
 Les fichiers personnels du répertoire utilisateur ne sont normalement pas remplacés par un changement de déploiement OSTree. Cela ne remplace pas une sauvegarde : les partitions de données, les applications Flatpak et les données de configuration doivent être sauvegardées selon leur emplacement et leur importance.
 
 ## Si le nouveau déploiement ne démarre pas
@@ -97,3 +99,7 @@ Sur chaque variante matérielle LEOS, tester sur un PC de test :
 - [ ] démarrage depuis un support live UEFI et copie de données vers un disque externe.
 
 Tant que ces essais physiques ne sont pas terminés, la récupération est documentée mais **non certifiée sur matériel réel**.
+
+## Référence Bazzite
+
+La procédure suit le guide officiel [Bazzite — Rollbacks](https://docs.bazzite.gg/Installing_and_Managing_Software/Updates_Rollbacks_and_Rebasing/rolling_back_system_updates/), qui décrit le choix du déploiement de secours dans GRUB, le retour arrière depuis une session démarrée et le pinning des déploiements. Les intitulés du menu et les options disponibles peuvent varier selon l'image et la version.
