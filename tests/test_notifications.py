@@ -106,11 +106,16 @@ class NotificationEmissionTests(unittest.TestCase):
             with patch.dict("os.environ", {"XDG_STATE_HOME": directory, "XDG_CONFIG_HOME": directory}):
                 from leos_core.settings import SettingsStore
                 settings = SettingsStore()
+                settings.set("notifications_enabled", True)
+                settings.set("notification_minimum_priority", "all")
+                settings.set("last_mode", "desktop")
+                settings.set("silent_notifications_in_gaming", False)
                 settings.set("notification_duration_seconds", 8)
                 settings.set("notification_sounds_enabled", False)
                 with patch("desktop.notifications.shutil.which", return_value="/usr/bin/notify-send"):
                     with patch("desktop.notifications.subprocess.Popen") as run:
                         post_notification("Réglage", "Test", "info")
+                        run.assert_called_once()
                         args = run.call_args.args[0]
                         self.assertIn("--expire-time=8000", args)
                         self.assertIn("--hint=boolean:suppress-sound:true", args)
