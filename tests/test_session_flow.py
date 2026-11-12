@@ -1,11 +1,3 @@
-    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
-        source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/desktop-logo.jpeg", source)
-        self.assertIn("../../branding/gaming-logo.jpeg", source)
-        self.assertNotIn("desktop-logo.png", source)
-        self.assertNotIn("gaming-logo.png", source)
-        self.assertIn("visible: status === Image.Ready", source)
-
 """Tests for the LEOS startup and mode-selection contract."""
 
 import unittest
@@ -16,6 +8,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SessionFlowTests(unittest.TestCase):
+    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
+        source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("../../branding/desktop-logo.jpeg", source)
+        self.assertIn("../../branding/gaming-logo.jpeg", source)
+        self.assertNotIn("desktop-logo.png", source)
+        self.assertNotIn("gaming-logo.png", source)
+        self.assertIn("visible: status === Image.Ready", source)
+
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(
             encoding="utf-8"
@@ -40,8 +40,8 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("../../branding/desktop-logo.png", qml)
-        self.assertIn("../../branding/gaming-logo.png", qml)
+        self.assertIn("../../branding/desktop-logo.jpeg", qml)
+        self.assertIn("../../branding/gaming-logo.jpeg", qml)
 
     def test_selector_accepts_read_only_controller_navigation(self):
         root = ROOT
