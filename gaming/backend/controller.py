@@ -165,7 +165,9 @@ class GamingController(QObject):
             self.powerProfilesChanged.emit()
             return False
         self._power_profile_message = "Changement du profil d'énergie en cours…"
+        self._message = self._power_profile_message
         self.powerProfilesChanged.emit()
+        self.messageChanged.emit(self._message)
         self._start_power_profile_task(profile)
         return True
 
