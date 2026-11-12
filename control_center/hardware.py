@@ -451,10 +451,72 @@ def _gpu_details() -> str:
     ]
     return " · ".join(lines) if lines else "Non détecté"
 
+def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
+    """Parse read-only kscreen-doctor output, including active mode and geometry."""
+    if not output.strip():
+        return None
+
+    # KScreen colors the active mode in interactive terminals. Strip ANSI
+    # sequences before parsing so output remains predictable in all sessions.
+    output = re.sub(r"\\x1b\\[[0-?]*[ -/]*[@-~]", "", output)
+    headers = list(re.finditer(r"(?m)^Output:\\s*\\d+\\s+(\\S+)(.*)$", output))
+    if not headers:
+        return None
+
+    connected: list[str] = []
+    for index, header in enumerate(headers):
+        end = headers[index + 1].start() if index + 1 < len(headers) else len(output)
+        block = output[header.start():end]
+        name = header.group(1)
+        header_state = header.group(2).lower()
+        if not re.search(r"\\bconnected\\b", header_state):
+            continue
+
+        enabled = bool(re.search(r"\\benabled\\b", header_state))
+        state = "actif" if enabled else "connecté, inactif"
+        details = [name, state]
+
+        current_mode = re.search(
+            r"(?m)^\\s*Modes:.*?\\b(\\d{2,5}x\\d{2,5}@\\d+(?:\\.\\d+)?)\\*",
+            block,
+        )
+        if current_mode:
+            mode = current_mode.group(1)
+            if "@" in mode:
+                resolution, refresh = mode.split("@", 1)
+                refresh = refresh.rstrip("0").rstrip(".")
+                details.append(f"{resolution} à {refresh} Hz")
+            else:
+                details.append(mode)
+        else:
+            details.append("mode actif non exposé")
+
+        geometry = re.search(r"(?m)^\\s*Geometry:\\s*(-?\\d+,-?\\d+\\s+\\d{2,5}x\\d{2,5})", block)
+        if geometry:
+            details.append(f"géométrie {geometry.group(1)}")
+
+        scale = re.search(r"(?m)^\\s*Scale:\\s*([0-9]+(?:\\.[0-9]+)?)", block)
+        if scale:
+            scale_value = scale.group(1).rstrip("0").rstrip(".")
+            details.append(f"échelle {scale_value}")
+
+        connected.append(" · ".join(details))
+
+    if not connected:
+        return "0", "Aucun écran connecté détecté par KScreen"
+    return str(len(connected)), " | ".join(connected)
+
+
 def _display_details(
     drm_root: Path = Path("/sys/class/drm"),
 ) -> tuple[str, str]:
-    """Inventory connected DRM display connectors without changing display settings."""
+    """Inventory displays using KScreen when available, then read-only DRM fallback."""
+    kscreen = _parse_kscreen_displays(
+        _run(["kscreen-doctor", "-o"], timeout=2.0)
+    )
+    if kscreen is not None:
+        return kscreen
+
     try:
         connectors = sorted(
             path
