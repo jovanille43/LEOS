@@ -51,6 +51,20 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertNotIn('"upgrade"', module)
         self.assertNotIn('"deploy"', module)
 
+    def test_control_center_exposes_read_only_ostree_deployment_inventory(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        module = (ROOT / "control_center/system_updates.py").read_text(encoding="utf-8")
+        qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+
+        self.assertIn("deployment_inventory_from_status", controller)
+        self.assertIn("def deploymentSnapshot", controller)
+        self.assertIn("deployment_inventory_from_status", module)
+        self.assertIn("controlCenter.deploymentSnapshot.bootedVersion", qml)
+        self.assertIn("controlCenter.deploymentSnapshot.otherCount", qml)
+        self.assertIn("ne lance aucun rollback, nettoyage ni pinning", qml)
+        self.assertNotIn('"rollback"', module)
+        self.assertNotIn('"pin"', module)
+
     def test_update_installation_remains_user_controlled(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("OUVRIR BAZZITE UPDATER", qml)
