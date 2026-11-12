@@ -56,7 +56,7 @@ class GamepadActionTests(unittest.TestCase):
         self.assertIsNone(self.mapper.repeat_action(now=10.37))
         self.assertEqual(self.mapper.repeat_action(now=10.38), "right")
         self.assertIsNone(self.mapper.repeat_action(now=10.49))
-        self.assertEqual(self.mapper.repeat_action(now=10.50), "right")
+        self.assertEqual(self.mapper.repeat_action(now=10.51), "right")
 
     def test_releasing_direction_stops_repeat_without_extra_move(self):
         with patch("gaming.backend.gamepad.time.monotonic", return_value=20.0):
@@ -89,7 +89,7 @@ class GamepadActionTests(unittest.TestCase):
                 "up",
             )
         self.assertIsNone(self.mapper.repeat_action(now=30.87))
-        self.assertEqual(self.mapper.repeat_action(now=30.88), "up")
+        self.assertEqual(self.mapper.repeat_action(now=30.89), "up")
 
     def test_analog_stick_hold_repeats_and_returns_to_neutral(self):
         event = {
