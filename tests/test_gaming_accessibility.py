@@ -52,7 +52,7 @@ class GamingAccessibilityTests(unittest.TestCase):
         self.assertIn("property int fontTitle: 25", self.qml)
         pixel_sizes = [
             int(value)
-            for value in re.findall(r"font\\.pixelSize\\s*:\\s*(\\d+)", self.qml)
+            for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", self.qml)
         ]
         self.assertFalse(
             [value for value in pixel_sizes if value < 12],
