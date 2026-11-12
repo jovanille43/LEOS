@@ -11,7 +11,6 @@ ApplicationWindow {
     visibility: Window.FullScreen
     title: "LEOS — Choix du mode"
     color: "#07080c"
-    focus: true
 
     property color cyan: "#00d9ff"
     property color magenta: "#e33bff"
@@ -86,8 +85,10 @@ ApplicationWindow {
     }
 
     Rectangle {
+        id: modeSelectorContent
         anchors.fill: parent
         color: window.color
+        focus: true
 
         Rectangle {
             width: 650; height: 650; radius: 325
@@ -272,6 +273,29 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignHCenter
             }
         }
+
+        Keys.onPressed: function(event) {
+            if (window.transitionInProgress) {
+                event.accepted = true
+                return
+            }
+            if (event.key === Qt.Key_G) {
+                transitionDialog.open()
+                event.accepted = true
+            } else if (event.key === Qt.Key_D) {
+                window.requestModeWithIntro("desktop")
+                event.accepted = true
+            } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+                if (desktopCard.activeFocus)
+                    gamingCard.forceActiveFocus()
+                else
+                    desktopCard.forceActiveFocus()
+                event.accepted = true
+            } else if (event.key === Qt.Key_Escape && transitionDialog.visible) {
+                transitionDialog.close()
+                event.accepted = true
+            }
+        }
     }
 
     MediaPlayer {
@@ -340,6 +364,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Button {
+                id: continueGamingButton
                 text: "CONTINUER VERS GAMING"
                 Layout.fillWidth: true
                 onClicked: {
@@ -357,26 +382,4 @@ ApplicationWindow {
         }
     }
 
-    Keys.onPressed: function(event) {
-        if (window.transitionInProgress) {
-            event.accepted = true
-            return
-        }
-        if (event.key === Qt.Key_G) {
-            transitionDialog.open()
-            event.accepted = true
-        } else if (event.key === Qt.Key_D) {
-            window.requestModeWithIntro("desktop")
-            event.accepted = true
-        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
-            if (desktopCard.activeFocus)
-                gamingCard.forceActiveFocus()
-            else
-                desktopCard.forceActiveFocus()
-            event.accepted = true
-        } else if (event.key === Qt.Key_Escape && transitionDialog.visible) {
-            transitionDialog.close()
-            event.accepted = true
-        }
-    }
 }
