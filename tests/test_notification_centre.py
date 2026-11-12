@@ -47,6 +47,16 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("SILENCE ACTIVÉ", qml)
         self.assertIn("ALERTES AUTORISÉES", qml)
 
+
+    def test_gaming_settings_actions_report_persistence_failures(self):
+        source = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        for key in ("gaming_mangohud_enabled", "silent_notifications_in_gaming"):
+            position = source.index(key)
+            handler = source.rfind("except (OSError, ValueError, TypeError):", 0, position)
+            self.assertGreaterEqual(handler, 0, f"{key} must handle settings write failures")
+        self.assertIn("Impossible d'enregistrer le réglage MangoHud.", source)
+        self.assertIn("Impossible d'enregistrer le réglage des notifications.", source)
+
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)

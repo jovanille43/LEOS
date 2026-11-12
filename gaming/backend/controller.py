@@ -204,8 +204,14 @@ class GamingController(QObject):
             self._mangohud_enabled = False
             self.mangoHudChanged.emit()
             return False
-        self._mangohud_enabled = bool(enabled)
-        self.settings.set("gaming_mangohud_enabled", self._mangohud_enabled)
+        requested = bool(enabled)
+        try:
+            self.settings.set("gaming_mangohud_enabled", requested)
+        except (OSError, ValueError, TypeError):
+            self._message = "Impossible d'enregistrer le réglage MangoHud."
+            self.messageChanged.emit(self._message)
+            return False
+        self._mangohud_enabled = requested
         self.mangoHudChanged.emit()
         return self._mangohud_enabled
 
@@ -220,7 +226,12 @@ class GamingController(QObject):
     @Slot(result=bool)
     def toggleSilentNotifications(self) -> bool:
         enabled = not self.silentNotificationsInGaming
-        self.settings.set("silent_notifications_in_gaming", enabled)
+        try:
+            self.settings.set("silent_notifications_in_gaming", enabled)
+        except (OSError, ValueError, TypeError):
+            self._message = "Impossible d'enregistrer le réglage des notifications."
+            self.messageChanged.emit(self._message)
+            return not enabled
         self.notificationSettingsChanged.emit()
         return enabled
 
