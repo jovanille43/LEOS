@@ -22,6 +22,20 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
         self.assertIn("leos.applyPowerProfile(window.pendingPowerProfile)", qml)
         self.assertIn("powerProfileStatus", qml)
 
+    def test_power_profile_queries_and_changes_run_off_the_qml_thread(self):
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        constructor = controller[controller.index("def __init__"):controller.index("@Property(bool")]
+        self.assertNotIn("inspect_power_profiles()", constructor)
+        self.assertIn("class _PowerProfileTask(QRunnable)", controller)
+        self.assertIn("QThreadPool.globalInstance().start(task)", controller)
+        refresh = controller[controller.index("def refreshPowerProfiles"):controller.index("@Property(str, notify=launchStatusChanged)")]
+        self.assertNotIn("inspect_power_profiles()", refresh)
+        self.assertIn("self._start_power_profile_task(None)", refresh)
+        apply = controller[controller.index("def applyPowerProfile"):controller.index("@Property(str, notify=launchStatusChanged)")]
+        self.assertNotIn("set_power_profile(", apply)
+        self.assertIn("self._start_power_profile_task(profile)", apply)
+        self.assertIn("Une opération de gestion d'énergie est déjà en cours.", apply)
+
     def test_profile_backend_uses_only_native_powerprofilesctl(self):
         module = (ROOT / "gaming/backend/power_profiles.py").read_text(encoding="utf-8")
         self.assertIn('[executable, "get"]', module)
