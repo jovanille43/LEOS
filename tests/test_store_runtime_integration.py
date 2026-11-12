@@ -16,7 +16,7 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
 
     def test_install_flow_checks_flathub_origin_before_metadata_lookup(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
-        self.assertIn('"remotes", "--columns=name,url"', source)
+        self.assertIn('"remotes", "--user", "--columns=name,url"', source)
         self.assertIn("is_trusted_flathub_remote(stdout)", source)
         self.assertIn('"verify-remote"', source)
         self.assertLess(
