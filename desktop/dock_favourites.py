@@ -90,7 +90,7 @@ class DockFavourites:
         except FileNotFoundError:
             self._items = list(DEFAULT_PINNED_APPS)
             return True
-        except (OSError, UnicodeError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
             return False
         if not _valid_payload(data):
             return False
