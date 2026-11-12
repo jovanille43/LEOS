@@ -14,6 +14,7 @@ on:
       - "leos_core/**"
       - "branding/**"
       - "desktop/**"
+      - "tests/**"
       - "plasma-theme/**"
       - "icons/**"
       - "aurorae/**"
@@ -66,6 +67,17 @@ jobs:
                 qmllint-qt6 "${file}"
               done
             '
+
+      - name: Set up Python for source and unit tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run LEOS Python test suite
+        run: |
+          set -euo pipefail
+          python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
+          python -m unittest discover -s tests -v
 
       - name: Check LEOS first-run shell script
         run: bash -n packaging/leos-default-apps-setup
