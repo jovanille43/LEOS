@@ -209,6 +209,22 @@ class GamepadActionTests(unittest.TestCase):
             "back",
         )
 
+    def test_malformed_axis_events_are_ignored_without_interrupting_navigation(self):
+        malformed = [
+            {"kind": "axis", "name": "ABS_HAT0X", "value": None},
+            {"kind": "axis", "name": "ABS_HAT0Y", "value": "bad"},
+            {"kind": "axis", "name": "ABS_X", "value": "bad"},
+            {"kind": "axis", "name": "ABS_Y", "minimum": "bad", "value": 100},
+            {"kind": "axis", "name": "ABS_X", "minimum": 10, "maximum": 10, "value": 10},
+        ]
+        for event in malformed:
+            with self.subTest(event=event):
+                self.assertIsNone(self.mapper.feed(event))
+        self.assertEqual(
+            self.mapper.feed({"kind": "button", "name": "BTN_SOUTH", "value": 1}),
+            "confirm",
+        )
+
     def test_unknown_events_are_ignored(self):
         self.assertIsNone(
             self.mapper.feed({"kind": "button", "name": "BTN_TRIGGER", "value": 1})
