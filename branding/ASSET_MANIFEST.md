@@ -29,8 +29,8 @@ Avant d'activer la lecture dans l'interface, vérifier la disponibilité de Qt M
 
 | Chemin attendu | Déclenchement |
 | --- | --- |
-| `branding/sounds/desktop-intro.ogg` | Signature Desktop |
-| `branding/sounds/gaming-intro.ogg` | Signature Gaming |
+| Piste AAC de `animations/desktop-intro.mp4` | Signature Desktop synchronisée |
+| Piste AAC de `animations/gaming-intro.mp4` | Signature Gaming synchronisée |
 
 Les pistes audio AAC sont intégrées aux vidéos MP4 sources. Leur lecture doit rester synchronisée avec l'image et être désactivable indépendamment du reste des sons LEOS. Aucun fichier OGG séparé n'a été fourni.
 
