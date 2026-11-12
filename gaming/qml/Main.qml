@@ -16,11 +16,11 @@ ApplicationWindow {
     property color magenta: "#e33bff"
     property color muted: "#8d96a8"
     property color focusColor: "#ffffff"
-    property int fontMicro: 12
-    property int fontCaption: 13
-    property int fontBody: 16
-    property int fontTitle: 25
-    property int fontDisplay: 29
+    property int fontMicro: 14
+    property int fontCaption: 15
+    property int fontBody: 17
+    property int fontTitle: 26
+    property int fontDisplay: 30
     property int selectedIndex: -1
     property string selectedTitle: ""
     property string selectedPlatform: ""
