@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Property, QTimer, Signal
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import mapper_from_preferences
+from leos_core.settings import SettingsStore
 
 
 class ModeSelectorController(QObject):
@@ -17,6 +18,7 @@ class ModeSelectorController(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+        self._settings = SettingsStore()
         self._backend = GamepadBackend()
         self._profiles = ControllerProfileStore()
         self._mapper = mapper_from_preferences({"profile": "auto"})
@@ -37,6 +39,14 @@ class ModeSelectorController(QObject):
 
         self._refresh()
         self._refresh_timer.start()
+
+    @Property(bool, constant=False)
+    def animationsEnabled(self) -> bool:
+        return bool(self._settings.get("animations_enabled", True))
+
+    @Property(bool, constant=False)
+    def soundsEnabled(self) -> bool:
+        return bool(self._settings.get("sounds_enabled", True))
 
     @Property(str, notify=gamepadStatusChanged)
     def gamepadStatus(self) -> str:
