@@ -24,7 +24,10 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
 
     def test_power_profile_queries_and_changes_run_off_the_qml_thread(self):
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
-        constructor = controller[controller.index("def __init__"):controller.index("@Property(bool")]
+        class_start = controller.index("class GamingController")
+        constructor_start = controller.index("def __init__", class_start)
+        constructor_end = controller.index("@Property(bool", constructor_start)
+        constructor = controller[constructor_start:constructor_end]
         self.assertNotIn("inspect_power_profiles()", constructor)
         self.assertIn("class _PowerProfileTask(QRunnable)", controller)
         self.assertIn("QThreadPool.globalInstance().start(task)", controller)
