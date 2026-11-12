@@ -151,6 +151,70 @@ ApplicationWindow {
                 }
             }
 
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 104
+                visible: !modeSelectorController.onboardingComplete
+                radius: 15
+                color: "#101923"
+                border.color: "#254253"
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    spacing: 16
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 5
+
+                        Label {
+                            text: "BIENVENUE DANS LEOS"
+                            color: window.cyan
+                            font.pixelSize: 11
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.5
+                        }
+                        Label {
+                            text: "Un seul système, deux expériences : Desktop pour le quotidien et Gaming pour jouer."
+                            color: "white"
+                            font.pixelSize: 13
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+                        Label {
+                            text: "Tes applications restent ouvertes. Aucun réglage KDE ni logiciel facultatif n'est modifié sans ton accord."
+                            color: window.muted
+                            font.pixelSize: 10
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+                    }
+
+                    Button {
+                        text: "COMPRIS"
+                        Layout.minimumWidth: 112
+                        onClicked: {
+                            if (!modeSelectorController.completeOnboarding())
+                                modeManager.setStatus("Le guide restera affiché : impossible d'enregistrer cette préférence.")
+                        }
+                        background: Rectangle {
+                            radius: 8
+                            color: "#17313d"
+                            border.color: window.cyan
+                        }
+                        contentItem: Label {
+                            text: parent.text
+                            color: "white"
+                            font.pixelSize: 10
+                            font.weight: Font.Bold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
