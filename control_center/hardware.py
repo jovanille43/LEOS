@@ -483,7 +483,8 @@ def _parse_kscreen_displays(output: str) -> tuple[str, str] | None:
         if current_mode:
             mode = current_mode.group(1)
             resolution, refresh = mode.split("@", 1)
-            refresh = refresh.rstrip("0").rstrip(".")
+            if "." in refresh:
+                refresh = refresh.rstrip("0").rstrip(".")
             details.append(f"{resolution} à {refresh} Hz")
         else:
             details.append("mode actif non exposé")
