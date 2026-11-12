@@ -40,24 +40,63 @@ def _memory_percent() -> float | None:
     return max(0.0, min(100.0, (total - values["MemAvailable"]) * 100 / total))
 
 
+def _parse_temperature(raw: str) -> float | None:
+    try:
+        value = float(raw.strip())
+    except ValueError:
+        return None
+    if value > 1000:
+        value /= 1000.0
+    return value if 0 < value < 150 else None
+
+
 def _temperature_celsius() -> float | None:
-    readings: list[float] = []
+    """Prefer labelled CPU/GPU sensors over unrelated chassis or radio sensors."""
+    relevant_tokens = (
+        "cpu", "core", "package", "tdie", "tctl", "junction", "edge",
+        "gpu", "soc", "coretemp", "k10temp", "zenpower", "amdgpu", "i915",
+    )
+    hwmon_readings: list[float] = []
+    try:
+        hwmon_inputs = sorted(Path("/sys/class/hwmon").glob("hwmon*/temp*_input"))
+    except OSError:
+        hwmon_inputs = []
+
+    for path in hwmon_inputs:
+        label_path = path.with_name(path.name.replace("_input", "_label"))
+        label = _read(label_path).strip()
+        chip = _read(path.parent / "name").strip()
+        sensor_identity = (label or chip).lower()
+        if not any(token in sensor_identity for token in relevant_tokens):
+            continue
+        value = _parse_temperature(_read(path))
+        if value is not None:
+            hwmon_readings.append(value)
+
+    # A labelled processor/graphics sensor is more useful than taking the
+    # hottest arbitrary thermal zone (which may be a chassis or radio sensor).
+    if hwmon_readings:
+        return max(hwmon_readings)
+
+    zone_readings: list[tuple[str, float]] = []
     try:
         zones = sorted(Path("/sys/class/thermal").glob("thermal_zone*/temp"))
     except OSError:
         zones = []
     for path in zones:
-        raw = _read(path).strip()
-        try:
-            value = float(raw)
-        except ValueError:
+        value = _parse_temperature(_read(path))
+        if value is None:
             continue
-        if value > 1000:
-            value /= 1000.0
-        if 0 < value < 150:
-            readings.append(value)
-    return max(readings) if readings else None
+        zone_type = _read(path.parent / "type").strip().lower()
+        zone_readings.append((zone_type, value))
 
+    relevant_zones = [
+        value for zone_type, value in zone_readings
+        if any(token in zone_type for token in relevant_tokens)
+    ]
+    if relevant_zones:
+        return max(relevant_zones)
+    return max((value for _zone_type, value in zone_readings), default=None)
 
 def _failed_services() -> tuple[str, list[str]]:
     output = _run(["systemctl", "--failed", "--no-legend", "--plain", "--no-pager"])
