@@ -15,7 +15,7 @@ from leos_core.json_utils import json_nesting_within_limit
 MAX_CATALOG_BYTES = 256 * 1024
 MAX_CATALOG_ITEMS = 128
 MAX_CATALOG_FIELD_LENGTH = 2048
-APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)+$")
+APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
 
 _REQUIRED_FIELDS = frozenset({
     "id", "name", "category", "description", "source",
@@ -85,7 +85,7 @@ def load_catalog(path: Path) -> list[dict[str, Any]]:
                 not isinstance(value, str)
                 or not value.strip()
                 or len(value) > MAX_CATALOG_FIELD_LENGTH
-                or any(ord(character) < 32 and character not in "\\t\\n" for character in value)
+                or any(ord(character) < 32 and character not in "\t\n" for character in value)
             ):
                 raise ValueError(f"Champ de catalogue invalide : {field}")
         app_id = item["id"]
