@@ -274,7 +274,9 @@ ApplicationWindow {
                         Label {
                             anchors.centerIn: parent
                             visible: appGrid.count === 0
-                            text: "Aucune application trouvée.\nEssaie une autre recherche ou actualise la liste."
+                            text: applicationCatalog.loading
+                                ? "Chargement des applications…"
+                                : "Aucune application trouvée.\\nEssaie une autre recherche ou actualise la liste."
                             color: window.muted
                             horizontalAlignment: Text.AlignHCenter
                         }
