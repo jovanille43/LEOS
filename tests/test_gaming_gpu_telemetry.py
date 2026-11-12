@@ -85,7 +85,7 @@ class GpuTelemetryTests(unittest.TestCase):
     @patch("gaming.backend.gpu_metrics.subprocess.run")
     def test_uses_nvidia_smi_when_no_drm_gpu_is_exposed(self, run, _which):
         run.return_value.returncode = 0
-        run.return_value.stdout = "NVIDIA GeForce RTX 4070, 63, 68, 4096, 12288\\n"
+        run.return_value.stdout = "NVIDIA GeForce RTX 4070, 63, 68, 4096, 12288\n"
         with tempfile.TemporaryDirectory() as temporary:
             metrics = read_gpu_metrics(Path(temporary))
         self.assertEqual(metrics["name"], "NVIDIA GeForce RTX 4070")
@@ -105,7 +105,7 @@ class GpuTelemetryTests(unittest.TestCase):
     @patch("gaming.backend.gpu_metrics.subprocess.run")
     def test_nvidia_fallback_ignores_unavailable_and_out_of_range_values(self, run, _which):
         run.return_value.returncode = 0
-        run.return_value.stdout = "NVIDIA GPU, N/A, 190, N/A, 8192\\n"
+        run.return_value.stdout = "NVIDIA GPU, N/A, 190, N/A, 8192\n"
         with tempfile.TemporaryDirectory() as temporary:
             metrics = read_gpu_metrics(Path(temporary))
         self.assertEqual(metrics["usage"], -1.0)
