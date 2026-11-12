@@ -116,7 +116,8 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 
 ## 7. Centre de contrôle et applications Desktop
 
-- [ ] Le Centre de contrôle affiche CPU, mémoire, stockage et GPU sans valeurs inventées.
+- [ ] Le Centre de contrôle affiche CPU, estimation des cœurs physiques, mémoire, stockage, GPU et version Vulkan par GPU lorsque disponible, sans valeurs inventées.
+- [ ] Le précontrôle Gaming distingue les seuils détectés des critères non vérifiables (fréquence CPU, type de SSD, compatibilité des pilotes) et ne bloque jamais Desktop Mode.
 - [ ] Les interfaces réseau, le Wi-Fi et le Bluetooth sont détectés lorsque disponibles.
 - [ ] Les diagnostics sont consultables sans modifier le système.
 - [ ] Le nettoyage affiche un aperçu avant suppression.
