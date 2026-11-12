@@ -18,6 +18,12 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
+    def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("asynchronous: true", qml)
+        self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
+
     def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
