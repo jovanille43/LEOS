@@ -94,6 +94,47 @@ class DesktopLayoutTests(unittest.TestCase):
             DesktopLayoutStore(path).apply_profile("workspace")
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
+    def test_oversized_layout_is_ignored_without_being_overwritten(self):
+        from desktop.layouts import MAX_LAYOUT_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            invalid = b" " * (MAX_LAYOUT_FILE_BYTES + 1)
+            path.write_bytes(invalid)
+            store = DesktopLayoutStore(path)
+            self.assertEqual(store.get("profile"), DEFAULT_LAYOUT["profile"])
+            self.assertEqual(path.read_bytes(), invalid)
+
+    def test_layout_loader_rejects_symbolic_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            contents = '{"schema_version":1,"profile":"minimal","dock":{"enabled":true,"position":"bottom","alignment":"center","auto_hide":true},"widgets_enabled":false}'
+            target.write_text(contents, encoding="utf-8")
+            link = root / "desktop-layout.json"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            store = DesktopLayoutStore(link)
+            self.assertEqual(store.get("profile"), DEFAULT_LAYOUT["profile"])
+            self.assertEqual(target.read_text(encoding="utf-8"), contents)
+
+    def test_layout_writer_rejects_symbolic_links_without_touching_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            target.write_text("keep", encoding="utf-8")
+            link = root / "desktop-layout.json"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            store = DesktopLayoutStore(link)
+            with self.assertRaises(OSError):
+                store.apply_profile("minimal")
+            self.assertEqual(target.read_text(encoding="utf-8"), "keep")
+
     def test_all_presets_have_valid_layout_data(self):
         for name, preset in PROFILES.items():
             layout = {
