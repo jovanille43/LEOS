@@ -109,7 +109,21 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 - [ ] Les paramètres KDE avancés restent accessibles.
 - [ ] Les préférences et sauvegardes Plasma ne sont pas appliquées sans accord explicite.
 
-## 8. Boutique LEOS
+## 8. Apparence et fonds d'écran
+
+- [ ] Les aperçus Desktop et Gaming s'affichent dans la page Apparence du Centre de contrôle.
+- [ ] Si un aperçu affiche son texte de repli, vérifier le chargement du plugin Qt SVG et la résolution du JPEG référencé depuis le SVG.
+- [ ] Le bouton de sélection ouvre le module natif KDE `kcm_wallpaper`.
+- [ ] Le sélecteur KDE permet de parcourir `/usr/share/leos/branding/wallpapers/`.
+- [ ] Le fond Desktop affiche le lion seul, sans déformation ni recadrage involontaire.
+- [ ] Le fond Gaming affiche le lion avec la manette, sans déformation ni recadrage involontaire.
+- [ ] La résolution et la netteté sont correctes sur chaque écran connecté, y compris en multi-écrans.
+- [ ] Annuler le sélecteur KDE ne modifie pas le fond actif.
+- [ ] Aucun fond LEOS n'est appliqué automatiquement à la connexion ou au changement de mode.
+
+Le Centre de contrôle ouvre uniquement le sélecteur natif ; l'utilisateur garde la décision finale et peut restaurer son fond précédent depuis KDE.
+
+## 9. Boutique LEOS
 
 Effectuer les essais avec une application Flatpak non critique.
 
@@ -121,7 +135,7 @@ Effectuer les essais avec une application Flatpak non critique.
 - [ ] Une désinstallation volontaire n'est pas annulée par le service d'installation initiale.
 - [ ] Une opération refusée ou échouée laisse l'état cohérent.
 
-## 9. Mises à jour, rollback et stabilité
+## 10. Mises à jour, rollback et stabilité
 
 - [ ] Vérifier l'état OSTree avant toute mise à jour.
 - [ ] Effectuer une mise à jour uniquement après avoir confirmé que le déploiement de test peut être restauré.
@@ -133,7 +147,7 @@ Effectuer les essais avec une application Flatpak non critique.
 
 Ne pas tester un rollback ou une opération OSTree risquée sur le seul PC de travail.
 
-## 10. Compte rendu
+## 11. Compte rendu
 
 Pour chaque anomalie, consigner :
 
@@ -146,4 +160,4 @@ Pour chaque anomalie, consigner :
 
 ## Critères de validation
 
-Une première image LEOS peut être considérée comme **validée sur cette machine** uniquement lorsque les sections 2 à 9 ont été exécutées, que les transitions vidéo/audio sont vérifiées dans Qt Multimedia, et qu'aucune régression bloquante n'est présente. La compatibilité d'une machine ne prouve pas celle de tous les GPU ou périphériques.
+Une première image LEOS peut être considérée comme **validée sur cette machine** uniquement lorsque les sections 2 à 10 ont été exécutées, que les transitions vidéo/audio sont vérifiées dans Qt Multimedia, et qu'aucune régression bloquante n'est présente. La compatibilité d'une machine ne prouve pas celle de tous les GPU ou périphériques.
