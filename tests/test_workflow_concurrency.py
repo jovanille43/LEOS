@@ -22,12 +22,24 @@ class WorkflowConcurrencyTests(unittest.TestCase):
 
     def test_recipe_generation_retries_transient_schema_fetch_failures(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        self.assertIn("for recipe in recipe.yml recipe-nvidia.yml", source)
+        self.assertIn("for recipe in recipe.yml recipe-nvidia.yml recipe-nvidia-open.yml", source)
         self.assertIn("max_attempts=3", source)
         self.assertIn('until bluebuild generate "recipes/${recipe}"', source)
         self.assertIn('sleep "$((attempt * 3))"', source)
         self.assertIn("could not generate ${recipe} after", source)
         self.assertIn('test -s "$output"', source)
+
+    def test_iso_workflow_covers_all_hardware_variants_and_verifies_signatures(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        for variant in ("standard", "nvidia-legacy", "nvidia-modern"):
+            self.assertIn(f"- {variant}", source)
+        self.assertIn('standard) image_name="leos"', source)
+        self.assertIn('nvidia-legacy) image_name="leos-nvidia"', source)
+        self.assertIn('nvidia-modern) image_name="leos-nvidia-open"', source)
+        verify = source.index("cosign verify --key cosign.pub")
+        generate = source.index("generate-iso --iso-name")
+        self.assertLess(verify, generate)
+        self.assertIn("sha256sum", source)
 
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
