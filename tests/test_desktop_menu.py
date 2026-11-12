@@ -102,7 +102,8 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_catalog_uses_pure_desktop_entry_helpers(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
-        self.assertIn("from desktop.desktop_entries import desktop_entry_is_visible, localized_desktop_value", source)
+        self.assertIn("from desktop.desktop_entries import (", source)
+        self.assertIn("desktop_entry_is_visible, filter_desktop_applications, localized_desktop_value", source)
         self.assertIn("desktop_entry_is_visible(values, current_desktops)", source)
         self.assertIn('localized_desktop_value(values, "Name", locale_name)', source)
         self.assertIn('localized_desktop_value(values, "Comment", locale_name)', source)
@@ -126,7 +127,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_favourite_toggle_reapplies_filter_and_updates_membership(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         start = source.index("def toggleFavourite")
-        end = source.index("    @Slot(str, result=bool)\\n    def launch", start)
+        end = source.index("def clearRecentApplications", start)
         block = source[start:end]
         self.assertIn("self._apply_filter()", block)
         self.assertNotIn("self.dataChanged.emit", block)
