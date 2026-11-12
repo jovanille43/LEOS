@@ -26,13 +26,22 @@ def mapper_from_preferences(
     device: dict[str, Any] | None = None,
 ) -> "GamepadActionMapper":
     """Build Gaming navigation using saved preferences and optional auto-detection."""
+    if not isinstance(preferences, dict):
+        preferences = {}
     profile = preferences.get("profile", "auto")
     if profile == "auto":
-        device = device or {}
+        device = device if isinstance(device, dict) else {}
+
+        def device_number(key: str) -> int:
+            try:
+                return int(device.get(key, 0))
+            except (TypeError, ValueError, OverflowError):
+                return 0
+
         profile = detect_controller_profile(
-            str(device.get("name", "")),
-            int(device.get("vendor", 0)),
-            int(device.get("product", 0)),
+            str(device.get("name", ""))[:256],
+            device_number("vendor"),
+            device_number("product"),
         ) or "standard"
     return GamepadActionMapper(
         deadzone_percent=preferences.get("deadzone", 8),
@@ -52,9 +61,23 @@ class GamepadActionMapper:
     ) -> None:
         self._hat_x = 0
         self._hat_y = 0
-        self.deadzone_percent = max(0, min(40, int(deadzone_percent)))
-        self.axis_centers = dict(axis_centers or {})
-        self.profile = profile if profile in {"standard", "xbox", "playstation", "nintendo", "custom"} else "standard"
+        try:
+            deadzone = int(deadzone_percent)
+        except (TypeError, ValueError, OverflowError):
+            deadzone = 8
+        self.deadzone_percent = max(0, min(40, deadzone))
+        self.axis_centers = {}
+        if isinstance(axis_centers, dict):
+            for axis, center in axis_centers.items():
+                if (
+                    isinstance(axis, str) and 0 < len(axis) <= 48
+                    and type(center) is int and -65536 <= center <= 65536
+                ):
+                    self.axis_centers[axis] = center
+        self.profile = (
+            profile if profile in {"standard", "xbox", "playstation", "nintendo", "custom"}
+            else "standard"
+        )
         self._stick_states = {"ABS_X": 0, "ABS_Y": 0}
         self._held_directions: dict[str, str] = {}
         self._repeat_delay = 0.38
