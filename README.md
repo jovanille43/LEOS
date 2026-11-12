@@ -136,7 +136,7 @@ LEOS/
 - [x] Imports de bibliothèque Steam, Heroic et Lutris, ajout manuel, favoris, récents et navigation manette.
 - [x] Trois emblèmes JPEG présents dans le dépôt et identiques aux originaux reçus ; trois vidéos hébergées, contrôlées et décodables (leurs empreintes diffèrent des vidéos sources transmises).
 - [x] Transitions vidéo via Qt Multimedia avec piste audio configurable et repli en cas d'erreur.
-- [x] Contrôles Python automatisés, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
+- [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [ ] Intégration complète du dock au véritable panneau Plasma.
 - [ ] Intégrations d'émulateurs et validation élargie sur plusieurs configurations matérielles.
