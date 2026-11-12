@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QTimer, Signal
+from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
