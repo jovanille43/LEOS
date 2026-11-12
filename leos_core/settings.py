@@ -52,7 +52,7 @@ class SettingsStore:
             return
         try:
             loaded = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, UnicodeError, json.JSONDecodeError):
             return
         if not isinstance(loaded, dict):
             return
@@ -105,7 +105,7 @@ class SettingsStore:
                 if self.path.exists():
                     try:
                         stored = json.loads(self.path.read_text(encoding="utf-8"))
-                    except (OSError, json.JSONDecodeError) as exc:
+                    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
                         raise ValueError("LEOS settings file is unreadable; it was left untouched") from exc
                     if not isinstance(stored, dict):
                         raise ValueError("LEOS settings file has an invalid format; it was left untouched")
