@@ -40,6 +40,7 @@ PROFILES: dict[str, dict[str, Any]] = {
 }
 
 from leos_core.paths import config_home as xdg_config_home
+from leos_core.json_utils import json_nesting_within_limit
 
 
 POSITIONS = frozenset({"bottom", "left", "right", "top"})
@@ -90,7 +91,10 @@ class DesktopLayoutStore:
                 raw = stream.read(MAX_LAYOUT_FILE_BYTES + 1)
             if len(raw) > MAX_LAYOUT_FILE_BYTES:
                 return
-            loaded = json.loads(raw.decode("utf-8"))
+            text = raw.decode("utf-8")
+            if not json_nesting_within_limit(text):
+                return
+            loaded = json.loads(text)
         except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
             return
         if validate_layout(loaded):
