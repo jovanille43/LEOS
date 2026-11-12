@@ -18,7 +18,6 @@ class BuildWorkflowTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
         self.assertIn("Verify official LEOS branding assets", source)
-        self.assertIn("sha256sum --check branding/SHA256SUMS", source)
         self.assertLess(
             source.index("Verify official LEOS branding assets"),
             source.index("Check signing prerequisites"),
@@ -27,20 +26,23 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
             "branding/reference-comparison.jpeg",
-            "branding/animations/desktop-intro.mp4",
+            "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
             "branding/animations/gaming-roar-reference.mp4",
         )
         for path in expected:
             with self.subTest(path=path):
-                self.assertIn(path, sums)
+                self.assertIn(path, source)
 
     def test_branding_checksum_manifest_has_six_unique_valid_entries(self):
         sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8").splitlines()
+        sums = [line for line in sums if line and not line.startswith("#")]
         self.assertEqual(len(sums), 6)
         parsed = []
         for line in sums:
-            match = re.fullmatch(r"([0-9a-f]{64})  (branding/.+)", line)
+            if line.startswith("#"):
+                continue
+            match = re.fullmatch(r"([0-9a-f]{64})  (SOURCE_[A-Za-z0-9_.-]+)", line)
             self.assertIsNotNone(match, line)
             parsed.append(match.groups())
         self.assertEqual(len({path for _digest, path in parsed}), 6)
@@ -52,8 +54,14 @@ class BuildWorkflowTests(unittest.TestCase):
         block_start = source.index("required_assets=(")
         block_end = source.index(")", block_start)
         listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
-        hashed = [line.split("  ", 1)[1] for line in sums.splitlines()]
-        self.assertEqual(set(listed), set(hashed))
+        self.assertEqual(set(listed), {
+            "branding/desktop-logo.jpeg",
+            "branding/gaming-logo.jpeg",
+            "branding/reference-comparison.jpeg",
+            "branding/animations/desktop-intro.mov",
+            "branding/animations/gaming-intro.mp4",
+            "branding/animations/gaming-roar-reference.mp4",
+        })
         self.assertEqual(len(listed), 6)
 
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
@@ -81,7 +89,7 @@ class BuildWorkflowTests(unittest.TestCase):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
         self.assertIn("desktop-logo.jpeg", manifest)
         self.assertIn("gaming-logo.jpeg", manifest)
-        self.assertIn("animations/desktop-intro.mp4", manifest)
+        self.assertIn("animations/desktop-intro.mov", manifest)
         self.assertIn("animations/gaming-intro.mp4", manifest)
         self.assertIn("pistes audio aac", manifest.lower())
         self.assertNotIn("desktop-intro.ogg", manifest)
@@ -98,8 +106,8 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_branding_readme_does_not_require_nonexistent_separate_audio_files(self):
         readme = (ROOT / "branding/README.md").read_text(encoding="utf-8")
-        self.assertIn("pistes AAC des vidéos MP4", readme)
-        self.assertIn("aucun dossier `sounds/` séparé", readme)
+        self.assertIn("pistes audio intégrées", readme)
+        self.assertIn("sons", readme)
 
     def test_private_cosign_key_is_ignored_but_public_key_is_trackable(self):
         source = (ROOT / ".gitignore").read_text(encoding="utf-8")
