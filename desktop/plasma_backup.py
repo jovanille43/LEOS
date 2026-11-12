@@ -24,6 +24,7 @@ BACKUP_SCHEMA_VERSION = 1
 _BACKUP_ID = re.compile(r"^[0-9a-f]{32}$")
 MAX_BACKUP_BYTES = 32 * 1024 * 1024
 MAX_BACKUP_MANIFEST_BYTES = 64 * 1024
+MAX_BACKUP_MANIFESTS_SCANNED = 1000
 
 
 def _config_root() -> Path:
@@ -81,13 +82,13 @@ class PlasmaBackupManager:
 
     def create_backup(self) -> str:
         source = self.config_path
-        if source.is_symlink() or not source.is_file():
+        if source.is_symlink() or source.parent.is_symlink() or not source.is_file():
             raise FileNotFoundError("KDE Plasma layout configuration was not found")
         size = source.stat().st_size
         if size <= 0 or size > MAX_BACKUP_BYTES:
             raise ValueError("KDE Plasma configuration has an unsupported size")
 
-        if self.backup_dir.is_symlink():
+        if self.backup_dir.is_symlink() or self.backup_dir.parent.is_symlink():
             raise ValueError("Symbolic-link backup directories are not accepted")
         self.backup_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.chmod(self.backup_dir, 0o700)
@@ -125,10 +126,16 @@ class PlasmaBackupManager:
         return backup_id
 
     def list_backups(self) -> list[dict[str, Any]]:
-        if self.backup_dir.is_symlink() or not self.backup_dir.is_dir():
+        if (
+            self.backup_dir.is_symlink()
+            or self.backup_dir.parent.is_symlink()
+            or not self.backup_dir.is_dir()
+        ):
             return []
         entries: list[dict[str, Any]] = []
-        for manifest_path in self.backup_dir.glob("*.json"):
+        for index, manifest_path in enumerate(self.backup_dir.glob("*.json")):
+            if index >= MAX_BACKUP_MANIFESTS_SCANNED:
+                break
             if manifest_path.is_symlink() or not _BACKUP_ID.fullmatch(manifest_path.stem):
                 continue
             manifest = _read_manifest(manifest_path)
@@ -169,8 +176,10 @@ class PlasmaBackupManager:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             raise ValueError("Invalid Plasma backup identifier")
 
-        if self.backup_dir.is_symlink():
+        if self.backup_dir.is_symlink() or self.backup_dir.parent.is_symlink():
             raise ValueError("Symbolic-link backup directories are not accepted")
+        if self.config_path.parent.is_symlink():
+            raise ValueError("Symbolic-link Plasma configuration directories are not accepted")
         backup_path = self.backup_dir / f"{backup_id}.bak"
         manifest_path = self.backup_dir / f"{backup_id}.json"
         if backup_path.is_symlink() or manifest_path.is_symlink():
