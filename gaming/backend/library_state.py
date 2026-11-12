@@ -65,6 +65,8 @@ def filter_games(
         if query in normalize_search_text(str(game.get("title", "")))
         or query in normalize_search_text(str(game.get("platform", "")))
         or query in normalize_search_text(str(game.get("source", "")))
+        or query in normalize_search_text(str(game.get("app_id", "")))
+        or query in normalize_search_text(str(game.get("id", "")))
     ]
 
 

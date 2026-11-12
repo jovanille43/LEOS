@@ -8,7 +8,7 @@ from gaming.backend.library_state import filter_games
 class LibraryStateTests(unittest.TestCase):
     def setUp(self):
         self.games = [
-            {"id": "steam:1", "title": "Alpha", "platform": "PC"},
+            {"id": "steam:1", "title": "Alpha", "platform": "PC", "app_id": "440", "source": "Steam"},
             {"id": "manual:zelda", "title": "Zelda", "platform": "Nintendo"},
             {"id": "manual:ps", "title": "Racer", "platform": "PlayStation"},
             {"id": "manual:arcade", "title": "Arcade", "platform": "Arcade"},
@@ -57,6 +57,13 @@ class LibraryStateTests(unittest.TestCase):
             )],
             ["manual:ps"],
         )
+
+    def test_search_matches_steam_app_id_and_stable_provider_id(self):
+        by_app_id = filter_games(self.games, "Accueil", set(), [], "440")
+        self.assertEqual([game["id"] for game in by_app_id], ["steam:1"])
+
+        by_provider_id = filter_games(self.games, "Accueil", set(), [], "steam:1")
+        self.assertEqual([game["id"] for game in by_provider_id], ["steam:1"])
 
     def test_search_is_applied_after_category_filtering(self):
         result = filter_games(

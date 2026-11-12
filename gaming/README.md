@@ -53,7 +53,7 @@ LEOS vérifie qu'un exécutable direct est trouvable et exécutable avant de dem
 
 Le panneau rapide indique la disponibilité de Steam, Heroic et Lutris à partir des exécutables natifs trouvés dans le PATH et des identifiants d'applications Flatpak installés. Cette détection décrit la présence du lanceur sur l'hôte ; elle ne garantit ni sa connexion à un compte, ni le démarrage d'un jeu. Les jeux importés restent limités aux catalogues locaux documentés ci-dessus.
 
-La disponibilité des lanceurs est réévaluée périodiquement pendant Gaming Mode (toutes les 15 secondes) ; l'interface n'affiche un changement que si l'état détecté diffère. En cas d'échec de lancement, la notification reprend le motif précis présenté dans l'interface, plutôt qu'un message générique.
+La disponibilité des lanceurs est réévaluée périodiquement pendant Gaming Mode (toutes les 15 secondes) ; l'interface n'affiche un changement que si l'état détecté diffère. En cas d'échec de lancement, la notification reprend le motif précis présenté dans l'interface, plutôt qu'un message générique. La recherche accepte aussi l'App ID Steam et l'identifiant stable d'une entrée importée.
 
 
 ### Cohérence des catalogues et chemins
