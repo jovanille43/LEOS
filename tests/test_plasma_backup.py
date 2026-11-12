@@ -74,6 +74,17 @@ class PlasmaBackupTests(unittest.TestCase):
         self.assertIn("controlCenter.createPlasmaBackup()", qml)
         self.assertNotIn("restorePlasmaBackup", qml)
 
+    def test_oversized_manifest_is_not_listed_or_restored(self):
+        from desktop.plasma_backup import MAX_BACKUP_MANIFEST_BYTES
+
+        backup_id = self.manager.create_backup()
+        manifest = self.backups / f"{backup_id}.json"
+        with manifest.open("wb") as stream:
+            stream.truncate(MAX_BACKUP_MANIFEST_BYTES + 1)
+        self.assertIsNone(self.manager.latest_backup_id())
+        with self.assertRaises(FileNotFoundError):
+            self.manager.restore_backup(backup_id, confirmed=True)
+
     def test_corrupt_manifest_is_not_listed_or_restored(self):
         backup_id = self.manager.create_backup()
         (self.backups / f"{backup_id}.json").write_text("{broken", encoding="utf-8")
