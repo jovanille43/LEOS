@@ -26,7 +26,7 @@ Aucune commande d'installation, de déploiement ou de redémarrage n'est appelé
 
 ## Inventaire des déploiements OSTree
 
-La page Mises à jour affiche aussi le déploiement démarré, son préfixe de checksum et le nombre d'autres entrées OSTree conservées, préparées ou épinglées. Cet inventaire provient de `rpm-ostree status --json` et reste strictement en lecture seule. Une ancienne entrée n'est pas considérée comme une garantie de récupération ; LEOS ne lance aucun rollback, pinning ou nettoyage.
+La page Mises à jour affiche aussi le déploiement démarré, son préfixe de checksum et le nombre d'autres entrées OSTree conservées, préparées ou épinglées. Cet inventaire provient de `rpm-ostree status --json` et reste strictement en lecture seule. Une ancienne entrée n'est pas considérée comme une garantie de récupération ; LEOS ne lance aucun rollback, pinning ou nettoyage. Si une lecture échoue ou renvoie des données invalides, l'inventaire précédent est effacé et l'interface revient à l'état « non vérifiable » plutôt que de présenter des données périmées.
 
 ## Mises à jour système
 
