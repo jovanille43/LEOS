@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import stat
 from itertools import islice
 from pathlib import Path
 
@@ -18,14 +19,40 @@ def read_desktop_entry_text(path: Path, max_bytes: int = MAX_DESKTOP_ENTRY_BYTES
     """Read one local .desktop file without accepting unbounded metadata."""
     if type(max_bytes) is not int or max_bytes < 0:
         return None
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0)
     try:
-        with path.open("rb") as stream:
-            raw = stream.read(max_bytes + 1)
+        descriptor = os.open(path, flags)
     except OSError:
         return None
-    if len(raw) > max_bytes:
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or before.st_size > max_bytes:
+            return None
+        chunks: list[bytes] = []
+        remaining = max_bytes + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(64 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(raw) > max_bytes
+            or len(raw) != before.st_size
+            or before.st_ino != after.st_ino
+            or before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or before.st_ctime_ns != after.st_ctime_ns
+        ):
+            return None
+        return raw.decode("utf-8", errors="replace")
+    except OSError:
         return None
-    return raw.decode("utf-8", errors="replace")
+    finally:
+        os.close(descriptor)
 
 
 def desktop_application_dirs() -> tuple[Path, ...]:
