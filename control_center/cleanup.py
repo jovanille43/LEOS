@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 
-def _directory_summary(path: Path) -> dict[str, object]:
+def _directory_summary(path: Path, max_entries: int = 50000) -> dict[str, object]:
     if not path.exists() or path.is_symlink() or not path.is_dir():
         return {
             "available": False,
@@ -17,12 +17,18 @@ def _directory_summary(path: Path) -> dict[str, object]:
         }
     total_bytes = 0
     file_count = 0
+    scanned_entries = 0
+    truncated = False
     stack = [path]
-    while stack:
+    while stack and not truncated:
         current = stack.pop()
         try:
             with os.scandir(current) as entries:
                 for entry in entries:
+                    scanned_entries += 1
+                    if scanned_entries > max(1, max_entries):
+                        truncated = True
+                        break
                     try:
                         if entry.is_symlink():
                             continue
@@ -50,6 +56,8 @@ def _directory_summary(path: Path) -> dict[str, object]:
         "files": file_count,
         "bytes": total_bytes,
         "size": size,
+        "truncated": truncated,
+        "scannedEntries": min(scanned_entries, max(1, max_entries)),
     }
 
 
