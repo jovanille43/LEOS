@@ -77,6 +77,23 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
 - Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran Desktop et Gaming 4K sont présents, leurs aperçus sont accessibles dans le Centre de contrôle et le choix passe par les paramètres natifs KDE. Le rendu des SVG avec JPEG liés et leur application restent à valider sur une session Bazzite réelle. Les animations Desktop/Gaming sont raccordées ; leur lecture vidéo et audio reste également à valider sur Bazzite.
 
+## Compatibilité matérielle et philosophie universelle
+
+LEOS est conçu pour être installé sur une large gamme de PC modernes compatibles, et non pour une configuration matérielle de référence. Aucun modèle de processeur, de carte graphique, de carte mère, de quantité de RAM ou de SSD précis ne doit être imposé par le projet.
+
+Principes obligatoires :
+- Cibler les PC x86_64 modernes compatibles avec la base Bazzite et son processus d'installation ; ne pas promettre la prise en charge de machines qui ne satisfont pas ses prérequis.
+- Prendre en charge les plateformes AMD et Intel, ainsi que les GPU AMD, Intel et NVIDIA via les variantes d'image et pilotes adaptés de la base Bazzite lorsque cela est nécessaire.
+- Ne jamais coder en dur un modèle de CPU/GPU, une résolution, un nombre d'écrans, un chemin de périphérique ou une quantité de mémoire.
+- Détecter les capacités réellement disponibles à l'exécution ; masquer ou désactiver proprement une fonction indisponible sans empêcher le démarrage du bureau.
+- Conserver des solutions de repli pour les fonctions optionnelles (télémétrie GPU, MangoHud, Bluetooth, manettes, accélération graphique et effets visuels).
+- Ne pas exiger de GPU dédié pour Desktop Mode. Les performances de Gaming Mode dépendent naturellement du matériel et des pilotes présents.
+- Garder les applications LEOS indépendantes des outils propriétaires et des interfaces spécifiques à un seul fabricant, sauf intégration facultative et vérifiée.
+
+La compatibilité sera validée progressivement sur une matrice de machines physiques et virtuelles : graphiques intégrés Intel/AMD, GPU AMD dédié, GPU NVIDIA avec sa variante Bazzite adaptée, portables hybrides, écrans simples et multiples, Wi-Fi/Bluetooth et différentes générations de contrôleurs. Une validation sur un PC ne sera jamais présentée comme une garantie universelle.
+
+**Objectif produit :** un seul LEOS, une même expérience Desktop/Gaming, avec une image de base et des variantes matérielles clairement documentées si la prise en charge des pilotes l'exige. Aucun PC de référence unique ne définit les prérequis de LEOS.
+
 ## Bluetooth
 
 Le Bluetooth est pris en charge comme fonctionnalité attendue dans Desktop Mode et Gaming Mode : manettes, casques, écouteurs, enceintes, claviers et souris compatibles. LEOS réutilise la pile BlueZ, les paramètres KDE et PipeWire de Bazzite ; il ne lance pas de gestionnaire parallèle. Le Centre de contrôle offrira un accès rapide, tandis que l'association et le dépannage complets resteront accessibles dans KDE. Le Gaming Mode ne désactivera pas le Bluetooth lors d'un changement de mode. La validation sur matériel réel reste à effectuer ; voir [docs/bluetooth.md](docs/bluetooth.md).
