@@ -1,8 +1,10 @@
 """Tests for local controller preference storage."""
 
 import json
+import os
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from controller_center.profiles import (
@@ -91,6 +93,48 @@ class ControllerProfileTests(unittest.TestCase):
         first = device_profile_id("Gamepad", 1, 2, phys="usb-port-1")
         second = device_profile_id("Gamepad", 1, 2, phys="usb-port-2")
         self.assertNotEqual(first, second)
+
+    def test_concurrent_updates_preserve_both_settings(self):
+        first = ControllerProfileStore(self.path)
+        second = ControllerProfileStore(self.path)
+        operations = (
+            (first, {"profile": "xbox"}),
+            (second, {"deadzone": 17}),
+        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            list(executor.map(
+                lambda item: item[0].update(self.device_id, **item[1]),
+                operations,
+            ))
+        self.assertEqual(
+            ControllerProfileStore(self.path).get(self.device_id),
+            {"profile": "xbox", "deadzone": 17, "axis_centers": {}},
+        )
+
+    def test_corrupt_file_is_not_overwritten_by_update(self):
+        invalid = "{not valid json"
+        self.path.write_text(invalid, encoding="utf-8")
+        with self.assertRaises(ValueError):
+            self.store.update(self.device_id, profile="xbox")
+        self.assertEqual(self.path.read_text(encoding="utf-8"), invalid)
+
+    def test_symbolic_link_profile_file_is_rejected(self):
+        target = self.path.with_name("target.json")
+        target.write_text('{"version":1,"devices":{}}', encoding="utf-8")
+        try:
+            self.path.symlink_to(target)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        with self.assertRaises(OSError):
+            self.store.update(self.device_id, profile="xbox")
+        self.assertEqual(target.read_text(encoding="utf-8"), '{"version":1,"devices":{}}')
+
+    def test_lock_file_is_private(self):
+        if os.name != "posix":
+            self.skipTest("POSIX permissions unavailable")
+        self.store.update(self.device_id, profile="xbox")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
 
 if __name__ == "__main__":
