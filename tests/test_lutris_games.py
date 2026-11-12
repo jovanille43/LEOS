@@ -61,6 +61,13 @@ class LutrisImportTests(unittest.TestCase):
         self.assertEqual(len(games), 1)
         self.assertEqual(games[0]["app_id"], "12")
 
+    def test_query_uses_a_sql_limit_to_bound_catalog_rows(self):
+        from gaming.backend import lutris
+
+        source = Path(lutris.__file__).read_text(encoding="utf-8")
+        self.assertIn("LIMIT ?", source)
+        self.assertIn("(MAX_LUTRIS_GAMES,)", source)
+
     def test_launch_uses_lutris_numeric_game_identifier(self):
         games = load_lutris_games(self.database)
         self.assertEqual(games[0]["launch"], ["lutris:rungameid/12"])
