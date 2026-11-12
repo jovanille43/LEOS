@@ -68,6 +68,20 @@ class SessionFlowTests(unittest.TestCase):
         )
         self.assertTrue((wallpaper.parent.parent / "desktop-logo.jpeg").is_file())
 
+    def test_gaming_wallpaper_is_valid_4k_svg_and_reuses_the_official_emblem(self):
+        import xml.etree.ElementTree as ET
+
+        wallpaper = ROOT / "branding/wallpapers/gaming-leos.svg"
+        self.assertTrue(wallpaper.is_file())
+        root = ET.parse(wallpaper).getroot()
+        self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
+        image = root.find("{http://www.w3.org/2000/svg}image")
+        self.assertIsNotNone(image)
+        self.assertEqual(
+            image.attrib.get("{http://www.w3.org/1999/xlink}href"),
+            "../gaming-logo.jpeg",
+        )
+        self.assertTrue((wallpaper.parent.parent / "gaming-logo.jpeg").is_file())
     def test_branding_animation_files_exist_at_runtime_paths(self):
         branding = ROOT / "branding"
         self.assertTrue((branding / "desktop-logo.jpeg").is_file())
