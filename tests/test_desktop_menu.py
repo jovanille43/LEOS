@@ -56,7 +56,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_catalog_uses_desktop_entries_and_never_a_shell(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         self.assertIn("APP_DIRS = desktop_application_dirs()", source)
-        self.assertIn("desktop_entry_paths(APP_DIRS)", source)
+        self.assertIn("desktop_entry_paths(self.directories)", source)
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
         self.assertIn('["/usr/local/share", "/usr/share"]', entries)
         self.assertIn('xdg_data_home() / "applications"', entries)
@@ -284,7 +284,7 @@ class DesktopMenuTests(unittest.TestCase):
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
         entries = (ROOT / "desktop/desktop_entries.py").read_text(encoding="utf-8")
         self.assertIn("desktop_entry_paths(APP_DIRS)", source)
-        self.assertIn("for desktop_id, path in desktop_entry_paths(APP_DIRS):", source)
+        self.assertIn("for desktop_id, path in desktop_entry_paths(self.directories):", source)
         self.assertIn('directory.rglob("*.desktop")', entries)
         self.assertIn("desktop_file_id(path, directory)", entries)
         self.assertIn('"desktopId": desktop_id or path.name', source)
