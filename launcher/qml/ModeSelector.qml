@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtMultimedia
 
 ApplicationWindow {
     id: window
@@ -16,12 +17,47 @@ ApplicationWindow {
     property color magenta: "#e33bff"
     property color muted: "#929bad"
     property date currentDate: new Date()
+    property string pendingMode: ""
+    property bool transitionInProgress: false
+
+    function requestModeWithIntro(mode) {
+        if (transitionInProgress)
+            return
+        pendingMode = mode
+        if (!modeSelectorController.animationsEnabled) {
+            finishModeTransition()
+            return
+        }
+        transitionInProgress = true
+        introOverlay.visible = true
+        introPlayer.source = Qt.resolvedUrl(
+            mode === "gaming"
+                ? "../../branding/animations/gaming-intro.mp4"
+                : "../../branding/animations/desktop-intro.mp4"
+        )
+        introTimeout.start()
+        introPlayer.play()
+    }
+
+    function finishModeTransition() {
+        if (pendingMode === "")
+            return
+        const mode = pendingMode
+        pendingMode = ""
+        transitionInProgress = false
+        introTimeout.stop()
+        introPlayer.stop()
+        introOverlay.visible = false
+        modeManager.requestMode(mode)
+    }
 
     function handleGamepadAction(action) {
+        if (transitionInProgress)
+            return
         if (transitionDialog.visible) {
             if (action === "confirm") {
                 transitionDialog.close()
-                modeManager.requestMode("gaming")
+                window.requestModeWithIntro("gaming")
             } else if (action === "back") {
                 transitionDialog.close()
             }
@@ -37,7 +73,7 @@ ApplicationWindow {
             if (gamingCard.activeFocus)
                 transitionDialog.open()
             else
-                modeManager.requestMode("desktop")
+                window.requestModeWithIntro("desktop")
         }
     }
 
@@ -123,7 +159,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
-                    onClicked: modeManager.requestMode("desktop")
+                    onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
@@ -237,6 +273,45 @@ ApplicationWindow {
         }
     }
 
+    MediaPlayer {
+        id: introPlayer
+        audioOutput: AudioOutput {
+            muted: !modeSelectorController.soundsEnabled
+        }
+        videoOutput: introVideoOutput
+        onMediaStatusChanged: {
+            if (mediaStatus === MediaPlayer.EndOfMedia)
+                window.finishModeTransition()
+        }
+        onErrorOccurred: function(error, errorString) {
+            window.finishModeTransition()
+        }
+    }
+
+    Timer {
+        id: introTimeout
+        interval: 9000
+        repeat: false
+        onTriggered: window.finishModeTransition()
+    }
+
+    Rectangle {
+        id: introOverlay
+        anchors.fill: parent
+        color: "#000000"
+        visible: false
+        z: 1000
+        VideoOutput {
+            id: introVideoOutput
+            anchors.fill: parent
+            fillMode: VideoOutput.PreserveAspectFit
+        }
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.AllButtons
+        }
+    }
+
     Connections {
         target: modeSelectorController
         function onGamepadAction(action) {
@@ -266,7 +341,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 onClicked: {
                     transitionDialog.close()
-                    modeManager.requestMode("gaming")
+                    window.requestModeWithIntro("gaming")
                 }
                 background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
                 contentItem: Label {
@@ -284,7 +359,7 @@ ApplicationWindow {
             transitionDialog.open()
             event.accepted = true
         } else if (event.key === Qt.Key_D) {
-            modeManager.requestMode("desktop")
+            window.requestModeWithIntro("desktop")
             event.accepted = true
         } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
             if (desktopCard.activeFocus)
