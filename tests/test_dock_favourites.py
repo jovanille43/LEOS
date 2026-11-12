@@ -47,6 +47,19 @@ class DockFavouritesTests(unittest.TestCase):
             store = DockFavourites(path)
             self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
 
+    def test_oversized_dock_file_is_not_loaded_or_overwritten(self):
+        from desktop.dock_favourites import MAX_DOCK_FILE_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            raw = b" " * (MAX_DOCK_FILE_BYTES + 1)
+            path.write_bytes(raw)
+            store = DockFavourites(path)
+            self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
+            with self.assertRaises(ValueError):
+                store.pin("org.example.Safe.desktop")
+            self.assertEqual(path.read_bytes(), raw)
+
     def test_saved_file_is_private(self):
         if os.name != "posix":
             self.skipTest("POSIX permissions unavailable")
