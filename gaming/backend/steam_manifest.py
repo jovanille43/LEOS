@@ -7,9 +7,16 @@ from pathlib import Path
 from typing import Any
 
 
+MAX_STEAM_MANIFEST_BYTES = 2 * 1024 * 1024
+
+
 def read_steam_manifest(path: Path) -> dict[str, Any] | None:
     try:
-        text = path.read_text(encoding="utf-8", errors="replace")
+        with path.open("rb") as stream:
+            raw = stream.read(MAX_STEAM_MANIFEST_BYTES + 1)
+        if len(raw) > MAX_STEAM_MANIFEST_BYTES:
+            return None
+        text = raw.decode("utf-8", errors="replace")
     except OSError:
         return None
     app_id_match = re.search(r'"appid"\s+"(\d+)"', text)
