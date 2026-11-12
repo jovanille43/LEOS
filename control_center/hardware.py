@@ -374,15 +374,20 @@ def _parse_lspci_gpu_devices(output: str) -> dict[str, str]:
 
 
 def _gpu_details() -> str:
-    found: list[str] = []
+    records: list[tuple[str, str, str]] = []
+    seen_devices: set[str] = set()
     vendor_names = {"0x10de": "NVIDIA", "0x1002": "AMD", "0x8086": "Intel"}
     pci_output = _run(["lspci", "-D", "-nn"], timeout=2.0)
     pci_names = _parse_lspci_gpu_devices(pci_output)
+    pci_pattern = re.compile(
+        r"[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7]$",
+        re.IGNORECASE,
+    )
     try:
         devices = sorted(
             device
             for device in Path("/sys/class/drm").glob("card*/device")
-            if re.fullmatch(r"card\d+", device.parent.name)
+            if re.fullmatch(r"card\\d+", device.parent.name)
         )
     except OSError:
         devices = []
@@ -393,9 +398,22 @@ def _gpu_details() -> str:
             continue
         vendor_name = vendor_names.get(vendor, f"GPU {vendor}")
         try:
-            pci_address = device.resolve(strict=True).name.lower()
+            resolved = device.resolve(strict=True)
         except OSError:
-            pci_address = ""
+            resolved = device
+        pci_address = ""
+        for parent in (resolved, *resolved.parents):
+            if pci_pattern.fullmatch(parent.name):
+                pci_address = parent.name.lower()
+                break
+
+        # DRM card numbers can change between boots. PCI identity is the
+        # stable key for PCI GPUs; the resolved path is a conservative fallback.
+        identity = pci_address or str(resolved)
+        if identity in seen_devices:
+            continue
+        seen_devices.add(identity)
+
         name = pci_names.get(pci_address, vendor_name)
         driver_link = device / "driver"
         try:
@@ -403,11 +421,22 @@ def _gpu_details() -> str:
         except OSError:
             driver = ""
         label = f"{name} ({driver})" if driver else name
-        if label not in found:
-            found.append(label)
+        records.append((label, pci_address, device.parent.name))
 
-    if found:
+    if records:
+        label_counts: dict[str, int] = {}
+        for label, _pci_address, _drm_card in records:
+            label_counts[label] = label_counts.get(label, 0) + 1
+
+        found = []
+        for label, pci_address, drm_card in records:
+            if label_counts[label] > 1:
+                location = pci_address or drm_card
+                found.append(f"{label} [{location}]")
+            else:
+                found.append(label)
         return " · ".join(found)
+
     lines = [
         line.split(": ", 1)[-1]
         for line in pci_output.splitlines()
