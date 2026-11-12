@@ -230,11 +230,11 @@ class HardwareInventoryTests(unittest.TestCase):
     def test_lspci_gpu_parser_maps_models_by_full_pci_address(self):
         output = (
             "0000:03:00.0 VGA compatible controller [0300]: "
-            "NVIDIA Corporation GA106 [GeForce RTX 3060] [10de:2503] (rev a1)\\n"
+            "NVIDIA Corporation GA106 [GeForce RTX 3060] [10de:2503] (rev a1)\n"
             "0000:00:02.0 Display controller [0380]: "
-            "Intel Corporation UHD Graphics 770 [8086:4680]\\n"
+            "Intel Corporation UHD Graphics 770 [8086:4680]\n"
             "0000:04:00.0 Ethernet controller [0200]: "
-            "Example Network Adapter [1234:5678]\\n"
+            "Example Network Adapter [1234:5678]\n"
         )
         self.assertEqual(
             hardware._parse_lspci_gpu_devices(output),
