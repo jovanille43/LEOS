@@ -29,6 +29,7 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
             "branding/animations/gaming-roar-reference.mp4",
+            "branding/wallpapers/desktop-leos.svg",
         )
         for path in expected:
             with self.subTest(path=path):
@@ -61,8 +62,9 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
             "branding/animations/gaming-roar-reference.mp4",
+            "branding/wallpapers/desktop-leos.svg",
         })
-        self.assertEqual(len(listed), 6)
+        self.assertEqual(len(listed), 7)
 
     def test_image_workflow_checks_both_cosign_materials_before_build(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
