@@ -51,7 +51,7 @@ Le backend Gaming détecte Steam, puis importe les manifestes locaux de Heroic/L
 
 ## Applications par défaut et désinstallation
 
-Brave, LibreOffice et VLC sont installées une seule fois dans le profil Flatpak de l'utilisateur par le service `leos-default-apps.service`. Le service écrit le marqueur `~/.local/state/leos/default-apps-seeded` après réussite. Ce marqueur évite de réinstaller une application que l'utilisateur a ensuite choisi de désinstaller. Si le réseau ou Flathub est indisponible, le service réessaie plus tard ; les applications déjà installées sont détectées et ne sont pas dupliquées.
+Brave, LibreOffice et VLC sont proposées comme applications facultatives par le service `leos-default-apps.service`. **Aucune installation ni ajout de dépôt Flatpak n'a lieu sans une confirmation explicite** dans la boîte de dialogue KDE ; le choix par défaut est le refus. Si l'utilisateur refuse, le service mémorise ce choix et ne repose pas la question à chaque connexion. Si la confirmation graphique ou Flatpak est indisponible, aucune installation n'est lancée. Après accord, les applications déjà présentes dans une installation utilisateur ou système sont ignorées. Le marqueur `~/.local/state/leos/default-apps-seeded` évite de reproposer l'installation après réussite ou refus ; une erreur d'installation ne crée pas le marqueur et permet une nouvelle tentative.
 
 La boutique gère les désinstallations Flatpak dans les deux portées :
 - `--user` pour une application installée dans le profil utilisateur ;
