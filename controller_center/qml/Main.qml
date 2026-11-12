@@ -66,8 +66,8 @@ ApplicationWindow {
                     anchors.margins: 20
                     spacing: 16
                     Rectangle {
-                        width: 54
-                        height: 54
+                        Layout.preferredWidth: 54
+                        Layout.preferredHeight: 54
                         radius: 14
                         color: "#17303b"
                         border.color: window.cyan
@@ -268,7 +268,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 1
+                                Layout.preferredHeight: 1
                                 color: window.line
                             }
                             Label {
