@@ -70,6 +70,10 @@ def write_bounded_json(
 
 def read_bounded_text(path: Path, max_bytes: int = MAX_LIBRARY_TEXT_FILE_BYTES) -> str | None:
     """Read a local text metadata file with a strict byte limit."""
+    if type(max_bytes) is not int or max_bytes < 0:
+        return None
+    if path.is_symlink() or path.parent.is_symlink():
+        return None
     try:
         with path.open("rb") as stream:
             raw = stream.read(max_bytes + 1)
@@ -81,7 +85,11 @@ def read_bounded_text(path: Path, max_bytes: int = MAX_LIBRARY_TEXT_FILE_BYTES) 
 
 
 def read_bounded_json(path: Path, max_bytes: int = MAX_LIBRARY_STATE_FILE_BYTES) -> Any | None:
-    """Read local library state without allowing oversized files into memory."""
+    """Read local library state without allowing oversized or linked files into memory."""
+    if type(max_bytes) is not int or max_bytes < 0:
+        return None
+    if path.is_symlink() or path.parent.is_symlink():
+        return None
     try:
         with path.open("rb") as stream:
             raw = stream.read(max_bytes + 1)
