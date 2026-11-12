@@ -74,6 +74,19 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("[[ ! -s cosign.pub ]]", source)
         self.assertLess(source.index("Check signing prerequisites"), source.index("Build and publish LEOS"))
 
+    def test_image_workflow_cryptographically_verifies_cosign_key_pair(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("sigstore/cosign-installer@v3", source)
+        self.assertIn("Verify private and public signing keys match", source)
+        self.assertIn('cosign sign-blob --key "$workdir/cosign.key"', source)
+        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertLess(
+            source.index("Verify private and public signing keys match"),
+            source.index("Build and publish LEOS"),
+        )
+        self.assertIn('chmod 600 "$workdir/cosign.key"', source)
+        self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
+
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("recipe: recipe.yml", source)
