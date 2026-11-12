@@ -29,7 +29,7 @@ def parse_desktop_exec(
     if not isinstance(command, str) or not command.strip():
         return []
     if len(command) > MAX_EXEC_FIELD_LENGTH or any(
-        (ord(char) < 32 and char != "\\t") or ord(char) == 127
+        (ord(char) < 32 and char != "\t") or ord(char) == 127
         for char in command
     ):
         raise ValueError("Desktop Exec field contains invalid or excessive data")
