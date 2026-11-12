@@ -35,6 +35,8 @@ apps=(
     org.videolan.VLC
 )
 
+failed=0
+
 for app_id in "${apps[@]}"; do
     # Do not duplicate an application already present in either installation.
     if flatpak info --user "$app_id" >/dev/null 2>&1; then
@@ -43,8 +45,15 @@ for app_id in "${apps[@]}"; do
     if flatpak info --system "$app_id" >/dev/null 2>&1; then
         continue
     fi
-    flatpak install --user --noninteractive --or-update flathub "$app_id"
+    if ! flatpak install --user --noninteractive --or-update flathub "$app_id"; then
+        echo "LEOS: installation facultative échouée pour $app_id ; une nouvelle tentative sera proposée." >&2
+        failed=1
+    fi
 done
+
+if (( failed != 0 )); then
+    exit 1
+fi
 
 mkdir -p "$state_dir"
 touch "$marker"
