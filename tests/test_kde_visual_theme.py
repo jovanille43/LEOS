@@ -219,7 +219,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "leos-gaming")
         self.assertEqual(self.plasma.current_style(), "leos-gaming")
         self.manager.restore_previous_theme()
-        self.assertIn("Theme=breeze", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "breeze")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
 
     def test_restore_preserves_components_changed_manually_after_leos_application(self):
@@ -230,7 +230,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         self.assertIn("icônes modifiées", message)
         self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "Papirus")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
-        self.assertIn("theme=Breeze", self.kwinrc.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"), "Breeze")
 
     def test_partial_kwin_failure_rolls_back_all_already_applied_components(self):
         self.runner.fail_next.add("qdbus6")
@@ -240,7 +240,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
 
         self.assertIn("Theme=breeze", self.kdeglobals.read_text(encoding="utf-8"))
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
-        self.assertIn("library=org.kde.kwin.breeze", self.kwinrc.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "library"), "org.kde.kwin.breeze")
         self.assertIn("theme=Breeze", self.kwinrc.read_text(encoding="utf-8"))
         self.assertFalse(self.manager.can_restore())
         self.assertFalse(self.plasma.can_restore())
