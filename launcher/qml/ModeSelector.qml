@@ -111,14 +111,14 @@ ApplicationWindow {
                 Component.onCompleted: {
                     const options = themeManager.options
                     for (let i = 0; i < options.length; ++i) {
-                        if (options[i].id === modeSelectorController.theme) {
+                        if (options[i].id === themeManager.currentTheme) {
                             currentIndex = i
                             break
                         }
                     }
                 }
                 onActivated: function(index) {
-                    const options = modeSelectorController.themeOptions
+                    const options = themeManager.options
                     if (index >= 0 && index < options.length)
                         themeManager.setTheme(options[index].id)
                 }
