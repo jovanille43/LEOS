@@ -83,7 +83,7 @@ class ThemeManager(QObject):
             "gaming_wallpaper": (branding / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
             "desktop_intro": (branding / "animations" / "desktop-intro.mov").resolve().as_uri(),
             "gaming_intro": (branding / "animations" / "gaming-intro.mp4").resolve().as_uri(),
-            "videos_recolored": "true",
+            "videos_recolored": "false",
         }
 
     def _generate_assets(self, theme: str) -> None:
@@ -101,6 +101,7 @@ class ThemeManager(QObject):
             and palette["accent_secondary"].lower() == "#e33bff"
         ):
             self._asset_paths.update(self._original_assets())
+            self._video_worker_theme = theme
             return
 
         cached = self._asset_manager.cached_video_paths_for_theme(theme)
@@ -130,8 +131,8 @@ class ThemeManager(QObject):
                 close_fds=True,
             )
         except OSError:
-            # Keep the official videos active if a background worker cannot start.
-            self._video_worker_theme = ""
+            # Keep the official videos active and avoid a rapid spawn/retry loop.
+            self._video_worker_theme = theme
 
     @Slot(str, object)
     def _on_assets_completed(self, theme: str, assets: object) -> None:
