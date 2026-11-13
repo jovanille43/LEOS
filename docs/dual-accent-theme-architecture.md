@@ -57,7 +57,7 @@ Le traitement vidéo s'exécute dans un processus séparé afin de ne pas bloque
 ### Icônes et thèmes Plasma
 Pour chaque palette non originale, le moteur génère maintenant des copies utilisateur du thème d'icônes LEOS, du Plasma Style et de la décoration Aurorae, dans le cache privé `$XDG_CACHE_HOME/leos/themes/<empreinte>/kde/`. Chaque paquet reçoit un identifiant distinct (`leos-<theme>`) et des métadonnées adaptées. Les SVG de dégradé conservent leurs positions et transitions ; les aplats sombres et contours gris peu saturés restent protégés.
 
-Cette préparation ne copie pas les paquets vers les répertoires actifs de KDE et ne change aucun réglage du profil. L'export dans les emplacements XDG et l'application du thème d'icônes, du Plasma Style et d'Aurorae devront faire l'objet d'une action dédiée, confirmée et réversible. Le système immuable Bazzite et les sources empaquetées restent intacts.
+Depuis Centre de contrôle → Apparence, une action confirmée exporte les trois paquets dans l'espace de données utilisateur XDG : `icons/leos-<theme>`, `plasma/desktoptheme/leos-<theme>` et `aurorae/themes/leos-<theme>`. Un identifiant déjà occupé par un contenu différent est refusé ; un paquet identique peut être réexporté sans effet. L'export ne sélectionne aucun thème et ne change aucun réglage Plasma. L'utilisateur choisit ensuite séparément les icônes, le Plasma Style et la décoration Aurorae dans les paramètres KDE. Leur désinstallation automatisée et leur sélection/restauration depuis LEOS restent à implémenter. Le système immuable Bazzite et les sources empaquetées restent intacts.
 
 ## Compatibilité et sûreté
 
