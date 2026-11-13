@@ -79,7 +79,8 @@ def _luminance(hex_color: str) -> float:
 def _contrast_text(background: str) -> str:
     """Choose the darker or lighter selection text with the stronger contrast."""
     luminance = _luminance(background)
-    dark_contrast = (luminance + 0.05) / (0.05 + 0.0) if luminance >= 0.0 else 1.0
+    dark_luminance = _luminance("#0F1117")
+    dark_contrast = (luminance + 0.05) / (dark_luminance + 0.05)
     light_contrast = 1.05 / (luminance + 0.05)
     return "#0F1117" if dark_contrast >= light_contrast else "#FFFFFF"
 
