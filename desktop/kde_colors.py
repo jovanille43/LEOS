@@ -18,7 +18,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
-from desktop.themes import THEME_PALETTES, palette_for_theme, validate_palette
+from desktop.themes import THEME_NAMES, THEME_PALETTES, palette_for_theme, validate_palette
 from leos_core.paths import (
     config_home as xdg_config_home,
     data_home as xdg_data_home,
@@ -27,13 +27,6 @@ from leos_core.paths import (
 
 SCHEMA_VERSION = 1
 MANAGED_BY = "LEOS Theme Manager"
-THEME_NAMES = {
-    "leos-original": "LEOS Original",
-    "light": "LEOS Light",
-    "cyan": "LEOS Cyan",
-    "magenta": "LEOS Magenta",
-    "gaming": "LEOS Gaming",
-}
 SCHEME_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 THEME_PATTERN = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
 MAX_KDE_CONFIG_BYTES = 1024 * 1024
