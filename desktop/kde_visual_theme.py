@@ -83,12 +83,14 @@ class KdeVisualThemeManager:
         plasma_style: PlasmaStyleManager | None = None,
         config_home: Path | None = None,
         state_home: Path | None = None,
+        data_home: Path | None = None,
         runner: Callable[..., Any] | None = None,
         find_executable: Callable[[str], str | None] = shutil.which,
     ) -> None:
         self.assets = assets or ThemeAssetManager()
         self.config_home = Path(config_home) if config_home is not None else Path(xdg_config_home())
         self.state_home = Path(state_home) if state_home is not None else Path(xdg_state_home())
+        self.data_home = Path(data_home) if data_home is not None else None
         self.kdeglobals = self.config_home / "kdeglobals"
         self.plasmarc = self.config_home / "plasmarc"
         self.kwinrc = self.config_home / "kwinrc"
@@ -154,7 +156,9 @@ class KdeVisualThemeManager:
     def resources_available(self, theme: str) -> bool:
         if theme not in THEME_PALETTES:
             return False
-        resources = self.assets.exported_kde_resource_paths_for_theme(theme)
+        resources = self.assets.exported_kde_resource_paths_for_theme(
+            theme, data_directory=self.data_home
+        )
         return {
             "icon_theme_path",
             "plasma_theme_path",
