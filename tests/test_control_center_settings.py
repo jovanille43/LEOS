@@ -152,7 +152,7 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("def exportKdeThemeResources(self)", controller)
         self.assertIn("self.themeAssets.export_kde_resource_packages_for_theme(self.theme)", controller)
         self.assertIn("def export_kde_resource_packages_for_theme(", assets)
-        self.assertIn("sans activation", assets)
+        self.assertIn("without activating them", assets)
         self.assertIn("plasma", assets)
         self.assertIn("aurorae", assets)
 
