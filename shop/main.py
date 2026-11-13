@@ -30,6 +30,7 @@ def main() -> int:
     engine.rootContext().setContextProperty("themeManager", theme_manager)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Main.qml")))
     if not engine.rootObjects():
+        theme_manager.shutdown()
         return 1
     store.refreshInstalled()
     app.aboutToQuit.connect(theme_manager.shutdown)
