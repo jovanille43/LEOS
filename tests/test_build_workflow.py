@@ -358,14 +358,15 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(path, block)
 
     def test_recipe_ci_validates_both_wallpaper_svg_emblem_links(self):
-        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
-        self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
-        self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
-        self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
-        self.assertIn("if not target.is_file()", source)
+        workflow = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        validator = (ROOT / "tests/validate_branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn("Validate wallpaper SVG assets and official emblem links", workflow)
+        self.assertIn("python3 tests/validate_branding_assets.py --svg", workflow)
+        self.assertIn('parsed.attrib.get("viewBox") != "0 0 3840 2160"', validator)
+        self.assertIn('images[0].attrib.get(xlink_href) != emblem_name', validator)
+        self.assertIn('ROOT / "branding/wallpapers/desktop-leos.svg": "../desktop-logo.jpeg"', validator)
+        self.assertIn('ROOT / "branding/wallpapers/gaming-leos.svg": "../gaming-logo.jpeg"', validator)
+        self.assertIn("wallpaper.parent / emblem_name", validator)
     def test_recipe_checks_validate_and_decode_all_branding_video_audio(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Validate branding video and audio streams", source)
