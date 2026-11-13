@@ -41,7 +41,7 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 ## Intégrité des fichiers déployés
 
-Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des dix ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG et les deux PNG dérivés sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des dix ressources effectivement présentes dans le dépôt. Les trois JPEG et les trois vidéos ont été comparés aux fichiers originaux fournis par le propriétaire du projet le 13 novembre 2026 : leurs SHA-256 sont strictement identiques (`IMG_2598.JPG` = `desktop-logo.jpeg`, `IMG_2599.JPG` = `gaming-logo.jpeg`, `IMG_2591.JPG` = `reference-comparison.jpeg`, `Lion_desktop.mov` = `animations/desktop-intro.mov`, `Lion_gaming.MP4` = `animations/gaming-intro.mp4`, `Lion_face_.MP4` = `animations/gaming-roar-reference.mp4`). Les deux SVG et les deux PNG dérivés sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
 
 ## État des fichiers présents sur GitHub
 
@@ -64,7 +64,9 @@ Métadonnées relevées par CI pour les vidéos :
 | `gaming-intro.mp4` | H.264 / AAC | 1112 × 828 | 6,048 s |
 | `gaming-roar-reference.mp4` | H.264 / AAC | 1112 × 834 | 6,080 s |
 
-**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
+Format : les vidéos sont d'origine en 4:3 (1112 × 834, et 1112 × 828 pour l'intro Gaming). Les lecteurs (`launcher/qml/ModeSelector.qml`, `gaming/qml/Main.qml`) les affichent en `PreserveAspectFit` sur un fond `#000000`, et le fond des vidéos est quasi noir (bords ≤ 9 sur 255 hors flashs néon) : les bandes sur un écran 16:9 ne sont pas visibles. Ne pas les réencoder ni les agrandir : ce serait une perte de qualité sans gain visible.
+
+**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Les comparaisons SHA-256 confirment que les trois vidéos du dépôt sont binaires-identiques aux originaux fournis. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
 
 ## Identité visuelle
 
