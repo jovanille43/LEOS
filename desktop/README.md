@@ -68,7 +68,9 @@ Pour les palettes non originales, le moteur génère également des copies
 recolorées du thème d'icônes, du Plasma Style et d'Aurorae dans le cache privé
 utilisateur. Chaque variante reçoit un identifiant KDE distinct. Les dégradés
 sont recolorés sans modifier leur structure ; les surfaces sombres et les
-contours gris peu saturés sont préservés.
+contours gris peu saturés sont préservés. Les palettes qui réutilisent la paire
+d'accents originale (dont Gaming dans le catalogue actuel) utilisent les
+ressources système LEOS déjà installées au lieu d'exporter des doublons.
 
 Depuis Centre de contrôle → Apparence, l'action **Installer les ressources dans
 mon profil** exporte, après confirmation, les trois paquets vers les emplacements
