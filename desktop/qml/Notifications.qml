@@ -32,7 +32,7 @@ ApplicationWindow {
             Rectangle {
                 radius: 12
                 color: "#14202B"
-                border.color: "#245064"
+                border.color: window.themeColors.accent_primary_soft
                 implicitWidth: 90
                 implicitHeight: 34
                 Label {
