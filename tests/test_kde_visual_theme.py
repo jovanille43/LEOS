@@ -163,6 +163,13 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
+    @staticmethod
+    def _config_value(path: Path, group: str, key: str) -> str | None:
+        parser = configparser.ConfigParser(interpolation=None, strict=False)
+        parser.optionxform = str
+        parser.read(path, encoding="utf-8")
+        return parser.get(group, key, fallback=None)
+
     def test_apply_changes_icons_plasma_and_aurorae_together(self):
         message = self.manager.apply_theme("light")
 
@@ -182,16 +189,10 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
             "Breeze",
         )
 
-        self.assertIn("Theme=leos-light", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "leos-light")
         self.assertEqual(self.plasma.current_style(), "leos-light")
-        self.assertIn(
-            "library=org.kde.kwin.aurorae",
-            self.kwinrc.read_text(encoding="utf-8"),
-        )
-        self.assertIn(
-            "theme=__aurorae__svg__leos-light",
-            self.kwinrc.read_text(encoding="utf-8"),
-        )
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "library"), "org.kde.kwin.aurorae")
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"), "__aurorae__svg__leos-light")
         self.assertTrue((self.data_home / "aurorae" / "themes" / "leos-light" / "leos-lightrc").is_file())
         self.assertTrue(any(Path(call[0][0]).name == "qdbus6" for call in self.runner.calls))
         self.assertTrue(any(Path(call[0][0]).name == "gdbus" for call in self.runner.calls))
@@ -202,10 +203,10 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
 
         self.assertIn("restauré", message)
         self.assertFalse(self.manager.can_restore())
-        self.assertIn("Theme=breeze", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "breeze")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
-        self.assertIn("library=org.kde.kwin.breeze", self.kwinrc.read_text(encoding="utf-8"))
-        self.assertIn("theme=Breeze", self.kwinrc.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "library"), "org.kde.kwin.breeze")
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"), "Breeze")
         self.assertFalse(self.plasma.can_restore())
 
     def test_switching_between_leos_palettes_keeps_the_original_rollback_target(self):
@@ -215,7 +216,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         self.assertEqual(self.manager._state()["previous_icons"], "breeze")
         self.assertEqual(self.manager._state()["previous_plasma"], "breeze-dark")
         self.assertEqual(self.manager._state()["previous_aurorae_theme"], "Breeze")
-        self.assertIn("Theme=leos-gaming", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "leos-gaming")
         self.assertEqual(self.plasma.current_style(), "leos-gaming")
         self.manager.restore_previous_theme()
         self.assertIn("Theme=breeze", self.kdeglobals.read_text(encoding="utf-8"))
@@ -227,7 +228,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         message = self.manager.restore_previous_theme()
 
         self.assertIn("icônes modifiées", message)
-        self.assertIn("Theme=Papirus", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "Papirus")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
         self.assertIn("theme=Breeze", self.kwinrc.read_text(encoding="utf-8"))
 
