@@ -74,10 +74,11 @@ Depuis Centre de contrôle → Apparence, l'action **Installer les ressources da
 mon profil** exporte, après confirmation, les trois paquets vers les emplacements
 XDG utilisateur (`icons/`, `plasma/desktoptheme/` et `aurorae/themes/`). Les
 thèmes déjà présents et différents ne sont jamais écrasés. L'export ne sélectionne
-pas les thèmes à la place de l'utilisateur : les icônes, le Plasma Style et
-Aurorae restent à choisir séparément dans les paramètres KDE. Le retour à un
-thème précédent est donc effectué depuis KDE ; LEOS ne supprime pas encore
-automatiquement ces paquets exportés.
+pas les thèmes à la place de l'utilisateur : trois raccourcis ouvrent les
+panneaux KDE Icônes, Style Plasma et Décorations de fenêtres pour faire ces
+choix séparément. Le retour à un thème précédent est donc effectué depuis KDE ;
+LEOS ne sélectionne ni ne restaure encore automatiquement ces trois éléments et
+ne supprime pas les paquets exportés.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
