@@ -1,7 +1,7 @@
 """Generate user-scoped LEOS artwork variants from the official brand assets.
 
-Only saturated pixels close to the two historical accent hues are shifted.
-Alpha, brightness, saturation, neutral metallic details and geometry are kept.
+The original two-colour gradient is mapped continuously to the selected pair.
+Glow falloff, luminance, alpha, neutral metallic details and geometry are kept.
 The packaged PNG/SVG source files are never modified.
 """
 
@@ -37,51 +37,108 @@ def _hue_distance(first: float, second: float) -> float:
     return min(distance, 1.0 - distance)
 
 
+_SOURCE_PRIMARY_RGB = (0.0, 217.0 / 255.0, 1.0)
+_SOURCE_SECONDARY_RGB = (227.0 / 255.0, 59.0 / 255.0, 1.0)
+_SOURCE_PRIMARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_PRIMARY_RGB)
+_SOURCE_SECONDARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_SECONDARY_RGB)
+_ACCENT_HUE_TOLERANCE = 58.0 / 360.0
+
+
+def _accent_position(hue: float) -> float | None:
+    """Return the position between the source accents, including soft end caps."""
+    source_span = (_SOURCE_SECONDARY_HUE - _SOURCE_PRIMARY_HUE) % 1.0
+    offset = (hue - _SOURCE_PRIMARY_HUE) % 1.0
+    if offset <= source_span:
+        return offset / source_span
+
+    before_primary = 1.0 - offset
+    after_secondary = offset - source_span
+    if min(before_primary, after_secondary) > _ACCENT_HUE_TOLERANCE:
+        return None
+    return 0.0 if before_primary <= after_secondary else 1.0
+
+
+def _target_hsv_pair(
+    accent_primary: str,
+    accent_secondary: str,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    if not _valid_hex(accent_primary) or not _valid_hex(accent_secondary):
+        raise ValueError("Theme accent colors must be six-digit hexadecimal values")
+    primary_rgb = tuple(
+        int(accent_primary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+    )
+    secondary_rgb = tuple(
+        int(accent_secondary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+    )
+    return colorsys.rgb_to_hsv(*primary_rgb), colorsys.rgb_to_hsv(*secondary_rgb)
+
+
+def _map_accent_rgb(
+    rgb: tuple[float, float, float],
+    target_primary: tuple[float, float, float],
+    target_secondary: tuple[float, float, float],
+) -> tuple[float, float, float] | None:
+    """Map both source accent families through one continuous gradient function."""
+    hue, saturation, value = colorsys.rgb_to_hsv(*rgb)
+    if saturation < 0.16 or value < 0.14:
+        return None
+
+    position = _accent_position(hue)
+    if position is None:
+        return None
+
+    target_hue_delta = (
+        (target_secondary[0] - target_primary[0] + 0.5) % 1.0
+    ) - 0.5
+    mapped_hue = (target_primary[0] + position * target_hue_delta) % 1.0
+
+    source_saturation = (
+        _SOURCE_PRIMARY_HSV[1] * (1.0 - position)
+        + _SOURCE_SECONDARY_HSV[1] * position
+    )
+    target_saturation = (
+        target_primary[1] * (1.0 - position)
+        + target_secondary[1] * position
+    )
+    source_value = (
+        _SOURCE_PRIMARY_HSV[2] * (1.0 - position)
+        + _SOURCE_SECONDARY_HSV[2] * position
+    )
+    target_value = (
+        target_primary[2] * (1.0 - position)
+        + target_secondary[2] * position
+    )
+
+    mapped_saturation = min(
+        1.0, target_saturation * saturation / max(source_saturation, 1e-9)
+    )
+    mapped_value = min(1.0, target_value * value / max(source_value, 1e-9))
+    return colorsys.hsv_to_rgb(mapped_hue, mapped_saturation, mapped_value)
+
+
 def recolor_hex_color(
     source: str,
     accent_primary: str,
     accent_secondary: str,
 ) -> str:
-    """Shift cyan-like pixels to primary and magenta-like pixels to secondary.
+    """Re-map the original two-colour gradient without a midpoint colour split.
 
-    Hue is changed only for saturated, visibly colored pixels close to one of
-    the two source accent families. Saturation and value remain unchanged so
-    glow intensity, antialiasing and metallic luminance gradients are retained.
+    Pixels between the cyan and magenta source anchors are interpolated
+    continuously between the selected accents. Saturation/value and alpha
+    handling preserve the original glow falloff, metallic highlights and
+    luminance structure; neutrals and unrelated hues are left untouched.
     """
-    if not all(_valid_hex(value) for value in (source, accent_primary, accent_secondary)):
-        raise ValueError("Theme asset colors must be six-digit hexadecimal values")
-
+    if not _valid_hex(source):
+        raise ValueError("Source asset color must be a six-digit hexadecimal value")
+    target_primary, target_secondary = _target_hsv_pair(
+        accent_primary, accent_secondary
+    )
     rgb = tuple(int(source[index:index + 2], 16) / 255.0 for index in (1, 3, 5))
-    hue, saturation, value = colorsys.rgb_to_hsv(*rgb)
-    if saturation < 0.16 or value < 0.14:
+    mapped = _map_accent_rgb(rgb, target_primary, target_secondary)
+    if mapped is None:
         return source.lower()
-
-    primary_distance = _hue_distance(hue, _SOURCE_PRIMARY_HUE)
-    secondary_distance = _hue_distance(hue, _SOURCE_SECONDARY_HUE)
-    is_primary = primary_distance <= secondary_distance
-    distance = primary_distance if is_primary else secondary_distance
-    target = accent_primary if is_primary else accent_secondary
-    source_base = "#00d9ff" if is_primary else "#e33bff"
-    if distance > 58.0 / 360.0:
-        return source.lower()
-
-    target_rgb = tuple(
-        int(target[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
-    )
-    source_base_rgb = tuple(
-        int(source_base[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
-    )
-    target_hue, target_saturation, target_value = colorsys.rgb_to_hsv(*target_rgb)
-    _base_hue, base_saturation, base_value = colorsys.rgb_to_hsv(*source_base_rgb)
-    relative_saturation = saturation / base_saturation if base_saturation else 0.0
-    relative_value = value / base_value if base_value else 0.0
-    mapped_saturation = min(1.0, target_saturation * relative_saturation)
-    mapped_value = min(1.0, target_value * relative_value)
-    red, green, blue = colorsys.hsv_to_rgb(
-        target_hue, mapped_saturation, mapped_value
-    )
     return "#{:02x}{:02x}{:02x}".format(
-        round(red * 255), round(green * 255), round(blue * 255)
+        *(round(channel * 255) for channel in mapped)
     )
 
 
@@ -221,32 +278,20 @@ def render_logo_theme(
 def lut_cube_text(
     accent_primary: str,
     accent_secondary: str,
-    size: int = 33,
+    size: int = 49,
 ) -> str:
-    """Build a 3D LUT for FFmpeg that changes only the two source accent families."""
-    if not _valid_hex(accent_primary) or not _valid_hex(accent_secondary):
-        raise ValueError("Theme accent colors must be six-digit hexadecimal values")
+    """Build a high-resolution LUT using the exact same smooth gradient mapping."""
     if type(size) is not int or not 2 <= size <= 65:
         raise ValueError("3D LUT size must be between 2 and 65")
-
+    target_primary, target_secondary = _target_hsv_pair(
+        accent_primary, accent_secondary
+    )
     lines = [
-        "TITLE \"LEOS two-accent theme\"",
+        "TITLE \"LEOS smooth two-accent gradient\"",
         f"LUT_3D_SIZE {size}",
         "DOMAIN_MIN 0.0 0.0 0.0",
         "DOMAIN_MAX 1.0 1.0 1.0",
     ]
-    primary_rgb = tuple(
-        int(accent_primary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
-    )
-    secondary_rgb = tuple(
-        int(accent_secondary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
-    )
-    primary_hue = colorsys.rgb_to_hsv(*primary_rgb)[0]
-    secondary_hue = colorsys.rgb_to_hsv(*secondary_rgb)[0]
-    source_primary_rgb = (0.0, 217 / 255.0, 1.0)
-    source_secondary_rgb = (227 / 255.0, 59 / 255.0, 1.0)
-    source_primary_saturation, source_primary_value = colorsys.rgb_to_hsv(*source_primary_rgb)[1:]
-    source_secondary_saturation, source_secondary_value = colorsys.rgb_to_hsv(*source_secondary_rgb)[1:]
 
     # .cube ordering: red varies fastest, then green, then blue.
     for blue_index in range(size):
@@ -255,40 +300,12 @@ def lut_cube_text(
             green = green_index / (size - 1)
             for red_index in range(size):
                 red = red_index / (size - 1)
-                hue, saturation, value = colorsys.rgb_to_hsv(red, green, blue)
-                if saturation < 0.16 or value < 0.14:
-                    mapped = (red, green, blue)
-                else:
-                    primary_distance = _hue_distance(hue, _SOURCE_PRIMARY_HUE)
-                    secondary_distance = _hue_distance(hue, _SOURCE_SECONDARY_HUE)
-                    is_primary = primary_distance <= secondary_distance
-                    distance = primary_distance if is_primary else secondary_distance
-                    if distance > 58.0 / 360.0:
-                        mapped = (red, green, blue)
-                    elif is_primary:
-                        mapped_saturation = min(
-                            1.0,
-                            colorsys.rgb_to_hsv(*primary_rgb)[1]
-                            * saturation / source_primary_saturation,
-                        )
-                        mapped_value = min(
-                            1.0,
-                            colorsys.rgb_to_hsv(*primary_rgb)[2]
-                            * value / source_primary_value,
-                        )
-                        mapped = colorsys.hsv_to_rgb(primary_hue, mapped_saturation, mapped_value)
-                    else:
-                        mapped_saturation = min(
-                            1.0,
-                            colorsys.rgb_to_hsv(*secondary_rgb)[1]
-                            * saturation / source_secondary_saturation,
-                        )
-                        mapped_value = min(
-                            1.0,
-                            colorsys.rgb_to_hsv(*secondary_rgb)[2]
-                            * value / source_secondary_value,
-                        )
-                        mapped = colorsys.hsv_to_rgb(secondary_hue, mapped_saturation, mapped_value)
+                source_rgb = (red, green, blue)
+                mapped = _map_accent_rgb(
+                    source_rgb, target_primary, target_secondary
+                )
+                if mapped is None:
+                    mapped = source_rgb
                 lines.append(" ".join(f"{channel:.7f}" for channel in mapped))
     return "\n".join(lines) + "\n"
 
