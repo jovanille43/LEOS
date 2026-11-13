@@ -556,12 +556,13 @@ class DynamicThemeAssetTests(unittest.TestCase):
             except OSError:
                 self.skipTest("Symbolic links are unavailable on this runner")
 
+            repository = Path(__file__).resolve().parents[1]
             manager = ThemeAssetManager(
-                branding_dir=root / "branding",
+                branding_dir=repository / "branding",
                 cache_dir=root / "cache",
-                icon_theme_dir=root / "missing-icons",
-                plasma_theme_dir=root / "missing-plasma",
-                aurorae_theme_dir=root / "missing-aurorae",
+                icon_theme_dir=repository / "icons" / "leos",
+                plasma_theme_dir=repository / "plasma-theme" / "leos",
+                aurorae_theme_dir=repository / "aurorae" / "leos",
             )
             with self.assertRaises(ValueError):
                 manager.export_kde_resource_packages_for_theme(
