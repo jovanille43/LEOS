@@ -675,10 +675,10 @@ def _controller_details() -> str:
         re.IGNORECASE,
     )
     joystick_handler = re.compile(
-        r"^H:\s+Handlers=.*(?:=|\s)(js\d+)(?:\s|$)", re.MULTILINE
+        r"^H:\s+Handlers=[^\n]*\b(js\d+)\b", re.MULTILINE
     )
     event_handler = re.compile(
-        r"^H:\s+Handlers=.*(?:=|\s)(event\d+)(?:\s|$)", re.MULTILINE
+        r"^H:\s+Handlers=[^\n]*\b(event\d+)\b", re.MULTILINE
     )
 
     for block in devices.split("\n\n"):
