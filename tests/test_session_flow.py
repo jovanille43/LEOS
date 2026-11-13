@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SessionFlowTests(unittest.TestCase):
-    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
+    def test_mode_selector_uses_shared_dynamic_emblem_assets_and_graceful_fallback(self):
         source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         self.assertIn("themeManager.assets.desktop_logo", source)
         self.assertIn("themeManager.assets.gaming_logo", source)
@@ -94,10 +94,11 @@ class SessionFlowTests(unittest.TestCase):
     def test_desktop_intro_uses_mov_extension_in_both_transitions(self):
         selector = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
         gaming = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn("desktop-intro.mov", selector)
-        self.assertIn("desktop-intro.mov", gaming)
-        self.assertNotIn("themeManager.assets.gaming_intro", selector)
-        self.assertNotIn("themeManager.assets.gaming_intro", gaming)
+        self.assertIn("themeManager.assets.desktop_intro", selector)
+        self.assertIn("themeManager.assets.desktop_intro", gaming)
+        assets = (ROOT / "desktop/theme_assets.py").read_text(encoding="utf-8")
+        self.assertIn('"desktop-intro.mov"', assets)
+        self.assertIn('"gaming-intro.mp4"', assets)
 
     def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
@@ -121,7 +122,7 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         self.assertIn("import QtMultimedia", qml)
-        self.assertIn("desktop-intro.mov", qml)
+        self.assertIn("themeManager.assets.desktop_intro", qml)
         self.assertIn("function requestDesktopReturn()", qml)
         self.assertIn("function finishDesktopReturn()", qml)
         self.assertIn("window.requestDesktopReturn()", qml)
