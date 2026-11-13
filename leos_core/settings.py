@@ -12,6 +12,7 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.json_utils import json_nesting_within_limit
+from desktop.themes import THEME_PALETTES
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
@@ -77,7 +78,7 @@ DEFAULTS: dict[str, Any] = {
 
 ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
-    "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "theme": set(THEME_PALETTES),
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
     "notification_minimum_priority": {"all", "important", "critical"},
