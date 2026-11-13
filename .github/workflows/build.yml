@@ -33,6 +33,8 @@ jobs:
           required_assets=(
             branding/desktop-logo.jpeg
             branding/gaming-logo.jpeg
+            branding/desktop-logo-alpha.png
+            branding/gaming-logo-alpha.png
             branding/reference-comparison.jpeg
             branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
@@ -78,8 +80,8 @@ jobs:
           namespace = "{http://www.w3.org/2000/svg}"
           xlink_href = "{http://www.w3.org/1999/xlink}href"
           expected = {
-              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg",
-              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg",
+              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png",
+              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png",
           }
           for wallpaper, emblem in expected.items():
               root = ET.parse(wallpaper).getroot()
