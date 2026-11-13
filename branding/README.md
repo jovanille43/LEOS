@@ -12,7 +12,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 - `desktop-logo.jpeg` — emblème Desktop.
 - `gaming-logo.jpeg` — emblème Gaming.
-- `desktop-logo-alpha.png` et `gaming-logo-alpha.png` — copies dérivées (PNG transparent) des deux emblèmes ci-dessus, générées par `tools/derive_emblem_alpha.py` ; elles servent aux fonds d'écran pour éviter le rectangle noir du JPEG. Les JPEG restent les sources officielles.
+- `desktop-logo-alpha.png` et `gaming-logo-alpha.png` — copies dérivées (PNG transparent) des deux emblèmes ci-dessus, générées par `tools/derive_emblem_alpha.py` ; elles servent aux fonds d'écran et aux images QML (sélecteur de modes, menu Desktop et en-tête Gaming) pour éviter le rectangle noir du JPEG. Les JPEG restent les sources officielles et ne sont jamais modifiés.
 - `reference-comparison.jpeg` — référence interne uniquement.
 - `animations/desktop-intro.mov` — entrée Desktop et retour depuis Gaming.
 - `animations/gaming-intro.mp4` — animation principale d'entrée Gaming.
