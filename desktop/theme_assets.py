@@ -532,7 +532,7 @@ class ThemeAssetManager:
         }
         _write_private_text(
             output_dir / ".videos-ready.json",
-            json.dumps(status, ensure_ascii=False, separators=(",", ":")) + "\\n",
+            json.dumps(status, ensure_ascii=False, separators=(",", ":")) + "\n",
         )
         return outputs
 
