@@ -130,7 +130,8 @@ class DesktopThemeTests(unittest.TestCase):
             with self.subTest(qml=relative):
                 self.assertIn("themeColors.accent_primary", source)
                 self.assertIn("themeColors.accent_secondary", source)
-                self.assertNotRegex(source, r'property color (?:cyan|magenta):\\s*["\\']#[0-9A-Fa-f]{6}["\\']')
+                self.assertIn("property color cyan: themeColors.accent_primary", source)
+                self.assertIn("property color magenta: themeColors.accent_secondary", source)
 
     def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
         root = Path(__file__).resolve().parents[1]
