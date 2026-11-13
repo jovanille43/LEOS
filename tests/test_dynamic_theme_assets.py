@@ -15,6 +15,7 @@ from desktop.theme_assets import (
     lut_cube_text,
     recolor_hex_color,
     recolor_svg_markup,
+    render_logo_theme,
     render_svg_theme,
     render_video_theme,
 )
@@ -59,6 +60,59 @@ class DynamicThemeAssetTests(unittest.TestCase):
             expected = expected_hue / 360.0
             error = abs((mapped_hue - expected + 0.5) % 1.0 - 0.5)
             self.assertLess(error, 0.01)
+
+    def test_png_render_preserves_alpha_neutrals_and_smooth_gradient(self):
+        from PySide6.QtGui import QColor, QImage
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.png"
+            output = root / "themed.png"
+            image = QImage(5, 1, QImage.Format_ARGB32)
+            image.fill(QColor("#000000"))
+            primary = QColor("#00d9ff")
+            primary.setAlpha(128)
+            image.setPixelColor(0, 0, primary)
+
+            middle = colorsys.hsv_to_rgb(241.0 / 360.0, 1.0, 1.0)
+            middle_color = QColor(
+                round(middle[0] * 255),
+                round(middle[1] * 255),
+                round(middle[2] * 255),
+                180,
+            )
+            image.setPixelColor(1, 0, middle_color)
+
+            secondary = QColor("#e33bff")
+            secondary.setAlpha(200)
+            image.setPixelColor(2, 0, secondary)
+            image.setPixelColor(3, 0, QColor("#777777"))
+            transparent = QColor("#00d9ff")
+            transparent.setAlpha(0)
+            image.setPixelColor(4, 0, transparent)
+            self.assertTrue(image.save(str(source), "PNG"))
+
+            render_logo_theme(
+                source,
+                output,
+                {
+                    "accent_primary": "#00ff66",
+                    "accent_secondary": "#ff9900",
+                },
+            )
+            rendered = QImage(str(output))
+            self.assertFalse(rendered.isNull())
+            self.assertEqual(rendered.pixelColor(0, 0).name(), "#00ff66")
+            self.assertEqual(rendered.pixelColor(0, 0).alpha(), 128)
+            self.assertNotIn(
+                rendered.pixelColor(1, 0).name(),
+                {"#00ff66", "#ff9900"},
+            )
+            self.assertEqual(rendered.pixelColor(1, 0).alpha(), 180)
+            self.assertEqual(rendered.pixelColor(2, 0).name(), "#ff9900")
+            self.assertEqual(rendered.pixelColor(2, 0).alpha(), 200)
+            self.assertEqual(rendered.pixelColor(3, 0).name(), "#777777")
+            self.assertEqual(rendered.pixelColor(4, 0).alpha(), 0)
 
     def test_neutral_and_unrelated_colors_are_preserved(self):
         for source in ("#777777", "#05070b", "#ffffff", "#44aa22"):
