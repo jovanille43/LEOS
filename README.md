@@ -20,7 +20,8 @@ L'identité LEOS repose sur un lion métallique, une typographie dédiée et un 
 - Desktop : emblème officiel du lion seul, décliné selon la paire sélectionnée.
 - Gaming : emblème officiel du lion avec manette, décliné selon la même paire.
 - Les interfaces, halos, dégradés et fonds SVG utilisent les deux accents du thème.
-- Les introductions vidéo sont préparées pour une génération dérivée ; leurs ressources originales et leur piste audio restent préservées.
+- Les introductions vidéo disposent d'une génération dérivée par LUT 3D sélective, en arrière-plan, avec audio conservé et repli sur les sources ; leur rendu recoloré doit encore être inspecté sur Bazzite.
+- Les SVG statiques du thème d'icônes, du Plasma Style et d'Aurorae restent à migrer vers les deux accents dynamiques.
 - Les animations et sons LEOS restent configurables indépendamment et peuvent être désactivés.
 
 Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
