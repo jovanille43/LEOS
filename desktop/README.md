@@ -62,12 +62,22 @@ L'export KDE ne remplace pas le Plasma Style, les icônes, les curseurs, le fond
 d'écran, les panneaux ni les écrans de connexion. Le système immuable Bazzite
 n'est pas modifié.
 
-**Limite visuelle connue :** les emblèmes JPEG, les vidéos d'introduction et
-les SVG de fonds d'écran contiennent encore les anciens accents cyan/magenta.
-Ils ne sont pas recolorés à la volée dans cette étape. Les sources officielles
-restent intactes ; la recoloration dynamique de ces ressources doit être
-ajoutée séparément, en préservant les dégradés, les reflets métalliques et les
-détails de l'identité LEOS.
+## Variantes visuelles du thème
+
+Le module `desktop/branding_assets.py` génère des variantes personnalisées des
+deux emblèmes JPEG, des fonds SVG 4K et des vidéos d'introduction. Une matrice
+RVB commune remplace les deux extrémités de couleur historiques par A et B tout
+en conservant les gris neutres (reflets métalliques, argent et blancs). Les
+variantes sont stockées sous `$XDG_CACHE_HOME/leos/theme-assets` (par défaut
+`~/.cache/leos/theme-assets`) et les interfaces les récupèrent sans modifier
+les ressources empaquetées dans `/usr/share/leos/branding`.
+
+La génération se fait en arrière-plan. Les images sont transformées avec Qt
+Gui, les SVG réutilisent l'emblème PNG recoloré et les vidéos sont traitées par
+`ffmpeg` lorsqu'il est présent. Si la conversion vidéo échoue ou si un outil
+n'est pas disponible, LEOS utilise l'animation officielle d'origine. La source
+reste toujours intacte ; le thème et l'application restent utilisables même si
+une variante optionnelle ne peut pas être produite.
 
 ## Profils de disposition et dock
 
