@@ -26,6 +26,14 @@ ApplicationWindow {
     property string diagnosticReportNotice: ""
     property string themeColorNotice: ""
 
+    function colorToHex(value) {
+        function channel(component) {
+            const hex = Math.round(component * 255).toString(16).toUpperCase()
+            return ("0" + hex).slice(-2)
+        }
+        return "#" + channel(value.r) + channel(value.g) + channel(value.b)
+    }
+
     function commitThemeColors(colorA, colorB) {
         const validColor = /^#[0-9a-fA-F]{6}$/
         if (!validColor.test(colorA) || !validColor.test(colorB)) {
@@ -70,14 +78,14 @@ ApplicationWindow {
         id: colorADialog
         title: "Choisir la couleur A"
         selectedColor: Qt.color(controlCenter.themeColorA)
-        onAccepted: window.commitThemeColors(selectedColor.toString(), themeColorBField.text)
+        onAccepted: window.commitThemeColors(window.colorToHex(selectedColor), themeColorBField.text)
     }
 
     ColorDialog {
         id: colorBDialog
         title: "Choisir la couleur B"
         selectedColor: Qt.color(controlCenter.themeColorB)
-        onAccepted: window.commitThemeColors(themeColorAField.text, selectedColor.toString())
+        onAccepted: window.commitThemeColors(themeColorAField.text, window.colorToHex(selectedColor))
     }
 
     Dialog {
