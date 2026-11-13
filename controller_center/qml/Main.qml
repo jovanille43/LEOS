@@ -12,11 +12,12 @@ ApplicationWindow {
     title: "LEOS — Centre des manettes"
     color: "#090b10"
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#909aac"
-    property color panel: "#121720"
-    property color line: "#293342"
+    property var themeColors: themeManager.palette
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
+    property color panel: themeColors.surface
+    property color line: themeColors.border
 
     Rectangle {
         anchors.fill: parent
@@ -69,7 +70,7 @@ ApplicationWindow {
                         Layout.preferredWidth: 54
                         Layout.preferredHeight: 54
                         radius: 14
-                        color: "#17303b"
+                        color: window.themeColors.accent_primary_soft
                         border.color: window.cyan
                         Label {
                             anchors.centerIn: parent
