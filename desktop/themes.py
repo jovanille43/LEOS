@@ -16,6 +16,10 @@ THEME_NAMES: dict[str, str] = {
     "cyan": "LEOS Cyan",
     "magenta": "LEOS Magenta",
     "gaming": "LEOS Gaming",
+    "emerald-gold": "LEOS Émeraude & Or",
+    "yellow-red": "LEOS Jaune & Rouge",
+    "electric-blue-orange": "LEOS Bleu électrique & Orange",
+    "violet-gold": "LEOS Violet & Or",
 }
 
 THEME_PALETTES: dict[str, dict[str, str]] = {
@@ -68,6 +72,46 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "muted_text": "#929DB4",
         "accent_primary": "#00D9FF",
         "accent_secondary": "#E33BFF",
+    },
+    "emerald-gold": {
+        "background": "#090B10",
+        "surface": "#121720",
+        "surface_elevated": "#182732",
+        "border": "#293342",
+        "text": "#F4F7FB",
+        "muted_text": "#909AAC",
+        "accent_primary": "#00A878",
+        "accent_secondary": "#D6A83A",
+    },
+    "yellow-red": {
+        "background": "#090B10",
+        "surface": "#121720",
+        "surface_elevated": "#182732",
+        "border": "#293342",
+        "text": "#F4F7FB",
+        "muted_text": "#909AAC",
+        "accent_primary": "#FFD21F",
+        "accent_secondary": "#E53935",
+    },
+    "electric-blue-orange": {
+        "background": "#090B10",
+        "surface": "#121720",
+        "surface_elevated": "#182732",
+        "border": "#293342",
+        "text": "#F4F7FB",
+        "muted_text": "#909AAC",
+        "accent_primary": "#168BFF",
+        "accent_secondary": "#FF851B",
+    },
+    "violet-gold": {
+        "background": "#090B10",
+        "surface": "#121720",
+        "surface_elevated": "#182732",
+        "border": "#293342",
+        "text": "#F4F7FB",
+        "muted_text": "#909AAC",
+        "accent_primary": "#8957E5",
+        "accent_secondary": "#D6A83A",
     },
 }
 
