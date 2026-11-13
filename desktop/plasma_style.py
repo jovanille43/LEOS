@@ -101,9 +101,11 @@ class PlasmaStyleManager:
     def tool_available(self) -> bool:
         return bool(self.apply_executable or shutil.which("plasma-apply-desktoptheme"))
 
-    def style_installed(self) -> bool:
+    def style_installed(self, style_id: str = STYLE_ID) -> bool:
+        if not isinstance(style_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", style_id):
+            return False
         for root in (self.user_theme_root, self.system_theme_root):
-            directory = root / STYLE_ID
+            directory = root / style_id
             metadata = directory / "metadata.json"
             if directory.is_symlink() or metadata.is_symlink() or not metadata.is_file():
                 continue
@@ -115,7 +117,7 @@ class PlasmaStyleManager:
             except json.JSONDecodeError:
                 continue
             plugin = payload.get("KPlugin", {}) if isinstance(payload, dict) else {}
-            if isinstance(plugin, dict) and plugin.get("Id") == STYLE_ID:
+            if isinstance(plugin, dict) and plugin.get("Id") == style_id:
                 return True
         return False
 
@@ -214,11 +216,13 @@ class PlasmaStyleManager:
             detail = (getattr(result, "stderr", "") or "").strip()
             raise RuntimeError(detail or "Plasma refused to apply the desktop style")
 
-    def apply_style(self) -> str:
+    def apply_style(self, style_id: str = STYLE_ID) -> str:
+        if not isinstance(style_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", style_id):
+            raise ValueError("Invalid Plasma Style identifier")
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-desktoptheme is unavailable")
-        if not self.style_installed():
-            raise FileNotFoundError("The LEOS Plasma Style package is not installed")
+        if not self.style_installed(style_id):
+            raise FileNotFoundError("The requested LEOS Plasma Style package is not installed")
         if self.state_file.is_symlink():
             raise ValueError("Symbolic-link Plasma style state files are not accepted")
         state = self._read_state()
@@ -226,26 +230,27 @@ class PlasmaStyleManager:
         if current is None:
             raise RuntimeError("The active Plasma Style cannot be identified; no change was made.")
         previous = state.get("previous_style")
-        if current.lower() != STYLE_ID:
-            previous = current
+        if current.lower() != style_id.lower():
+            if not current.lower().startswith("leos-") or not previous:
+                previous = current
         elif not previous:
-            raise RuntimeError("LEOS is already active but its previous Plasma Style is unavailable.")
+            raise RuntimeError("The requested LEOS Plasma Style is active but its previous style is unavailable.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_style": previous,
-            "last_applied": STYLE_ID,
+            "last_applied": style_id,
             "apply_pending": True,
         })
-        self._apply(STYLE_ID)
+        self._apply(style_id)
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_style": previous,
-            "last_applied": STYLE_ID,
+            "last_applied": style_id,
             "apply_pending": False,
         })
-        return "Style Plasma LEOS appliqué."
+        return f"Style Plasma LEOS appliqué : {style_id}."
 
     def restore_previous_style(self) -> str:
         state = self._read_state()
