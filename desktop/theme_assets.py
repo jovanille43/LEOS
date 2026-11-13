@@ -103,8 +103,9 @@ def recolor_svg_markup(
 
 def _safe_output_directory(path: Path) -> None:
     path = path.expanduser()
-    if path.exists() and path.is_symlink():
-        raise ValueError("Theme asset output directory cannot be a symbolic link")
+    for candidate in (path, *path.parents):
+        if candidate.exists() and candidate.is_symlink():
+            raise ValueError("Theme asset output path cannot contain symbolic links")
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
     if path.is_symlink() or not path.is_dir():
         raise ValueError("Theme asset output path is not a safe directory")
@@ -428,6 +429,10 @@ class ThemeAssetManager:
         gaming_logo = output_dir / "gaming-logo.png"
         desktop_wallpaper = output_dir / "desktop-wallpaper.svg"
         gaming_wallpaper = output_dir / "gaming-wallpaper.svg"
+
+        for target in (desktop_logo, gaming_logo, desktop_wallpaper, gaming_wallpaper):
+            if target.is_symlink():
+                raise ValueError("Cached LEOS theme asset cannot be a symbolic link")
 
         if not desktop_logo.is_file():
             render_logo_theme(desktop_logo_source, desktop_logo, palette)
