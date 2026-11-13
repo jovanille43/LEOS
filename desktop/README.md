@@ -68,9 +68,16 @@ Pour les palettes non originales, le moteur génère également des copies
 recolorées du thème d'icônes, du Plasma Style et d'Aurorae dans le cache privé
 utilisateur. Chaque variante reçoit un identifiant KDE distinct. Les dégradés
 sont recolorés sans modifier leur structure ; les surfaces sombres et les
-contours gris peu saturés sont préservés. Ces paquets restent dans le cache :
-ils ne sont ni exportés ni activés dans le profil KDE sans une action explicite
-qui sera ajoutée séparément.
+contours gris peu saturés sont préservés.
+
+Depuis Centre de contrôle → Apparence, l'action **Installer les ressources dans
+mon profil** exporte, après confirmation, les trois paquets vers les emplacements
+XDG utilisateur (`icons/`, `plasma/desktoptheme/` et `aurorae/themes/`). Les
+thèmes déjà présents et différents ne sont jamais écrasés. L'export ne sélectionne
+pas les thèmes à la place de l'utilisateur : les icônes, le Plasma Style et
+Aurorae restent à choisir séparément dans les paramètres KDE. Le retour à un
+thème précédent est donc effectué depuis KDE ; LEOS ne supprime pas encore
+automatiquement ces paquets exportés.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
