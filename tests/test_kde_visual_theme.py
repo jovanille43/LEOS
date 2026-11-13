@@ -156,6 +156,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
             plasma_style=self.plasma,
             config_home=self.config_home,
             state_home=self.state_home,
+            data_home=self.data_home,
             runner=self.runner,
             find_executable=finder,
         )
@@ -257,6 +258,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
             plasma_style=self.plasma,
             config_home=self.config_home,
             state_home=self.state_home,
+            data_home=self.data_home,
             runner=self.runner,
             find_executable=lambda name: "/usr/bin/" + name,
         )
