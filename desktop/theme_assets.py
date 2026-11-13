@@ -351,14 +351,13 @@ def render_video_theme(
         "-map", "0:v:0", "-map", "0:a?",
         "-map_metadata", "0",
         "-pix_fmt", "yuv420p",
-        "-c:a", "copy",
         "-movflags", "+faststart",
     ]
     last_error = ""
     try:
         for encoder_args in (
-            ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "20"],
-            ["-c:v", "mpeg4", "-q:v", "3"],
+            ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "20", "-c:a", "aac", "-b:a", "192k"],
+            ["-c:v", "mpeg4", "-q:v", "3", "-c:a", "aac", "-b:a", "192k"],
         ):
             try:
                 result = subprocess.run(
