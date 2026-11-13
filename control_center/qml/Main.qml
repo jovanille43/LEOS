@@ -34,6 +34,14 @@ ApplicationWindow {
         return "#" + channel(value.r) + channel(value.g) + channel(value.b)
     }
 
+    function colorToHex(color) {
+        function byteHex(value) {
+            const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return valueHex.length === 1 ? "0" + valueHex : valueHex
+        }
+        return "#" + byteHex(color.r) + byteHex(color.g) + byteHex(color.b)
+    }
+
     function commitThemeColors(colorA, colorB) {
         const validColor = /^#[0-9a-fA-F]{6}$/
         if (!validColor.test(colorA) || !validColor.test(colorB)) {
