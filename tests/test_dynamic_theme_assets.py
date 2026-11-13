@@ -321,8 +321,8 @@ class DynamicThemeAssetTests(unittest.TestCase):
             aurorae_svg.write_text(svg, encoding="utf-8")
 
             icon_index = (
-                "[Icon Theme]\\nName=LEOS\\nComment=Original icons\\n"
-                "Inherits=breeze,hicolor\\n"
+                "[Icon Theme]\nName=LEOS\nComment=Original icons\n"
+                "Inherits=breeze,hicolor\n"
             )
             plasma_metadata = {
                 "KPlugin": {
@@ -332,8 +332,8 @@ class DynamicThemeAssetTests(unittest.TestCase):
                 }
             }
             aurorae_metadata = (
-                "[Desktop Entry]\\nName=LEOS\\nComment=Original decoration\\n"
-                "X-KDE-PluginInfo-Name=leos\\n"
+                "[Desktop Entry]\nName=LEOS\nComment=Original decoration\n"
+                "X-KDE-PluginInfo-Name=leos\n"
             )
             (icon_root / "index.theme").write_text(icon_index, encoding="utf-8")
             (plasma_root / "metadata.json").write_text(
@@ -407,7 +407,7 @@ class DynamicThemeAssetTests(unittest.TestCase):
             icon_root = root / "icons" / "leos"
             icon_root.mkdir(parents=True)
             (icon_root / "index.theme").write_text(
-                "[Icon Theme]\\nName=LEOS\\nComment=Icons\\n",
+                "[Icon Theme]\nName=LEOS\nComment=Icons\n",
                 encoding="utf-8",
             )
             outside = root / "outside.svg"
