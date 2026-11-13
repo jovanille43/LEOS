@@ -26,6 +26,7 @@ def main() -> int:
     engine.rootContext().setContextProperty("themeManager", theme_manager)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Notifications.qml")))
     if not engine.rootObjects():
+        theme_manager.shutdown()
         return 1
     app.aboutToQuit.connect(theme_manager.shutdown)
     return app.exec()
