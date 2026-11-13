@@ -136,11 +136,13 @@ class DesktopThemeTests(unittest.TestCase):
     def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
         root = Path(__file__).resolve().parents[1]
         entry_points = (
+            "control_center/main.py",
             "desktop/menu_main.py",
             "desktop/notifications_main.py",
             "controller_center/main.py",
             "launcher/main.py",
             "shop/main.py",
+            "gaming/main.py",
         )
         for relative in entry_points:
             source = (root / relative).read_text(encoding="utf-8")
@@ -156,6 +158,21 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("theme_color_b", source)
         self.assertIn("def refresh(self)", source)
         self.assertIn("self.themeChanged.emit()", source)
+
+    def test_theme_controller_exposes_cached_logo_wallpaper_and_intro_variants(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "desktop" / "theme_controller.py").read_text(encoding="utf-8")
+        assets = (root / "desktop" / "branding_assets.py").read_text(encoding="utf-8")
+        for property_name in (
+            "desktopLogoUrl", "gamingLogoUrl", "desktopWallpaperUrl",
+            "gamingWallpaperUrl", "desktopIntroUrl", "gamingIntroUrl",
+        ):
+            with self.subTest(property_name=property_name):
+                self.assertIn(f"def {property_name}(self)", source)
+        self.assertIn("cached_themed_branding_asset_urls", source)
+        self.assertIn("build_themed_branding_assets", source)
+        self.assertIn("LOCK_EX | fcntl.LOCK_NB", assets)
+        self.assertIn("source_asset_urls", assets)
 
     def test_gaming_uses_the_same_live_palette(self):
         root = Path(__file__).resolve().parents[1]
