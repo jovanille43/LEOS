@@ -20,6 +20,7 @@ ApplicationWindow {
     property string launchNotice: ""
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
+    property string kdeResourceNotice: ""
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
@@ -99,6 +100,21 @@ ApplicationWindow {
             else
                 window.plasmaStyleNotice = controlCenter.restorePreviousPlasmaStyle()
         }
+    }
+
+    Dialog {
+        id: kdeResourcesConfirmation
+        modal: true
+        title: "Préparer les ressources KDE LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va copier les variantes du thème d'icônes, du Plasma Style et d'Aurorae dans ton espace utilisateur. Cela ne change pas le thème KDE actuellement actif : chaque ressource devra être sélectionnée dans ses paramètres KDE. Les fichiers système et les thèmes existants ne seront pas écrasés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.kdeResourceNotice = controlCenter.exportKdeThemeResources()
     }
 
     Dialog {
@@ -735,6 +751,46 @@ ApplicationWindow {
                                             : !controlCenter.plasmaStyleToolAvailable
                                                 ? "Outil plasma-apply-desktoptheme indisponible."
                                                 : window.plasmaStyleNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 170
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "RESSOURCES KDE DU THÈME"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Prépare les variantes assorties des icônes LEOS, du Plasma Style et des décorations de fenêtres. Elles seront installées dans ton profil, sans activation automatique."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Installer les ressources dans mon profil"
+                                        enabled: controlCenter.kdeThemeResourcesAvailable
+                                        onClicked: kdeResourcesConfirmation.open()
+                                    }
+                                    Label {
+                                        text: !controlCenter.kdeThemeResourcesAvailable
+                                            ? "Les ressources KDE LEOS ne sont pas toutes disponibles."
+                                            : window.kdeResourceNotice
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
