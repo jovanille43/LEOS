@@ -14,6 +14,8 @@ ApplicationWindow {
     property var themeColors: themeManager.palette
     property color primaryAccent: themeColors.accent_primary
     property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
@@ -28,7 +30,7 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: "white"; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -40,7 +42,7 @@ ApplicationWindow {
                 Label {
                     anchors.centerIn: parent
                     text: notificationModel.unreadCount + " non lues"
-                    color: window.primaryAccent
+                    color: window.primaryTextAccent
                     font.pixelSize: 11
                 }
             }
@@ -121,13 +123,13 @@ ApplicationWindow {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.primaryAccent; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.primaryTextAccent; font.pixelSize: 17 }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.secondaryAccent; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.secondaryTextAccent; font.pixelSize: 18 }
                             }
                         }
                     }
