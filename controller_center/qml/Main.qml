@@ -10,11 +10,12 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: "LEOS — Centre des manettes"
-    color: "#090b10"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#909aac"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property color panel: "#121720"
     property color line: "#293342"
 
