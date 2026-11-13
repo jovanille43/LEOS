@@ -731,8 +731,7 @@ class ControlCenterController(QObject):
         try:
             normalized_a = normalize_color(color_a)
             normalized_b = normalize_color(color_b)
-            self.settings.set("theme_color_a", normalized_a)
-            self.settings.set("theme_color_b", normalized_b)
+            self.settings.set_many({"theme_color_a": normalized_a, "theme_color_b": normalized_b})
         except (OSError, ValueError, TypeError, KeyError):
             return "Les couleurs n'ont pas pu être enregistrées. Vérifie le format #RRGGBB."
         self.settingsChanged.emit()
