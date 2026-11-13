@@ -419,12 +419,12 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: "../../branding/gaming-logo-alpha.png"
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
-                        Layout.preferredWidth: 118
-                        Layout.preferredHeight: 58
+                        Layout.preferredWidth: 174
+                        Layout.preferredHeight: 108
                         visible: status === Image.Ready
                     }
                     Label {
