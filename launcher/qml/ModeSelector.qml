@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import QtMultimedia
 
 ApplicationWindow {
@@ -21,6 +22,22 @@ ApplicationWindow {
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
+    property string editingAccent: "primary"
+
+    function commitAccentColors() {
+        if (!themeManager.setCustomColors(primaryAccentInput.text.trim(), secondaryAccentInput.text.trim())) {
+            primaryAccentInput.text = themeManager.palette.accent_primary
+            secondaryAccentInput.text = themeManager.palette.accent_secondary
+        }
+    }
+
+    function openAccentPicker(which) {
+        window.editingAccent = which
+        accentPicker.selectedColor = which === "primary"
+            ? window.themeColors.accent_primary
+            : window.themeColors.accent_secondary
+        accentPicker.open()
+    }
 
     function requestModeWithIntro(mode) {
         if (transitionInProgress || !themeManager.assetsReady)
@@ -98,6 +115,27 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: themeManager
+        function onChanged() {
+            primaryAccentInput.text = themeManager.palette.accent_primary
+            secondaryAccentInput.text = themeManager.palette.accent_secondary
+        }
+    }
+
+    ColorDialog {
+        id: accentPicker
+        title: "Choisir une couleur d'accent"
+        onAccepted: {
+            const chosen = selectedColor.toString().toUpperCase()
+            if (window.editingAccent === "primary")
+                primaryAccentInput.text = chosen
+            else
+                secondaryAccentInput.text = chosen
+            window.commitAccentColors()
+        }
+    }
+
     Timer {
         interval: 1000
         running: true
@@ -110,14 +148,14 @@ ApplicationWindow {
         modal: true
         title: "Choisis les couleurs de LEOS"
         anchors.centerIn: parent
-        width: 500
+        width: 600
         standardButtons: Dialog.Ok
         onOpened: themeSelectionBox.forceActiveFocus()
 
         contentItem: ColumnLayout {
             spacing: 14
             Label {
-                text: "Chaque thème associe deux couleurs. Elles seront utilisées ensemble dans les dégradés et les effets lumineux."
+                text: "Choisis librement les couleurs A et B. Elles recolorent ensemble les dégradés, halos, logos, animations et ressources KDE."
                 color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
@@ -141,6 +179,40 @@ ApplicationWindow {
                     if (index >= 0 && index < options.length)
                         themeManager.setTheme(options[index].id)
                 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                TextField {
+                    id: primaryAccentInput
+                    Layout.fillWidth: true
+                    placeholderText: "Couleur A · #RRGGBB"
+                    text: window.themeColors.accent_primary
+                    onEditingFinished: window.commitAccentColors()
+                }
+                Button {
+                    text: "Palette A"
+                    onClicked: window.openAccentPicker("primary")
+                }
+                TextField {
+                    id: secondaryAccentInput
+                    Layout.fillWidth: true
+                    placeholderText: "Couleur B · #RRGGBB"
+                    text: window.themeColors.accent_secondary
+                    onEditingFinished: window.commitAccentColors()
+                }
+                Button {
+                    text: "Palette B"
+                    onClicked: window.openAccentPicker("secondary")
+                }
+            }
+            Label {
+                visible: window.themeColors.contrast_warning
+                text: window.themeColors.contrast_warning_text
+                color: "#F4C66A"
+                wrapMode: Text.WordWrap
+                font.pixelSize: 10
+                Layout.fillWidth: true
             }
             RowLayout {
                 Layout.fillWidth: true
