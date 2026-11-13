@@ -60,9 +60,12 @@ Le module `desktop/theme_manager.py` transmet la palette aux fenêtres QML
 indépendantes et observe les changements de thème entre processus. Le module
 `desktop/theme_assets.py` génère dans le cache utilisateur des copies
 recolorées des deux emblèmes officiels et des fonds d'écran SVG. Les sources
-empaquetées ne sont jamais modifiées. Les vidéos de transition sont référencées
-par le manifeste commun, mais leur recoloration n'est pas encore activée :
-elles utilisent actuellement les fichiers originaux.
+empaquetées ne sont jamais modifiées. Les introductions MOV/MP4 passent par le
+manifeste commun et peuvent être recolorées en arrière-plan avec une LUT 3D
+sélective via FFmpeg ; l'audio est conservé et les originaux restent le repli.
+Le rendu visuel des vidéos dérivées doit encore être inspecté sur Bazzite.
+Les SVG du thème d'icônes, du Plasma Style et d'Aurorae conservent encore des
+accents fixes et restent à migrer.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
