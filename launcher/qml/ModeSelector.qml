@@ -10,11 +10,12 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS — Choix du mode"
-    color: "#07080c"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
@@ -93,12 +94,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: "#102b3a"; opacity: 0.18
+            color: window.cyan; opacity: 0.12
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: "#321437"; opacity: 0.15
+            color: window.magenta; opacity: 0.10
         }
 
         ColumnLayout {
