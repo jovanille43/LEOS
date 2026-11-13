@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import colorsys
 import json
 import tempfile
 import unittest
@@ -26,6 +27,38 @@ class DynamicThemeAssetTests(unittest.TestCase):
         self.assertEqual(primary, "#00ff66")
         self.assertEqual(secondary, "#ff9900")
         self.assertNotEqual(primary, secondary)
+
+    def test_gradient_midpoint_is_interpolated_between_the_selected_accents(self):
+        source_mid_rgb = colorsys.hsv_to_rgb(241.0 / 360.0, 1.0, 1.0)
+        source_mid = "#{:02x}{:02x}{:02x}".format(
+            *(round(channel * 255) for channel in source_mid_rgb)
+        )
+        mapped = recolor_hex_color(source_mid, "#00ff66", "#ff9900")
+        mapped_rgb = tuple(
+            int(mapped[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+        )
+        mapped_hue = colorsys.rgb_to_hsv(*mapped_rgb)[0]
+        # Target accents are at 144° and 36°; their smooth midpoint is 90°.
+        self.assertLess(abs((mapped_hue - 0.25 + 0.5) % 1.0 - 0.5), 0.01)
+        self.assertNotEqual(mapped.lower(), "#00ff66")
+        self.assertNotEqual(mapped.lower(), "#ff9900")
+
+    def test_gradient_hue_progression_remains_smooth_across_the_full_transition(self):
+        expected_hues = (117.0, 90.0, 63.0)
+        for position, expected_hue in zip((0.25, 0.5, 0.75), expected_hues):
+            source_hue = (190.0 + 102.0 * position) / 360.0
+            source_rgb = colorsys.hsv_to_rgb(source_hue, 1.0, 1.0)
+            source = "#{:02x}{:02x}{:02x}".format(
+                *(round(channel * 255) for channel in source_rgb)
+            )
+            mapped = recolor_hex_color(source, "#00ff66", "#ff9900")
+            mapped_rgb = tuple(
+                int(mapped[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+            )
+            mapped_hue = colorsys.rgb_to_hsv(*mapped_rgb)[0]
+            expected = expected_hue / 360.0
+            error = abs((mapped_hue - expected + 0.5) % 1.0 - 0.5)
+            self.assertLess(error, 0.01)
 
     def test_neutral_and_unrelated_colors_are_preserved(self):
         for source in ("#777777", "#05070b", "#ffffff", "#44aa22"):
@@ -84,6 +117,11 @@ class DynamicThemeAssetTests(unittest.TestCase):
         self.assertEqual(len(lines), 4 + size ** 3)
         self.assertEqual(lines[2], "DOMAIN_MIN 0.0 0.0 0.0")
         self.assertEqual(lines[3], "DOMAIN_MAX 1.0 1.0 1.0")
+
+    def test_default_lut_uses_a_fine_grid_for_smoother_video_gradients(self):
+        lines = lut_cube_text("#00ff66", "#ff9900").splitlines()
+        self.assertIn("LUT_3D_SIZE 49", lines)
+        self.assertEqual(len(lines), 4 + 49 ** 3)
 
     def test_lut_rejects_invalid_colors_and_dimensions(self):
         with self.assertRaises(ValueError):
