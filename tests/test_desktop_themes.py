@@ -285,5 +285,24 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("themeManager.setCustomColors", launcher)
         self.assertIn("controlCenter.setAccentColors", control)
 
+    def test_all_leos_surfaces_use_contrast_aware_text_accent_roles(self):
+        root = Path(__file__).resolve().parents[1]
+        surfaces = (
+            "launcher/qml/ModeSelector.qml",
+            "gaming/qml/Main.qml",
+            "control_center/qml/Main.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "controller_center/qml/Main.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative in surfaces:
+            with self.subTest(path=relative):
+                content = (root / relative).read_text(encoding="utf-8")
+                self.assertIn("themeColors.accent_primary_text", content)
+                self.assertIn("themeColors.accent_secondary_text", content)
+                self.assertIn("window.primaryTextAccent", content)
+                self.assertIn("window.secondaryTextAccent", content)
+
 if __name__ == "__main__":
     unittest.main()
