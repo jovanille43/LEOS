@@ -157,6 +157,13 @@ def custom_theme_id(accent_primary: str, accent_secondary: str) -> str:
         raise ValueError("La couleur A doit être au format #RRGGBB.")
     if not isinstance(accent_secondary, str) or not _COLOR_PATTERN.fullmatch(accent_secondary):
         raise ValueError("La couleur B doit être au format #RRGGBB.")
+    normalized_pair = (accent_primary.upper(), accent_secondary.upper())
+    for theme_id, palette in THEME_PALETTES.items():
+        if normalized_pair == (
+            palette["accent_primary"].upper(),
+            palette["accent_secondary"].upper(),
+        ):
+            return theme_id
     return CUSTOM_THEME_PREFIX + accent_primary[1:].lower() + accent_secondary[1:].lower()
 
 
