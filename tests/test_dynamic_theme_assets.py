@@ -428,5 +428,42 @@ class DynamicThemeAssetTests(unittest.TestCase):
                 manager.kde_resource_paths_for_theme("light")
 
 
+    def test_repository_kde_packages_generate_from_real_source_trees(self):
+        repository = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temporary:
+            manager = ThemeAssetManager(
+                branding_dir=repository / "branding",
+                cache_dir=Path(temporary) / "cache",
+                icon_theme_dir=repository / "icons" / "leos",
+                plasma_theme_dir=repository / "plasma-theme" / "leos",
+                aurorae_theme_dir=repository / "aurorae" / "leos",
+            )
+            paths = manager.kde_resource_paths_for_theme("light")
+            for key in ("icon_theme_path", "plasma_theme_path", "aurorae_theme_path"):
+                with self.subTest(package=key):
+                    generated = Path(paths[key])
+                    self.assertTrue(generated.is_dir())
+                    self.assertTrue((generated / ".leos-theme-package.json").is_file())
+
+            icon_name = (Path(paths["icon_theme_path"]) / "index.theme").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("Name=LEOS — Light", icon_name)
+
+            plasma_metadata = json.loads(
+                (Path(paths["plasma_theme_path"]) / "metadata.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(plasma_metadata["KPlugin"]["Id"], "leos-light")
+
+            aurorae = (
+                Path(paths["aurorae_theme_path"]) / "decoration.svg"
+            ).read_text(encoding="utf-8")
+            self.assertNotIn("#65E5FF", aurorae)
+            self.assertIn("#71809B", aurorae)
+            self.assertIn("#080D18", aurorae)
+
+
 if __name__ == "__main__":
     unittest.main()
