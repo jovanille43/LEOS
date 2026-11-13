@@ -1,14 +1,22 @@
-"""Validated, user-selectable LEOS interface palettes.
+"""Validated, user-selectable LEOS two-accent palettes.
 
-These palettes are presentation tokens for LEOS-owned interfaces. They do not
-rewrite KDE Plasma colors, themes, or other existing user configuration.
+A theme is always a pair of distinct accents. Derived highlight, glow and soft
+surface tokens are computed from that pair so UI components do not need to
+invent their own shades or collapse both accents into a single color.
 """
-
 from __future__ import annotations
 
 import re
 
 DEFAULT_THEME = "leos-original"
+
+THEME_NAMES: dict[str, str] = {
+    "leos-original": "LEOS Original",
+    "light": "Light",
+    "cyan": "Cyan",
+    "magenta": "Magenta",
+    "gaming": "Gaming",
+}
 
 THEME_PALETTES: dict[str, dict[str, str]] = {
     "leos-original": {
@@ -84,8 +92,53 @@ def palette_for_theme(theme: str) -> dict[str, str]:
     return dict(selected)
 
 
+def _mix_hex(first: str, second: str, second_weight: float) -> str:
+    if not 0.0 <= second_weight <= 1.0:
+        raise ValueError("Color mix weight must be between zero and one")
+    first_rgb = tuple(int(first[index:index + 2], 16) for index in (1, 3, 5))
+    second_rgb = tuple(int(second[index:index + 2], 16) for index in (1, 3, 5))
+    result = tuple(
+        round(a * (1.0 - second_weight) + b * second_weight)
+        for a, b in zip(first_rgb, second_rgb)
+    )
+    return "#" + "".join(f"{channel:02X}" for channel in result)
+
+
+def visual_tokens_for_theme(theme: str) -> dict[str, str]:
+    """Expose the base pair plus consistent glow, soft and gradient color roles."""
+    palette = palette_for_theme(theme)
+    white = "#FFFFFF"
+    return {
+        **palette,
+        "accent_primary_glow": _mix_hex(palette["accent_primary"], white, 0.24),
+        "accent_secondary_glow": _mix_hex(palette["accent_secondary"], white, 0.24),
+        "accent_primary_soft": _mix_hex(
+            palette["accent_primary"], palette["background"], 0.68
+        ),
+        "accent_secondary_soft": _mix_hex(
+            palette["accent_secondary"], palette["background"], 0.68
+        ),
+        "accent_gradient_mid": _mix_hex(
+            palette["accent_primary"], palette["accent_secondary"], 0.5
+        ),
+    }
+
+
+def theme_options() -> list[dict[str, str]]:
+    """Return display metadata for selectors; future palettes appear automatically."""
+    return [
+        {
+            "id": theme_id,
+            "name": THEME_NAMES[theme_id],
+            "accent_primary": palette["accent_primary"],
+            "accent_secondary": palette["accent_secondary"],
+        }
+        for theme_id, palette in THEME_PALETTES.items()
+    ]
+
+
 def validate_palette(palette: object) -> bool:
-    """Check that a palette has precisely the required tokens and valid hex colors."""
+    """Check that all required tokens exist and contain valid six-digit hex colors."""
     if not isinstance(palette, dict) or set(palette) != REQUIRED_TOKENS:
         return False
     return all(
@@ -94,5 +147,12 @@ def validate_palette(palette: object) -> bool:
     )
 
 
+if set(THEME_NAMES) != set(THEME_PALETTES):
+    raise RuntimeError("LEOS theme names and palettes are out of sync")
 if not all(validate_palette(palette) for palette in THEME_PALETTES.values()):
     raise RuntimeError("A built-in LEOS theme contains invalid color tokens")
+if any(
+    palette["accent_primary"].lower() == palette["accent_secondary"].lower()
+    for palette in THEME_PALETTES.values()
+):
+    raise RuntimeError("Every LEOS theme must contain two distinct accent colors")
