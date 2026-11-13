@@ -11,6 +11,8 @@ import colorsys
 import hashlib
 import os
 import re
+import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Mapping
@@ -133,9 +135,12 @@ def render_svg_theme(
         palette["accent_secondary"],
     )
     if emblem_path is not None:
-        emblem_uri = Path(emblem_path).resolve().as_uri()
-        rendered = rendered.replace("../desktop-logo-alpha.png", emblem_uri)
-        rendered = rendered.replace("../gaming-logo-alpha.png", emblem_uri)
+        emblem_path = Path(emblem_path)
+        if emblem_path.parent.resolve() != output_path.parent.resolve():
+            raise ValueError("Generated SVG emblem must be stored beside its wallpaper")
+        emblem_name = emblem_path.name
+        rendered = rendered.replace("../desktop-logo-alpha.png", emblem_name)
+        rendered = rendered.replace("../gaming-logo-alpha.png", emblem_name)
 
     _safe_output_directory(output_path.parent)
     if output_path.is_symlink():
@@ -210,6 +215,173 @@ def render_logo_theme(
     return output_path
 
 
+def lut_cube_text(
+    accent_primary: str,
+    accent_secondary: str,
+    size: int = 33,
+) -> str:
+    """Build a 3D LUT for FFmpeg that changes only the two source accent families."""
+    if not _valid_hex(accent_primary) or not _valid_hex(accent_secondary):
+        raise ValueError("Theme accent colors must be six-digit hexadecimal values")
+    if type(size) is not int or not 2 <= size <= 65:
+        raise ValueError("3D LUT size must be between 2 and 65")
+
+    lines = [
+        "TITLE \"LEOS two-accent theme\"",
+        f"LUT_3D_SIZE {size}",
+        "DOMAIN_MIN 0.0 0.0 0.0",
+        "DOMAIN_MAX 1.0 1.0 1.0",
+    ]
+    primary_rgb = tuple(
+        int(accent_primary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+    )
+    secondary_rgb = tuple(
+        int(accent_secondary[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+    )
+    primary_hue = colorsys.rgb_to_hsv(*primary_rgb)[0]
+    secondary_hue = colorsys.rgb_to_hsv(*secondary_rgb)[0]
+    source_primary_rgb = (0.0, 217 / 255.0, 1.0)
+    source_secondary_rgb = (227 / 255.0, 59 / 255.0, 1.0)
+    source_primary_saturation, source_primary_value = colorsys.rgb_to_hsv(*source_primary_rgb)[1:]
+    source_secondary_saturation, source_secondary_value = colorsys.rgb_to_hsv(*source_secondary_rgb)[1:]
+
+    # .cube ordering: red varies fastest, then green, then blue.
+    for blue_index in range(size):
+        blue = blue_index / (size - 1)
+        for green_index in range(size):
+            green = green_index / (size - 1)
+            for red_index in range(size):
+                red = red_index / (size - 1)
+                hue, saturation, value = colorsys.rgb_to_hsv(red, green, blue)
+                if saturation < 0.16 or value < 0.14:
+                    mapped = (red, green, blue)
+                else:
+                    primary_distance = _hue_distance(hue, _SOURCE_PRIMARY_HUE)
+                    secondary_distance = _hue_distance(hue, _SOURCE_SECONDARY_HUE)
+                    is_primary = primary_distance <= secondary_distance
+                    distance = primary_distance if is_primary else secondary_distance
+                    if distance > 58.0 / 360.0:
+                        mapped = (red, green, blue)
+                    elif is_primary:
+                        mapped_saturation = min(
+                            1.0,
+                            colorsys.rgb_to_hsv(*primary_rgb)[1]
+                            * saturation / source_primary_saturation,
+                        )
+                        mapped_value = min(
+                            1.0,
+                            colorsys.rgb_to_hsv(*primary_rgb)[2]
+                            * value / source_primary_value,
+                        )
+                        mapped = colorsys.hsv_to_rgb(primary_hue, mapped_saturation, mapped_value)
+                    else:
+                        mapped_saturation = min(
+                            1.0,
+                            colorsys.rgb_to_hsv(*secondary_rgb)[1]
+                            * saturation / source_secondary_saturation,
+                        )
+                        mapped_value = min(
+                            1.0,
+                            colorsys.rgb_to_hsv(*secondary_rgb)[2]
+                            * value / source_secondary_value,
+                        )
+                        mapped = colorsys.hsv_to_rgb(secondary_hue, mapped_saturation, mapped_value)
+                lines.append(" ".join(f"{channel:.7f}" for channel in mapped))
+    return "\n".join(lines) + "\n"
+
+
+def _write_private_text(path: Path, content: str) -> None:
+    _safe_output_directory(path.parent)
+    if path.is_symlink():
+        raise ValueError("Theme cache files cannot be symbolic links")
+    fd, temporary = tempfile.mkstemp(
+        prefix="leos-lut-", suffix=".tmp", dir=path.parent
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+
+
+def render_video_theme(
+    source_path: Path,
+    output_path: Path,
+    lut_path: Path,
+    timeout_seconds: int = 420,
+) -> Path:
+    """Re-encode a source animation through a selective two-accent 3D LUT.
+
+    Audio is stream-copied. If FFmpeg or a supported encoder is unavailable,
+    callers should keep using the official source animation unchanged.
+    """
+    source_path = Path(source_path)
+    output_path = Path(output_path)
+    lut_path = Path(lut_path)
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise FileNotFoundError("FFmpeg is not installed; use the official animation")
+    if source_path.is_symlink() or not source_path.is_file():
+        raise FileNotFoundError("Official LEOS animation is not a regular file")
+    if lut_path.is_symlink() or not lut_path.is_file():
+        raise FileNotFoundError("Generated LEOS color LUT is not available")
+    _safe_output_directory(output_path.parent)
+    if output_path.is_symlink():
+        raise ValueError("Theme video cache cannot be a symbolic link")
+
+    fd, temporary = tempfile.mkstemp(
+        prefix="leos-video-", suffix=".mp4", dir=output_path.parent
+    )
+    os.close(fd)
+    command_base = [
+        ffmpeg,
+        "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
+        "-i", str(source_path),
+        "-vf", f"lut3d=file={lut_path.name}:interp=tetrahedral",
+        "-map", "0:v:0", "-map", "0:a?",
+        "-map_metadata", "0",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "copy",
+        "-movflags", "+faststart",
+    ]
+    last_error = ""
+    try:
+        for encoder_args in (
+            ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "20"],
+            ["-c:v", "mpeg4", "-q:v", "3"],
+        ):
+            try:
+                result = subprocess.run(
+                    command_base[:8] + encoder_args + command_base[8:],
+                    cwd=output_path.parent,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout_seconds,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as error:
+                last_error = str(error)
+                continue
+            if result.returncode == 0 and Path(temporary).is_file() and Path(temporary).stat().st_size > 0:
+                os.chmod(temporary, 0o600)
+                os.replace(temporary, output_path)
+                return output_path
+            last_error = (result.stderr or "FFmpeg could not encode the themed animation")[-2000:]
+        raise RuntimeError(last_error or "No supported FFmpeg video encoder is available")
+    finally:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+
+
 class ThemeAssetManager:
     """Create cached logo and wallpaper copies without touching packaged assets."""
 
@@ -268,7 +440,7 @@ class ThemeAssetManager:
                 palette,
                 desktop_logo,
             )
-        if not gaming_wallpaper.is_file():
+        if not gaming_wallpaper.is_file() or gaming_wallpaper.is_symlink():
             render_svg_theme(
                 self.branding_dir / "wallpapers" / "gaming-leos.svg",
                 gaming_wallpaper,
@@ -276,11 +448,38 @@ class ThemeAssetManager:
                 gaming_logo,
             )
 
+        lut_path = output_dir / "theme.cube"
+        if not lut_path.is_file() or lut_path.is_symlink():
+            _write_private_text(
+                lut_path,
+                lut_cube_text(palette["accent_primary"], palette["accent_secondary"]),
+            )
+
+        desktop_intro_source = self.branding_dir / "animations" / "desktop-intro.mov"
+        gaming_intro_source = self.branding_dir / "animations" / "gaming-intro.mp4"
+        desktop_intro = output_dir / "desktop-intro.mp4"
+        gaming_intro = output_dir / "gaming-intro.mp4"
+        for source, destination in (
+            (desktop_intro_source, desktop_intro),
+            (gaming_intro_source, gaming_intro),
+        ):
+            if destination.is_symlink():
+                raise ValueError("Theme video cache cannot be a symbolic link")
+            if not destination.is_file() or destination.stat().st_size == 0:
+                try:
+                    render_video_theme(source, destination, lut_path)
+                except (FileNotFoundError, RuntimeError, OSError, ValueError):
+                    # The original video remains a correct, playable fallback.
+                    pass
+
         return {
             "desktop_logo": desktop_logo.as_uri(),
             "gaming_logo": gaming_logo.as_uri(),
             "desktop_wallpaper": desktop_wallpaper.as_uri(),
             "gaming_wallpaper": gaming_wallpaper.as_uri(),
-            "desktop_intro": (self.branding_dir / "animations" / "desktop-intro.mov").resolve().as_uri(),
-            "gaming_intro": (self.branding_dir / "animations" / "gaming-intro.mp4").resolve().as_uri(),
+            "desktop_intro": (desktop_intro if desktop_intro.is_file() else desktop_intro_source).resolve().as_uri(),
+            "gaming_intro": (gaming_intro if gaming_intro.is_file() else gaming_intro_source).resolve().as_uri(),
+            "videos_recolored": str(
+                desktop_intro.is_file() and gaming_intro.is_file()
+            ).lower(),
         }
