@@ -245,6 +245,8 @@ class DesktopThemeTests(unittest.TestCase):
     def test_custom_pair_is_unrestricted_stable_and_keeps_the_neutral_design(self):
         theme = custom_theme_id("#121212", "#131313")
         self.assertEqual(theme, "custom-121212131313")
+        self.assertEqual(custom_theme_id("#00D9FF", "#E33BFF"), "leos-original")
+        self.assertEqual(custom_theme_id("#00f0a0", "#ffd84d"), "emerald-gold")
         self.assertTrue(is_valid_theme_id(theme))
         self.assertEqual(custom_colors_from_theme(theme), ("#121212", "#131313"))
         palette = palette_for_theme(theme)
