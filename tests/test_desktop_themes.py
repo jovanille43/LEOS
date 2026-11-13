@@ -33,7 +33,10 @@ class DesktopThemeTests(unittest.TestCase):
     def test_all_builtin_palettes_have_complete_valid_tokens(self):
         self.assertEqual(
             set(THEME_PALETTES),
-            {"leos-original", "light", "cyan", "magenta", "gaming"},
+            {
+                "leos-original", "light", "cyan", "magenta", "gaming",
+                "emerald-gold", "yellow-red", "electric-blue-orange", "violet-gold",
+            },
         )
         for palette in THEME_PALETTES.values():
             self.assertEqual(set(palette), REQUIRED_TOKENS)
