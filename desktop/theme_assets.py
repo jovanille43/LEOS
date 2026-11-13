@@ -424,14 +424,13 @@ def recolor_kde_svg_markup(
         prefix = match.group("prefix")
         color = match.group("color")
         attribute = prefix.lower().split("=", 1)[0].split(":", 1)[0].strip()
-        if attribute != "stop-color":
-            rgb = tuple(
-                int(color[index:index + 2], 16) / 255.0
-                for index in (1, 3, 5)
-            )
-            _hue, saturation, value = colorsys.rgb_to_hsv(*rgb)
-            if saturation < 0.42 or value < 0.30:
-                return match.group(0)
+        rgb = tuple(
+            int(color[index:index + 2], 16) / 255.0
+            for index in (1, 3, 5)
+        )
+        _hue, saturation, value = colorsys.rgb_to_hsv(*rgb)
+        if saturation < 0.42 or value < 0.30:
+            return match.group(0)
         recolored = recolor_hex_color(
             color, accent_primary, accent_secondary
         )
