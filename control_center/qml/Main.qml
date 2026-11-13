@@ -571,7 +571,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    source: themeManager.assets.gaming_wallpaper
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
