@@ -9,7 +9,7 @@ from pathlib import Path
 from PySide6.QtCore import QObject, Property, QRunnable, QThreadPool, QTimer, Signal, Slot
 
 from desktop.theme_assets import ThemeAssetManager
-from desktop.themes import theme_options, visual_tokens_for_theme
+from desktop.themes import custom_theme_id, is_valid_theme_id, theme_options, visual_tokens_for_theme
 from leos_core.settings import SettingsStore
 
 
@@ -69,7 +69,7 @@ class ThemeManager(QObject):
 
     @Property("QVariantList", notify=changed)
     def options(self) -> list[dict[str, str]]:
-        return theme_options()
+        return theme_options(self._theme_id)
 
     @Property("QVariantMap", notify=changed)
     def assets(self) -> dict[str, str]:
@@ -196,7 +196,7 @@ class ThemeManager(QObject):
     @Slot(str, result=bool)
     def setTheme(self, theme: str) -> bool:
         """Persist a known catalog entry; the other LEOS processes refresh shortly."""
-        if theme not in {option["id"] for option in theme_options()}:
+        if not is_valid_theme_id(theme):
             return False
         try:
             self.settings.set("theme", theme)
@@ -204,6 +204,15 @@ class ThemeManager(QObject):
             return False
         self.refresh()
         return True
+
+    @Slot(str, str, result=bool)
+    def setCustomColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        """Persist any two player-selected accent colors without contrast restrictions."""
+        try:
+            theme = custom_theme_id(accent_primary.strip(), accent_secondary.strip())
+        except (AttributeError, TypeError, ValueError):
+            return False
+        return self.setTheme(theme)
 
     @Slot()
     def shutdown(self) -> None:
