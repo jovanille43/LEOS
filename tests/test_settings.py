@@ -7,6 +7,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from desktop.themes import custom_theme_id
 from leos_core.settings import SettingsStore
 
 
@@ -252,6 +253,21 @@ class SettingsStoreTests(unittest.TestCase):
             lock_path = path.with_name(path.name + ".lock")
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
+
+    def test_custom_two_accent_theme_persists_between_processes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            theme = custom_theme_id("#102030", "#E0A0F0")
+            settings = SettingsStore(path)
+            settings.set("theme", theme)
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme"), theme)
+
+    def test_malformed_custom_theme_id_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            with self.assertRaises(ValueError):
+                settings.set("theme", "custom-not-valid")
 
 if __name__ == "__main__":
     unittest.main()
