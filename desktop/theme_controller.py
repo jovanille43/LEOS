@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Property, QRunnable, QThreadPool, QTimer, Signal, Slot
 
-from desktop.branding_assets import build_themed_branding_assets, source_asset_urls
+from desktop.branding_assets import (
+    build_themed_branding_assets,
+    cached_themed_branding_asset_urls,
+    source_asset_urls,
+)
 from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, palette_for_colors
 from leos_core.settings import SettingsStore
 
@@ -42,8 +46,9 @@ class ThemeController(QObject):
         super().__init__(parent)
         self.settings = SettingsStore()
         self._snapshot = self._read_snapshot()
-        self._assets = source_asset_urls()
+        self._assets = cached_themed_branding_asset_urls(*self._snapshot)
         self._asset_task: _BrandingAssetTask | None = None
+        self._asset_attempt_snapshot: tuple[str, str] | None = None
         self._closed = False
         self._timer = QTimer(self)
         self._timer.setInterval(1200)
@@ -90,8 +95,9 @@ class ThemeController(QObject):
         return self._assets.get("gamingIntroUrl", "")
 
     def _start_asset_generation(self) -> None:
-        if self._closed or self._asset_task is not None:
+        if self._closed or self._asset_task is not None or self._asset_attempt_snapshot == self._snapshot:
             return
+        self._asset_attempt_snapshot = self._snapshot
         task = _BrandingAssetTask(self._snapshot)
         task.signals.completed.connect(self._on_assets_generated)
         self._asset_task = task
@@ -115,8 +121,16 @@ class ThemeController(QObject):
         snapshot = self._read_snapshot()
         if snapshot != self._snapshot:
             self._snapshot = snapshot
+            self._asset_attempt_snapshot = None
             self.themeChanged.emit()
             self._start_asset_generation()
+
+        # Another LEOS process may own the generation lock. Adopt its derived
+        # files on a later poll without repeatedly competing for that lock.
+        cached = cached_themed_branding_asset_urls(*self._snapshot)
+        if cached != self._assets:
+            self._assets = cached
+            self.themeAssetsChanged.emit()
 
     def shutdown(self) -> None:
         self._closed = True
