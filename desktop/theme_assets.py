@@ -710,7 +710,7 @@ def _copy_package_atomically(
             break
         current = current.parent
     for directory in reversed(ancestors):
-        if directory.exists() and (directory.is_symlink() or not directory.is_dir()):
+        if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
             raise ValueError("KDE user data path contains an unsafe directory")
         if not directory.exists():
             directory.mkdir(mode=0o755)
@@ -722,8 +722,10 @@ def _copy_package_atomically(
         os.chmod(lock_path, 0o600)
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
 
+        if destination.is_symlink():
+            raise FileExistsError("A symbolic link already uses this KDE theme name")
         if destination.exists():
-            if destination.is_symlink() or not destination.is_dir():
+            if not destination.is_dir():
                 raise FileExistsError("A non-directory entry already uses this KDE theme name")
             _validate_generated_package(destination, theme, package_kind)
             if not _package_trees_equal(source, destination):
@@ -961,7 +963,7 @@ class ThemeAssetManager:
                 theme,
                 package_kind,
             )
-            exported[source_key.removesuffix("_path") + "_path"] = str(copied)
+            exported[source_key] = str(copied)
         return exported
 
     def paths_for_theme(self, theme: str) -> dict[str, str]:
