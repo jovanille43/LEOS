@@ -19,7 +19,7 @@ import tempfile
 from pathlib import Path
 from typing import Mapping
 
-from desktop.themes import THEME_NAMES, THEME_PALETTES, palette_for_theme
+from desktop.themes import THEME_NAMES, THEME_PALETTES, is_valid_theme_id, palette_for_theme, theme_display_name
 from leos_core.paths import data_home as xdg_data_home
 
 _HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}")
@@ -486,7 +486,7 @@ def render_kde_theme_package(
     """
     source_dir = Path(source_dir)
     output_dir = Path(output_dir)
-    if theme not in THEME_NAMES:
+    if not is_valid_theme_id(theme):
         raise ValueError(f"Unknown LEOS theme: {theme}")
     if package_kind not in {"icons", "plasma", "aurorae"}:
         raise ValueError("Unsupported KDE theme package type")
@@ -497,7 +497,7 @@ def render_kde_theme_package(
     ):
         raise ValueError("Theme accent colors must be six-digit hexadecimal values")
 
-    theme_label = THEME_NAMES[theme].removeprefix("LEOS ")
+    theme_label = theme_display_name(theme).removeprefix("LEOS ")
     display_name = f"LEOS — {theme_label}"
     package_id = f"leos-{theme}"
     expected_manifest = {
@@ -836,7 +836,7 @@ class ThemeAssetManager:
         self.cache_dir = Path(cache_dir)
 
     def _output_dir_for_theme(self, theme: str) -> Path:
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
         source_files = (
@@ -892,7 +892,7 @@ class ThemeAssetManager:
 
     def kde_resource_paths_for_theme(self, theme: str) -> dict[str, str]:
         """Generate cached icon, Plasma Style and Aurorae variants without applying them."""
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
         if (
@@ -929,7 +929,7 @@ class ThemeAssetManager:
         data_directory: Path | None = None,
     ) -> dict[str, str]:
         """Return the complete set of safely exported KDE packages, if present."""
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
         if (
@@ -977,7 +977,7 @@ class ThemeAssetManager:
         Existing differing packages are never overwritten. This method only
         prepares user-local packages; selection remains a separate KDE action.
         """
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         if (
             palette_for_theme(theme)["accent_primary"].lower() == "#00d9ff"
@@ -1029,7 +1029,7 @@ class ThemeAssetManager:
 
     def paths_for_theme(self, theme: str) -> dict[str, str]:
         """Generate logos and wallpapers quickly; never wait for video encoding."""
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
         if (
@@ -1087,7 +1087,7 @@ class ThemeAssetManager:
         If FFmpeg is unavailable or encoding fails, that animation independently
         falls back to its official source. Image and UI recoloring never waits.
         """
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
         desktop_source = self.branding_dir / "animations" / "desktop-intro.mov"
