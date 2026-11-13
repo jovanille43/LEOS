@@ -929,13 +929,16 @@ class ThemeAssetManager:
 
         cached = self.kde_resource_paths_for_theme(theme)
         if not cached:
-            raise FileNotFoundError("LEOS KDE theme source packages are unavailable")
+            return {}
+        required = {"icon_theme_path", "plasma_theme_path", "aurorae_theme_path"}
+        if not required.issubset(cached):
+            raise FileNotFoundError("One or more LEOS KDE theme source packages are unavailable")
 
         data_root = Path(data_directory) if data_directory is not None else Path(
             xdg_data_home()
         )
-        if not data_root.is_absolute():
-            raise ValueError("XDG data directory must be an absolute path")
+        if not data_root.is_absolute() or ".." in data_root.parts:
+            raise ValueError("XDG data directory must be an absolute normalized path")
         package_id = f"leos-{theme}"
         destinations = (
             ("icon_theme_path", "icons", Path("icons") / package_id),
