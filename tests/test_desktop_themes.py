@@ -98,7 +98,7 @@ class DesktopThemeTests(unittest.TestCase):
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
-        self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("property color cyan: themeColors.accent_primary", qml)
         self.assertIn("ColorDialog", qml)
         self.assertIn("controlCenter.setThemeColors", qml)
         self.assertIn("def themePalette(self)", controller)
