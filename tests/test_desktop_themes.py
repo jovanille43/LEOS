@@ -101,6 +101,8 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property color cyan: themeColors.accent_primary", qml)
         self.assertIn("ColorDialog", qml)
         self.assertIn("controlCenter.setThemeColors", qml)
+        self.assertIn("function colorToHex(color)", qml)
+        self.assertIn("window.colorToHex(selectedColor)", qml)
         self.assertIn("def themePalette(self)", controller)
         self.assertIn("palette_for_colors(self.themeColorA, self.themeColorB)", controller)
         self.assertNotIn("themeBox", qml)
