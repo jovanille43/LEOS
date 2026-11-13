@@ -23,6 +23,7 @@ ApplicationWindow {
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
     property string kdeResourceNotice: ""
+    property string kdeVisualThemeNotice: ""
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
@@ -117,6 +118,31 @@ ApplicationWindow {
             padding: 12
         }
         onAccepted: window.kdeResourceNotice = controlCenter.exportKdeThemeResources()
+    }
+
+    Dialog {
+        id: kdeVisualThemeConfirmation
+        property string action: "apply"
+        modal: true
+        title: action === "apply"
+            ? "Appliquer le thème KDE complet LEOS ?"
+            : "Restaurer les réglages KDE précédents ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: kdeVisualThemeConfirmation.action === "apply"
+                ? "LEOS va appliquer la variante sélectionnée aux icônes, au style Plasma et aux décorations Aurorae. Une sauvegarde des valeurs actuelles sera conservée. Si une opération échoue, LEOS tentera de revenir aux réglages précédents."
+                : "LEOS va restaurer les réglages précédents pour les composants qui utilisent toujours la variante LEOS. Tout composant modifié manuellement depuis l'application sera conservé."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 460
+            padding: 12
+        }
+        onAccepted: {
+            if (action === "apply")
+                window.kdeVisualThemeNotice = controlCenter.applyKdeVisualTheme()
+            else
+                window.kdeVisualThemeNotice = controlCenter.restorePreviousKdeVisualTheme()
+        }
     }
 
     Dialog {
@@ -783,7 +809,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 218
+                                Layout.preferredHeight: 292
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -808,6 +834,28 @@ ApplicationWindow {
                                         text: "Installer les ressources dans mon profil"
                                         enabled: controlCenter.kdeThemeResourcesAvailable
                                         onClicked: kdeResourcesConfirmation.open()
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Button {
+                                            Layout.fillWidth: true
+                                            text: "Appliquer le thème complet"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                kdeVisualThemeConfirmation.action = "apply"
+                                                kdeVisualThemeConfirmation.open()
+                                            }
+                                        }
+                                        Button {
+                                            Layout.fillWidth: true
+                                            text: "Restaurer le précédent"
+                                            enabled: controlCenter.canRestoreKdeVisualTheme
+                                            onClicked: {
+                                                kdeVisualThemeConfirmation.action = "restore"
+                                                kdeVisualThemeConfirmation.open()
+                                            }
+                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -844,6 +892,13 @@ ApplicationWindow {
                                         text: !controlCenter.kdeThemeResourcesAvailable
                                             ? "Les ressources KDE LEOS ne sont pas toutes disponibles."
                                             : window.kdeResourceNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: window.kdeVisualThemeNotice
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
