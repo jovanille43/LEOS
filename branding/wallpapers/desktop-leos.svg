@@ -66,6 +66,6 @@
   <!-- Keep the supplied emblem as the single source of truth. -->
   <image x="1070" y="180" width="1700" height="1800"
          preserveAspectRatio="xMidYMid meet"
-         href="../desktop-logo.jpeg"
-         xlink:href="../desktop-logo.jpeg"/>
+         href="../desktop-logo-alpha.png"
+         xlink:href="../desktop-logo-alpha.png"/>
 </svg>
