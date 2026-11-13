@@ -8,11 +8,12 @@ ApplicationWindow {
     height: 790
     visible: true
     title: "LEOS — Boutique"
-    color: "#080a0f"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedRow: -1
 
     function normalizedSearchText(value) {
