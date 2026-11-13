@@ -362,12 +362,13 @@ def render_video_theme(
         ):
             try:
                 result = subprocess.run(
-                    command_base[:8] + encoder_args + command_base[8:],
+                    command_base[:8] + encoder_args + command_base[8:] + [temporary],
                     cwd=output_path.parent,
                     capture_output=True,
                     text=True,
                     timeout=timeout_seconds,
                     check=False,
+                    shell=False,
                 )
             except subprocess.TimeoutExpired as error:
                 last_error = str(error)
