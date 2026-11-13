@@ -303,8 +303,11 @@ class DesktopThemeTests(unittest.TestCase):
                 content = (root / relative).read_text(encoding="utf-8")
                 self.assertIn("themeColors.accent_primary_text", content)
                 self.assertIn("themeColors.accent_secondary_text", content)
+                self.assertIn("property color primaryTextAccent", content)
+                self.assertIn("property color secondaryTextAccent", content)
                 self.assertIn("window.primaryTextAccent", content)
-                self.assertIn("window.secondaryTextAccent", content)
+                self.assertNotIn("color: window.primaryAccent", content)
+                self.assertNotIn("color: window.secondaryAccent", content)
 
 if __name__ == "__main__":
     unittest.main()
