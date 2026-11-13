@@ -553,6 +553,11 @@ def render_kde_theme_package(
                     relative_file = original.relative_to(source_dir)
                     if relative_file.is_absolute() or ".." in relative_file.parts:
                         raise ValueError("KDE source package contains an unsafe path")
+                    if (
+                        package_kind == "aurorae"
+                        and original.name == f"{source_dir.name}rc"
+                    ):
+                        relative_file = Path(f"{package_id}rc")
                     destination = temporary / relative_file
                     destination.parent.mkdir(parents=True, exist_ok=True)
 
@@ -647,6 +652,16 @@ def _validate_generated_package(
     }
     if manifest != expected:
         raise ValueError("Generated KDE package does not match the requested theme")
+
+    required_files = {
+        "icons": ("index.theme",),
+        "plasma": ("metadata.json",),
+        "aurorae": ("metadata.desktop", f"{expected['package_id']}rc"),
+    }[package_kind]
+    for required in required_files:
+        candidate = package_dir / required
+        if candidate.is_symlink() or not candidate.is_file():
+            raise ValueError("Generated KDE package is missing a required entry")
 
     for current, directories, files in os.walk(
         package_dir, topdown=True, followlinks=False
