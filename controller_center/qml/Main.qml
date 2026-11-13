@@ -15,6 +15,8 @@ ApplicationWindow {
     property var themeColors: themeManager.palette
     property color primaryAccent: themeColors.accent_primary
     property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
@@ -43,7 +45,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DES MANETTES"
-                        color: window.primaryAccent
+                        color: window.primaryTextAccent
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -73,11 +75,11 @@ ApplicationWindow {
                         Layout.preferredHeight: 54
                         radius: 14
                         color: window.themeColors.accent_primary_soft
-                        border.color: window.primaryAccent
+                        border.color: window.primaryTextAccent
                         Label {
                             anchors.centerIn: parent
                             text: "⌘"
-                            color: window.primaryAccent
+                            color: window.primaryTextAccent
                             font.pixelSize: 28
                         }
                     }
@@ -126,7 +128,7 @@ ApplicationWindow {
                             spacing: 11
                             Label {
                                 text: "MANETTE"
-                                color: window.primaryAccent
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -159,7 +161,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "PROFIL LEOS"
-                                color: window.primaryAccent
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -196,7 +198,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: Math.round(deadzoneSlider.value) + " %"
-                                color: window.primaryAccent
+                                color: window.primaryTextAccent
                                 font.pixelSize: 13
                             }
                             Item { Layout.fillHeight: true }
@@ -227,7 +229,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "TEST DES COMMANDES"
-                                color: window.primaryAccent
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
