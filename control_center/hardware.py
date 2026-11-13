@@ -627,7 +627,7 @@ def _audio_details() -> tuple[str, str, str]:
 def _parse_input_bitmap(block: str, capability: str) -> int | None:
     """Parse one Linux /proc input capability bitmap on the x86_64 baseline."""
     match = re.search(
-        rf"(?m)^B:\\s+{re.escape(capability)}=([0-9a-fA-F ]+)$", block
+        rf"(?m)^B:\s+{re.escape(capability)}=([0-9a-fA-F ]+)$", block
     )
     if not match:
         return None
@@ -675,14 +675,14 @@ def _controller_details() -> str:
         re.IGNORECASE,
     )
     joystick_handler = re.compile(
-        r"^H:\\s+Handlers=.*(?:^|\\s)(js\\d+)(?:\\s|$)", re.MULTILINE
+        r"^H:\s+Handlers=.*(?:^|\s)(js\d+)(?:\s|$)", re.MULTILINE
     )
     event_handler = re.compile(
-        r"^H:\\s+Handlers=.*(?:^|\\s)(event\\d+)(?:\\s|$)", re.MULTILINE
+        r"^H:\s+Handlers=.*(?:^|\s)(event\d+)(?:\s|$)", re.MULTILINE
     )
 
-    for block in devices.split("\\n\\n"):
-        name_match = re.search(r'^N:\\s+Name="([^"]+)"', block, re.MULTILINE)
+    for block in devices.split("\n\n"):
+        name_match = re.search(r'^N:\s+Name="([^"]+)"', block, re.MULTILINE)
         joystick_match = joystick_handler.search(block)
         event_match = event_handler.search(block)
         name = name_match.group(1).strip() if name_match else ""
