@@ -6,6 +6,9 @@ from pathlib import Path
 from desktop.themes import (
     DEFAULT_THEME,
     REQUIRED_TOKENS,
+    custom_colors_from_theme,
+    custom_theme_id,
+    is_valid_theme_id,
     THEME_PALETTES,
     palette_for_theme,
     theme_options,
@@ -238,6 +241,49 @@ class DesktopThemeTests(unittest.TestCase):
                 self.assertIn("border.color: window.primaryGlow", content)
                 self.assertIn("border.color: window.secondaryGlow", content)
 
+
+    def test_custom_pair_is_unrestricted_stable_and_keeps_the_neutral_design(self):
+        theme = custom_theme_id("#121212", "#131313")
+        self.assertEqual(theme, "custom-121212131313")
+        self.assertTrue(is_valid_theme_id(theme))
+        self.assertEqual(custom_colors_from_theme(theme), ("#121212", "#131313"))
+        palette = palette_for_theme(theme)
+        self.assertEqual(palette["accent_primary"], "#121212")
+        self.assertEqual(palette["accent_secondary"], "#131313")
+        self.assertEqual(palette["background"], THEME_PALETTES[DEFAULT_THEME]["background"])
+        self.assertIn(theme, {item["id"] for item in theme_options(theme)})
+
+    def test_low_contrast_custom_pair_is_warned_but_never_rejected(self):
+        theme = custom_theme_id("#111111", "#121212")
+        tokens = visual_tokens_for_theme(theme)
+        self.assertTrue(tokens["contrast_warning"])
+        self.assertIn("restent inchangées", tokens["contrast_warning_text"])
+        self.assertEqual(tokens["accent_primary"], "#111111")
+        self.assertEqual(tokens["accent_secondary"], "#121212")
+        self.assertEqual(tokens["accent_primary_text"], tokens["text"])
+        self.assertEqual(tokens["accent_secondary_text"], tokens["text"])
+        self.assertIn("accent_primary_on_fill", tokens)
+        self.assertIn("accent_secondary_on_fill", tokens)
+
+    def test_custom_color_ids_reject_malformed_values_only(self):
+        for pair in (("cyan", "#FFFFFF"), ("#FFFFF", "#000000"), (None, "#000000")):
+            with self.subTest(pair=pair):
+                with self.assertRaises((TypeError, ValueError)):
+                    custom_theme_id(pair[0], pair[1])
+        self.assertFalse(is_valid_theme_id("custom-not-a-color-pair"))
+
+    def test_first_run_and_control_center_expose_custom_color_pickers(self):
+        root = Path(__file__).resolve().parents[1]
+        launcher = (root / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        control = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        for source in (launcher, control):
+            self.assertIn("import QtQuick.Dialogs", source)
+            self.assertIn("ColorDialog", source)
+            self.assertIn("Couleur A · #RRGGBB", source)
+            self.assertIn("Couleur B · #RRGGBB", source)
+            self.assertIn("contrast_warning_text", source)
+        self.assertIn("themeManager.setCustomColors", launcher)
+        self.assertIn("controlCenter.setAccentColors", control)
 
 if __name__ == "__main__":
     unittest.main()
