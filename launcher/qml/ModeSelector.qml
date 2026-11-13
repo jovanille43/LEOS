@@ -353,7 +353,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: themeManager.assets.gaming_logo
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
