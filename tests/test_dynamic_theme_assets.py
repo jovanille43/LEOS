@@ -460,6 +460,12 @@ class DynamicThemeAssetTests(unittest.TestCase):
             )
             self.assertEqual(plasma_metadata["KPlugin"]["Id"], "leos-light")
 
+            plasma_background = (
+                Path(paths["plasma_theme_path"]) / "widgets" / "background.svg"
+            ).read_text(encoding="utf-8")
+            self.assertIn('stop-color="#141D28"', plasma_background)
+            self.assertIn('stop-color="#0D121B"', plasma_background)
+
             aurorae = (
                 Path(paths["aurorae_theme_path"]) / "decoration.svg"
             ).read_text(encoding="utf-8")
