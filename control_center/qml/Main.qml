@@ -761,7 +761,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 170
+                                Layout.preferredHeight: 218
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -786,6 +786,37 @@ ApplicationWindow {
                                         text: "Installer les ressources dans mon profil"
                                         enabled: controlCenter.kdeThemeResourcesAvailable
                                         onClicked: kdeResourcesConfirmation.open()
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        Button {
+                                            text: "Icônes"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("icons")
+                                                    ? "Panneau Icônes ouvert : sélectionne LEOS dans la liste."
+                                                    : "Le module Icônes KDE est indisponible sur cette session."
+                                            }
+                                        }
+                                        Button {
+                                            text: "Style Plasma"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("desktop-theme")
+                                                    ? "Panneau Style Plasma ouvert : sélectionne la variante LEOS."
+                                                    : "Le module Style Plasma KDE est indisponible sur cette session."
+                                            }
+                                        }
+                                        Button {
+                                            text: "Décoration"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("window-decoration")
+                                                    ? "Panneau Décoration ouvert : sélectionne Aurorae LEOS."
+                                                    : "Le module Décorations KDE est indisponible sur cette session."
+                                            }
+                                        }
                                     }
                                     Label {
                                         text: !controlCenter.kdeThemeResourcesAvailable
