@@ -114,6 +114,48 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("themeColorAField.text = controlCenter.themeColorA", qml)
         self.assertIn("themeColorBField.text = controlCenter.themeColorB", qml)
 
+    def test_all_leos_qml_applications_use_the_shared_gradient(self):
+        root = Path(__file__).resolve().parents[1]
+        qml_files = (
+            "control_center/qml/Main.qml",
+            "controller_center/qml/Main.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "gaming/qml/Main.qml",
+            "launcher/qml/ModeSelector.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative in qml_files:
+            source = (root / relative).read_text(encoding="utf-8")
+            with self.subTest(qml=relative):
+                self.assertIn("themeColors.accent_primary", source)
+                self.assertIn("themeColors.accent_secondary", source)
+                self.assertNotRegex(source, r'property color (?:cyan|magenta):\\s*["\\']#[0-9A-Fa-f]{6}["\\']')
+
+    def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
+        root = Path(__file__).resolve().parents[1]
+        entry_points = (
+            "desktop/menu_main.py",
+            "desktop/notifications_main.py",
+            "controller_center/main.py",
+            "launcher/main.py",
+            "shop/main.py",
+        )
+        for relative in entry_points:
+            source = (root / relative).read_text(encoding="utf-8")
+            with self.subTest(entry_point=relative):
+                self.assertIn("ThemeController", source)
+                self.assertIn('setContextProperty("leosTheme", theme)', source)
+
+    def test_shared_desktop_theme_controller_refreshes_user_preferences(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "desktop" / "theme_controller.py").read_text(encoding="utf-8")
+        self.assertIn("SettingsStore()", source)
+        self.assertIn("theme_color_a", source)
+        self.assertIn("theme_color_b", source)
+        self.assertIn("def refresh(self)", source)
+        self.assertIn("self.themeChanged.emit()", source)
+
     def test_gaming_uses_the_same_live_palette(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
