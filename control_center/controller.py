@@ -651,9 +651,7 @@ class ControlCenterController(QObject):
 
     @Property(bool, notify=settingsChanged)
     def kdeThemeResourcesExported(self) -> bool:
-        return len(
-            self.themeAssets.exported_kde_resource_paths_for_theme(self.theme)
-        ) == 3
+        return self.kdeVisualTheme.resources_available(self.theme)
 
     @Property(bool, notify=settingsChanged)
     def plasmaStyleToolAvailable(self) -> bool:
