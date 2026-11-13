@@ -632,10 +632,10 @@ def _controller_details() -> str:
         r"gamepad|controller|joystick|xbox|dualsense|dualshock|joy-con|steam deck",
         re.IGNORECASE,
     )
-    joystick_handler = re.compile(r"^H:\\s+Handlers=.*(?:^|\\s)(js\\d+)(?:\\s|$)", re.MULTILINE)
+    joystick_handler = re.compile(r"^H:\s+Handlers=.*(?:^|\s)(js\d+)(?:\s|$)", re.MULTILINE)
 
-    for block in devices.split("\\n\\n"):
-        name_match = re.search(r'^N:\\s+Name="([^"]+)"', block, re.MULTILINE)
+    for block in devices.split("\n\n"):
+        name_match = re.search(r'^N:\s+Name="([^"]+)"', block, re.MULTILINE)
         handler_match = joystick_handler.search(block)
         name = name_match.group(1).strip() if name_match else ""
 
