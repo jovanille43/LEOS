@@ -62,22 +62,36 @@ Les icônes, illustrations et éléments graphiques LEOS doivent déclarer leurs
 
 ## État observé dans le dépôt au moment de cette décision
 
-- `desktop/themes.py` possède déjà deux tokens d'accent, mais les thèmes existants sont encore organisés autour des variantes historiques Original, Light, Cyan, Magenta et Gaming.
-- Le Centre de contrôle expose une palette aux composants QML ; plusieurs interfaces et ressources de marque conservent toutefois des valeurs cyan/magenta littérales.
-- Les fonds d'écran SVG contiennent directement leurs couleurs d'accent.
-- Les emblèmes officiels sont des PNG transparents statiques.
-- Les introductions Desktop et Gaming sont des fichiers vidéo MOV/MP4 statiques.
-- Le premier démarrage actuel présente un guide d'accueil, mais ne propose pas encore le choix de palette.
+- Le catalogue de thèmes comporte désormais les rôles sémantiques bicolores et est partagé entre les applications LEOS.
+- Les interfaces QML principales et les ressources PNG/SVG prises en charge disposent d'un chemin de recoloration.
+- Les fichiers vidéo restent des sources maîtresses non recolorées ; leur traitement reste explicitement séparé.
+- Le choix de thème au premier démarrage est distinct du guide d'accueil.
+
+## Socle technique préparé
+
+Le socle commun est maintenant présent dans la branche de travail :
+
+- `desktop/themes.py` est le catalogue unique des thèmes et expose les deux accents, les noms de présentation et les rôles dérivés (glows, surfaces atténuées et milieu de dégradé). Les nouveaux assortiments seront ajoutés à ce catalogue ; les listes de l'interface et la validation des paramètres le consomment automatiquement.
+- Le thème sélectionné est mémorisé dans les paramètres utilisateur. `theme_selection_complete` distingue le choix initial du guide d'accueil Desktop/Gaming.
+- Le sélecteur propose les thèmes disponibles au premier démarrage et le Centre de contrôle utilise le même catalogue pour les changements ultérieurs.
+- `desktop/theme_manager.py` diffuse les palettes vers les fenêtres QML indépendantes et observe les changements effectués par une autre application LEOS.
+- Les écrans Mode Selector, Gaming, Desktop Menu, Notifications, Centre des manettes, Boutique et Centre de contrôle consomment désormais les accents sémantiques au lieu de déclarer chacun leur paire cyan/magenta.
+- `desktop/theme_assets.py` prépare des copies PNG des emblèmes officiels et des copies SVG des fonds d'écran dans le cache utilisateur. Le remappage cible les teintes accent cyan/magenta, conserve alpha, saturation relative et luminosité, et laisse les gris métalliques ainsi que les tons neutres intacts. Les fichiers sources du dépôt restent inchangés.
+- Les introductions MOV/MP4 passent maintenant par le manifeste commun des ressources. **Elles utilisent encore les vidéos originales** : la transformation des images vidéo n'est pas incluse dans ce socle. Elle reste une étape dédiée, car un simple filtre de teinte risque de recolorer le lion métallique, les textes et les détails neutres.
+- Aucun nouvel assortiment de couleurs n'a été inventé dans cette étape. Les palettes déjà présentes sont conservées pour compatibilité ; les prochains assortiments seront ajoutés lorsque les deux couleurs de chaque paire auront été validées.
+
+## Points restant à réaliser
+
+1. Ajouter les nouveaux assortiments communiqués par le joueur, avec contrôles de contraste pour chaque paire.
+2. Finaliser et brancher la recoloration des vidéos (avec conservation de la piste audio), puis valider le rendu des introductions sur Bazzite.
+3. Étendre la génération aux éventuels éléments SVG/Plasma restants et vérifier qu'aucun accent fixe ne subsiste dans les ressources de marque concernées.
+4. Exécuter les tests automatisés, puis valider le rendu sur une vraie session Bazzite et plusieurs GPU/résolutions.
 
 ## Plan de réalisation et critères d'acceptation
 
-1. Étendre le modèle de palette bicolore et centraliser les rôles sémantiques ; ajouter les tests de validation et de contraste.
-2. Ajouter la sélection au premier démarrage, la persistance du choix et le réglage dans le Centre de contrôle.
-3. Migrer toutes les interfaces QML et les schémas KDE vers les deux accents sémantiques.
-4. Rendre les fonds SVG générables depuis une paire de couleurs.
-5. Développer et tester la recoloration ciblée des emblèmes.
-6. Définir puis valider le traitement des introductions vidéo sans altérer les détails neutres ni l'audio.
-7. Vérifier par recherche automatisée qu'aucun accent cyan/magenta historique ne reste dans les ressources LEOS, sauf sources maîtresses, tests de référence et thème historique.
-8. Exécuter les tests automatisés, puis valider le rendu sur une vraie session Bazzite et plusieurs GPU/résolutions.
+1. Ajouter les assortiments choisis au catalogue et compléter les tests de contraste.
+2. Finaliser le traitement vidéo et la recoloration des ressources Plasma restantes.
+3. Vérifier par recherche automatisée qu'aucun accent cyan/magenta fixe ne subsiste hors sources maîtresses, tests de référence et thème historique.
+4. Exécuter les tests automatisés, puis valider le rendu sur une vraie session Bazzite et plusieurs GPU/résolutions.
 
 **Le système ne sera considéré comme terminé que lorsque les logos et les animations auront été recolorés eux aussi.** Un changement de couleur limité aux composants QML ne satisfait pas la décision produit.
