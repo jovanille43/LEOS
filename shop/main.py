@@ -12,6 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
+from desktop.theme_manager import ThemeManager
 
 from shop.controller import StoreController
 
@@ -20,15 +21,18 @@ def main() -> int:
     app = QGuiApplication(sys.argv)
     app.setApplicationName("LEOS Store")
     app.setOrganizationName("LEOS")
+    theme_manager = ThemeManager()
 
     store = StoreController()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("store", store)
     engine.rootContext().setContextProperty("catalogModel", store.catalog)
+    engine.rootContext().setContextProperty("themeManager", theme_manager)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Main.qml")))
     if not engine.rootObjects():
         return 1
     store.refreshInstalled()
+    app.aboutToQuit.connect(theme_manager.shutdown)
     return app.exec()
 
 
