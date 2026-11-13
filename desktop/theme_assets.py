@@ -19,7 +19,7 @@ import tempfile
 from pathlib import Path
 from typing import Mapping
 
-from desktop.themes import THEME_NAMES, THEME_PALETTES, is_valid_theme_id, palette_for_theme, theme_display_name
+from desktop.themes import is_valid_theme_id, palette_for_theme, theme_display_name
 from leos_core.paths import data_home as xdg_data_home
 
 _HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}")
