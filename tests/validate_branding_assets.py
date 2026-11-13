@@ -9,9 +9,14 @@ from __future__ import annotations
 import argparse
 import shutil
 import subprocess
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from desktop.branding_assets import (
     _available_video_encoder,
@@ -20,9 +25,6 @@ from desktop.branding_assets import (
     _transform_video,
     build_color_matrix,
 )
-
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def validate_images() -> None:
