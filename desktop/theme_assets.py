@@ -369,6 +369,7 @@ def render_video_theme(
                     timeout=timeout_seconds,
                     check=False,
                     shell=False,
+                    shell=False,
                 )
             except subprocess.TimeoutExpired as error:
                 last_error = str(error)
@@ -408,11 +409,29 @@ class ThemeAssetManager:
         if theme not in THEME_PALETTES:
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
+        source_files = (
+            self.branding_dir / "desktop-logo-alpha.png",
+            self.branding_dir / "gaming-logo-alpha.png",
+            self.branding_dir / "wallpapers" / "desktop-leos.svg",
+            self.branding_dir / "wallpapers" / "gaming-leos.svg",
+            self.branding_dir / "animations" / "desktop-intro.mov",
+            self.branding_dir / "animations" / "gaming-intro.mp4",
+        )
+        source_versions = []
+        for source in source_files:
+            try:
+                info = source.stat()
+                source_versions.append(
+                    f"{source.name}:{info.st_size}:{info.st_mtime_ns}"
+                )
+            except OSError:
+                source_versions.append(f"{source.name}:missing")
         fingerprint = hashlib.sha256(
             (
                 theme
                 + palette["accent_primary"]
                 + palette["accent_secondary"]
+                + "|".join(source_versions)
             ).encode("ascii")
         ).hexdigest()[:16]
         output_dir = self.cache_dir / "leos" / "themes" / fingerprint
