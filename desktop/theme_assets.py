@@ -908,6 +908,50 @@ class ThemeAssetManager:
             assets[f"{asset_key}_name"] = package_id
         return assets
 
+    def exported_kde_resource_paths_for_theme(
+        self,
+        theme: str,
+        data_directory: Path | None = None,
+    ) -> dict[str, str]:
+        """Return the complete set of safely exported KDE packages, if present."""
+        if theme not in THEME_PALETTES:
+            raise ValueError(f"Unknown LEOS theme: {theme}")
+        palette = palette_for_theme(theme)
+        if (
+            palette["accent_primary"].lower() == "#00d9ff"
+            and palette["accent_secondary"].lower() == "#e33bff"
+        ):
+            return {}
+
+        data_root = Path(data_directory) if data_directory is not None else Path(
+            xdg_data_home()
+        )
+        if not data_root.is_absolute() or ".." in data_root.parts or data_root.is_symlink():
+            return {}
+        package_id = f"leos-{theme}"
+        definitions = (
+            ("icon_theme_path", "icons", Path("icons") / package_id),
+            (
+                "plasma_theme_path",
+                "plasma",
+                Path("plasma") / "desktoptheme" / package_id,
+            ),
+            (
+                "aurorae_theme_path",
+                "aurorae",
+                Path("aurorae") / "themes" / package_id,
+            ),
+        )
+        result: dict[str, str] = {}
+        for key, package_kind, relative_path in definitions:
+            package = data_root / relative_path
+            try:
+                _validate_generated_package(package, theme, package_kind)
+            except (OSError, ValueError):
+                return {}
+            result[key] = str(package)
+        return result
+
     def export_kde_resource_packages_for_theme(
         self,
         theme: str,
