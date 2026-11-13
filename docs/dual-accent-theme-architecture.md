@@ -70,7 +70,11 @@ Le traitement vidéo s'exécute dans un processus séparé afin de ne pas bloque
 ### Icônes et thèmes Plasma
 Pour chaque palette non originale, le moteur génère maintenant des copies utilisateur du thème d'icônes LEOS, du Plasma Style et de la décoration Aurorae, dans le cache privé `$XDG_CACHE_HOME/leos/themes/<empreinte>/kde/`. Chaque paquet reçoit un identifiant distinct (`leos-<theme>`) et des métadonnées adaptées. Les SVG de dégradé conservent leurs positions et transitions ; les aplats sombres et contours gris peu saturés restent protégés.
 
-Depuis Centre de contrôle → Apparence, une action confirmée exporte les trois paquets dans l'espace de données utilisateur XDG : `icons/leos-<theme>`, `plasma/desktoptheme/leos-<theme>` et `aurorae/themes/leos-<theme>`. Un identifiant déjà occupé par un contenu différent est refusé ; un paquet identique peut être réexporté sans effet. L'export ne sélectionne aucun thème et ne change aucun réglage Plasma. Trois raccourcis du Centre de contrôle ouvrent les modules KDE Icônes, Style Plasma et Décorations de fenêtres afin que l'utilisateur effectue ces choix séparément. Leur sélection/restauration automatisée depuis LEOS ainsi que la désinstallation des paquets exportés restent à implémenter. Le système immuable Bazzite et les sources empaquetées restent intacts.
+Depuis Centre de contrôle → Apparence, une action confirmée exporte les trois paquets dans l'espace de données utilisateur XDG : `icons/leos-<theme>`, `plasma/desktoptheme/leos-<theme>` et `aurorae/themes/leos-<theme>`. Un identifiant déjà occupé par un contenu différent est refusé ; un paquet identique peut être réexporté sans effet.
+
+Après export, **Appliquer le thème complet** demande confirmation puis applique la variante sélectionnée aux icônes, au Plasma Style et à la décoration Aurorae. LEOS sauvegarde les valeurs KDE précédentes dans un fichier d'état privé. Si l'application d'un composant échoue, il tente de restaurer les composants déjà modifiés et conserve la sauvegarde si le retour arrière est incomplet. **Restaurer le précédent** remet chaque composant à son réglage précédent uniquement s'il utilise toujours la valeur appliquée par LEOS ; toute modification manuelle ultérieure est préservée. La progression de la restauration est enregistrée pour permettre de réessayer une opération interrompue.
+
+Trois raccourcis ouvrent également les modules KDE Icônes, Style Plasma et Décorations de fenêtres pour les réglages manuels. L'export reste dans l'espace utilisateur : aucune ressource système n'est remplacée. La désinstallation guidée des variantes exportées et la validation réelle sur Bazzite restent à faire.
 
 ## Compatibilité et sûreté
 
@@ -96,7 +100,8 @@ Depuis Centre de contrôle → Apparence, une action confirmée exporte les troi
 - [ ] Inspecter le rendu réel des emblèmes et fonds générés, puis des vidéos converties sur Bazzite.
 - [x] Générer dans le cache utilisateur des variantes distinctes des icônes LEOS, du Plasma Style et d'Aurorae, sans modifier les sources ni le profil KDE.
 - [x] Exporter les trois paquets dans les emplacements XDG utilisateur après confirmation, sans écraser les variantes existantes.
-- [ ] Ajouter leur sélection/restauration depuis LEOS, avec mémorisation de l'état KDE précédent et désinstallation explicite des paquets exportés.
+- [x] Appliquer depuis le Centre de contrôle une variante complète (icônes, Plasma et Aurorae) après confirmation, avec sauvegarde privée et retour arrière qui préserve les modifications manuelles ultérieures.
+- [ ] Ajouter la désinstallation guidée des paquets exportés et valider application/restauration sur une session Bazzite réelle.
 - [ ] Valider le changement à chaud, la persistance, les contrastes et le repli sur des sessions Bazzite réelles et plusieurs résolutions.
 
 Les validations GitHub Actions confirment les contrôles automatisés du code et des recettes ; elles ne remplacent pas l'essai du bureau et des animations sur du matériel réel.
