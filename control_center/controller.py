@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import theme_options, visual_tokens_for_theme
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -607,8 +607,13 @@ class ControlCenterController(QObject):
 
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
-        """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        """Expose the selected two-accent palette and its derived visual roles."""
+        return visual_tokens_for_theme(self.theme)
+
+    @Property("QVariantList", notify=settingsChanged)
+    def themeOptions(self) -> list[dict[str, str]]:
+        """Expose the catalog to QML without maintaining a second theme list."""
+        return theme_options()
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
