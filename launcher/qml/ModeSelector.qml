@@ -16,6 +16,8 @@ ApplicationWindow {
     property var themeColors: themeManager.palette
     property color primaryAccent: themeColors.accent_primary
     property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: "#929bad"
@@ -306,7 +308,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.primaryAccent
+                    color: window.primaryTextAccent
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -333,7 +335,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.primaryAccent
+                            color: window.primaryTextAccent
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -361,7 +363,7 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 8
                             color: window.themeColors.accent_primary_soft
-                            border.color: window.primaryAccent
+                            border.color: window.primaryTextAccent
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -637,7 +639,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryAccent }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
