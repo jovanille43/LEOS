@@ -10,11 +10,12 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS Gaming"
-    color: "#08090d"
+    property var themeColors: leos.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedIndex: -1
     property string selectedTitle: ""
     property string selectedPlatform: ""
