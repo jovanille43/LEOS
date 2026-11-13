@@ -39,6 +39,21 @@ class DesktopThemeTests(unittest.TestCase):
             self.assertEqual(set(palette), REQUIRED_TOKENS)
             self.assertTrue(validate_palette(palette))
 
+    def test_all_themes_keep_the_same_neutral_leos_design_surfaces(self):
+        base = THEME_PALETTES[DEFAULT_THEME]
+        neutral_tokens = (
+            "background",
+            "surface",
+            "surface_elevated",
+            "border",
+            "text",
+            "muted_text",
+        )
+        for theme, palette in THEME_PALETTES.items():
+            for token in neutral_tokens:
+                with self.subTest(theme=theme, token=token):
+                    self.assertEqual(palette[token], base[token])
+
     def test_text_and_muted_text_meet_wcag_aa_on_all_palette_surfaces(self):
         surfaces = ("background", "surface", "surface_elevated")
         text_tokens = ("text", "muted_text")
