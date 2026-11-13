@@ -625,16 +625,31 @@ def _audio_details() -> tuple[str, str, str]:
 
 
 def _controller_details() -> str:
+    """List controllers by recognizable names or Linux joystick handlers."""
     devices = _read("/proc/bus/input/devices")
     names: list[str] = []
-    for block in devices.split("\n\n"):
-        name_match = re.search(r'^N:\s+Name="([^"]+)"', block, re.MULTILINE)
-        if not name_match:
+    controller_name = re.compile(
+        r"gamepad|controller|joystick|xbox|dualsense|dualshock|joy-con|steam deck",
+        re.IGNORECASE,
+    )
+    joystick_handler = re.compile(r"^H:\\s+Handlers=.*(?:^|\\s)(js\\d+)(?:\\s|$)", re.MULTILINE)
+
+    for block in devices.split("\\n\\n"):
+        name_match = re.search(r'^N:\\s+Name="([^"]+)"', block, re.MULTILINE)
+        handler_match = joystick_handler.search(block)
+        name = name_match.group(1).strip() if name_match else ""
+
+        # Linux's joydev handler is a stronger signal than a vendor/product
+        # name. It also catches generic HID devices whose names do not mention
+        # "gamepad", "controller" or a known console brand.
+        if not name and handler_match:
+            name = f"Manette Linux ({handler_match.group(1)})"
+
+        if not name or not (controller_name.search(name) or handler_match):
             continue
-        name = name_match.group(1)
-        if re.search(r"gamepad|controller|joystick|xbox|dualsense|dualshock|joy-con|steam deck", name, re.IGNORECASE):
-            if name not in names:
-                names.append(name)
+        if name not in names:
+            names.append(name)
+
     return " · ".join(names) if names else "Aucune manette détectée"
 
 
