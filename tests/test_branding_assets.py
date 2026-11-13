@@ -1,12 +1,16 @@
 """Tests for recoloring official LEOS branding without changing source assets."""
 
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from desktop.branding_assets import (
+    _cache_directory,
     _transform_svg,
     build_color_matrix,
+    cached_themed_branding_asset_urls,
     source_asset_urls,
     transform_rgb,
 )
@@ -59,6 +63,45 @@ class BrandingAssetTests(unittest.TestCase):
             self.assertIn(emblem.resolve().as_uri(), result)
             self.assertNotIn("../desktop-logo.jpeg", result)
             self.assertIn("#00D9FF", source.read_text(encoding="utf-8"))
+
+    def test_cached_variants_are_discovered_without_regenerating_them(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "branding"
+            (root / "wallpapers").mkdir(parents=True)
+            (root / "animations").mkdir()
+            for relative in (
+                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
+                "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
+            ):
+                (root / relative).write_bytes(b"official source")
+            cache_home = Path(directory) / "cache"
+            with patch.dict(os.environ, {"XDG_CACHE_HOME": str(cache_home)}):
+                cache = _cache_directory("#FF8800", "#0055CC", root)
+                cache.mkdir(parents=True, mode=0o700)
+                generated = cache / "desktop-logo.png"
+                generated.write_bytes(b"generated variant")
+                urls = cached_themed_branding_asset_urls("#FF8800", "#0055CC", root)
+                self.assertEqual(urls["desktopLogoUrl"], generated.as_uri())
+                self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.jpeg"))
+                self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))
+
+    def test_cache_fingerprint_changes_when_an_official_source_changes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "branding"
+            (root / "wallpapers").mkdir(parents=True)
+            (root / "animations").mkdir()
+            paths = [
+                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
+                "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
+            ]
+            for relative in paths:
+                (root / relative).write_bytes(b"source-v1")
+            before = _cache_directory("#FF8800", "#0055CC", root)
+            (root / "gaming-logo.jpeg").write_bytes(b"source-v2-with-different-size")
+            after = _cache_directory("#FF8800", "#0055CC", root)
+            self.assertNotEqual(before, after)
 
     def test_fallback_asset_urls_point_to_official_source_files(self):
         root = Path("/usr/share/leos/branding")
