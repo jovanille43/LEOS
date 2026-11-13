@@ -8,6 +8,8 @@ from desktop.themes import (
     REQUIRED_TOKENS,
     THEME_PALETTES,
     palette_for_theme,
+    theme_options,
+    visual_tokens_for_theme,
     validate_palette,
 )
 
@@ -56,6 +58,32 @@ class DesktopThemeTests(unittest.TestCase):
     def test_unknown_theme_falls_back_to_leos_original(self):
         self.assertEqual(palette_for_theme("not-a-theme"), THEME_PALETTES[DEFAULT_THEME])
 
+    def test_theme_catalog_exposes_two_distinct_accents_for_every_theme(self):
+        options = theme_options()
+        self.assertEqual({item["id"] for item in options}, set(THEME_PALETTES))
+        for item in options:
+            with self.subTest(theme=item["id"]):
+                self.assertRegex(item["accent_primary"], r"^#[0-9A-Fa-f]{6}$")
+                self.assertRegex(item["accent_secondary"], r"^#[0-9A-Fa-f]{6}$")
+                self.assertNotEqual(
+                    item["accent_primary"].lower(),
+                    item["accent_secondary"].lower(),
+                )
+
+    def test_visual_tokens_derive_both_glows_and_a_two_color_gradient(self):
+        tokens = visual_tokens_for_theme(DEFAULT_THEME)
+        self.assertEqual(tokens["accent_primary"], THEME_PALETTES[DEFAULT_THEME]["accent_primary"])
+        self.assertEqual(tokens["accent_secondary"], THEME_PALETTES[DEFAULT_THEME]["accent_secondary"])
+        for key in (
+            "accent_primary_glow",
+            "accent_secondary_glow",
+            "accent_primary_soft",
+            "accent_secondary_soft",
+            "accent_gradient_mid",
+        ):
+            self.assertRegex(tokens[key], r"^#[0-9A-Fa-f]{6}$")
+        self.assertNotEqual(tokens["accent_primary_glow"], tokens["accent_secondary_glow"])
+
     def test_palette_is_a_defensive_copy(self):
         palette = palette_for_theme("leos-original")
         palette["background"] = "#FFFFFF"
@@ -88,7 +116,8 @@ class DesktopThemeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("function onSettingsChanged()", qml)
-        self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]', qml)
+        self.assertIn("model: controlCenter.themeOptions", qml)
+        self.assertIn("controlCenter.themeOptions.map(option => option.id)", qml)
         self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
 
     def test_all_shared_combo_selectors_refresh_after_external_settings_changes(self):
