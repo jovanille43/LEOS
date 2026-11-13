@@ -19,7 +19,7 @@ from typing import Any, Callable
 
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.theme_assets import ThemeAssetManager
-from desktop.themes import THEME_PALETTES
+from desktop.themes import THEME_PALETTES, palette_for_theme
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.paths import state_home as xdg_state_home
 
@@ -153,9 +153,33 @@ class KdeVisualThemeManager:
     def can_restore(self) -> bool:
         return bool(self._state())
 
+    @staticmethod
+    def _uses_original_accents(theme: str) -> bool:
+        palette = palette_for_theme(theme)
+        return (
+            palette["accent_primary"].lower() == "#00d9ff"
+            and palette["accent_secondary"].lower() == "#e33bff"
+        )
+
     def resources_available(self, theme: str) -> bool:
         if theme not in THEME_PALETTES:
             return False
+        if self._uses_original_accents(theme):
+            packages = (
+                (self.assets.icon_theme_dir, ("index.theme",)),
+                (self.assets.plasma_theme_dir, ("metadata.json",)),
+                (self.assets.aurorae_theme_dir, ("metadata.desktop", "leosrc")),
+            )
+            return all(
+                directory.is_dir()
+                and not directory.is_symlink()
+                and all(
+                    (directory / name).is_file()
+                    and not (directory / name).is_symlink()
+                    for name in required
+                )
+                for directory, required in packages
+            )
         resources = self.assets.exported_kde_resource_paths_for_theme(
             theme, data_directory=self.data_home
         )
@@ -260,15 +284,21 @@ class KdeVisualThemeManager:
 
     @staticmethod
     def _is_leos_icon(value: str | None) -> bool:
-        return bool(value and value.startswith("leos-"))
+        return bool(value and (value == "leos" or value.startswith("leos-")))
 
     @staticmethod
     def _is_leos_plasma(value: str | None) -> bool:
-        return bool(value and value.startswith("leos-"))
+        return bool(value and (value == "leos" or value.startswith("leos-")))
 
     @staticmethod
     def _is_leos_aurorae(value: str | None) -> bool:
-        return bool(value and value.startswith("__aurorae__svg__leos-"))
+        return bool(
+            value
+            and (
+                value == "__aurorae__svg__leos"
+                or value.startswith("__aurorae__svg__leos-")
+            )
+        )
 
     def _prior_value(
         self,
@@ -289,17 +319,9 @@ class KdeVisualThemeManager:
         """Apply an exported two-accent theme after an explicit UI confirmation."""
         if theme not in THEME_PALETTES or not THEME_ID_PATTERN.fullmatch(theme):
             raise ValueError("Identifiant de thème LEOS invalide")
-        resources = self.assets.exported_kde_resource_paths_for_theme(
-            theme, data_directory=self.data_home
-        )
-        required = {
-            "icon_theme_path",
-            "plasma_theme_path",
-            "aurorae_theme_path",
-        }
-        if not required.issubset(resources):
+        if not self.resources_available(theme):
             raise FileNotFoundError(
-                "Les trois variantes KDE doivent d'abord être exportées dans le profil utilisateur."
+                "Les trois ressources KDE LEOS doivent être disponibles dans le profil utilisateur."
             )
         if not self.find_executable("kwriteconfig6"):
             raise FileNotFoundError("kwriteconfig6 est indisponible")
@@ -341,7 +363,9 @@ class KdeVisualThemeManager:
         if previous_plasma is None:
             raise RuntimeError("Le Plasma Style précédent est inconnu ; aucun changement n'a été effectué.")
 
-        package_id = f"leos-{theme}"
+        package_id = (
+            "leos" if self._uses_original_accents(theme) else f"leos-{theme}"
+        )
         aurorae_id = f"__aurorae__svg__{package_id}"
         state = {
             "schema_version": SCHEMA_VERSION,
