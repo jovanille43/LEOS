@@ -322,7 +322,8 @@ def render_video_theme(
 ) -> Path:
     """Re-encode a source animation through a selective two-accent 3D LUT.
 
-    Audio is stream-copied. If FFmpeg or a supported encoder is unavailable,
+    Audio is preserved and encoded to AAC for MP4 compatibility. If FFmpeg or
+    a supported encoder is unavailable,
     callers should keep using the official source animation unchanged.
     """
     source_path = Path(source_path)
