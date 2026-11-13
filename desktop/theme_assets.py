@@ -401,7 +401,23 @@ class ThemeAssetManager:
             )
         self.cache_dir = Path(cache_dir)
 
+    def _output_dir_for_theme(self, theme: str) -> Path:
+        if theme not in THEME_PALETTES:
+            raise ValueError(f"Unknown LEOS theme: {theme}")
+        palette = palette_for_theme(theme)
+        fingerprint = hashlib.sha256(
+            (
+                theme
+                + palette["accent_primary"]
+                + palette["accent_secondary"]
+            ).encode("ascii")
+        ).hexdigest()[:16]
+        output_dir = self.cache_dir / "leos" / "themes" / fingerprint
+        _safe_output_directory(output_dir)
+        return output_dir
+
     def paths_for_theme(self, theme: str) -> dict[str, str]:
+        """Generate logos and wallpapers quickly; never wait for video encoding."""
         if theme not in THEME_PALETTES:
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
@@ -414,31 +430,23 @@ class ThemeAssetManager:
                 "gaming_logo": (self.branding_dir / "gaming-logo-alpha.png").resolve().as_uri(),
                 "desktop_wallpaper": (self.branding_dir / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
                 "gaming_wallpaper": (self.branding_dir / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
-                "desktop_intro": (self.branding_dir / "animations" / "desktop-intro.mov").resolve().as_uri(),
-                "gaming_intro": (self.branding_dir / "animations" / "gaming-intro.mp4").resolve().as_uri(),
             }
-        fingerprint = hashlib.sha256(
-            (theme + palette["accent_primary"] + palette["accent_secondary"]).encode("ascii")
-        ).hexdigest()[:16]
-        output_dir = self.cache_dir / "leos" / "themes" / fingerprint
-        _safe_output_directory(output_dir)
 
-        desktop_logo_source = self.branding_dir / "desktop-logo-alpha.png"
-        gaming_logo_source = self.branding_dir / "gaming-logo-alpha.png"
+        output_dir = self._output_dir_for_theme(theme)
         desktop_logo = output_dir / "desktop-logo.png"
         gaming_logo = output_dir / "gaming-logo.png"
         desktop_wallpaper = output_dir / "desktop-wallpaper.svg"
         gaming_wallpaper = output_dir / "gaming-wallpaper.svg"
 
-        for target in (desktop_logo, gaming_logo, desktop_wallpaper, gaming_wallpaper):
-            if target.is_symlink():
-                raise ValueError("Cached LEOS theme asset cannot be a symbolic link")
-
-        if not desktop_logo.is_file():
-            render_logo_theme(desktop_logo_source, desktop_logo, palette)
-        if not gaming_logo.is_file():
-            render_logo_theme(gaming_logo_source, gaming_logo, palette)
-        if not desktop_wallpaper.is_file():
+        if not desktop_logo.is_file() or desktop_logo.is_symlink():
+            render_logo_theme(
+                self.branding_dir / "desktop-logo-alpha.png", desktop_logo, palette
+            )
+        if not gaming_logo.is_file() or gaming_logo.is_symlink():
+            render_logo_theme(
+                self.branding_dir / "gaming-logo-alpha.png", gaming_logo, palette
+            )
+        if not desktop_wallpaper.is_file() or desktop_wallpaper.is_symlink():
             render_svg_theme(
                 self.branding_dir / "wallpapers" / "desktop-leos.svg",
                 desktop_wallpaper,
@@ -453,38 +461,65 @@ class ThemeAssetManager:
                 gaming_logo,
             )
 
+        return {
+            "desktop_logo": desktop_logo.as_uri(),
+            "gaming_logo": gaming_logo.as_uri(),
+            "desktop_wallpaper": desktop_wallpaper.as_uri(),
+            "gaming_wallpaper": gaming_wallpaper.as_uri(),
+        }
+
+    def video_paths_for_theme(self, theme: str) -> dict[str, str]:
+        """Generate both themed introductions in an independent background task.
+
+        If FFmpeg is unavailable or encoding fails, that animation independently
+        falls back to its official source. Image and UI recoloring never waits.
+        """
+        if theme not in THEME_PALETTES:
+            raise ValueError(f"Unknown LEOS theme: {theme}")
+        palette = palette_for_theme(theme)
+        desktop_source = self.branding_dir / "animations" / "desktop-intro.mov"
+        gaming_source = self.branding_dir / "animations" / "gaming-intro.mp4"
+        if (
+            palette["accent_primary"].lower() == "#00d9ff"
+            and palette["accent_secondary"].lower() == "#e33bff"
+        ):
+            return {
+                "desktop_intro": desktop_source.resolve().as_uri(),
+                "gaming_intro": gaming_source.resolve().as_uri(),
+                "videos_recolored": "true",
+            }
+
+        output_dir = self._output_dir_for_theme(theme)
         lut_path = output_dir / "theme.cube"
         if not lut_path.is_file() or lut_path.is_symlink():
             _write_private_text(
                 lut_path,
                 lut_cube_text(palette["accent_primary"], palette["accent_secondary"]),
             )
-
-        desktop_intro_source = self.branding_dir / "animations" / "desktop-intro.mov"
-        gaming_intro_source = self.branding_dir / "animations" / "gaming-intro.mp4"
-        desktop_intro = output_dir / "desktop-intro.mp4"
-        gaming_intro = output_dir / "gaming-intro.mp4"
-        for source, destination in (
-            (desktop_intro_source, desktop_intro),
-            (gaming_intro_source, gaming_intro),
+        outputs = {}
+        for key, source, filename in (
+            ("desktop_intro", desktop_source, "desktop-intro.mp4"),
+            ("gaming_intro", gaming_source, "gaming-intro.mp4"),
         ):
+            destination = output_dir / filename
             if destination.is_symlink():
                 raise ValueError("Theme video cache cannot be a symbolic link")
             if not destination.is_file() or destination.stat().st_size == 0:
                 try:
                     render_video_theme(source, destination, lut_path)
                 except (FileNotFoundError, RuntimeError, OSError, ValueError):
-                    # The original video remains a correct, playable fallback.
+                    # Original animation remains playable and is never altered.
                     pass
-
-        return {
-            "desktop_logo": desktop_logo.as_uri(),
-            "gaming_logo": gaming_logo.as_uri(),
-            "desktop_wallpaper": desktop_wallpaper.as_uri(),
-            "gaming_wallpaper": gaming_wallpaper.as_uri(),
-            "desktop_intro": (desktop_intro if desktop_intro.is_file() else desktop_intro_source).resolve().as_uri(),
-            "gaming_intro": (gaming_intro if gaming_intro.is_file() else gaming_intro_source).resolve().as_uri(),
-            "videos_recolored": str(
-                desktop_intro.is_file() and gaming_intro.is_file()
-            ).lower(),
-        }
+            outputs[key] = (
+                destination.resolve().as_uri()
+                if destination.is_file() and destination.stat().st_size > 0
+                else source.resolve().as_uri()
+            )
+        outputs["videos_recolored"] = str(
+            all(
+                (output_dir / filename).is_file()
+                and (output_dir / filename).stat().st_size > 0
+                for filename in ("desktop-intro.mp4", "gaming-intro.mp4")
+            )
+        ).lower()
+        return outputs
