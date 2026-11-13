@@ -55,7 +55,9 @@ Le traitement vidéo s'exécute dans un processus séparé afin de ne pas bloque
 **Limite de validation :** le pipeline et ses replis sont couverts par des tests automatisés, mais le rendu des vidéos converties n'a pas encore été inspecté visuellement sur une vraie session Bazzite. Le résultat devra être contrôlé pour le lion, les textes, les couleurs métalliques et la synchronisation audio.
 
 ### Icônes et thèmes Plasma
-Les ressources SVG du thème d'icônes LEOS, du Plasma Style et du thème de décoration Aurorae sont encore des ressources empaquetées. Elles ne sont pas encore générées en variantes utilisateur ni réappliquées automatiquement lors d'un changement de palette. Leur intégration devra respecter les mécanismes KDE et ne modifier aucun fichier système immuable ; l'application éventuelle des thèmes KDE restera explicite et réversible.
+Pour chaque palette non originale, le moteur génère maintenant des copies utilisateur du thème d'icônes LEOS, du Plasma Style et de la décoration Aurorae, dans le cache privé `$XDG_CACHE_HOME/leos/themes/<empreinte>/kde/`. Chaque paquet reçoit un identifiant distinct (`leos-<theme>`) et des métadonnées adaptées. Les SVG de dégradé conservent leurs positions et transitions ; les aplats sombres et contours gris peu saturés restent protégés.
+
+Cette préparation ne copie pas les paquets vers les répertoires actifs de KDE et ne change aucun réglage du profil. L'export dans les emplacements XDG et l'application du thème d'icônes, du Plasma Style et d'Aurorae devront faire l'objet d'une action dédiée, confirmée et réversible. Le système immuable Bazzite et les sources empaquetées restent intacts.
 
 ## Compatibilité et sûreté
 
@@ -79,7 +81,8 @@ Les ressources SVG du thème d'icônes LEOS, du Plasma Style et du thème de dé
 - [x] Tests Python, tests d'assets, lint QML, validation des ressources de marque et recettes BlueBuild réussis sur GitHub Actions pour le commit contrôlé.
 - [ ] Ajouter les nouvelles paires lorsque le joueur les aura communiquées.
 - [ ] Inspecter le rendu réel des emblèmes et fonds générés, puis des vidéos converties sur Bazzite.
-- [ ] Décider et implémenter l'intégration dynamique des icônes, Plasma Style et Aurorae, si le périmètre visuel l'exige.
+- [x] Générer dans le cache utilisateur des variantes distinctes des icônes LEOS, du Plasma Style et d'Aurorae, sans modifier les sources ni le profil KDE.
+- [ ] Ajouter l'export et l'application de ces trois paquets via une action dédiée, sauvegardée, confirmée et réversible.
 - [ ] Valider le changement à chaud, la persistance, les contrastes et le repli sur des sessions Bazzite réelles et plusieurs résolutions.
 
 Les validations GitHub Actions confirment les contrôles automatisés du code et des recettes ; elles ne remplacent pas l'essai du bureau et des animations sur du matériel réel.
