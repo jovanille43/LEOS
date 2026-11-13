@@ -237,6 +237,7 @@ class DesktopMenuTests(unittest.TestCase):
     def test_desktop_menu_header_uses_transparent_emblem_with_text_fallback(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("../../branding/desktop-logo-alpha.png", qml)
+        self.assertNotIn("desktop-logo.jpeg", qml)
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: desktopMenuLogo.status !== Image.Ready", qml)
 
