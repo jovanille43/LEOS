@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import theme_options, visual_tokens_for_theme
+from desktop.themes import custom_theme_id, theme_options, visual_tokens_for_theme
 from desktop.theme_assets import ThemeAssetManager
 from desktop.kde_visual_theme import KdeVisualThemeManager
 from desktop.kde_colors import KdeColorSchemeManager
@@ -620,7 +620,7 @@ class ControlCenterController(QObject):
     @Property("QVariantList", notify=settingsChanged)
     def themeOptions(self) -> list[dict[str, str]]:
         """Expose the catalog to QML without maintaining a second theme list."""
-        return theme_options()
+        return theme_options(self.theme)
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -752,6 +752,17 @@ class ControlCenterController(QObject):
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
+
+    @Slot(str, str, result=bool)
+    def setAccentColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        """Save two unrestricted colors as one shared LEOS theme preference."""
+        try:
+            theme = custom_theme_id(accent_primary.strip(), accent_secondary.strip())
+            self.settings.set("theme", theme)
+        except (AttributeError, OSError, TypeError, ValueError, KeyError):
+            return False
+        self.settingsChanged.emit()
+        return True
 
     @Slot(result=str)
     def exportKdeThemeResources(self) -> str:
