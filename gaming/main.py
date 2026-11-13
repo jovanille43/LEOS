@@ -46,6 +46,7 @@ def main() -> int:
     try:
         return _run_locked_session(app, instance_lock, theme_manager)
     finally:
+        theme_manager.shutdown()
         instance_lock.release()
 
 
@@ -64,6 +65,7 @@ def _run_locked_session(app: QGuiApplication, _instance_lock, theme_manager: The
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         controller.shutdown()
+        theme_manager.shutdown()
         return 1
 
     # Persist Gaming only after its QML window loaded successfully. A
