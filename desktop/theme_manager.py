@@ -48,6 +48,7 @@ class ThemeManager(QObject):
         self._theme_id = str(self.settings.get("theme", "leos-original"))
         self._asset_manager = ThemeAssetManager()
         self._asset_tasks: list[_ThemeAssetTask] = []
+        self._assets_ready = self._theme_id == "leos-original"
         self._asset_paths = self._original_assets()
         self._video_worker_theme = ""
         if self._theme_id != "leos-original":
@@ -74,6 +75,10 @@ class ThemeManager(QObject):
     def assets(self) -> dict[str, str]:
         return dict(self._asset_paths)
 
+    @Property(bool, notify=changed)
+    def assetsReady(self) -> bool:
+        return self._assets_ready
+
     def _original_assets(self) -> dict[str, str]:
         branding = self._asset_manager.branding_dir
         return {
@@ -87,6 +92,8 @@ class ThemeManager(QObject):
         }
 
     def _generate_assets(self, theme: str) -> None:
+        if theme == self._theme_id:
+            self._assets_ready = False
         task = _ThemeAssetTask(theme)
         task.signals.completed.connect(self._on_assets_completed)
         task.signals.failed.connect(self._on_assets_failed)
@@ -141,12 +148,15 @@ class ThemeManager(QObject):
         if theme != self._theme_id or not isinstance(assets, dict):
             return
         self._asset_paths.update(assets)
+        self._assets_ready = True
         self.changed.emit()
 
     @Slot(str, str)
     def _on_assets_failed(self, theme: str, _message: str) -> None:
         self._asset_tasks = [task for task in self._asset_tasks if task.theme != theme]
         if theme == self._theme_id:
+            self._assets_ready = True
+            self.changed.emit()
             self.assetGenerationFailed.emit(
                 "Les ressources officielles LEOS restent affichées : "
                 "la variante graphique n'a pas pu être préparée."
@@ -159,6 +169,7 @@ class ThemeManager(QObject):
         if selected != self._theme_id:
             self._theme_id = selected
             self._asset_paths = self._original_assets()
+            self._assets_ready = selected == "leos-original"
             self.changed.emit()
             if selected != "leos-original":
                 self._generate_assets(selected)
