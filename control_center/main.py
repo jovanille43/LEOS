@@ -14,6 +14,7 @@ from PySide6.QtGui import QGuiApplication  # noqa: E402
 from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
 
 from control_center.controller import ControlCenterController  # noqa: E402
+from desktop.theme_controller import ThemeController  # noqa: E402
 
 
 def main() -> int:
@@ -22,16 +23,20 @@ def main() -> int:
     app.setOrganizationName("LEOS")
 
     controller = ControlCenterController()
+    theme = ThemeController()
     engine = QQmlApplicationEngine()
     context = engine.rootContext()
     context.setContextProperty("controlCenter", controller)
+    context.setContextProperty("leosTheme", theme)
     context.setContextProperty("systemMonitor", controller.monitor)
     qml_file = Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
+        theme.shutdown()
         return 1
     controller.monitor.start()
     app.aboutToQuit.connect(controller.monitor.stop)
+    app.aboutToQuit.connect(theme.shutdown)
     return app.exec()
 
 
