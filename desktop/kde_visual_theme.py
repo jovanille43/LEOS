@@ -19,7 +19,7 @@ from typing import Any, Callable
 
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.theme_assets import ThemeAssetManager
-from desktop.themes import THEME_PALETTES, palette_for_theme
+from desktop.themes import THEME_PALETTES, is_valid_theme_id, palette_for_theme
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.paths import state_home as xdg_state_home
 
@@ -162,7 +162,7 @@ class KdeVisualThemeManager:
         )
 
     def resources_available(self, theme: str) -> bool:
-        if theme not in THEME_PALETTES:
+        if not is_valid_theme_id(theme):
             return False
         if self._uses_original_accents(theme):
             packages = (
@@ -317,7 +317,7 @@ class KdeVisualThemeManager:
 
     def apply_theme(self, theme: str) -> str:
         """Apply an exported two-accent theme after an explicit UI confirmation."""
-        if theme not in THEME_PALETTES or not THEME_ID_PATTERN.fullmatch(theme):
+        if not is_valid_theme_id(theme) or not THEME_ID_PATTERN.fullmatch(theme):
             raise ValueError("Identifiant de thème LEOS invalide")
         if not self.resources_available(theme):
             raise FileNotFoundError(
