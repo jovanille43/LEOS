@@ -60,6 +60,7 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
+    "theme_selection_complete": False,
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
