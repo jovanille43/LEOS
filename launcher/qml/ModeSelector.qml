@@ -248,7 +248,7 @@ ApplicationWindow {
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: "#101923"
-                border.color: "#254253"
+                border.color: window.themeColors.accent_primary_soft
 
                 RowLayout {
                     anchors.fill: parent
@@ -288,7 +288,7 @@ ApplicationWindow {
                         onClicked: modeSelectorController.completeOnboarding()
                         background: Rectangle {
                             radius: 8
-                            color: "#17313d"
+                            color: window.themeColors.accent_primary_soft
                             border.color: window.cyan
                         }
                         contentItem: Label {
@@ -364,9 +364,9 @@ ApplicationWindow {
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? "#25172a" : "#15121d"
+                        color: gamingCard.down ? window.themeColors.accent_secondary_soft : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.magenta : window.themeColors.accent_secondary_soft
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -523,7 +523,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.cyan }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
