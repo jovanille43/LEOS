@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Mapping
 
 from desktop.themes import THEME_NAMES, THEME_PALETTES, palette_for_theme
+from leos_core.paths import data_home as xdg_data_home
 
 _HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}")
 _SOURCE_PRIMARY_RGB = (0.0, 217.0 / 255.0, 1.0)
@@ -618,6 +619,160 @@ def render_kde_theme_package(
     return output_dir
 
 
+
+
+def _validate_generated_package(
+    package_dir: Path,
+    theme: str,
+    package_kind: str,
+) -> None:
+    """Reject incomplete, modified or unsafe generated KDE package trees."""
+    if package_dir.is_symlink() or not package_dir.is_dir():
+        raise ValueError("Generated KDE package is not a safe directory")
+    manifest_path = package_dir / ".leos-theme-package.json"
+    if manifest_path.is_symlink() or not manifest_path.is_file():
+        raise ValueError("Generated KDE package manifest is unavailable")
+    try:
+        manifest_raw = manifest_path.read_bytes()
+        if len(manifest_raw) > 8192:
+            raise ValueError("Generated KDE package manifest exceeds its size limit")
+        manifest = json.loads(manifest_raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("Generated KDE package manifest is invalid") from error
+
+    expected = {
+        "version": 1,
+        "theme": theme,
+        "kind": package_kind,
+        "package_id": f"leos-{theme}",
+    }
+    if manifest != expected:
+        raise ValueError("Generated KDE package does not match the requested theme")
+
+    for current, directories, files in os.walk(
+        package_dir, topdown=True, followlinks=False
+    ):
+        current_path = Path(current)
+        for dirname in directories:
+            if (current_path / dirname).is_symlink():
+                raise ValueError("Generated KDE package contains a symbolic-link directory")
+        for filename in files:
+            candidate = current_path / filename
+            if candidate.is_symlink() or not candidate.is_file():
+                raise ValueError("Generated KDE package contains an unsafe file")
+
+
+def _package_trees_equal(first: Path, second: Path) -> bool:
+    """Compare two already validated package trees without following symlinks."""
+    def inventory(root: Path) -> dict[str, Path]:
+        result: dict[str, Path] = {}
+        for current, directories, files in os.walk(root, topdown=True, followlinks=False):
+            current_path = Path(current)
+            for dirname in directories:
+                directory = current_path / dirname
+                if directory.is_symlink() or not directory.is_dir():
+                    raise ValueError("KDE package contains an unsafe directory")
+            for filename in files:
+                path = current_path / filename
+                if path.is_symlink() or not path.is_file():
+                    raise ValueError("KDE package contains an unsafe file")
+                result[path.relative_to(root).as_posix()] = path
+        return result
+
+    left = inventory(first)
+    right = inventory(second)
+    if left.keys() != right.keys():
+        return False
+    return all(left[key].read_bytes() == right[key].read_bytes() for key in left)
+
+
+def _copy_package_atomically(
+    source: Path,
+    destination: Path,
+    theme: str,
+    package_kind: str,
+) -> Path:
+    """Export one verified KDE package without replacing any existing files."""
+    _validate_generated_package(source, theme, package_kind)
+    destination = Path(destination)
+    parent = destination.parent
+
+    if destination.name != f"leos-{theme}":
+        raise ValueError("KDE package destination does not match its LEOS identifier")
+
+    # Refuse symlinked or non-directory ancestors, including an XDG root that
+    # points outside the path the user explicitly configured.
+    ancestors: list[Path] = []
+    current = parent
+    while True:
+        ancestors.append(current)
+        if current.parent == current:
+            break
+        current = current.parent
+    for directory in reversed(ancestors):
+        if directory.exists() and (directory.is_symlink() or not directory.is_dir()):
+            raise ValueError("KDE user data path contains an unsafe directory")
+        if not directory.exists():
+            directory.mkdir(mode=0o755)
+
+    lock_path = parent / f".{destination.name}.leos-export.lock"
+    if lock_path.is_symlink():
+        raise ValueError("KDE export lock cannot be a symbolic link")
+    with lock_path.open("a", encoding="utf-8") as lock:
+        os.chmod(lock_path, 0o600)
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+
+        if destination.exists():
+            if destination.is_symlink() or not destination.is_dir():
+                raise FileExistsError("A non-directory entry already uses this KDE theme name")
+            _validate_generated_package(destination, theme, package_kind)
+            if not _package_trees_equal(source, destination):
+                raise FileExistsError(
+                    "A different KDE theme already uses this LEOS identifier; it was left untouched."
+                )
+            return destination
+
+        temporary = Path(
+            tempfile.mkdtemp(prefix=f".{destination.name}.leos-", dir=parent)
+        )
+        try:
+            for current, directories, files in os.walk(
+                source, topdown=True, followlinks=False
+            ):
+                relative = Path(current).relative_to(source)
+                target_dir = temporary / relative
+                target_dir.mkdir(parents=True, exist_ok=True)
+                for dirname in directories:
+                    candidate = Path(current) / dirname
+                    if candidate.is_symlink():
+                        raise ValueError("Generated KDE package contains a symbolic-link directory")
+                for filename in files:
+                    original = Path(current) / filename
+                    if original.is_symlink() or not original.is_file():
+                        raise ValueError("Generated KDE package contains an unsafe file")
+                    target = target_dir / filename
+                    shutil.copyfile(original, target)
+                    os.chmod(target, 0o644)
+                os.chmod(target_dir, 0o755)
+
+            _validate_generated_package(temporary, theme, package_kind)
+            try:
+                os.rename(temporary, destination)
+            except FileExistsError:
+                if not destination.is_dir() or destination.is_symlink():
+                    raise
+                _validate_generated_package(destination, theme, package_kind)
+                if not _package_trees_equal(source, destination):
+                    raise FileExistsError(
+                        "A different KDE theme appeared during export; it was left untouched."
+                    )
+        finally:
+            if temporary.exists():
+                shutil.rmtree(temporary, ignore_errors=True)
+
+    return destination
+
+
 class ThemeAssetManager:
     """Create cached logo and wallpaper copies without touching packaged assets."""
 
@@ -751,6 +906,63 @@ class ThemeAssetManager:
             assets[f"{asset_key}_path"] = str(package_path)
             assets[f"{asset_key}_name"] = package_id
         return assets
+
+    def export_kde_resource_packages_for_theme(
+        self,
+        theme: str,
+        data_directory: Path | None = None,
+    ) -> dict[str, str]:
+        """Copy generated KDE variants into XDG user paths, without activating them.
+
+        Existing differing packages are never overwritten. This method only
+        prepares user-local packages; selection remains a separate KDE action.
+        """
+        if theme not in THEME_PALETTES:
+            raise ValueError(f"Unknown LEOS theme: {theme}")
+        if (
+            palette_for_theme(theme)["accent_primary"].lower() == "#00d9ff"
+            and palette_for_theme(theme)["accent_secondary"].lower() == "#e33bff"
+        ):
+            return {}
+
+        cached = self.kde_resource_paths_for_theme(theme)
+        if not cached:
+            raise FileNotFoundError("LEOS KDE theme source packages are unavailable")
+
+        data_root = Path(data_directory) if data_directory is not None else Path(
+            xdg_data_home()
+        )
+        if not data_root.is_absolute():
+            raise ValueError("XDG data directory must be an absolute path")
+        package_id = f"leos-{theme}"
+        destinations = (
+            ("icon_theme_path", "icons", Path("icons") / package_id),
+            (
+                "plasma_theme_path",
+                "plasma",
+                Path("plasma") / "desktoptheme" / package_id,
+            ),
+            (
+                "aurorae_theme_path",
+                "aurorae",
+                Path("aurorae") / "themes" / package_id,
+            ),
+        )
+        exported: dict[str, str] = {}
+        for source_key, package_kind, relative_destination in destinations:
+            source_text = cached.get(source_key)
+            if not source_text:
+                continue
+            source = Path(source_text)
+            destination = data_root / relative_destination
+            copied = _copy_package_atomically(
+                source,
+                destination,
+                theme,
+                package_kind,
+            )
+            exported[source_key.removesuffix("_path") + "_path"] = str(copied)
+        return exported
 
     def paths_for_theme(self, theme: str) -> dict[str, str]:
         """Generate logos and wallpapers quickly; never wait for video encoding."""
