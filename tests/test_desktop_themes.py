@@ -16,6 +16,21 @@ from desktop.themes import (
 )
 
 
+def _relative_luminance(color: str) -> float:
+    channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
+    linear = [
+        value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+        for value in channels
+    ]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(foreground: str, background: str) -> float:
+    first = _relative_luminance(foreground)
+    second = _relative_luminance(background)
+    return (max(first, second) + 0.05) / (min(first, second) + 0.05)
+
+
 class DesktopThemeTests(unittest.TestCase):
     def test_legacy_palettes_remain_valid_for_existing_kde_schemes(self):
         self.assertIn(DEFAULT_THEME, THEME_PALETTES)
@@ -37,6 +52,21 @@ class DesktopThemeTests(unittest.TestCase):
         palette = palette_for_colors()
         self.assertEqual(palette["accent_primary"], DEFAULT_COLOR_A)
         self.assertEqual(palette["accent_secondary"], DEFAULT_COLOR_B)
+
+    def test_text_contrast_remains_wcag_aa_on_all_dark_and_light_surfaces(self):
+        palettes = list(THEME_PALETTES.values()) + [
+            palette_for_colors("#00FFFF", "#FF8800"),
+            palette_for_colors("#FF00AA", "#00FF33"),
+            palette_for_colors("#808080", "#FFFFFF"),
+        ]
+        for palette in palettes:
+            for foreground in ("text", "muted_text"):
+                for background in ("background", "surface", "surface_elevated"):
+                    with self.subTest(foreground=foreground, background=background, palette=palette):
+                        self.assertGreaterEqual(
+                            _contrast_ratio(palette[foreground], palette[background]),
+                            4.5,
+                        )
 
     def test_color_normalization_and_validation(self):
         self.assertEqual(normalize_color(" #aBcDeF "), "#ABCDEF")
