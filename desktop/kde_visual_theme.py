@@ -289,7 +289,9 @@ class KdeVisualThemeManager:
         """Apply an exported two-accent theme after an explicit UI confirmation."""
         if theme not in THEME_PALETTES or not THEME_ID_PATTERN.fullmatch(theme):
             raise ValueError("Identifiant de thème LEOS invalide")
-        resources = self.assets.exported_kde_resource_paths_for_theme(theme)
+        resources = self.assets.exported_kde_resource_paths_for_theme(
+            theme, data_directory=self.data_home
+        )
         required = {
             "icon_theme_path",
             "plasma_theme_path",
