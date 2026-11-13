@@ -71,6 +71,23 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
     },
 }
 
+# The player selects an accent pair, not a different desktop design.
+# Keep the original LEOS dark surfaces and typography identical in every palette.
+_NEUTRAL_TOKENS = {
+    key: THEME_PALETTES[DEFAULT_THEME][key]
+    for key in (
+        "background",
+        "surface",
+        "surface_elevated",
+        "border",
+        "text",
+        "muted_text",
+    )
+}
+for _palette in THEME_PALETTES.values():
+    _palette.update(_NEUTRAL_TOKENS)
+
+
 REQUIRED_TOKENS = frozenset(
     {
         "background",
