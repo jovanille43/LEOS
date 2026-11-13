@@ -465,5 +465,109 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertIn("#080D18", aurorae)
 
 
+    def test_kde_packages_export_to_xdg_user_data_without_activation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            branding = root / "branding"
+            branding.mkdir()
+            icon_root = root / "source-icons" / "leos"
+            plasma_root = root / "source-plasma" / "leos"
+            aurorae_root = root / "source-aurorae" / "leos"
+            (icon_root / "scalable" / "apps").mkdir(parents=True)
+            (plasma_root / "widgets").mkdir(parents=True)
+            aurorae_root.mkdir(parents=True)
+
+            svg = (
+                '<svg><defs><linearGradient id="g">'
+                '<stop stop-color="#00D9FF"/><stop stop-color="#E33BFF"/>'
+                '</linearGradient></defs><path stroke="url(#g)"/></svg>'
+            )
+            (icon_root / "scalable" / "apps" / "leos-test.svg").write_text(
+                svg, encoding="utf-8"
+            )
+            (plasma_root / "widgets" / "background.svg").write_text(
+                svg, encoding="utf-8"
+            )
+            (aurorae_root / "decoration.svg").write_text(svg, encoding="utf-8")
+            (icon_root / "index.theme").write_text(
+                "[Icon Theme]\nName=LEOS\nComment=LEOS icons\nInherits=breeze,hicolor\n",
+                encoding="utf-8",
+            )
+            (plasma_root / "metadata.json").write_text(
+                json.dumps({"KPlugin": {"Id": "leos", "Name": "LEOS"}}),
+                encoding="utf-8",
+            )
+            (aurorae_root / "metadata.desktop").write_text(
+                "[Desktop Entry]\nName=LEOS\nComment=LEOS Aurorae\n"
+                "X-KDE-PluginInfo-Name=leos\n",
+                encoding="utf-8",
+            )
+
+            data_home = root / "user-data"
+            manager = ThemeAssetManager(
+                branding_dir=branding,
+                cache_dir=root / "cache",
+                icon_theme_dir=icon_root,
+                plasma_theme_dir=plasma_root,
+                aurorae_theme_dir=aurorae_root,
+            )
+            exported = manager.export_kde_resource_packages_for_theme(
+                "light", data_directory=data_home
+            )
+            self.assertEqual(set(exported), {
+                "icon_theme_path", "plasma_theme_path", "aurorae_theme_path"
+            })
+            icon_destination = data_home / "icons" / "leos-light"
+            plasma_destination = data_home / "plasma" / "desktoptheme" / "leos-light"
+            aurorae_destination = data_home / "aurorae" / "themes" / "leos-light"
+            self.assertEqual(Path(exported["icon_theme_path"]), icon_destination)
+            self.assertEqual(Path(exported["plasma_theme_path"]), plasma_destination)
+            self.assertEqual(Path(exported["aurorae_theme_path"]), aurorae_destination)
+            self.assertTrue((icon_destination / "index.theme").is_file())
+            self.assertTrue((plasma_destination / "metadata.json").is_file())
+            self.assertTrue((aurorae_destination / "metadata.desktop").is_file())
+
+            # Export is idempotent when the exact package is already present.
+            self.assertEqual(
+                manager.export_kde_resource_packages_for_theme(
+                    "light", data_directory=data_home
+                ),
+                exported,
+            )
+
+            # A modified package with a LEOS manifest must never be overwritten.
+            existing_svg = icon_destination / "scalable" / "apps" / "leos-test.svg"
+            existing_svg.write_text("<svg><!-- user modification --></svg>", encoding="utf-8")
+            preserved = existing_svg.read_text(encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                manager.export_kde_resource_packages_for_theme(
+                    "light", data_directory=data_home
+                )
+            self.assertEqual(existing_svg.read_text(encoding="utf-8"), preserved)
+
+    def test_kde_package_export_refuses_symlinked_xdg_data_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target = root / "target"
+            target.mkdir()
+            linked = root / "linked-data"
+            try:
+                linked.symlink_to(target, target_is_directory=True)
+            except OSError:
+                self.skipTest("Symbolic links are unavailable on this runner")
+
+            manager = ThemeAssetManager(
+                branding_dir=root / "branding",
+                cache_dir=root / "cache",
+                icon_theme_dir=root / "missing-icons",
+                plasma_theme_dir=root / "missing-plasma",
+                aurorae_theme_dir=root / "missing-aurorae",
+            )
+            with self.assertRaises(ValueError):
+                manager.export_kde_resource_packages_for_theme(
+                    "light", data_directory=linked
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
