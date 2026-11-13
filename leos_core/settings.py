@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import tempfile
 import stat
 from pathlib import Path
@@ -15,6 +16,8 @@ from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
+_THEME_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
+_THEME_COLOR_KEYS = frozenset({"theme_color_a", "theme_color_b"})
 
 
 def _read_settings_file(path: Path) -> dict[str, Any]:
@@ -60,6 +63,8 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
+    "theme_color_a": "#00D9FF",
+    "theme_color_b": "#E33BFF",
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
@@ -108,6 +113,10 @@ class SettingsStore:
             value = loaded.get(key, default)
             if not isinstance(value, type(default)):
                 continue
+            if key in _THEME_COLOR_KEYS:
+                if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                    continue
+                value = value.strip().upper()
             allowed = ALLOWED_VALUES.get(key)
             if allowed is not None and value not in allowed:
                 continue
@@ -132,6 +141,10 @@ class SettingsStore:
             raise KeyError(f"Unknown LEOS setting: {key}")
         if not isinstance(value, type(DEFAULTS[key])):
             raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
+        if key in _THEME_COLOR_KEYS:
+            if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                raise ValueError(f"Invalid hex color for {key}")
+            value = value.strip().upper()
         allowed = ALLOWED_VALUES.get(key)
         if allowed is not None and value not in allowed:
             raise ValueError(f"Invalid value for {key}: {value}")
