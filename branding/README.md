@@ -21,7 +21,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - Les deux fonds sont des ressources sélectionnables ; aucun n'est appliqué automatiquement.
 - `icons/` — icônes et éléments graphiques.
 
-Les JPEG, vidéos et SVG conservent actuellement leurs couleurs intégrées d'origine ; ils ne sont pas encore recolorés automatiquement lorsque l'utilisateur change A/B. Les fichiers sources ne doivent jamais être écrasés : toute adaptation devra produire une variante dérivée et préserver les reflets métalliques ainsi que le dégradé d'origine.
+Les fichiers officiels restent des sources immuables. Le moteur LEOS crée des variantes dérivées dans le cache utilisateur lorsque A/B change : emblèmes PNG, fonds SVG liés à ces emblèmes et intros vidéo recolorées lorsque ffmpeg est disponible. La matrice commune conserve le gris neutre et les reflets métalliques ; si une conversion échoue, l'interface revient à la ressource officielle. Aucune variante ne remplace les fichiers JPEG, SVG ou vidéo d'origine.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
 
