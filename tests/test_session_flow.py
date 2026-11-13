@@ -8,19 +8,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SessionFlowTests(unittest.TestCase):
-    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
+    def test_mode_selector_uses_transparent_branding_sources_and_graceful_fallback(self):
         source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/desktop-logo.jpeg", source)
-        self.assertIn("../../branding/gaming-logo.jpeg", source)
-        self.assertNotIn("desktop-logo.png", source)
-        self.assertNotIn("gaming-logo.png", source)
+        self.assertIn("../../branding/desktop-logo-alpha.png", source)
+        self.assertIn("../../branding/gaming-logo-alpha.png", source)
+        self.assertNotIn("desktop-logo.jpeg", source)
+        self.assertNotIn("gaming-logo.jpeg", source)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
     def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("../../branding/gaming-logo-alpha.png", qml)
+        self.assertNotIn("gaming-logo.jpeg", qml)
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
 
@@ -163,8 +164,8 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("../../branding/desktop-logo.jpeg", qml)
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("../../branding/desktop-logo-alpha.png", qml)
+        self.assertIn("../../branding/gaming-logo-alpha.png", qml)
 
     def test_selector_accepts_read_only_controller_navigation(self):
         root = ROOT
