@@ -19,7 +19,7 @@ L'identité LEOS repose sur un lion métallique, une typographie dédiée, un fo
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
-- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés. Les fichiers vidéo et logos JPEG fournis conservent encore leurs couleurs intégrées d'origine ; leur recoloration dynamique fera l'objet d'une étape dédiée.
+- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés. Les emblèmes, fonds SVG et vidéos d'introduction disposent maintenant de variantes recolorées à partir de A/B dans le cache utilisateur ; les fichiers officiels d'origine ne sont jamais modifiés. Si un codec vidéo ou une ressource manque, LEOS revient automatiquement à l'original.
 
 Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
 
