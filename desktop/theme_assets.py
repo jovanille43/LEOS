@@ -54,19 +54,28 @@ def recolor_hex_color(
 
     primary_distance = _hue_distance(hue, _SOURCE_PRIMARY_HUE)
     secondary_distance = _hue_distance(hue, _SOURCE_SECONDARY_HUE)
-    distance, target = (
-        (primary_distance, accent_primary)
-        if primary_distance <= secondary_distance
-        else (secondary_distance, accent_secondary)
-    )
+    is_primary = primary_distance <= secondary_distance
+    distance = primary_distance if is_primary else secondary_distance
+    target = accent_primary if is_primary else accent_secondary
+    source_base = "#00d9ff" if is_primary else "#e33bff"
     if distance > 58.0 / 360.0:
         return source.lower()
 
     target_rgb = tuple(
         int(target[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
     )
-    target_hue = colorsys.rgb_to_hsv(*target_rgb)[0]
-    red, green, blue = colorsys.hsv_to_rgb(target_hue, saturation, value)
+    source_base_rgb = tuple(
+        int(source_base[index:index + 2], 16) / 255.0 for index in (1, 3, 5)
+    )
+    target_hue, target_saturation, target_value = colorsys.rgb_to_hsv(*target_rgb)
+    _base_hue, base_saturation, base_value = colorsys.rgb_to_hsv(*source_base_rgb)
+    relative_saturation = saturation / base_saturation if base_saturation else 0.0
+    relative_value = value / base_value if base_value else 0.0
+    mapped_saturation = min(1.0, target_saturation * relative_saturation)
+    mapped_value = min(1.0, target_value * relative_value)
+    red, green, blue = colorsys.hsv_to_rgb(
+        target_hue, mapped_saturation, mapped_value
+    )
     return "#{:02x}{:02x}{:02x}".format(
         round(red * 255), round(green * 255), round(blue * 255)
     )
@@ -232,6 +241,8 @@ class ThemeAssetManager:
                 "gaming_logo": (self.branding_dir / "gaming-logo-alpha.png").resolve().as_uri(),
                 "desktop_wallpaper": (self.branding_dir / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
                 "gaming_wallpaper": (self.branding_dir / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
+                "desktop_intro": (self.branding_dir / "animations" / "desktop-intro.mov").resolve().as_uri(),
+                "gaming_intro": (self.branding_dir / "animations" / "gaming-intro.mp4").resolve().as_uri(),
             }
         fingerprint = hashlib.sha256(
             (theme + palette["accent_primary"] + palette["accent_secondary"]).encode("ascii")
@@ -270,4 +281,6 @@ class ThemeAssetManager:
             "gaming_logo": gaming_logo.as_uri(),
             "desktop_wallpaper": desktop_wallpaper.as_uri(),
             "gaming_wallpaper": gaming_wallpaper.as_uri(),
+            "desktop_intro": (self.branding_dir / "animations" / "desktop-intro.mov").resolve().as_uri(),
+            "gaming_intro": (self.branding_dir / "animations" / "gaming-intro.mp4").resolve().as_uri(),
         }
