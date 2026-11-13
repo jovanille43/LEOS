@@ -45,7 +45,7 @@ Les SVG doivent devenir des modèles utilisant des rôles de couleur explicites.
 Les PNG transparents existants restent les sources officielles. Une étape de recoloration doit cibler uniquement les pixels d'accent cyan/magenta, préserver alpha, luminance, reflets métalliques et contours, puis produire des copies dérivées propres à l'utilisateur ou au cache LEOS. Ne jamais écraser les sources du dépôt.
 
 ### Animations vidéo
-Les fichiers MOV/MP4 officiels restent les sources maîtresses et leur piste audio doit être conservée. Le pipeline doit recolorer uniquement les zones d'accent des images vidéo en préservant les détails neutres et les effets lumineux. Évaluer un traitement de trames compatible avec Qt Multimedia ou une génération de variantes dérivées à partir des sources ; ne pas appliquer un simple filtre global de teinte qui dénaturerait le lion, les textes ou les éléments métalliques. Prévoir un repli sûr vers la vidéo originale si le traitement n'est pas disponible ou échoue.
+Les fichiers MOV/MP4 officiels restent les sources maîtresses. Le moteur génère une LUT 3D sélective à partir des deux accents et demande à FFmpeg de recolorer les trames en conservant la piste audio et les métadonnées utiles. Le traitement s'exécute dans un processus séparé, écrit dans le cache utilisateur et publie ses résultats seulement après génération ; en cas d'absence de FFmpeg ou d'échec, les vidéos d'origine restent utilisées. Le rendu visuel des variantes générées doit encore être inspecté sur les introductions réelles dans une session Bazzite, notamment pour contrôler les reflets du lion, les textes et les éléments métalliques.
 
 ### Autres ressources
 Les icônes, illustrations et éléments graphiques LEOS doivent déclarer leurs rôles d'accent. Les ressources de tiers, les jaquettes de jeux et les contenus utilisateur ne doivent jamais être recolorés.
@@ -64,7 +64,8 @@ Les icônes, illustrations et éléments graphiques LEOS doivent déclarer leurs
 
 - Le catalogue de thèmes comporte désormais les rôles sémantiques bicolores et est partagé entre les applications LEOS.
 - Les interfaces QML principales et les ressources PNG/SVG prises en charge disposent d'un chemin de recoloration.
-- Les fichiers vidéo restent des sources maîtresses non recolorées ; leur traitement reste explicitement séparé.
+- Les sources vidéo restent intactes ; des variantes MP4 dérivées peuvent être générées en arrière-plan par LUT 3D sélective avec audio conservé et repli vers les originaux. Le rendu de ces variantes doit encore être vérifié visuellement sur Bazzite.
+- Les icônes SVG LEOS, les décorations Aurorae et les SVG internes du Plasma Style contiennent encore des accents historiques statiques ; leur génération en variantes dynamiques et leur rechargement KDE restent à finaliser.
 - Le choix de thème au premier démarrage est distinct du guide d'accueil.
 
 ## Socle technique préparé
@@ -77,14 +78,15 @@ Le socle commun est maintenant présent dans la branche de travail :
 - `desktop/theme_manager.py` diffuse les palettes vers les fenêtres QML indépendantes et observe les changements effectués par une autre application LEOS.
 - Les écrans Mode Selector, Gaming, Desktop Menu, Notifications, Centre des manettes, Boutique et Centre de contrôle consomment désormais les accents sémantiques au lieu de déclarer chacun leur paire cyan/magenta.
 - `desktop/theme_assets.py` prépare des copies PNG des emblèmes officiels et des copies SVG des fonds d'écran dans le cache utilisateur. Le remappage cible les teintes accent cyan/magenta, conserve alpha, saturation relative et luminosité, et laisse les gris métalliques ainsi que les tons neutres intacts. Les fichiers sources du dépôt restent inchangés.
-- Les introductions MOV/MP4 passent maintenant par le manifeste commun des ressources. **Elles utilisent encore les vidéos originales** : la transformation des images vidéo n'est pas incluse dans ce socle. Elle reste une étape dédiée, car un simple filtre de teinte risque de recolorer le lion métallique, les textes et les détails neutres.
+- Les introductions MOV/MP4 passent par le manifeste commun des ressources. Une LUT 3D sélective génère des copies MP4 en arrière-plan, conserve l'audio et laisse les vidéos sources intactes ; l'inspection visuelle réelle reste à effectuer sur Bazzite.
+- Les SVG statiques du thème d'icônes, du Plasma Style et des décorations Aurorae conservent encore des couleurs d'accent historiques codées en dur ; leur migration complète reste à faire.
 - Aucun nouvel assortiment de couleurs n'a été inventé dans cette étape. Les palettes déjà présentes sont conservées pour compatibilité ; les prochains assortiments seront ajoutés lorsque les deux couleurs de chaque paire auront été validées.
 
 ## Points restant à réaliser
 
 1. Ajouter les nouveaux assortiments communiqués par le joueur, avec contrôles de contraste pour chaque paire.
-2. Finaliser et brancher la recoloration des vidéos (avec conservation de la piste audio), puis valider le rendu des introductions sur Bazzite.
-3. Étendre la génération aux éventuels éléments SVG/Plasma restants et vérifier qu'aucun accent fixe ne subsiste dans les ressources de marque concernées.
+2. Inspecter le rendu des introductions vidéo recolorées et l'audio sur une vraie session Bazzite ; ajuster la LUT si les reflets, textes ou détails métalliques sont affectés.
+3. Migrer les SVG statiques du thème d'icônes, du Plasma Style et d'Aurorae, puis prévoir leur rechargement sûr dans KDE sans écraser les personnalisations de l'utilisateur.
 4. Exécuter les tests automatisés, puis valider le rendu sur une vraie session Bazzite et plusieurs GPU/résolutions.
 
 ## Plan de réalisation et critères d'acceptation
