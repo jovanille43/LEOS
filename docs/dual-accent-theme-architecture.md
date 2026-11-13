@@ -82,7 +82,8 @@ Depuis Centre de contrôle → Apparence, une action confirmée exporte les troi
 - [ ] Ajouter les nouvelles paires lorsque le joueur les aura communiquées.
 - [ ] Inspecter le rendu réel des emblèmes et fonds générés, puis des vidéos converties sur Bazzite.
 - [x] Générer dans le cache utilisateur des variantes distinctes des icônes LEOS, du Plasma Style et d'Aurorae, sans modifier les sources ni le profil KDE.
-- [ ] Ajouter l'export et l'application de ces trois paquets via une action dédiée, sauvegardée, confirmée et réversible.
+- [x] Exporter les trois paquets dans les emplacements XDG utilisateur après confirmation, sans écraser les variantes existantes.
+- [ ] Ajouter leur sélection/restauration depuis LEOS, avec mémorisation de l'état KDE précédent et désinstallation explicite des paquets exportés.
 - [ ] Valider le changement à chaud, la persistance, les contrastes et le repli sur des sessions Bazzite réelles et plusieurs résolutions.
 
 Les validations GitHub Actions confirment les contrôles automatisés du code et des recettes ; elles ne remplacent pas l'essai du bureau et des animations sur du matériel réel.
