@@ -80,8 +80,8 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "border": "#293342",
         "text": "#F4F7FB",
         "muted_text": "#909AAC",
-        "accent_primary": "#00A878",
-        "accent_secondary": "#D6A83A",
+        "accent_primary": "#00F0A0",
+        "accent_secondary": "#FFD84D",
     },
     "yellow-red": {
         "background": "#090B10",
@@ -90,8 +90,8 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "border": "#293342",
         "text": "#F4F7FB",
         "muted_text": "#909AAC",
-        "accent_primary": "#FFD21F",
-        "accent_secondary": "#E53935",
+        "accent_primary": "#FFF000",
+        "accent_secondary": "#FF335A",
     },
     "electric-blue-orange": {
         "background": "#090B10",
@@ -101,7 +101,7 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "text": "#F4F7FB",
         "muted_text": "#909AAC",
         "accent_primary": "#168BFF",
-        "accent_secondary": "#FF851B",
+        "accent_secondary": "#FF7A1A",
     },
     "violet-gold": {
         "background": "#090B10",
@@ -110,8 +110,8 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
         "border": "#293342",
         "text": "#F4F7FB",
         "muted_text": "#909AAC",
-        "accent_primary": "#8957E5",
-        "accent_secondary": "#D6A83A",
+        "accent_primary": "#A855F7",
+        "accent_secondary": "#FFD84D",
     },
 }
 
@@ -171,8 +171,8 @@ def visual_tokens_for_theme(theme: str) -> dict[str, str]:
     white = "#FFFFFF"
     return {
         **palette,
-        "accent_primary_glow": _mix_hex(palette["accent_primary"], white, 0.24),
-        "accent_secondary_glow": _mix_hex(palette["accent_secondary"], white, 0.24),
+        "accent_primary_glow": _mix_hex(palette["accent_primary"], white, 0.34),
+        "accent_secondary_glow": _mix_hex(palette["accent_secondary"], white, 0.34),
         "accent_primary_soft": _mix_hex(
             palette["accent_primary"], palette["background"], 0.68
         ),

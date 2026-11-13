@@ -13,8 +13,10 @@ ApplicationWindow {
     color: "#090b10"
 
     property var themeColors: themeManager.palette
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color primaryAccent: themeColors.accent_primary
+    property color secondaryAccent: themeColors.accent_secondary
+    property color primaryGlow: themeColors.accent_primary_glow
+    property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
     property color panel: themeColors.surface
     property color line: themeColors.border
@@ -41,7 +43,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DES MANETTES"
-                        color: window.cyan
+                        color: window.primaryAccent
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -71,11 +73,11 @@ ApplicationWindow {
                         Layout.preferredHeight: 54
                         radius: 14
                         color: window.themeColors.accent_primary_soft
-                        border.color: window.cyan
+                        border.color: window.primaryAccent
                         Label {
                             anchors.centerIn: parent
                             text: "⌘"
-                            color: window.cyan
+                            color: window.primaryAccent
                             font.pixelSize: 28
                         }
                     }
@@ -124,7 +126,7 @@ ApplicationWindow {
                             spacing: 11
                             Label {
                                 text: "MANETTE"
-                                color: window.cyan
+                                color: window.primaryAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -139,7 +141,7 @@ ApplicationWindow {
                                 text: controllerCenter.backendAvailable
                                     ? "Détection Linux active"
                                     : "Backend evdev non installé"
-                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.magenta
+                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.secondaryAccent
                                 font.pixelSize: 11
                             }
                         }
@@ -157,7 +159,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "PROFIL LEOS"
-                                color: window.cyan
+                                color: window.primaryAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -194,7 +196,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: Math.round(deadzoneSlider.value) + " %"
-                                color: window.cyan
+                                color: window.primaryAccent
                                 font.pixelSize: 13
                             }
                             Item { Layout.fillHeight: true }
@@ -225,7 +227,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "TEST DES COMMANDES"
-                                color: window.cyan
+                                color: window.primaryAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }

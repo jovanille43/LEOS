@@ -13,8 +13,8 @@ ApplicationWindow {
     color: "#07080c"
 
     property var themeColors: themeManager.palette
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color primaryAccent: themeColors.accent_primary
+    property color secondaryAccent: themeColors.accent_secondary
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: "#929bad"
@@ -234,7 +234,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.cyan
+                    color: window.primaryAccent
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -261,7 +261,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.cyan
+                            color: window.primaryAccent
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -289,7 +289,7 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 8
                             color: window.themeColors.accent_primary_soft
-                            border.color: window.cyan
+                            border.color: window.primaryAccent
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -319,7 +319,27 @@ ApplicationWindow {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.primaryAccent : "#303a49"
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            radius: 28
+                            color: "transparent"
+                            border.width: 7
+                            border.color: window.primaryGlow
+                            opacity: desktopCard.activeFocus ? 0.10 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -2
+                            radius: 24
+                            color: "transparent"
+                            border.width: 3
+                            border.color: window.secondaryGlow
+                            opacity: desktopCard.activeFocus ? 0.14 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -368,7 +388,27 @@ ApplicationWindow {
                         radius: 22
                         color: gamingCard.down ? window.themeColors.accent_secondary_soft : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : window.themeColors.accent_secondary_soft
+                        border.color: gamingCard.activeFocus ? window.secondaryAccent : window.themeColors.accent_secondary_soft
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            radius: 28
+                            color: "transparent"
+                            border.width: 7
+                            border.color: window.secondaryGlow
+                            opacity: gamingCard.activeFocus ? 0.10 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -2
+                            radius: 24
+                            color: "transparent"
+                            border.width: 3
+                            border.color: window.primaryGlow
+                            opacity: gamingCard.activeFocus ? 0.14 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -410,7 +450,7 @@ ApplicationWindow {
 
             Label {
                 text: themeManager.assetsReady ? modeManager.status : "Préparation des ressources du thème…"
-                color: themeManager.assetsReady ? window.magenta : window.cyan
+                color: themeManager.assetsReady ? window.secondaryAccent : window.primaryAccent
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -525,7 +565,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryAccent }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"

@@ -124,7 +124,9 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
         self.assertIn("window.themeColors.accent_primary", qml)
-        self.assertIn("property color cyan: themeColors.accent_primary", qml)
+        self.assertIn("property color primaryAccent: themeColors.accent_primary", qml)
+        self.assertIn("property color primaryGlow: themeColors.accent_primary_glow", qml)
+        self.assertIn("property color secondaryGlow: themeColors.accent_secondary_glow", qml)
         self.assertIn("def themePalette(self)", controller)
         self.assertIn("visual_tokens_for_theme(self.theme)", controller)
         self.assertNotIn("#121720", qml)
@@ -204,6 +206,37 @@ class DesktopThemeTests(unittest.TestCase):
         ):
             with self.subTest(expression=expression):
                 self.assertIn(expression, qml)
+
+
+    def test_neon_palette_pairings_keep_electric_accent_values(self):
+        expected = {
+            "emerald-gold": ("#00F0A0", "#FFD84D"),
+            "yellow-red": ("#FFF000", "#FF335A"),
+            "electric-blue-orange": ("#168BFF", "#FF7A1A"),
+            "violet-gold": ("#A855F7", "#FFD84D"),
+        }
+        for theme, pair in expected.items():
+            with self.subTest(theme=theme):
+                palette = THEME_PALETTES[theme]
+                self.assertEqual((palette["accent_primary"], palette["accent_secondary"]), pair)
+
+    def test_neon_halos_are_bound_to_both_accents_on_active_qml_surfaces(self):
+        root = Path(__file__).resolve().parents[1]
+        surfaces = (
+            "launcher/qml/ModeSelector.qml",
+            "gaming/qml/Main.qml",
+            "control_center/qml/Main.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative in surfaces:
+            with self.subTest(path=relative):
+                content = (root / relative).read_text(encoding="utf-8")
+                self.assertIn("themeColors.accent_primary_glow", content)
+                self.assertIn("themeColors.accent_secondary_glow", content)
+                self.assertIn("border.color: window.primaryGlow", content)
+                self.assertIn("border.color: window.secondaryGlow", content)
 
 
 if __name__ == "__main__":

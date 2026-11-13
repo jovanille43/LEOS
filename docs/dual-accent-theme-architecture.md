@@ -4,6 +4,8 @@
 
 Chaque thème LEOS est une **paire de deux couleurs d'accent distinctes**. Le joueur choisit un thème lors du premier démarrage ; il peut ensuite le modifier dans Centre de contrôle → Apparence.
 
+Le style néon est une constante de l'identité LEOS, quel que soit l'assortiment choisi : fonds sombres, tracés lumineux, halos diffus, reflets et transitions bicolores restent présents. Le thème remplace les couleurs, pas le langage visuel.
+
 Le thème recolore les éléments d'accent de l'identité LEOS :
 - les interfaces Desktop, Gaming, sélecteur de modes et centres LEOS ;
 - les deux emblèmes officiels (lion seul et lion avec manette) ;
@@ -24,6 +26,17 @@ Une palette contient au minimum :
 
 Les deux accents restent distincts. Les nuances sont calculées à partir de chaque accent, sans réduire la paire à une couleur unique.
 
+Les quatre paires communiquées sont intégrées au catalogue avec des valeurs initiales volontairement lumineuses :
+
+| Thème | Accent principal | Accent secondaire |
+|---|---|---|
+| Émeraude & Or | `#00F0A0` | `#FFD84D` |
+| Jaune & Rouge | `#FFF000` | `#FF335A` |
+| Bleu électrique & Orange | `#168BFF` | `#FF7A1A` |
+| Violet & Or | `#A855F7` | `#FFD84D` |
+
+Les halos sont éclaircis séparément et les transitions intermédiaires sont calculées automatiquement.
+
 Le catalogue `desktop/themes.py` est la source de vérité. Les sélecteurs QML et la validation des préférences consomment ce catalogue ; ajouter un assortiment ne nécessite donc pas de maintenir plusieurs listes indépendantes. Les palettes historiques sont conservées pour compatibilité. **Aucun nouvel assortiment n'est ajouté avant que le joueur ait communiqué les paires voulues.**
 
 ## Parcours utilisateur
@@ -37,7 +50,7 @@ Le catalogue `desktop/themes.py` est la source de vérité. Les sélecteurs QML 
 ## Pipeline des ressources
 
 ### Interfaces QML
-Les principales interfaces LEOS consomment la palette partagée via `ThemeManager`. Les accents, focus, sélection et surfaces teintées qui ont été raccordés utilisent des rôles sémantiques communs. Les fonds structurels, bordures neutres et couleurs de statut (erreur/avertissement/état matériel) ne sont pas transformés aveuglément.
+Les principales interfaces LEOS consomment la palette partagée via `ThemeManager`. Les accents, focus, sélection et surfaces teintées utilisent les rôles sémantiques `primaryAccent` et `secondaryAccent`. Le sélecteur de modes, les cartes de jeux sélectionnées, la navigation du Centre de contrôle, le menu des applications, les notifications non lues et la Boutique possèdent des contours lumineux à deux couches alimentés par `accent_primary_glow` et `accent_secondary_glow`. Les fonds structurels, bordures neutres et couleurs de statut (erreur/avertissement/état matériel) ne sont pas transformés aveuglément.
 
 La recherche de couleurs restantes doit distinguer les accents codés en dur des neutres et des couleurs fonctionnelles : remplacer toute valeur bleutée arbitrairement risquerait de dégrader le contraste ou de recolorer un statut qui n'est pas un accent.
 
@@ -79,7 +92,7 @@ Depuis Centre de contrôle → Apparence, une action confirmée exporte les troi
 - [x] Génération en cache des deux emblèmes officiels et des deux fonds SVG recolorés.
 - [x] Pipeline vidéo à LUT sélective, traitement séparé et repli vers les sources officielles.
 - [x] Tests Python, tests d'assets, lint QML, validation des ressources de marque et recettes BlueBuild réussis sur GitHub Actions pour le commit contrôlé.
-- [ ] Ajouter les nouvelles paires lorsque le joueur les aura communiquées.
+- [x] Ajouter les quatre paires communiquées, avec des accents assez lumineux pour conserver la signature néon.
 - [ ] Inspecter le rendu réel des emblèmes et fonds générés, puis des vidéos converties sur Bazzite.
 - [x] Générer dans le cache utilisateur des variantes distinctes des icônes LEOS, du Plasma Style et d'Aurorae, sans modifier les sources ni le profil KDE.
 - [x] Exporter les trois paquets dans les emplacements XDG utilisateur après confirmation, sans écraser les variantes existantes.
@@ -90,7 +103,7 @@ Les validations GitHub Actions confirment les contrôles automatisés du code et
 
 ## Critères d'acceptation finaux
 
-1. Chaque paire du catalogue possède deux accents distincts et des nuances lisibles.
+1. Chaque paire du catalogue possède deux accents distincts et des nuances lisibles, sans perdre les halos, les fonds sombres et les dégradés néon.
 2. Un seul choix pilote toutes les applications LEOS raccordées, sans liste de thèmes dupliquée.
 3. Les logos, halos, dégradés et fonds d'écran gardent leur géométrie et leurs détails neutres.
 4. Les vidéos converties gardent leur piste audio ; un problème de codec revient aux fichiers officiels sans bloquer LEOS.
