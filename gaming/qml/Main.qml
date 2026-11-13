@@ -712,7 +712,7 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: modelData === window.selectedCategory ? "#202b38" : "transparent"
+                                color: modelData === window.selectedCategory ? window.themeColors.accent_primary_soft : "transparent"
                                 border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
                                 border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.magenta : (modelData === window.selectedCategory ? window.cyan : "transparent")
                             }
@@ -889,8 +889,8 @@ ApplicationWindow {
                                             radius: 8
                                             visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
                                             clip: true
-                                            color: "#101b29"
-                                            border.color: "#294455"
+                                            color: window.themeColors.accent_primary_soft
+                                            border.color: window.themeColors.accent_primary
                                             Rectangle {
                                                 width: parent.width * 1.5
                                                 height: parent.width * 1.5
@@ -1261,7 +1261,7 @@ ApplicationWindow {
                     returnDialog.close()
                     window.requestDesktopReturn()
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.cyan }
                 contentItem: Label {
                     text: returnToDesktopButton.text
                     color: "white"
@@ -1299,7 +1299,7 @@ ApplicationWindow {
                     leos.applyPowerProfile(window.pendingPowerProfile)
                     statusText.text = leos.powerProfileStatus
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.cyan }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
                     color: "white"
