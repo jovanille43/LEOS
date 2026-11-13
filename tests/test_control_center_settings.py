@@ -139,5 +139,23 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("time.monotonic()", monitor)
 
 
+    def test_appearance_exposes_confirmed_user_scoped_kde_resource_export(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        assets = (root / "desktop" / "theme_assets.py").read_text(encoding="utf-8")
+
+        self.assertIn("id: kdeResourcesConfirmation", qml)
+        self.assertIn("onAccepted: window.kdeResourceNotice = controlCenter.exportKdeThemeResources()", qml)
+        self.assertIn("Installer les ressources dans mon profil", qml)
+        self.assertIn("controlCenter.kdeThemeResourcesAvailable", qml)
+        self.assertIn("def exportKdeThemeResources(self)", controller)
+        self.assertIn("self.themeAssets.export_kde_resource_packages_for_theme(self.theme)", controller)
+        self.assertIn("def export_kde_resource_packages_for_theme(", assets)
+        self.assertIn("sans activation", assets)
+        self.assertIn("plasma", assets)
+        self.assertIn("aurorae", assets)
+
+
 if __name__ == "__main__":
     unittest.main()
