@@ -46,7 +46,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = leosTheme.desktopIntroUrl
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
@@ -420,7 +420,7 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: leosTheme.gamingLogoUrl
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
