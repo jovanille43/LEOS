@@ -373,6 +373,8 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertTrue((generated_icon / "index.theme").is_file())
             self.assertTrue((generated_plasma / "metadata.json").is_file())
             self.assertTrue((generated_aurorae / "metadata.desktop").is_file())
+            self.assertTrue((generated_aurorae / "leos-lightrc").is_file())
+            self.assertFalse((generated_aurorae / "leosrc").exists())
 
             icon_meta = (generated_icon / "index.theme").read_text(encoding="utf-8")
             self.assertIn("Name=LEOS — Light", icon_meta)
@@ -459,6 +461,11 @@ class DynamicThemeAssetTests(unittest.TestCase):
                 )
             )
             self.assertEqual(plasma_metadata["KPlugin"]["Id"], "leos-light")
+
+            aurora_metadata = (generated_aurorae / "metadata.desktop").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("X-KDE-PluginInfo-Name=leos-light", aurora_metadata)
 
             plasma_background = (
                 Path(paths["plasma_theme_path"]) / "widgets" / "background.svg"
