@@ -457,7 +457,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Choisis une paire de deux couleurs pour les accents, halos et dégradés de LEOS."
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
@@ -601,7 +601,7 @@ ApplicationWindow {
                                             onClicked: {
                                                 const opened = controlCenter.openSettingsModule("wallpaper")
                                                 window.wallpaperNotice = opened
-                                                    ? "Paramètres KDE ouverts. Dans le sélecteur, ouvre /usr/share/leos/branding/wallpapers/ puis choisis desktop-leos.svg ou gaming-leos.svg."
+                                                    ? "Paramètres KDE ouverts. Fonds actuels : Desktop " + themeManager.assets.desktop_wallpaper + " · Gaming " + themeManager.assets.gaming_wallpaper
                                                     : "Le module de fond d'écran KDE n'est pas disponible sur cette session."
                                             }
                                         }
