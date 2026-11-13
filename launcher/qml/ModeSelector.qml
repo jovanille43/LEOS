@@ -12,8 +12,11 @@ ApplicationWindow {
     title: "LEOS — Choix du mode"
     color: "#07080c"
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
+    property var themeColors: modeSelectorController.themePalette
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color primaryGlow: themeColors.accent_primary_glow
+    property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: "#929bad"
     property date currentDate: new Date()
     property string pendingMode: ""
@@ -84,6 +87,75 @@ ApplicationWindow {
         onTriggered: window.currentDate = new Date()
     }
 
+    Dialog {
+        id: themeSelectionDialog
+        modal: true
+        title: "Choisis les couleurs de LEOS"
+        anchors.centerIn: parent
+        width: 500
+        standardButtons: Dialog.Ok
+
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                text: "Chaque thème associe deux couleurs. Elles seront utilisées ensemble dans les dégradés et les effets lumineux."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            ComboBox {
+                id: themeSelectionBox
+                Layout.fillWidth: true
+                model: modeSelectorController.themeOptions
+                textRole: "name"
+                Component.onCompleted: {
+                    const options = modeSelectorController.themeOptions
+                    for (let i = 0; i < options.length; ++i) {
+                        if (options[i].id === modeSelectorController.theme) {
+                            currentIndex = i
+                            break
+                        }
+                    }
+                }
+                onActivated: function(index) {
+                    const options = modeSelectorController.themeOptions
+                    if (index >= 0 && index < options.length)
+                        modeSelectorController.setTheme(options[index].id)
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 9
+                    radius: 5
+                    color: window.themeColors.accent_primary
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 9
+                    radius: 5
+                    color: window.themeColors.accent_secondary
+                }
+            }
+            Label {
+                text: "Tu pourras modifier ton thème plus tard dans le Centre de contrôle."
+                color: window.muted
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+        }
+
+        onAccepted: modeSelectorController.completeThemeSelection()
+    }
+
+    Component.onCompleted: {
+        if (!modeSelectorController.themeSelectionComplete)
+            themeSelectionDialog.open()
+    }
+
     Rectangle {
         id: modeSelectorContent
         anchors.fill: parent
@@ -93,12 +165,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: "#102b3a"; opacity: 0.18
+            color: window.themeColors.accent_primary_soft; opacity: 0.24
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: "#321437"; opacity: 0.15
+            color: window.themeColors.accent_secondary_soft; opacity: 0.22
         }
 
         ColumnLayout {
