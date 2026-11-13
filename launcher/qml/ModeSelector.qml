@@ -305,7 +305,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: themeManager.assets.desktop_logo
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
