@@ -38,7 +38,7 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
+            const themes = controlCenter.themeOptions.map(option => option.id)
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
@@ -464,14 +464,16 @@ ApplicationWindow {
                                     ComboBox {
                                         id: themeBox
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
+                                        model: controlCenter.themeOptions
+                                        textRole: "name"
                                         Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
+                                            const values = controlCenter.themeOptions.map(option => option.id)
                                             currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
                                         }
                                         onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            controlCenter.setTheme(values[currentIndex])
+                                            const options = controlCenter.themeOptions
+                                            if (currentIndex >= 0 && currentIndex < options.length)
+                                                controlCenter.setTheme(options[currentIndex].id)
                                         }
                                     }
                                     RowLayout {
