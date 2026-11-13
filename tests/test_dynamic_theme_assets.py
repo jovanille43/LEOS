@@ -62,7 +62,10 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertLess(error, 0.01)
 
     def test_png_render_preserves_alpha_neutrals_and_smooth_gradient(self):
-        from PySide6.QtGui import QColor, QImage
+        try:
+            from PySide6.QtGui import QColor, QImage
+        except ImportError:
+            self.skipTest("PySide6 is part of the LEOS desktop runtime, not Python CI")
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
