@@ -11,6 +11,7 @@ modules:
         - libnotify
         - aurorae
         - qt6-qtmultimedia
+        - qt6-qtdeclarative
         - ffmpeg-free
         - qt6-qtsvg
 
