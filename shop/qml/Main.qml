@@ -122,7 +122,7 @@ ApplicationWindow {
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
-                            color: window.selectedRow === index ? "#182a36" : "#151b25"
+                            color: window.selectedRow === index ? window.themeColors.accent_primary_soft : "#151b25"
                             border.color: window.selectedRow === index ? window.cyan : "#28313e"
                             RowLayout {
                                 anchors.fill: parent
