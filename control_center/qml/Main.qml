@@ -536,7 +536,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    source: themeManager.assets.desktop_wallpaper
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
