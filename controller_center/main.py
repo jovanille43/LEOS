@@ -23,10 +23,8 @@ def main() -> int:
     app.setOrganizationName("LEOS")
     theme_manager = ThemeManager()
     controller = ControllerCenterController()
-    theme_manager = ThemeManager()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("controllerCenter", controller)
-    engine.rootContext().setContextProperty("themeManager", theme_manager)
     engine.rootContext().setContextProperty("themeManager", theme_manager)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Main.qml")))
     if not engine.rootObjects():
