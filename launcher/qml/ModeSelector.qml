@@ -34,8 +34,8 @@ ApplicationWindow {
         introOverlay.visible = true
         introPlayer.source = Qt.resolvedUrl(
             mode === "gaming"
-                ? "../../branding/animations/gaming-intro.mp4"
-                : "../../branding/animations/desktop-intro.mov"
+                ? themeManager.assets.gaming_intro
+                : themeManager.assets.desktop_intro
         )
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
