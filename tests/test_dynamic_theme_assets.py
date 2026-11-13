@@ -520,8 +520,20 @@ class DynamicThemeAssetTests(unittest.TestCase):
                 plasma_theme_dir=plasma_root,
                 aurorae_theme_dir=aurorae_root,
             )
+            self.assertEqual(
+                manager.exported_kde_resource_paths_for_theme(
+                    "light", data_directory=data_home
+                ),
+                {},
+            )
             exported = manager.export_kde_resource_packages_for_theme(
                 "light", data_directory=data_home
+            )
+            self.assertEqual(
+                manager.exported_kde_resource_paths_for_theme(
+                    "light", data_directory=data_home
+                ),
+                exported,
             )
             self.assertEqual(set(exported), {
                 "icon_theme_path", "plasma_theme_path", "aurorae_theme_path"
