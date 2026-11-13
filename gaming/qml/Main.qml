@@ -46,7 +46,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = themeManager.assets.desktop_intro
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
