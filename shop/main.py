@@ -14,6 +14,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
 from shop.controller import StoreController
+from desktop.theme_controller import ThemeController
 
 
 def main() -> int:
@@ -22,13 +23,17 @@ def main() -> int:
     app.setOrganizationName("LEOS")
 
     store = StoreController()
+    theme = ThemeController()
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("store", store)
+    engine.rootContext().setContextProperty("leosTheme", theme)
     engine.rootContext().setContextProperty("catalogModel", store.catalog)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Main.qml")))
     if not engine.rootObjects():
+        theme.shutdown()
         return 1
     store.refreshInstalled()
+    app.aboutToQuit.connect(theme.shutdown)
     return app.exec()
 
 
