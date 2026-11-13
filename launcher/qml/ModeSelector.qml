@@ -57,6 +57,24 @@ ApplicationWindow {
     function handleGamepadAction(action) {
         if (transitionInProgress)
             return
+        if (themeSelectionDialog.visible) {
+            if (action === "left" || action === "right") {
+                const options = themeManager.options
+                if (options.length > 0) {
+                    const step = action === "right" ? 1 : -1
+                    const next = Math.max(0, Math.min(
+                        options.length - 1,
+                        themeSelectionBox.currentIndex + step
+                    ))
+                    themeSelectionBox.currentIndex = next
+                    themeManager.setTheme(options[next].id)
+                }
+            } else if (action === "confirm" || action === "back") {
+                modeSelectorController.completeThemeSelection()
+                themeSelectionDialog.close()
+            }
+            return
+        }
         if (transitionDialog.visible) {
             if (action === "confirm") {
                 transitionDialog.close()
@@ -94,6 +112,7 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: 500
         standardButtons: Dialog.Ok
+        onOpened: themeSelectionBox.forceActiveFocus()
 
         contentItem: ColumnLayout {
             spacing: 14
