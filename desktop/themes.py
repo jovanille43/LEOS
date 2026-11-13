@@ -1,8 +1,8 @@
 """Validated, user-selectable LEOS two-accent palettes.
 
-A theme is always a pair of distinct accents. Derived highlight, glow and soft
-surface tokens are computed from that pair so UI components do not need to
-invent their own shades or collapse both accents into a single color.
+A theme is a pair of player-selected accents. The colors may be identical,
+similar or low-contrast; LEOS warns when needed but never changes the choice.
+Derived highlight, glow and soft surface tokens keep the UI consistent.
 """
 from __future__ import annotations
 
