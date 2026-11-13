@@ -223,6 +223,16 @@ class ThemeAssetManager:
         if theme not in THEME_PALETTES:
             raise ValueError(f"Unknown LEOS theme: {theme}")
         palette = palette_for_theme(theme)
+        if (
+            palette["accent_primary"].lower() == "#00d9ff"
+            and palette["accent_secondary"].lower() == "#e33bff"
+        ):
+            return {
+                "desktop_logo": (self.branding_dir / "desktop-logo-alpha.png").resolve().as_uri(),
+                "gaming_logo": (self.branding_dir / "gaming-logo-alpha.png").resolve().as_uri(),
+                "desktop_wallpaper": (self.branding_dir / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
+                "gaming_wallpaper": (self.branding_dir / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
+            }
         fingerprint = hashlib.sha256(
             (theme + palette["accent_primary"] + palette["accent_secondary"]).encode("ascii")
         ).hexdigest()[:16]
