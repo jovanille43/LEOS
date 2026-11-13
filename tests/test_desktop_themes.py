@@ -108,7 +108,7 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("window.themeColors.accent_primary", qml)
         self.assertIn("property color cyan: themeColors.accent_primary", qml)
         self.assertIn("def themePalette(self)", controller)
-        self.assertIn("palette_for_theme(self.theme)", controller)
+        self.assertIn("visual_tokens_for_theme(self.theme)", controller)
         self.assertNotIn("#121720", qml)
         self.assertNotIn("#293342", qml)
 
@@ -119,6 +119,81 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("model: controlCenter.themeOptions", qml)
         self.assertIn("controlCenter.themeOptions.map(option => option.id)", qml)
         self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
+
+
+    def test_each_theme_has_two_distinct_accents_and_generated_visual_roles(self):
+        for theme_name, palette in THEME_PALETTES.items():
+            with self.subTest(theme=theme_name):
+                self.assertNotEqual(palette["accent_primary"], palette["accent_secondary"])
+                tokens = visual_tokens_for_theme(theme_name)
+                self.assertEqual(tokens["accent_primary"], palette["accent_primary"])
+                self.assertEqual(tokens["accent_secondary"], palette["accent_secondary"])
+                for role in (
+                    "accent_primary_glow",
+                    "accent_secondary_glow",
+                    "accent_primary_soft",
+                    "accent_secondary_soft",
+                    "accent_gradient_mid",
+                ):
+                    self.assertRegex(tokens[role], r"^#[0-9A-Fa-f]{6}$")
+
+    def test_theme_options_are_derived_from_the_catalog(self):
+        options = theme_options()
+        self.assertEqual([item["id"] for item in options], list(THEME_PALETTES))
+        for option in options:
+            palette = THEME_PALETTES[option["id"]]
+            self.assertEqual(option["accent_primary"], palette["accent_primary"])
+            self.assertEqual(option["accent_secondary"], palette["accent_secondary"])
+
+    def test_first_run_mode_selector_uses_the_shared_theme_manager(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
+        main = (root / "launcher" / "main.py").read_text(encoding="utf-8")
+        self.assertIn("themeManager.palette", qml)
+        self.assertIn("themeManager.options", qml)
+        self.assertIn("themeManager.setTheme(options[index].id)", qml)
+        self.assertIn('setContextProperty("themeManager", theme_manager)', main)
+        self.assertIn("themeSelectionComplete", qml)
+
+    def test_all_leos_qml_apps_receive_the_shared_theme_palette(self):
+        root = Path(__file__).resolve().parents[1]
+        expected = {
+            "gaming/qml/Main.qml": "themeManager.palette",
+            "desktop/qml/Menu.qml": "themeManager.palette",
+            "desktop/qml/Notifications.qml": "themeManager.palette",
+            "controller_center/qml/Main.qml": "themeManager.palette",
+            "shop/qml/Main.qml": "themeManager.palette",
+        }
+        for relative, expression in expected.items():
+            with self.subTest(path=relative):
+                content = (root / relative).read_text(encoding="utf-8")
+                self.assertIn(expression, content)
+
+    def test_brand_assets_are_referenced_through_theme_asset_map(self):
+        root = Path(__file__).resolve().parents[1]
+        selector = (root / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (root / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        control = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("themeManager.assets.desktop_logo", selector)
+        self.assertIn("themeManager.assets.gaming_logo", selector)
+        self.assertIn("themeManager.assets.gaming_logo", gaming)
+        self.assertIn("themeManager.assets.desktop_wallpaper", control)
+        self.assertIn("themeManager.assets.gaming_wallpaper", control)
+        self.assertIn("themeManager.assets.gaming_intro", selector)
+        self.assertIn("themeManager.assets.desktop_intro", gaming)
+
+    def test_theme_asset_worker_uses_selective_recoloring_and_original_fallbacks(self):
+        root = Path(__file__).resolve().parents[1]
+        assets = (root / "desktop/theme_assets.py").read_text(encoding="utf-8")
+        manager = (root / "desktop/theme_manager.py").read_text(encoding="utf-8")
+        self.assertIn("def recolor_hex_color(", assets)
+        self.assertIn("def recolor_svg_markup(", assets)
+        self.assertIn("def lut_cube_text(", assets)
+        self.assertIn("lut3d=file=", assets)
+        self.assertIn("audio is stream-copied", assets)
+        self.assertIn("cached_video_paths_for_theme", manager)
+        self.assertIn("start_new_session=True", manager)
+        self.assertIn("official videos active", manager)
 
     def test_all_shared_combo_selectors_refresh_after_external_settings_changes(self):
         root = Path(__file__).resolve().parents[1]
