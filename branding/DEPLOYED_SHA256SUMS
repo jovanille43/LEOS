@@ -1,5 +1,5 @@
 # SHA-256 des fichiers réellement présents dans branding/ sur GitHub.
-# Les JPEG correspondent exactement aux originaux reçus ; les PNG sont des copies dérivées (tools/derive_emblem_alpha.py) ; les vidéos sont les versions déployées documentées dans ASSET_MANIFEST.md.
+# Les JPEG correspondent exactement aux originaux reçus ; les PNG sont des copies dérivées (tools/derive_emblem_alpha.py) ; les vidéos correspondent exactement aux originaux fournis (voir ASSET_MANIFEST.md).
 7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548  branding/desktop-logo.jpeg
 512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb  branding/gaming-logo.jpeg
 ce2f98e74c7aa418e0a1a184a7ab210bd22208bbce90c46fb59c28d6f3e63acf  branding/desktop-logo-alpha.png
