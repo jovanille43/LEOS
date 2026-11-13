@@ -137,19 +137,30 @@ class SettingsStore:
         return tuple(self._values.get(key) for key in keys)
 
     def set(self, key: str, value: Any) -> None:
-        if key not in DEFAULTS:
-            raise KeyError(f"Unknown LEOS setting: {key}")
-        if not isinstance(value, type(DEFAULTS[key])):
-            raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
-        if key in _THEME_COLOR_KEYS:
-            if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
-                raise ValueError(f"Invalid hex color for {key}")
-            value = value.strip().upper()
-        allowed = ALLOWED_VALUES.get(key)
-        if allowed is not None and value not in allowed:
-            raise ValueError(f"Invalid value for {key}: {value}")
-        if key == "notification_duration_seconds" and value not in {3, 5, 8}:
-            raise ValueError(f"Invalid value for {key}: {value}")
+        """Validate and persist one preference."""
+        self.set_many({key: value})
+
+    def set_many(self, updates: dict[str, Any]) -> None:
+        """Atomically validate and persist a group of shared preferences."""
+        if not isinstance(updates, dict) or not updates:
+            raise ValueError("LEOS settings updates must be a non-empty dictionary")
+
+        validated: dict[str, Any] = {}
+        for key, value in updates.items():
+            if key not in DEFAULTS:
+                raise KeyError(f"Unknown LEOS setting: {key}")
+            if not isinstance(value, type(DEFAULTS[key])):
+                raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
+            if key in _THEME_COLOR_KEYS:
+                if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                    raise ValueError(f"Invalid hex color for {key}")
+                value = value.strip().upper()
+            allowed = ALLOWED_VALUES.get(key)
+            if allowed is not None and value not in allowed:
+                raise ValueError(f"Invalid value for {key}: {value}")
+            if key == "notification_duration_seconds" and value not in {3, 5, 8}:
+                raise ValueError(f"Invalid value for {key}: {value}")
+            validated[key] = value
 
         # Serialize read-modify-write across Desktop, Gaming and Control Center.
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -170,7 +181,7 @@ class SettingsStore:
                             "LEOS settings file is unreadable or too large; it was left untouched"
                         ) from exc
                 self.load()
-                self._values[key] = value
+                self._values.update(validated)
                 self.save()
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
