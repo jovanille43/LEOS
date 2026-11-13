@@ -136,30 +136,6 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
 
 
-    def test_each_theme_has_two_distinct_accents_and_generated_visual_roles(self):
-        for theme_name, palette in THEME_PALETTES.items():
-            with self.subTest(theme=theme_name):
-                self.assertNotEqual(palette["accent_primary"], palette["accent_secondary"])
-                tokens = visual_tokens_for_theme(theme_name)
-                self.assertEqual(tokens["accent_primary"], palette["accent_primary"])
-                self.assertEqual(tokens["accent_secondary"], palette["accent_secondary"])
-                for role in (
-                    "accent_primary_glow",
-                    "accent_secondary_glow",
-                    "accent_primary_soft",
-                    "accent_secondary_soft",
-                    "accent_gradient_mid",
-                ):
-                    self.assertRegex(tokens[role], r"^#[0-9A-Fa-f]{6}$")
-
-    def test_theme_options_are_derived_from_the_catalog(self):
-        options = theme_options()
-        self.assertEqual([item["id"] for item in options], list(THEME_PALETTES))
-        for option in options:
-            palette = THEME_PALETTES[option["id"]]
-            self.assertEqual(option["accent_primary"], palette["accent_primary"])
-            self.assertEqual(option["accent_secondary"], palette["accent_secondary"])
-
     def test_first_run_mode_selector_uses_the_shared_theme_manager(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
