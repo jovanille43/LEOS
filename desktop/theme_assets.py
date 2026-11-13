@@ -369,7 +369,6 @@ def render_video_theme(
                     timeout=timeout_seconds,
                     check=False,
                     shell=False,
-                    shell=False,
                 )
             except subprocess.TimeoutExpired as error:
                 last_error = str(error)
