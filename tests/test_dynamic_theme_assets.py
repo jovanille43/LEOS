@@ -462,6 +462,7 @@ class DynamicThemeAssetTests(unittest.TestCase):
             )
             self.assertEqual(plasma_metadata["KPlugin"]["Id"], "leos-light")
 
+            generated_aurorae = Path(paths["aurorae_theme_path"])
             aurora_metadata = (generated_aurorae / "metadata.desktop").read_text(
                 encoding="utf-8"
             )
@@ -516,6 +517,10 @@ class DynamicThemeAssetTests(unittest.TestCase):
             (aurorae_root / "metadata.desktop").write_text(
                 "[Desktop Entry]\nName=LEOS\nComment=LEOS Aurorae\n"
                 "X-KDE-PluginInfo-Name=leos\n",
+                encoding="utf-8",
+            )
+            (aurorae_root / "leosrc").write_text(
+                "[General]\nTitleAlignment=Center\n",
                 encoding="utf-8",
             )
 
