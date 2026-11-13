@@ -8,6 +8,7 @@ from pathlib import Path
 
 from desktop.branding_assets import (
     _cache_directory,
+    _available_video_encoder,
     _transform_svg,
     build_color_matrix,
     cached_themed_branding_asset_urls,
@@ -102,6 +103,27 @@ class BrandingAssetTests(unittest.TestCase):
             (root / "gaming-logo.jpeg").write_bytes(b"source-v2-with-different-size")
             after = _cache_directory("#FF8800", "#0055CC", root)
             self.assertNotEqual(before, after)
+
+    def test_video_encoder_selection_uses_only_available_supported_encoders(self):
+        listing = """ V..... libopenh264 OpenH264 H.264 / AVC
+ V..... mpeg4 MPEG-4 part 2
+"""
+        self.assertEqual(_available_video_encoder.__name__, "_available_video_encoder")
+        # Keep the parser decision separate from the local machine's codecs.
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        with patch("desktop.branding_assets.subprocess.run", return_value=SimpleNamespace(
+            returncode=0, stdout=listing, stderr=""
+        )):
+            self.assertEqual(_available_video_encoder("/usr/bin/ffmpeg"), "libopenh264")
+
+    def test_video_encoder_selection_returns_none_when_no_video_encoder_exists(self):
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        with patch("desktop.branding_assets.subprocess.run", return_value=SimpleNamespace(
+            returncode=0, stdout=" A..... aac AAC (Advanced Audio Coding)", stderr=""
+        )):
+            self.assertIsNone(_available_video_encoder("/usr/bin/ffmpeg"))
 
     def test_fallback_asset_urls_point_to_official_source_files(self):
         root = Path("/usr/share/leos/branding")
