@@ -85,12 +85,12 @@ class HardwareInventoryTests(unittest.TestCase):
             return " ".join(f"{word:x}" for word in words)
 
         devices = (
-            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\\n'
-            'N: Name="HID 0810:0001"\\n'
-            'H: Handlers=event42\\n'
-            f'B: EV={bitmap(0x01, 0x03)}\\n'
-            f'B: KEY={bitmap(0x130, 0x131, 0x13C)}\\n'
-            f'B: ABS={bitmap(0x00, 0x01, 0x10, 0x11)}\\n'
+            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\n'
+            'N: Name="HID 0810:0001"\n'
+            'H: Handlers=event42\n'
+            f'B: EV={bitmap(0x01, 0x03)}\n'
+            f'B: KEY={bitmap(0x130, 0x131, 0x13C)}\n'
+            f'B: ABS={bitmap(0x00, 0x01, 0x10, 0x11)}\n'
         )
         with patch.object(hardware, "_read", return_value=devices):
             self.assertEqual(hardware._controller_details(), "HID 0810:0001")
@@ -106,22 +106,22 @@ class HardwareInventoryTests(unittest.TestCase):
             return " ".join(f"{word:x}" for word in words)
 
         devices = (
-            'I: Bus=0018 Vendor=0000 Product=0000 Version=0000\\n'
-            'N: Name="Generic Touchscreen"\\n'
-            'H: Handlers=event7\\n'
-            f'B: EV={bitmap(0x01, 0x03)}\\n'
-            f'B: KEY={bitmap(0x14A)}\\n'
-            f'B: ABS={bitmap(0x00, 0x01, 0x35, 0x36)}\\n'
+            'I: Bus=0018 Vendor=0000 Product=0000 Version=0000\n'
+            'N: Name="Generic Touchscreen"\n'
+            'H: Handlers=event7\n'
+            f'B: EV={bitmap(0x01, 0x03)}\n'
+            f'B: KEY={bitmap(0x14A)}\n'
+            f'B: ABS={bitmap(0x00, 0x01, 0x35, 0x36)}\n'
         )
         with patch.object(hardware, "_read", return_value=devices):
             self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
 
     def test_controller_inventory_does_not_infer_event_only_gamepad_without_capability_data(self):
         devices = (
-            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\\n'
-            'N: Name="HID 0810:0001"\\n'
-            'H: Handlers=event42\\n'
-            'B: EV=1b\\n'
+            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\n'
+            'N: Name="HID 0810:0001"\n'
+            'H: Handlers=event42\n'
+            'B: EV=1b\n'
         )
         with patch.object(hardware, "_read", return_value=devices):
             self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
