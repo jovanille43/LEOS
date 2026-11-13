@@ -83,8 +83,11 @@ class SettingsModuleCommandTests(unittest.TestCase):
     def test_appearance_exposes_both_leos_wallpapers_and_native_kde_selection(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', qml)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', qml)
+        self.assertIn("source: leosTheme.desktopWallpaperUrl", qml)
+        self.assertIn("source: leosTheme.gamingWallpaperUrl", qml)
+        main = (root / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("ThemeController()", main)
+        self.assertIn('setContextProperty("leosTheme", theme)', main)
         self.assertEqual(qml.count("fillMode: Image.PreserveAspectFit"), 2)
         wallpaper_start = qml.index("FONDS D")
         wallpaper_end = qml.index("THÈME KDE PLASMA", wallpaper_start)
