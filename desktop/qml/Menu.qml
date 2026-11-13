@@ -11,9 +11,10 @@ ApplicationWindow {
     visible: true
     title: "LEOS — Applications"
     color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: themeManager.palette
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
         if (!applicationCatalog.launch(desktopId))
@@ -34,8 +35,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: "#102b3a"; opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: "#321437"; opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: window.themeColors.accent_primary_soft; opacity: 0.13 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: window.themeColors.accent_secondary_soft; opacity: 0.12 }
     }
 
     ColumnLayout {
