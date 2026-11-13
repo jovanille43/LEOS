@@ -14,6 +14,7 @@ from desktop.theme_assets import (
     ThemeAssetManager,
     lut_cube_text,
     recolor_hex_color,
+    recolor_kde_svg_markup,
     recolor_svg_markup,
     render_logo_theme,
     render_svg_theme,
@@ -276,6 +277,155 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertEqual(status["theme"], "light")
             self.assertIs(status["videos_recolored"], False)
             self.assertIsNone(manager.cached_video_paths_for_theme("gaming"))
+
+
+    def test_kde_svg_recoloring_keeps_dark_surfaces_and_inactive_slate(self):
+        source = (
+            '<svg><defs><linearGradient id="g">'
+            '<stop stop-color="#00D9FF"/><stop stop-color="#8C9BFF"/>'
+            '<stop stop-color="#E33BFF"/></linearGradient></defs>'
+            '<path stroke="#00D9FF"/><path stroke="#71809B"/>'
+            '<rect fill="#111827"/></svg>'
+        )
+        result = recolor_kde_svg_markup(source, "#006B83", "#A329B5")
+        self.assertIn('stop-color="#006b83"', result)
+        self.assertIn('stop-color="#a329b5"', result)
+        self.assertIn('stroke="#006b83"', result)
+        self.assertIn('stroke="#71809B"', result)
+        self.assertIn('fill="#111827"', result)
+
+    def test_kde_resource_packages_are_named_recolored_and_source_immutable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            branding = root / "branding"
+            branding.mkdir()
+            icon_root = root / "source-icons" / "leos"
+            plasma_root = root / "source-plasma" / "leos"
+            aurorae_root = root / "source-aurorae" / "leos"
+            (icon_root / "scalable" / "apps").mkdir(parents=True)
+            (plasma_root / "widgets").mkdir(parents=True)
+            aurorae_root.mkdir(parents=True)
+
+            svg = (
+                '<svg><defs><linearGradient id="g">'
+                '<stop stop-color="#00D9FF"/><stop stop-color="#8C9BFF"/>'
+                '<stop stop-color="#E33BFF"/></linearGradient></defs>'
+                '<path stroke="url(#g)"/><path stroke="#71809B"/>'
+                '<rect fill="#111827"/></svg>'
+            )
+            icon_svg = icon_root / "scalable" / "apps" / "leos-example.svg"
+            plasma_svg = plasma_root / "widgets" / "background.svg"
+            aurorae_svg = aurorae_root / "decoration.svg"
+            icon_svg.write_text(svg, encoding="utf-8")
+            plasma_svg.write_text(svg, encoding="utf-8")
+            aurorae_svg.write_text(svg, encoding="utf-8")
+
+            icon_index = (
+                "[Icon Theme]\\nName=LEOS\\nComment=Original icons\\n"
+                "Inherits=breeze,hicolor\\n"
+            )
+            plasma_metadata = {
+                "KPlugin": {
+                    "Id": "leos",
+                    "Name": "LEOS",
+                    "Description": "Original Plasma style",
+                }
+            }
+            aurorae_metadata = (
+                "[Desktop Entry]\\nName=LEOS\\nComment=Original decoration\\n"
+                "X-KDE-PluginInfo-Name=leos\\n"
+            )
+            (icon_root / "index.theme").write_text(icon_index, encoding="utf-8")
+            (plasma_root / "metadata.json").write_text(
+                json.dumps(plasma_metadata), encoding="utf-8"
+            )
+            (aurorae_root / "metadata.desktop").write_text(
+                aurorae_metadata, encoding="utf-8"
+            )
+
+            originals = {
+                icon_svg: icon_svg.read_bytes(),
+                plasma_svg: plasma_svg.read_bytes(),
+                aurorae_svg: aurorae_svg.read_bytes(),
+                icon_root / "index.theme": (icon_root / "index.theme").read_bytes(),
+                plasma_root / "metadata.json": (plasma_root / "metadata.json").read_bytes(),
+                aurorae_root / "metadata.desktop": (aurorae_root / "metadata.desktop").read_bytes(),
+            }
+            manager = ThemeAssetManager(
+                branding_dir=branding,
+                cache_dir=root / "cache",
+                icon_theme_dir=icon_root,
+                plasma_theme_dir=plasma_root,
+                aurorae_theme_dir=aurorae_root,
+            )
+
+            paths = manager.kde_resource_paths_for_theme("light")
+            self.assertEqual(paths["icon_theme_name"], "leos-light")
+            self.assertEqual(paths["plasma_theme_name"], "leos-light")
+            self.assertEqual(paths["aurorae_theme_name"], "leos-light")
+
+            generated_icon = Path(paths["icon_theme_path"])
+            generated_plasma = Path(paths["plasma_theme_path"])
+            generated_aurorae = Path(paths["aurorae_theme_path"])
+            self.assertTrue((generated_icon / "index.theme").is_file())
+            self.assertTrue((generated_plasma / "metadata.json").is_file())
+            self.assertTrue((generated_aurorae / "metadata.desktop").is_file())
+
+            icon_meta = (generated_icon / "index.theme").read_text(encoding="utf-8")
+            self.assertIn("Name=LEOS — Light", icon_meta)
+            self.assertIn("Comment=LEOS icon theme — Light", icon_meta)
+
+            plasma_meta = json.loads(
+                (generated_plasma / "metadata.json").read_text(encoding="utf-8")
+            )["KPlugin"]
+            self.assertEqual(plasma_meta["Id"], "leos-light")
+            self.assertEqual(plasma_meta["Name"], "LEOS — Light")
+
+            aurora_meta = (generated_aurora / "metadata.desktop").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("Name=LEOS — Light", aurora_meta)
+            self.assertIn("X-KDE-PluginInfo-Name=leos-light", aurora_meta)
+
+            for generated_svg in (
+                generated_icon / "scalable" / "apps" / "leos-example.svg",
+                generated_plasma / "widgets" / "background.svg",
+                generated_aurorae / "decoration.svg",
+            ):
+                rendered = generated_svg.read_text(encoding="utf-8")
+                self.assertIn('stop-color="#006b83"', rendered)
+                self.assertIn('stop-color="#a329b5"', rendered)
+                self.assertIn('stroke="#71809B"', rendered)
+                self.assertIn('fill="#111827"', rendered)
+
+            for path, original in originals.items():
+                self.assertEqual(path.read_bytes(), original)
+
+    def test_kde_resource_package_rejects_symbolic_link_entries(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            icon_root = root / "icons" / "leos"
+            icon_root.mkdir(parents=True)
+            (icon_root / "index.theme").write_text(
+                "[Icon Theme]\\nName=LEOS\\nComment=Icons\\n",
+                encoding="utf-8",
+            )
+            outside = root / "outside.svg"
+            outside.write_text('<svg/>', encoding="utf-8")
+            try:
+                (icon_root / "unsafe.svg").symlink_to(outside)
+            except OSError:
+                self.skipTest("Symbolic links are unavailable on this runner")
+
+            manager = ThemeAssetManager(
+                branding_dir=root / "branding",
+                cache_dir=root / "cache",
+                icon_theme_dir=icon_root,
+                plasma_theme_dir=root / "missing-plasma",
+                aurorae_theme_dir=root / "missing-aurorae",
+            )
+            with self.assertRaises(ValueError):
+                manager.kde_resource_paths_for_theme("light")
 
 
 if __name__ == "__main__":
