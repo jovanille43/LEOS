@@ -30,11 +30,9 @@ ApplicationWindow {
         }
         transitionInProgress = true
         introOverlay.visible = true
-        introPlayer.source = Qt.resolvedUrl(
-            mode === "gaming"
-                ? "../../branding/animations/gaming-intro.mp4"
-                : "../../branding/animations/desktop-intro.mov"
-        )
+        introPlayer.source = mode === "gaming"
+            ? leosTheme.gamingIntroUrl
+            : leosTheme.desktopIntroUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
         introPlayer.play()
@@ -234,7 +232,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: leosTheme.desktopLogoUrl
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -282,7 +280,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: leosTheme.gamingLogoUrl
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
