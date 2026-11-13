@@ -121,6 +121,7 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertIn("aac", args)
             self.assertEqual(kwargs["cwd"], root)
             self.assertEqual(kwargs["timeout"], 420)
+            self.assertIs(kwargs["shell"], False)
 
     def test_video_renderer_requires_ffmpeg_and_leaves_source_untouched(self):
         with tempfile.TemporaryDirectory() as temporary:
