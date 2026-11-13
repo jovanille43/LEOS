@@ -8,11 +8,11 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 | --- | --- |
 | `branding/desktop-logo.jpeg` | Lion seul, Desktop Mode |
 | `branding/gaming-logo.jpeg` | Lion avec manette, Gaming Mode |
-| `branding/desktop-logo-alpha.png` | Copie dérivée de `desktop-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Desktop |
-| `branding/gaming-logo-alpha.png` | Copie dérivée de `gaming-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Gaming |
+| `branding/desktop-logo-alpha.png` | Copie dérivée de `desktop-logo.jpeg` (fond noir rendu transparent), utilisée par le fond et l'interface Desktop |
+| `branding/gaming-logo-alpha.png` | Copie dérivée de `gaming-logo.jpeg` (fond noir rendu transparent), utilisée par le fond et l'interface Gaming |
 | `branding/reference-comparison.jpeg` | Référence interne uniquement |
 
-Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
+Le sélecteur de modes, le menu Desktop et l'en-tête Gaming chargent les PNG transparents avec chargement asynchrone. Cela évite les rectangles noirs opaques des JPEG sur les panneaux colorés. Les libellés textuels restent visibles si une image est absente ou illisible.
 
 ## Fond d'écran Desktop
 

@@ -49,7 +49,7 @@ ApplicationWindow {
                 spacing: 10
                 Image {
                     id: desktopMenuLogo
-                    source: "../../branding/desktop-logo.jpeg"
+                    source: "../../branding/desktop-logo-alpha.png"
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit

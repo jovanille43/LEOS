@@ -233,7 +233,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: "../../branding/desktop-logo-alpha.png"
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -281,7 +281,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: "../../branding/gaming-logo-alpha.png"
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit

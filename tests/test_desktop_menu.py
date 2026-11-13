@@ -234,9 +234,10 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertNotIn("Impossible de lancer", helper)
         self.assertIn("function onLaunchFailed(message) { status.text = message }", qml)
 
-    def test_desktop_menu_header_uses_official_emblem_with_text_fallback(self):
+    def test_desktop_menu_header_uses_transparent_emblem_with_text_fallback(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/desktop-logo.jpeg", qml)
+        self.assertIn("../../branding/desktop-logo-alpha.png", qml)
+        self.assertNotIn("desktop-logo.jpeg", qml)
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: desktopMenuLogo.status !== Image.Ready", qml)
 
