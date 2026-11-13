@@ -22,26 +22,19 @@ from typing import Mapping
 from desktop.themes import THEME_PALETTES, palette_for_theme
 
 _HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}")
-_SOURCE_PRIMARY_HUE = 190.0 / 360.0
-_SOURCE_SECONDARY_HUE = 292.0 / 360.0
+_SOURCE_PRIMARY_RGB = (0.0, 217.0 / 255.0, 1.0)
+_SOURCE_SECONDARY_RGB = (227.0 / 255.0, 59.0 / 255.0, 1.0)
+_SOURCE_PRIMARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_PRIMARY_RGB)
+_SOURCE_SECONDARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_SECONDARY_RGB)
+_SOURCE_PRIMARY_HUE = _SOURCE_PRIMARY_HSV[0]
+_SOURCE_SECONDARY_HUE = _SOURCE_SECONDARY_HSV[0]
+_ACCENT_HUE_TOLERANCE = 58.0 / 360.0
 _MAX_SVG_BYTES = 4 * 1024 * 1024
 _MAX_IMAGE_PIXELS = 18_000_000
 
 
 def _valid_hex(value: str) -> bool:
     return isinstance(value, str) and _HEX_COLOR.fullmatch(value) is not None
-
-
-def _hue_distance(first: float, second: float) -> float:
-    distance = abs(first - second) % 1.0
-    return min(distance, 1.0 - distance)
-
-
-_SOURCE_PRIMARY_RGB = (0.0, 217.0 / 255.0, 1.0)
-_SOURCE_SECONDARY_RGB = (227.0 / 255.0, 59.0 / 255.0, 1.0)
-_SOURCE_PRIMARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_PRIMARY_RGB)
-_SOURCE_SECONDARY_HSV = colorsys.rgb_to_hsv(*_SOURCE_SECONDARY_RGB)
-_ACCENT_HUE_TOLERANCE = 58.0 / 360.0
 
 
 def _accent_position(hue: float) -> float | None:
