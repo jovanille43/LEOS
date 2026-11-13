@@ -381,7 +381,7 @@ class DynamicThemeAssetTests(unittest.TestCase):
             self.assertEqual(plasma_meta["Id"], "leos-light")
             self.assertEqual(plasma_meta["Name"], "LEOS — Light")
 
-            aurora_meta = (generated_aurora / "metadata.desktop").read_text(
+            aurora_meta = (generated_aurorae / "metadata.desktop").read_text(
                 encoding="utf-8"
             )
             self.assertIn("Name=LEOS — Light", aurora_meta)
