@@ -11,9 +11,10 @@ ApplicationWindow {
     visible: true
     title: "LEOS — Notifications"
     color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: themeManager.palette
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
 
     ColumnLayout {
         anchors.fill: parent
