@@ -123,6 +123,25 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn('"wallpaper": "kcm_wallpaper"', modules)
         self.assertIn("rien n'est appliqué sans ton choix dans KDE", qml)
 
+    def test_appearance_exposes_confirmed_apply_and_restore_for_complete_kde_theme(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        manager = (root / "desktop" / "kde_visual_theme.py").read_text(encoding="utf-8")
+
+        self.assertIn("id: kdeVisualThemeConfirmation", qml)
+        self.assertIn("controlCenter.applyKdeVisualTheme()", qml)
+        self.assertIn("controlCenter.restorePreviousKdeVisualTheme()", qml)
+        self.assertIn("enabled: controlCenter.kdeThemeResourcesExported", qml)
+        self.assertIn("enabled: controlCenter.canRestoreKdeVisualTheme", qml)
+        self.assertIn("def applyKdeVisualTheme(self)", controller)
+        self.assertIn("def restorePreviousKdeVisualTheme(self)", controller)
+        self.assertIn("def apply_theme(self, theme: str)", manager)
+        self.assertIn("def restore_previous_theme(self)", manager)
+        self.assertIn("restore_icons_done", manager)
+        self.assertIn("restore_plasma_done", manager)
+        self.assertIn("restore_aurorae_done", manager)
+
     def test_animation_and_sound_preferences_are_exposed_as_shared_controls(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
