@@ -283,13 +283,16 @@ class DynamicThemeAssetTests(unittest.TestCase):
         source = (
             '<svg><defs><linearGradient id="g">'
             '<stop stop-color="#00D9FF"/><stop stop-color="#8C9BFF"/>'
-            '<stop stop-color="#E33BFF"/></linearGradient></defs>'
+            '<stop stop-color="#E33BFF"/><stop stop-color="#141D28"/>'
+            '<stop stop-color="#71809B"/></linearGradient></defs>'
             '<path stroke="#00D9FF"/><path stroke="#71809B"/>'
             '<rect fill="#111827"/></svg>'
         )
         result = recolor_kde_svg_markup(source, "#006B83", "#A329B5")
         self.assertIn('stop-color="#006b83"', result)
         self.assertIn('stop-color="#a329b5"', result)
+        self.assertIn('stop-color="#141D28"', result)
+        self.assertIn('stop-color="#71809B"', result)
         self.assertIn('stroke="#006b83"', result)
         self.assertIn('stroke="#71809B"', result)
         self.assertIn('fill="#111827"', result)
