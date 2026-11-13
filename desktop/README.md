@@ -37,10 +37,12 @@ Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les
 
 ## Moteur de thèmes LEOS
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` fournit le catalogue central des thèmes LEOS.
+Chaque entrée contient deux accents distincts (primaire et secondaire) ainsi
+que des rôles dérivés pour les halos, surfaces atténuées et dégradés. Le
+sélecteur initial, les interfaces LEOS et le Centre de contrôle consomment ce
+même catalogue. Les identifiants de thèmes et le choix initial sont conservés
+par `leos_core.SettingsStore`.
 
 Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
 Une action distincte dans le Centre de contrôle permet, après confirmation,
@@ -53,6 +55,14 @@ Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
 écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
 respectent le schéma global changent. Le système immuable Bazzite n'est pas
 modifié.
+
+Le module `desktop/theme_manager.py` transmet la palette aux fenêtres QML
+indépendantes et observe les changements de thème entre processus. Le module
+`desktop/theme_assets.py` génère dans le cache utilisateur des copies
+recolorées des deux emblèmes officiels et des fonds d'écran SVG. Les sources
+empaquetées ne sont jamais modifiées. Les vidéos de transition sont référencées
+par le manifeste commun, mais leur recoloration n'est pas encore activée :
+elles utilisent actuellement les fichiers originaux.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
