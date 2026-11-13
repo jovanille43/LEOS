@@ -7,6 +7,7 @@ from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
 from desktop.themes import theme_options, visual_tokens_for_theme
+from desktop.theme_assets import ThemeAssetManager
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -158,6 +159,7 @@ class ControlCenterController(QObject):
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
+        self.themeAssets = ThemeAssetManager()
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -628,6 +630,17 @@ class ControlCenterController(QObject):
         return self.kdeColorSchemes.can_restore()
 
     @Property(bool, notify=settingsChanged)
+    def kdeThemeResourcesAvailable(self) -> bool:
+        return all(
+            directory.is_dir() and not directory.is_symlink()
+            for directory in (
+                self.themeAssets.icon_theme_dir,
+                self.themeAssets.plasma_theme_dir,
+                self.themeAssets.aurorae_theme_dir,
+            )
+        )
+
+    @Property(bool, notify=settingsChanged)
     def plasmaStyleToolAvailable(self) -> bool:
         return self.plasmaStyle.tool_available()
 
@@ -726,6 +739,36 @@ class ControlCenterController(QObject):
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def exportKdeThemeResources(self) -> str:
+        """Prepare this palette's KDE packages in XDG data paths, without activation."""
+        try:
+            exported = self.themeAssets.export_kde_resource_packages_for_theme(self.theme)
+        except FileNotFoundError:
+            message = "Une ou plusieurs ressources KDE LEOS sont indisponibles ; aucun export complet n'a été effectué."
+            post_notification("Ressources KDE indisponibles", message, "error")
+            return message
+        except FileExistsError:
+            message = "Un thème différent utilise déjà cet identifiant KDE ; aucun fichier existant n'a été écrasé."
+            post_notification("Export KDE refusé", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "L'export des ressources KDE a échoué ; les thèmes existants ont été conservés."
+            post_notification("Export KDE échoué", message, "error")
+            return message
+
+        if not exported:
+            message = "La palette active utilise déjà la paire d'accents LEOS d'origine ; aucune variante supplémentaire n'est nécessaire."
+            post_notification("Ressources KDE déjà d'origine", message, "info")
+            return message
+        message = (
+            "Les thèmes d'icônes, Plasma et Aurorae LEOS ont été copiés dans ton espace utilisateur. "
+            "Ils ne sont pas activés : tu peux les sélectionner séparément dans les paramètres KDE."
+        )
+        self.settingsChanged.emit()
+        post_notification("Ressources KDE préparées", message, "success")
+        return message
 
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
