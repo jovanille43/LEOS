@@ -42,13 +42,7 @@ class ThemeManager(QObject):
         self._theme_id = str(self.settings.get("theme", "leos-original"))
         self._asset_manager = ThemeAssetManager()
         self._asset_tasks: list[_ThemeAssetTask] = []
-        branding = self._asset_manager.branding_dir
-        self._asset_paths = {
-            "desktop_logo": (branding / "desktop-logo-alpha.png").resolve().as_uri(),
-            "gaming_logo": (branding / "gaming-logo-alpha.png").resolve().as_uri(),
-            "desktop_wallpaper": (branding / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
-            "gaming_wallpaper": (branding / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
-        }
+        self._asset_paths = self._original_assets()
         if self._theme_id != "leos-original":
             self._generate_assets(self._theme_id)
         self._timer = QTimer(self)
@@ -71,6 +65,17 @@ class ThemeManager(QObject):
     @Property("QVariantMap", notify=changed)
     def assets(self) -> dict[str, str]:
         return dict(self._asset_paths)
+
+    def _original_assets(self) -> dict[str, str]:
+        branding = self._asset_manager.branding_dir
+        return {
+            "desktop_logo": (branding / "desktop-logo-alpha.png").resolve().as_uri(),
+            "gaming_logo": (branding / "gaming-logo-alpha.png").resolve().as_uri(),
+            "desktop_wallpaper": (branding / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
+            "gaming_wallpaper": (branding / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
+            "desktop_intro": (branding / "animations" / "desktop-intro.mov").resolve().as_uri(),
+            "gaming_intro": (branding / "animations" / "gaming-intro.mp4").resolve().as_uri(),
+        }
 
     def _generate_assets(self, theme: str) -> None:
         task = _ThemeAssetTask(theme)
@@ -103,7 +108,10 @@ class ThemeManager(QObject):
         if selected == self._theme_id:
             return
         self._theme_id = selected
+        self._asset_paths = self._original_assets()
         self.changed.emit()
+        if selected == "leos-original":
+            return
         self._generate_assets(selected)
 
     @Slot(str, result=bool)
