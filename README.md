@@ -15,11 +15,11 @@ Les deux modes partagent le même système, les mêmes fichiers, applications, p
 
 ## Identité visuelle
 
-L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta, une typographie dédiée et un fond noir.
+L'identité LEOS repose sur un lion métallique, une typographie dédiée, un fond noir et un dégradé personnalisable défini par deux couleurs A et B. Le cyan et le magenta sont les couleurs de départ, pas une palette imposée.
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
-- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés.
+- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés. Les fichiers vidéo et logos JPEG fournis conservent encore leurs couleurs intégrées d'origine ; leur recoloration dynamique fera l'objet d'une étape dédiée.
 
 Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
 
