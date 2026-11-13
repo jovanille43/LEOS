@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import colorsys
 import hashlib
+import json
 import os
+import fcntl
 import re
 import shutil
 import subprocess
@@ -515,11 +517,98 @@ class ThemeAssetManager:
                 if destination.is_file() and destination.stat().st_size > 0
                 else source.resolve().as_uri()
             )
-        outputs["videos_recolored"] = str(
-            all(
-                (output_dir / filename).is_file()
-                and (output_dir / filename).stat().st_size > 0
-                for filename in ("desktop-intro.mp4", "gaming-intro.mp4")
-            )
-        ).lower()
+        videos_recolored = all(
+            (output_dir / filename).is_file()
+            and (output_dir / filename).stat().st_size > 0
+            for filename in ("desktop-intro.mp4", "gaming-intro.mp4")
+        )
+        outputs["videos_recolored"] = str(videos_recolored).lower()
+        status = {
+            "version": 1,
+            "theme": theme,
+            "videos_recolored": videos_recolored,
+            "desktop_generated": outputs["desktop_intro"].startswith(output_dir.resolve().as_uri()),
+            "gaming_generated": outputs["gaming_intro"].startswith(output_dir.resolve().as_uri()),
+        }
+        _write_private_text(
+            output_dir / ".videos-ready.json",
+            json.dumps(status, ensure_ascii=False, separators=(",", ":")) + "\\n",
+        )
         return outputs
+
+    def cached_video_paths_for_theme(self, theme: str) -> dict[str, str] | None:
+        """Read completed video variants only after the background worker publishes status."""
+        output_dir = self._output_dir_for_theme(theme)
+        status_path = output_dir / ".videos-ready.json"
+        if status_path.is_symlink() or not status_path.is_file():
+            return None
+        try:
+            raw = status_path.read_bytes()
+            if len(raw) > 8192:
+                return None
+            status = json.loads(raw.decode("utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+            return None
+        if (
+            not isinstance(status, dict)
+            or status.get("version") != 1
+            or status.get("theme") != theme
+            or type(status.get("videos_recolored")) is not bool
+        ):
+            return None
+        desktop_source = self.branding_dir / "animations" / "desktop-intro.mov"
+        gaming_source = self.branding_dir / "animations" / "gaming-intro.mp4"
+        desktop_generated = output_dir / "desktop-intro.mp4"
+        gaming_generated = output_dir / "gaming-intro.mp4"
+        return {
+            "desktop_intro": (
+                desktop_generated.resolve().as_uri()
+                if status.get("desktop_generated") is True
+                and desktop_generated.is_file()
+                and not desktop_generated.is_symlink()
+                else desktop_source.resolve().as_uri()
+            ),
+            "gaming_intro": (
+                gaming_generated.resolve().as_uri()
+                if status.get("gaming_generated") is True
+                and gaming_generated.is_file()
+                and not gaming_generated.is_symlink()
+                else gaming_source.resolve().as_uri()
+            ),
+            "videos_recolored": str(status["videos_recolored"]).lower(),
+        }
+
+
+def _generate_video_worker(theme: str) -> int:
+    """Serialize video generation so concurrently running LEOS apps share one job."""
+    manager = ThemeAssetManager()
+    output_dir = manager._output_dir_for_theme(theme)
+    lock_path = output_dir / ".video-generation.lock"
+    if lock_path.is_symlink():
+        return 1
+    with lock_path.open("a", encoding="utf-8") as lock:
+        os.chmod(lock_path, 0o600)
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return 0
+        manager.video_paths_for_theme(theme)
+    return 0
+
+
+def _main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="LEOS theme asset worker")
+    parser.add_argument("--generate-videos", metavar="THEME")
+    args = parser.parse_args()
+    if not args.generate_videos:
+        parser.error("A worker action is required")
+    try:
+        return _generate_video_worker(args.generate_videos)
+    except Exception:
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
