@@ -420,7 +420,7 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: themeManager.assets.gaming_logo
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
