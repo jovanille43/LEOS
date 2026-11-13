@@ -345,6 +345,10 @@ class DynamicThemeAssetTests(unittest.TestCase):
             (aurorae_root / "metadata.desktop").write_text(
                 aurorae_metadata, encoding="utf-8"
             )
+            (aurorae_root / "leosrc").write_text(
+                "[General]\nTitleAlignment=Center\n",
+                encoding="utf-8",
+            )
 
             originals = {
                 icon_svg: icon_svg.read_bytes(),
