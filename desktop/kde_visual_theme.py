@@ -460,6 +460,12 @@ class KdeVisualThemeManager:
             if current_plasma == state["last_plasma"]:
                 self.plasma_style.restore_previous_style()
                 restored.append("Plasma")
+            elif current_plasma == state["previous_plasma"]:
+                # The KDE command may have completed immediately before an
+                # interruption while the LEOS state flag was still pending.
+                if self.plasma_style.can_restore():
+                    self.plasma_style.restore_previous_style()
+                restored.append("Plasma")
             else:
                 preserved.append("style Plasma modifié depuis l'application LEOS")
             state["restore_plasma_done"] = True
@@ -472,10 +478,28 @@ class KdeVisualThemeManager:
             current_aurorae_theme = _read_ini_value(
                 self.kwinrc, "org.kde.kdecoration2", "theme"
             )
-            if (
-                current_aurorae_library == state["last_aurorae_library"]
-                and current_aurorae_theme == state["last_aurorae_theme"]
-            ):
+            previous_pair = (
+                state["previous_aurorae_library"],
+                state["previous_aurorae_theme"],
+            )
+            last_pair = (
+                state["last_aurorae_library"],
+                state["last_aurorae_theme"],
+            )
+            current_pair = (current_aurorae_library, current_aurorae_theme)
+            # A partially written or already written rollback is resumable:
+            # finish it only while every value is one of the exact LEOS/previous
+            # values. Any third value is a manual change and is left untouched.
+            rollback_in_progress = all(
+                current in {last, previous}
+                for current, last, previous in zip(
+                    current_pair, last_pair, previous_pair
+                )
+            ) and any(
+                current == previous
+                for current, previous in zip(current_pair, previous_pair)
+            )
+            if current_pair == last_pair or rollback_in_progress:
                 self._write_key(
                     self.kwinrc, "org.kde.kdecoration2", "library",
                     state["previous_aurorae_library"],
