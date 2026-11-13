@@ -106,6 +106,7 @@ class ThemeManager(QObject):
 
         cached = self._asset_manager.cached_video_paths_for_theme(theme)
         if cached is not None:
+            self._video_worker_theme = theme
             self._asset_paths.update(cached)
             self.changed.emit()
             return
@@ -162,7 +163,8 @@ class ThemeManager(QObject):
             if selected != "leos-original":
                 self._generate_assets(selected)
                 self._start_video_worker(selected)
-            self._video_worker_theme = selected
+            else:
+                self._video_worker_theme = ""
             return
 
         if selected != "leos-original":
