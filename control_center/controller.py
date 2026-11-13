@@ -8,6 +8,7 @@ from PySide6.QtGui import QGuiApplication
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
 from desktop.themes import theme_options, visual_tokens_for_theme
 from desktop.theme_assets import ThemeAssetManager
+from desktop.kde_visual_theme import KdeVisualThemeManager
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -160,6 +161,10 @@ class ControlCenterController(QObject):
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.themeAssets = ThemeAssetManager()
+        self.kdeVisualTheme = KdeVisualThemeManager(
+            assets=self.themeAssets,
+            plasma_style=self.plasmaStyle,
+        )
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -641,6 +646,10 @@ class ControlCenterController(QObject):
         )
 
     @Property(bool, notify=settingsChanged)
+    def canRestoreKdeVisualTheme(self) -> bool:
+        return self.kdeVisualTheme.can_restore()
+
+    @Property(bool, notify=settingsChanged)
     def kdeThemeResourcesExported(self) -> bool:
         return len(
             self.themeAssets.exported_kde_resource_paths_for_theme(self.theme)
@@ -774,6 +783,40 @@ class ControlCenterController(QObject):
         )
         self.settingsChanged.emit()
         post_notification("Ressources KDE préparées", message, "success")
+        return message
+
+    @Slot(result=str)
+    def applyKdeVisualTheme(self) -> str:
+        """Apply icons, Plasma Style and Aurorae for the selected palette."""
+        try:
+            message = self.kdeVisualTheme.apply_theme(self.theme)
+        except FileNotFoundError:
+            message = "Exporte d'abord les trois ressources KDE LEOS dans ton profil et vérifie les outils KDE requis."
+            post_notification("Thème KDE non appliqué", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "Le thème KDE complet n'a pas pu être appliqué. Les réglages précédents ont été restaurés ou la sauvegarde reste disponible."
+            post_notification("Application du thème KDE échouée", message, "error")
+            return message
+        self.settingsChanged.emit()
+        post_notification("Thème KDE complet appliqué", message, "success")
+        return message
+
+    @Slot(result=str)
+    def restorePreviousKdeVisualTheme(self) -> str:
+        """Restore the three KDE components while preserving later manual changes."""
+        try:
+            message = self.kdeVisualTheme.restore_previous_theme()
+        except FileNotFoundError:
+            message = "Aucune sauvegarde du thème KDE complet n'est disponible."
+            post_notification("Restauration KDE impossible", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "Le retour arrière du thème KDE est incomplet ; la sauvegarde a été conservée."
+            post_notification("Restauration KDE incomplète", message, "error")
+            return message
+        self.settingsChanged.emit()
+        post_notification("Thème KDE précédent restauré", message, "success")
         return message
 
     @Slot(result=str)
