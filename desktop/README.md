@@ -37,10 +37,12 @@ Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les
 
 ## Moteur de thèmes LEOS
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` fournit le catalogue central des thèmes LEOS.
+Chaque entrée contient deux accents distincts (primaire et secondaire) ainsi
+que des rôles dérivés pour les halos, surfaces atténuées et dégradés. Le
+sélecteur initial, les interfaces LEOS et le Centre de contrôle consomment ce
+même catalogue. Les identifiants de thèmes et le choix initial sont conservés
+par `leos_core.SettingsStore`.
 
 Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
 Une action distincte dans le Centre de contrôle permet, après confirmation,
@@ -53,6 +55,41 @@ Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
 écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
 respectent le schéma global changent. Le système immuable Bazzite n'est pas
 modifié.
+
+Le module `desktop/theme_manager.py` transmet la palette aux fenêtres QML
+indépendantes et observe les changements de thème entre processus. Le module
+`desktop/theme_assets.py` génère dans le cache utilisateur des copies
+recolorées des deux emblèmes officiels et des fonds d'écran SVG. Les sources
+empaquetées ne sont jamais modifiées. Les introductions MOV/MP4 passent par le
+manifeste commun et peuvent être recolorées en arrière-plan avec une LUT 3D
+sélective via FFmpeg ; l'audio est conservé et les originaux restent le repli.
+Le rendu visuel des vidéos dérivées doit encore être inspecté sur Bazzite.
+Pour les palettes non originales, le moteur génère également des copies
+recolorées du thème d'icônes, du Plasma Style et d'Aurorae dans le cache privé
+utilisateur. Chaque variante reçoit un identifiant KDE distinct. Les dégradés
+sont recolorés sans modifier leur structure ; les surfaces sombres et les
+contours gris peu saturés sont préservés. Les palettes qui réutilisent la paire
+d'accents originale (dont Gaming dans le catalogue actuel) utilisent les
+ressources système LEOS déjà installées au lieu d'exporter des doublons.
+
+Depuis Centre de contrôle → Apparence, l'action **Installer les ressources dans
+mon profil** exporte, après confirmation, les trois paquets vers les emplacements
+XDG utilisateur (`icons/`, `plasma/desktoptheme/` et `aurorae/themes/`). Les
+thèmes déjà présents et différents ne sont jamais écrasés.
+
+Le bouton **Appliquer le thème complet** applique, après confirmation, la paire
+active aux icônes, au Plasma Style et aux décorations Aurorae. LEOS sauvegarde
+les valeurs KDE précédentes dans un fichier d'état privé. **Restaurer le
+précédent** remet chaque composant à son réglage d'avant LEOS uniquement si sa
+valeur n'a pas été modifiée manuellement entre-temps. En cas d'échec partiel,
+LEOS tente un retour arrière et garde sa sauvegarde si celui-ci est incomplet.
+La progression de restauration est enregistrée pour permettre une nouvelle
+tentative.
+
+Trois raccourcis ouvrent aussi les panneaux KDE Icônes, Style Plasma et
+Décorations de fenêtres. Les paquets exportés restent dans le profil utilisateur ;
+leur désinstallation guidée et la validation sur une vraie session Bazzite sont
+encore à faire.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne

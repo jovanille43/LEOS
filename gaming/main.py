@@ -11,7 +11,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from PySide6.QtCore import QUrl  # noqa: E402
 from PySide6.QtGui import QGuiApplication  # noqa: E402
-from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
+from PySide6.QtQml import QQmlApplicationEngine
+from desktop.theme_manager import ThemeManager  # noqa: E402
 
 from backend.controller import GamingController  # noqa: E402
 from backend.instance_lock import acquire_instance_lock  # noqa: E402
@@ -22,7 +23,6 @@ def main() -> int:
     app = QGuiApplication(sys.argv)
     app.setApplicationName("LEOS Gaming")
     app.setOrganizationName("LEOS")
-
     try:
         instance_lock = acquire_instance_lock("gaming")
     except OSError:
@@ -42,13 +42,15 @@ def main() -> int:
         )
         return 0
 
+    theme_manager = ThemeManager()
     try:
-        return _run_locked_session(app, instance_lock)
+        return _run_locked_session(app, instance_lock, theme_manager)
     finally:
+        theme_manager.shutdown()
         instance_lock.release()
 
 
-def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
+def _run_locked_session(app: QGuiApplication, _instance_lock, theme_manager: ThemeManager) -> int:
     controller = GamingController()
     controller.desktopRequested.connect(app.quit)
 
@@ -57,11 +59,13 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     context.setContextProperty("leos", controller)
     context.setContextProperty("gameLibrary", controller.library)
     context.setContextProperty("systemMonitor", controller.monitor)
+    engine.rootContext().setContextProperty("themeManager", theme_manager)
 
     qml_file = Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         controller.shutdown()
+        theme_manager.shutdown()
         return 1
 
     # Persist Gaming only after its QML window loaded successfully. A
@@ -84,6 +88,7 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     )
     controller.monitor.start()
     app.aboutToQuit.connect(controller.shutdown)
+    app.aboutToQuit.connect(theme_manager.shutdown)
     return app.exec()
 
 

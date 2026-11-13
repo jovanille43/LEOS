@@ -40,7 +40,7 @@ class InstallationStateTests(unittest.TestCase):
     def test_game_details_highlight_missing_files(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('window.selectedInstallStatus === "Fichiers absents"', qml)
-        self.assertIn("window.magenta", qml)
+        self.assertIn("window.secondaryAccent", qml)
 
     def test_existing_executable_is_sufficient_evidence(self):
         with tempfile.TemporaryDirectory() as directory:

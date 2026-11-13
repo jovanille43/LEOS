@@ -12,6 +12,7 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.json_utils import json_nesting_within_limit
+from desktop.themes import THEME_PALETTES, is_valid_theme_id
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
@@ -60,6 +61,7 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
+    "theme_selection_complete": False,
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
@@ -76,7 +78,7 @@ DEFAULTS: dict[str, Any] = {
 
 ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
-    "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "theme": set(THEME_PALETTES),
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
     "notification_minimum_priority": {"all", "important", "critical"},
@@ -110,7 +112,8 @@ class SettingsStore:
                 continue
             allowed = ALLOWED_VALUES.get(key)
             if allowed is not None and value not in allowed:
-                continue
+                if key != "theme" or not is_valid_theme_id(value):
+                    continue
             if key == "notification_duration_seconds" and value not in {3, 5, 8}:
                 continue
             self._values[key] = value
@@ -134,7 +137,8 @@ class SettingsStore:
             raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
         allowed = ALLOWED_VALUES.get(key)
         if allowed is not None and value not in allowed:
-            raise ValueError(f"Invalid value for {key}: {value}")
+            if key != "theme" or not is_valid_theme_id(value):
+                raise ValueError(f"Invalid value for {key}: {value}")
         if key == "notification_duration_seconds" and value not in {3, 5, 8}:
             raise ValueError(f"Invalid value for {key}: {value}")
 

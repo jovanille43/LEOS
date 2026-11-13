@@ -53,6 +53,22 @@ class ModeSelectorController(QObject):
     def onboardingComplete(self) -> bool:
         return bool(self._settings.get("onboarding_complete", False))
 
+    @Property(bool, notify=onboardingChanged)
+    def themeSelectionComplete(self) -> bool:
+        return bool(self._settings.get("theme_selection_complete", False))
+
+    @Slot(result=bool)
+    def completeThemeSelection(self) -> bool:
+        """Remember the first-run theme choice without blocking session startup."""
+        if self.themeSelectionComplete:
+            return True
+        try:
+            self._settings.set("theme_selection_complete", True)
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+        self.onboardingChanged.emit()
+        return True
+
     @Slot(result=bool)
     def completeOnboarding(self) -> bool:
         """Remember that the user has seen the first-run LEOS introduction."""

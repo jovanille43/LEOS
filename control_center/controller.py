@@ -6,7 +6,9 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import custom_theme_id, theme_options, visual_tokens_for_theme
+from desktop.theme_assets import ThemeAssetManager
+from desktop.kde_visual_theme import KdeVisualThemeManager
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -158,6 +160,11 @@ class ControlCenterController(QObject):
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
+        self.themeAssets = ThemeAssetManager()
+        self.kdeVisualTheme = KdeVisualThemeManager(
+            assets=self.themeAssets,
+            plasma_style=self.plasmaStyle,
+        )
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -607,8 +614,13 @@ class ControlCenterController(QObject):
 
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
-        """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        """Expose the selected two-accent palette and its derived visual roles."""
+        return visual_tokens_for_theme(self.theme)
+
+    @Property("QVariantList", notify=settingsChanged)
+    def themeOptions(self) -> list[dict[str, str]]:
+        """Expose the catalog to QML without maintaining a second theme list."""
+        return theme_options(self.theme)
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -621,6 +633,25 @@ class ControlCenterController(QObject):
     @Property(bool, notify=settingsChanged)
     def canRestoreKdeTheme(self) -> bool:
         return self.kdeColorSchemes.can_restore()
+
+    @Property(bool, notify=settingsChanged)
+    def kdeThemeResourcesAvailable(self) -> bool:
+        return all(
+            directory.is_dir() and not directory.is_symlink()
+            for directory in (
+                self.themeAssets.icon_theme_dir,
+                self.themeAssets.plasma_theme_dir,
+                self.themeAssets.aurorae_theme_dir,
+            )
+        )
+
+    @Property(bool, notify=settingsChanged)
+    def canRestoreKdeVisualTheme(self) -> bool:
+        return self.kdeVisualTheme.can_restore()
+
+    @Property(bool, notify=settingsChanged)
+    def kdeThemeResourcesExported(self) -> bool:
+        return self.kdeVisualTheme.resources_available(self.theme)
 
     @Property(bool, notify=settingsChanged)
     def plasmaStyleToolAvailable(self) -> bool:
@@ -721,6 +752,81 @@ class ControlCenterController(QObject):
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
+
+    @Slot(str, str, result=bool)
+    def setAccentColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        """Save two unrestricted colors as one shared LEOS theme preference."""
+        try:
+            theme = custom_theme_id(accent_primary.strip(), accent_secondary.strip())
+            self.settings.set("theme", theme)
+        except (AttributeError, OSError, TypeError, ValueError, KeyError):
+            return False
+        self.settingsChanged.emit()
+        return True
+
+    @Slot(result=str)
+    def exportKdeThemeResources(self) -> str:
+        """Prepare this palette's KDE packages in XDG data paths, without activation."""
+        try:
+            exported = self.themeAssets.export_kde_resource_packages_for_theme(self.theme)
+        except FileNotFoundError:
+            message = "Une ou plusieurs ressources KDE LEOS sont indisponibles ; aucun export complet n'a été effectué."
+            post_notification("Ressources KDE indisponibles", message, "error")
+            return message
+        except FileExistsError:
+            message = "Un thème différent utilise déjà cet identifiant KDE ; aucun fichier existant n'a été écrasé."
+            post_notification("Export KDE refusé", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "L'export des ressources KDE a échoué ; les thèmes existants ont été conservés."
+            post_notification("Export KDE échoué", message, "error")
+            return message
+
+        if not exported:
+            message = "La palette active utilise déjà la paire d'accents LEOS d'origine ; aucune variante supplémentaire n'est nécessaire."
+            post_notification("Ressources KDE déjà d'origine", message, "info")
+            return message
+        message = (
+            "Les thèmes d'icônes, Plasma et Aurorae LEOS ont été copiés dans ton espace utilisateur. "
+            "Ils ne sont pas activés : tu peux les sélectionner séparément dans les paramètres KDE."
+        )
+        self.settingsChanged.emit()
+        post_notification("Ressources KDE préparées", message, "success")
+        return message
+
+    @Slot(result=str)
+    def applyKdeVisualTheme(self) -> str:
+        """Apply icons, Plasma Style and Aurorae for the selected palette."""
+        try:
+            message = self.kdeVisualTheme.apply_theme(self.theme)
+        except FileNotFoundError:
+            message = "Exporte d'abord les trois ressources KDE LEOS dans ton profil et vérifie les outils KDE requis."
+            post_notification("Thème KDE non appliqué", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "Le thème KDE complet n'a pas pu être appliqué. Les réglages précédents ont été restaurés ou la sauvegarde reste disponible."
+            post_notification("Application du thème KDE échouée", message, "error")
+            return message
+        self.settingsChanged.emit()
+        post_notification("Thème KDE complet appliqué", message, "success")
+        return message
+
+    @Slot(result=str)
+    def restorePreviousKdeVisualTheme(self) -> str:
+        """Restore the three KDE components while preserving later manual changes."""
+        try:
+            message = self.kdeVisualTheme.restore_previous_theme()
+        except FileNotFoundError:
+            message = "Aucune sauvegarde du thème KDE complet n'est disponible."
+            post_notification("Restauration KDE impossible", message, "warning")
+            return message
+        except (OSError, RuntimeError, ValueError):
+            message = "Le retour arrière du thème KDE est incomplet ; la sauvegarde a été conservée."
+            post_notification("Restauration KDE incomplète", message, "error")
+            return message
+        self.settingsChanged.emit()
+        post_notification("Thème KDE précédent restauré", message, "success")
+        return message
 
     @Slot(result=str)
     def applyKdeTheme(self) -> str:

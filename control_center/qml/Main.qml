@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -13,16 +14,38 @@ ApplicationWindow {
     property var themeColors: controlCenter.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color primaryAccent: themeColors.accent_primary
+    property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
+    property color primaryGlow: themeColors.accent_primary_glow
+    property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
+    property string kdeResourceNotice: ""
+    property string kdeVisualThemeNotice: ""
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string editingAccent: "primary"
+
+    function commitAccentColors() {
+        if (!controlCenter.setAccentColors(primaryAccentInput.text.trim(), secondaryAccentInput.text.trim())) {
+            primaryAccentInput.text = window.themeColors.accent_primary
+            secondaryAccentInput.text = window.themeColors.accent_secondary
+        }
+    }
+
+    function openAccentPicker(which) {
+        window.editingAccent = which
+        accentPicker.selectedColor = which === "primary"
+            ? window.themeColors.accent_primary
+            : window.themeColors.accent_secondary
+        accentPicker.open()
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -38,8 +61,10 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
+            const themes = controlCenter.themeOptions.map(option => option.id)
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            primaryAccentInput.text = controlCenter.themePalette.accent_primary
+            secondaryAccentInput.text = controlCenter.themePalette.accent_secondary
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -52,6 +77,19 @@ ApplicationWindow {
             notificationDurationBox.currentIndex = Math.max(0, durations.indexOf(controlCenter.notificationDuration))
             const priorities = ["all", "important", "critical"]
             notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
+        }
+    }
+
+    ColorDialog {
+        id: accentPicker
+        title: "Choisir une couleur d'accent"
+        onAccepted: {
+            const chosen = selectedColor.toString().toUpperCase()
+            if (window.editingAccent === "primary")
+                primaryAccentInput.text = chosen
+            else
+                secondaryAccentInput.text = chosen
+            window.commitAccentColors()
         }
     }
 
@@ -102,6 +140,46 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: kdeResourcesConfirmation
+        modal: true
+        title: "Préparer les ressources KDE LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va copier les variantes du thème d'icônes, du Plasma Style et d'Aurorae dans ton espace utilisateur. Cela ne change pas le thème KDE actuellement actif : chaque ressource devra être sélectionnée dans ses paramètres KDE. Les fichiers système et les thèmes existants ne seront pas écrasés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.kdeResourceNotice = controlCenter.exportKdeThemeResources()
+    }
+
+    Dialog {
+        id: kdeVisualThemeConfirmation
+        property string action: "apply"
+        modal: true
+        title: action === "apply"
+            ? "Appliquer le thème KDE complet LEOS ?"
+            : "Restaurer les réglages KDE précédents ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: kdeVisualThemeConfirmation.action === "apply"
+                ? "LEOS va appliquer la variante sélectionnée aux icônes, au style Plasma et aux décorations Aurorae. Une sauvegarde des valeurs actuelles sera conservée. Si une opération échoue, LEOS tentera de revenir aux réglages précédents."
+                : "LEOS va restaurer les réglages précédents pour les composants qui utilisent toujours la variante LEOS. Tout composant modifié manuellement depuis l'application sera conservé."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 460
+            padding: 12
+        }
+        onAccepted: {
+            if (action === "apply")
+                window.kdeVisualThemeNotice = controlCenter.applyKdeVisualTheme()
+            else
+                window.kdeVisualThemeNotice = controlCenter.restorePreviousKdeVisualTheme()
+        }
+    }
+
+    Dialog {
         id: plasmaDockConfirmation
         modal: true
         title: "Appliquer le dock LEOS ?"
@@ -138,7 +216,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DE CONTRÔLE"
-                        color: window.cyan
+                        color: window.primaryTextAccent
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -189,7 +267,27 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 10
                                 color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
+                                border.color: window.selectedPage === modelData.page ? window.primaryAccent : window.themeColors.border
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: -2
+                                    radius: 12
+                                    color: "transparent"
+                                    border.width: 5
+                                    border.color: window.primaryGlow
+                                    opacity: window.selectedPage === modelData.page ? 0.09 : 0
+                                    Behavior on opacity { NumberAnimation { duration: 160 } }
+                                }
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: -1
+                                    radius: 11
+                                    color: "transparent"
+                                    border.width: 2
+                                    border.color: window.secondaryGlow
+                                    opacity: window.selectedPage === modelData.page ? 0.12 : 0
+                                    Behavior on opacity { NumberAnimation { duration: 160 } }
+                                }
                             }
                             contentItem: Label {
                                 text: settingsNavigationButton.text
@@ -254,7 +352,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "UTILISATION CPU"
-                                            color: window.cyan
+                                            color: window.primaryTextAccent
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -285,7 +383,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "MÉMOIRE"
-                                            color: window.cyan
+                                            color: window.primaryTextAccent
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -316,7 +414,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "TEMPÉRATURE CPU"
-                                            color: window.cyan
+                                            color: window.primaryTextAccent
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -351,7 +449,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "STOCKAGE SYSTÈME"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -382,7 +480,7 @@ ApplicationWindow {
                                     spacing: 8
                                     Label {
                                         text: "RÉSEAU"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -415,7 +513,7 @@ ApplicationWindow {
                                     spacing: 7
                                     Label {
                                         text: "SURVEILLANCE LEOS"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -442,7 +540,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 252
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -452,27 +550,63 @@ ApplicationWindow {
                                     spacing: 12
                                     Label {
                                         text: "THÈME LEOS"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Choisis une paire de deux couleurs pour les accents, halos et dégradés de LEOS."
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
                                     ComboBox {
                                         id: themeBox
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
+                                        model: controlCenter.themeOptions
+                                        textRole: "name"
                                         Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
+                                            const values = controlCenter.themeOptions.map(option => option.id)
                                             currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
                                         }
                                         onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            controlCenter.setTheme(values[currentIndex])
+                                            const options = controlCenter.themeOptions
+                                            if (currentIndex >= 0 && currentIndex < options.length)
+                                                controlCenter.setTheme(options[currentIndex].id)
                                         }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        TextField {
+                                            id: primaryAccentInput
+                                            Layout.fillWidth: true
+                                            placeholderText: "Couleur A · #RRGGBB"
+                                            text: window.themeColors.accent_primary
+                                            onEditingFinished: window.commitAccentColors()
+                                        }
+                                        Button {
+                                            text: "Palette A"
+                                            onClicked: window.openAccentPicker("primary")
+                                        }
+                                        TextField {
+                                            id: secondaryAccentInput
+                                            Layout.fillWidth: true
+                                            placeholderText: "Couleur B · #RRGGBB"
+                                            text: window.themeColors.accent_secondary
+                                            onEditingFinished: window.commitAccentColors()
+                                        }
+                                        Button {
+                                            text: "Palette B"
+                                            onClicked: window.openAccentPicker("secondary")
+                                        }
+                                    }
+                                    Label {
+                                        visible: window.themeColors.contrast_warning
+                                        text: window.themeColors.contrast_warning_text
+                                        color: "#F4C66A"
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -507,7 +641,7 @@ ApplicationWindow {
 
                                     Label {
                                         text: "FONDS D'ÉCRAN LEOS"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -534,7 +668,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    source: themeManager.assets.desktop_wallpaper
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -569,7 +703,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    source: themeManager.assets.gaming_wallpaper
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -599,7 +733,7 @@ ApplicationWindow {
                                             onClicked: {
                                                 const opened = controlCenter.openSettingsModule("wallpaper")
                                                 window.wallpaperNotice = opened
-                                                    ? "Paramètres KDE ouverts. Dans le sélecteur, ouvre /usr/share/leos/branding/wallpapers/ puis choisis desktop-leos.svg ou gaming-leos.svg."
+                                                    ? "Paramètres KDE ouverts. Fonds actuels : Desktop " + themeManager.assets.desktop_wallpaper + " · Gaming " + themeManager.assets.gaming_wallpaper
                                                     : "Le module de fond d'écran KDE n'est pas disponible sur cette session."
                                             }
                                         }
@@ -627,7 +761,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "THÈME KDE PLASMA"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -689,7 +823,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "STYLE DE BUREAU LEOS"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -743,6 +877,106 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
+                                Layout.preferredHeight: 292
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "RESSOURCES KDE DU THÈME"
+                                        color: window.primaryTextAccent
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Prépare les variantes assorties des icônes LEOS, du Plasma Style et des décorations de fenêtres. Elles seront installées dans ton profil, sans activation automatique."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Installer les ressources dans mon profil"
+                                        enabled: controlCenter.kdeThemeResourcesAvailable
+                                        onClicked: kdeResourcesConfirmation.open()
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Button {
+                                            Layout.fillWidth: true
+                                            text: "Appliquer le thème complet"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                kdeVisualThemeConfirmation.action = "apply"
+                                                kdeVisualThemeConfirmation.open()
+                                            }
+                                        }
+                                        Button {
+                                            Layout.fillWidth: true
+                                            text: "Restaurer le précédent"
+                                            enabled: controlCenter.canRestoreKdeVisualTheme
+                                            onClicked: {
+                                                kdeVisualThemeConfirmation.action = "restore"
+                                                kdeVisualThemeConfirmation.open()
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        Button {
+                                            text: "Icônes"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("icons")
+                                                    ? "Panneau Icônes ouvert : sélectionne LEOS dans la liste."
+                                                    : "Le module Icônes KDE est indisponible sur cette session."
+                                            }
+                                        }
+                                        Button {
+                                            text: "Style Plasma"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("desktop-theme")
+                                                    ? "Panneau Style Plasma ouvert : sélectionne la variante LEOS."
+                                                    : "Le module Style Plasma KDE est indisponible sur cette session."
+                                            }
+                                        }
+                                        Button {
+                                            text: "Décoration"
+                                            enabled: controlCenter.kdeThemeResourcesExported
+                                            onClicked: {
+                                                window.kdeResourceNotice = controlCenter.openSettingsModule("window-decoration")
+                                                    ? "Panneau Décoration ouvert : sélectionne Aurorae LEOS."
+                                                    : "Le module Décorations KDE est indisponible sur cette session."
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: !controlCenter.kdeThemeResourcesAvailable
+                                            ? "Les ressources KDE LEOS ne sont pas toutes disponibles."
+                                            : window.kdeResourceNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: window.kdeVisualThemeNotice
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
                                 Layout.preferredHeight: 205
                                 radius: 15
                                 color: window.themeColors.surface
@@ -753,7 +987,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "EXPÉRIENCE"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -788,7 +1022,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "BUREAU & DOCK"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -892,7 +1126,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "SAUVEGARDE PLASMA"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -930,7 +1164,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "INSPECTION DU BUREAU KDE"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1099,7 +1333,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.cyan
+                                                color: window.primaryTextAccent
                                                 font.pixelSize: 10
                                                 font.letterSpacing: 1
                                             }
@@ -1178,7 +1412,7 @@ ApplicationWindow {
                             Label {
                                 text: window.launchNotice
                                 visible: text.length > 0
-                                color: window.magenta
+                                color: window.secondaryTextAccent
                                 font.pixelSize: 11
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
@@ -1204,7 +1438,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "PROFIL DE PERFORMANCES"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1280,7 +1514,7 @@ ApplicationWindow {
                         Label {
                             text: window.launchNotice
                             visible: text.length > 0
-                            color: window.magenta
+                            color: window.secondaryTextAccent
                             font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -1318,7 +1552,7 @@ ApplicationWindow {
                                     spacing: 14
                                     Label {
                                         text: "ÉTAT DU SYSTÈME"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1358,7 +1592,7 @@ ApplicationWindow {
                                     spacing: 12
                                     Label {
                                         text: "INSTALLATION MANUELLE"
-                                        color: window.magenta
+                                        color: window.secondaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1402,7 +1636,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "ÉTAT DES DÉPLOIEMENTS OSTREE"
-                                        color: window.cyan
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1494,7 +1728,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.primaryTextAccent; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationDurationBox
                                         Layout.fillWidth: true
@@ -1513,7 +1747,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.primaryTextAccent; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationPriorityBox
                                         Layout.fillWidth: true
@@ -1590,7 +1824,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 112
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.cyan : window.themeColors.border)
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.secondaryAccent : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.primaryAccent : window.themeColors.border)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1598,7 +1832,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Label {
                                             text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
-                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : window.cyan
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.secondaryAccent : window.primaryAccent
                                             font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                         }
@@ -1667,7 +1901,7 @@ ApplicationWindow {
                                             anchors.fill: parent
                                             anchors.margins: 14
                                             spacing: 6
-                                            Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1 }
+                                            Label { text: modelData.title; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 1 }
                                             Label {
                                                 text: modelData.value || "Indisponible"
                                                 color: window.themeColors.text
@@ -1689,7 +1923,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "POINTS À VÉRIFIER"
-                                color: window.cyan
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1716,7 +1950,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "PROCESSUS LES PLUS ACTIFS"
-                                color: window.cyan
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1786,13 +2020,13 @@ ApplicationWindow {
                                 Layout.preferredHeight: 100
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: window.cyan
+                                border.color: window.primaryTextAccent
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
                                     ColumnLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "ESPACE REPÉRÉ"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.5 }
+                                        Label { text: "ESPACE REPÉRÉ"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 1.5 }
                                         Label {
                                             text: controlCenter.cleanupPreview.totalSize || "Analyse en cours…"
                                             color: window.themeColors.text
@@ -1831,7 +2065,7 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         anchors.margins: 16
                                         spacing: 7
-                                        Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.2 }
+                                        Label { text: modelData.title; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 1.2 }
                                         Label {
                                             text: modelData.data.size || "Non disponible"
                                             color: window.themeColors.text
@@ -1882,7 +2116,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Label {
                                     text: controlCenter.networkSnapshot.status || "Analyse en cours…"
-                                    color: window.cyan
+                                    color: window.primaryTextAccent
                                     font.pixelSize: 14
                                     font.weight: Font.DemiBold
                                 }
@@ -1918,7 +2152,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.cyan
+                                                color: window.primaryTextAccent
                                                 font.pixelSize: 9
                                                 font.letterSpacing: 1
                                             }
@@ -1936,7 +2170,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "INTERFACES DÉTECTÉES"
-                                color: window.cyan
+                                color: window.primaryTextAccent
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1948,7 +2182,7 @@ ApplicationWindow {
                                     Layout.preferredHeight: 126
                                     radius: 12
                                     color: window.themeColors.surface
-                                    border.color: modelData.isDefault === "true" ? window.cyan : window.themeColors.border
+                                    border.color: modelData.isDefault === "true" ? window.primaryAccent : window.themeColors.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -1964,7 +2198,7 @@ ApplicationWindow {
                                             Item { Layout.fillWidth: true }
                                             Label {
                                                 text: modelData.state + (modelData.isDefault === "true" ? " · PRINCIPALE" : "")
-                                                color: modelData.state === "Connectée" ? window.cyan : window.muted
+                                                color: modelData.state === "Connectée" ? window.primaryAccent : window.muted
                                                 font.pixelSize: 9
                                             }
                                         }

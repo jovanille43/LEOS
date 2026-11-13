@@ -12,9 +12,14 @@ ApplicationWindow {
     title: "LEOS Gaming"
     color: "#08090d"
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property var themeColors: themeManager.palette
+    property color primaryAccent: themeColors.accent_primary
+    property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
+    property color primaryGlow: themeColors.accent_primary_glow
+    property color secondaryGlow: themeColors.accent_secondary_glow
+    property color muted: themeColors.muted_text
     property int selectedIndex: -1
     property string selectedTitle: ""
     property string selectedPlatform: ""
@@ -45,7 +50,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = themeManager.assets.desktop_intro
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
@@ -398,12 +403,12 @@ ApplicationWindow {
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
-            color: "#102331"; opacity: 0.20
+            color: window.themeColors.accent_primary_soft; opacity: 0.20
         }
         Rectangle {
             width: 520; height: 520; radius: 260
             x: -width * 0.5; y: parent.height - height * 0.45
-            color: "#2a1232"; opacity: 0.15
+            color: window.themeColors.accent_secondary_soft; opacity: 0.15
         }
 
         ColumnLayout {
@@ -419,7 +424,7 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: themeManager.assets.gaming_logo
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
@@ -437,7 +442,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "GAMING MODE"
-                        color: window.cyan
+                        color: window.primaryTextAccent
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -483,11 +488,11 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 10
                         color: notificationSilenceButton.down ? "#26313e" : "#171d28"
-                        border.color: leos.silentNotificationsInGaming ? window.cyan : "#344052"
+                        border.color: leos.silentNotificationsInGaming ? window.primaryAccent : "#344052"
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
-                        color: leos.silentNotificationsInGaming ? window.cyan : "white"
+                        color: leos.silentNotificationsInGaming ? window.primaryAccent : "white"
                         font.pixelSize: 10
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -533,7 +538,7 @@ ApplicationWindow {
                     spacing: 22
 
                     ColumnLayout {
-                        Label { text: "PERFORMANCES"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PERFORMANCES"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: "white"; font.pixelSize: 15 }
                         Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: "white"; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: "white"; font.pixelSize: 15 }
@@ -542,13 +547,13 @@ ApplicationWindow {
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
-                        Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "TEMPÉRATURE"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
-                        Label { text: "JEUX"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "JEUX"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         CheckBox {
                             text: "Overlay FPS · MangoHud"
                             checked: leos.mangoHudEnabled
@@ -559,7 +564,7 @@ ApplicationWindow {
                                 radius: 6
                                 color: "transparent"
                                 border.width: quickPanel.visible && window.quickPanelFocusIndex === 0 ? 2 : 0
-                                border.color: window.cyan
+                                border.color: window.primaryTextAccent
                             }
                         }
                         Label {
@@ -583,7 +588,7 @@ ApplicationWindow {
                             delegate: Label {
                                 required property string modelData
                                 text: modelData
-                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.cyan : window.muted
+                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.primaryAccent : window.muted
                                 font.pixelSize: 9
                             }
                         }
@@ -591,7 +596,7 @@ ApplicationWindow {
                     ColumnLayout {
                         Layout.preferredWidth: 220
                         spacing: 6
-                        Label { text: "PROFIL ÉNERGIE"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PROFIL ÉNERGIE"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: leos.powerProfileStatus
                             color: window.muted
@@ -622,9 +627,9 @@ ApplicationWindow {
                                     }
                                     background: Rectangle {
                                         radius: 6
-                                        color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
+                                        color: leos.activePowerProfile === modelData ? window.themeColors.accent_primary_soft : "#202630"
                                         border.width: window.quickPanelFocusIndex === index + 1 ? 2 : 1
-                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.cyan : (leos.activePowerProfile === modelData ? window.cyan : "#344052")
+                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.primaryAccent : (leos.activePowerProfile === modelData ? window.primaryAccent : "#344052")
                                     }
                                     contentItem: Label {
                                         text: powerProfileButton.text
@@ -650,7 +655,7 @@ ApplicationWindow {
                             radius: 7
                             color: "#202630"
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? window.cyan : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? window.primaryAccent : "#344052"
                         }
                     }
                     Button {
@@ -663,7 +668,7 @@ ApplicationWindow {
                             radius: 7
                             color: "#202630"
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.cyan : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.primaryAccent : "#344052"
                         }
                     }
                     Button {
@@ -673,7 +678,7 @@ ApplicationWindow {
                             radius: 7
                             color: "#202630"
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.cyan : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.primaryAccent : "#344052"
                         }
                     }
                 }
@@ -711,9 +716,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: modelData === window.selectedCategory ? "#202b38" : "transparent"
+                                color: modelData === window.selectedCategory ? window.themeColors.accent_primary_soft : "transparent"
                                 border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
-                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.magenta : (modelData === window.selectedCategory ? window.cyan : "transparent")
+                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.secondaryAccent : (modelData === window.selectedCategory ? window.primaryAccent : "transparent")
                             }
                             contentItem: Label {
                                 text: categoryButton.text
@@ -773,7 +778,7 @@ ApplicationWindow {
                                 radius: 8
                                 color: "#121822"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.primaryAccent : "#2a3444"
                             }
                             onTextChanged: {
                                 gameLibrary.setSearchQuery(text)
@@ -799,9 +804,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 8
-                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? "#1a2c38" : "#151a24"
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.themeColors.accent_primary_soft : "#151a24"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.primaryAccent : "#2a3444"
                             }
                             contentItem: Label {
                                 text: refreshLibraryButton.text
@@ -827,9 +832,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: "#17313d"
+                                color: window.themeColors.accent_primary_soft
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.primaryAccent
                             }
                             contentItem: Label {
                                 text: addGameButton.text
@@ -869,9 +874,29 @@ ApplicationWindow {
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
                                     radius: 13
-                                    color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
+                                    color: window.selectedIndex === gameCard.index ? window.themeColors.accent_primary_soft : "#151a24"
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
-                                    border.color: window.selectedIndex === gameCard.index ? window.cyan : "#2a3444"
+                                    border.color: window.selectedIndex === gameCard.index ? window.primaryAccent : "#2a3444"
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        anchors.margins: -5
+                                        radius: 18
+                                        color: "transparent"
+                                        border.width: 7
+                                        border.color: window.primaryGlow
+                                        opacity: window.selectedIndex === gameCard.index ? 0.10 : 0
+                                        Behavior on opacity { NumberAnimation { duration: 160 } }
+                                    }
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        anchors.margins: -1
+                                        radius: 14
+                                        color: "transparent"
+                                        border.width: 3
+                                        border.color: window.secondaryGlow
+                                        opacity: window.selectedIndex === gameCard.index ? 0.13 : 0
+                                        Behavior on opacity { NumberAnimation { duration: 160 } }
+                                    }
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     Behavior on border.color { ColorAnimation { duration: 150 } }
                                 }
@@ -888,15 +913,15 @@ ApplicationWindow {
                                             radius: 8
                                             visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
                                             clip: true
-                                            color: "#101b29"
-                                            border.color: "#294455"
+                                            color: window.themeColors.accent_primary_soft
+                                            border.color: window.themeColors.accent_primary
                                             Rectangle {
                                                 width: parent.width * 1.5
                                                 height: parent.width * 1.5
                                                 radius: width / 2
                                                 x: -parent.width * 0.55
                                                 y: parent.height * 0.25
-                                                color: "#123b4b"
+                                                color: window.themeColors.accent_secondary_soft
                                                 opacity: 0.55
                                             }
                                             Column {
@@ -913,7 +938,7 @@ ApplicationWindow {
                                                 Label {
                                                     anchors.horizontalCenter: parent.horizontalCenter
                                                     text: "LEOS"
-                                                    color: window.cyan
+                                                    color: window.primaryTextAccent
                                                     font.pixelSize: 7
                                                     font.letterSpacing: 2
                                                 }
@@ -948,7 +973,7 @@ ApplicationWindow {
                                             }
                                             Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
-                                                color: window.magenta
+                                                color: window.secondaryTextAccent
                                                 font.pixelSize: 9
                                                 font.weight: Font.Bold
                                             }
@@ -994,7 +1019,7 @@ ApplicationWindow {
 
                                 Label {
                                     text: "JEU SÉLECTIONNÉ"
-                                    color: window.cyan
+                                    color: window.primaryTextAccent
                                     font.pixelSize: 10
                                     font.letterSpacing: 2
                                 }
@@ -1072,8 +1097,8 @@ ApplicationWindow {
                                     Item { Layout.fillWidth: true }
                                     Label {
                                         text: window.selectedInstallStatus || "—"
-                                        color: window.selectedInstallStatus === "Installé" ? window.cyan :
-                                               window.selectedInstallStatus === "Fichiers absents" ? window.magenta : "white"
+                                        color: window.selectedInstallStatus === "Installé" ? window.primaryAccent :
+                                               window.selectedInstallStatus === "Fichiers absents" ? window.secondaryAccent : "white"
                                         font.pixelSize: 10
                                         font.weight: Font.DemiBold
                                     }
@@ -1111,7 +1136,7 @@ ApplicationWindow {
                                         radius: 9
                                         color: "#191d2a"
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.magenta
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.secondaryAccent
                                     }
                                     contentItem: Label {
                                         text: favoriteGameButton.text
@@ -1135,9 +1160,9 @@ ApplicationWindow {
                                     onClicked: window.launchSelectedGame()
                                     background: Rectangle {
                                         radius: 10
-                                        color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
+                                        color: launchSelectedGameButton.enabled ? window.themeColors.accent_primary_soft : "#202630"
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.cyan : "#344052"
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.primaryAccent : "#344052"
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
@@ -1260,7 +1285,7 @@ ApplicationWindow {
                     returnDialog.close()
                     window.requestDesktopReturn()
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: returnToDesktopButton.text
                     color: "white"
@@ -1298,7 +1323,7 @@ ApplicationWindow {
                     leos.applyPowerProfile(window.pendingPowerProfile)
                     statusText.text = leos.powerProfileStatus
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
                     color: "white"

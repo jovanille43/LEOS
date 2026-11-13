@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import QtMultimedia
 
 ApplicationWindow {
@@ -12,15 +13,36 @@ ApplicationWindow {
     title: "LEOS — Choix du mode"
     color: "#07080c"
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
+    property var themeColors: themeManager.palette
+    property color primaryAccent: themeColors.accent_primary
+    property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
+    property color primaryGlow: themeColors.accent_primary_glow
+    property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: "#929bad"
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
+    property string editingAccent: "primary"
+
+    function commitAccentColors() {
+        if (!themeManager.setCustomColors(primaryAccentInput.text.trim(), secondaryAccentInput.text.trim())) {
+            primaryAccentInput.text = themeManager.palette.accent_primary
+            secondaryAccentInput.text = themeManager.palette.accent_secondary
+        }
+    }
+
+    function openAccentPicker(which) {
+        window.editingAccent = which
+        accentPicker.selectedColor = which === "primary"
+            ? window.themeColors.accent_primary
+            : window.themeColors.accent_secondary
+        accentPicker.open()
+    }
 
     function requestModeWithIntro(mode) {
-        if (transitionInProgress)
+        if (transitionInProgress || !themeManager.assetsReady)
             return
         pendingMode = mode
         if (!modeSelectorController.animationsEnabled) {
@@ -31,8 +53,8 @@ ApplicationWindow {
         introOverlay.visible = true
         introPlayer.source = Qt.resolvedUrl(
             mode === "gaming"
-                ? "../../branding/animations/gaming-intro.mp4"
-                : "../../branding/animations/desktop-intro.mov"
+                ? themeManager.assets.gaming_intro
+                : themeManager.assets.desktop_intro
         )
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
@@ -54,6 +76,24 @@ ApplicationWindow {
     function handleGamepadAction(action) {
         if (transitionInProgress)
             return
+        if (themeSelectionDialog.visible) {
+            if (action === "left" || action === "right") {
+                const options = themeManager.options
+                if (options.length > 0) {
+                    const step = action === "right" ? 1 : -1
+                    const next = Math.max(0, Math.min(
+                        options.length - 1,
+                        themeSelectionBox.currentIndex + step
+                    ))
+                    themeSelectionBox.currentIndex = next
+                    themeManager.setTheme(options[next].id)
+                }
+            } else if (action === "confirm" || action === "back") {
+                modeSelectorController.completeThemeSelection()
+                themeSelectionDialog.close()
+            }
+            return
+        }
         if (transitionDialog.visible) {
             if (action === "confirm") {
                 transitionDialog.close()
@@ -77,11 +117,143 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: themeManager
+        function onChanged() {
+            primaryAccentInput.text = themeManager.palette.accent_primary
+            secondaryAccentInput.text = themeManager.palette.accent_secondary
+            const options = themeManager.options
+            for (let i = 0; i < options.length; ++i) {
+                if (options[i].id === themeManager.currentTheme) {
+                    themeSelectionBox.currentIndex = i
+                    break
+                }
+            }
+        }
+    }
+
+    ColorDialog {
+        id: accentPicker
+        title: "Choisir une couleur d'accent"
+        onAccepted: {
+            const chosen = selectedColor.toString().toUpperCase()
+            if (window.editingAccent === "primary")
+                primaryAccentInput.text = chosen
+            else
+                secondaryAccentInput.text = chosen
+            window.commitAccentColors()
+        }
+    }
+
     Timer {
         interval: 1000
         running: true
         repeat: true
         onTriggered: window.currentDate = new Date()
+    }
+
+    Dialog {
+        id: themeSelectionDialog
+        modal: true
+        title: "Choisis les couleurs de LEOS"
+        anchors.centerIn: parent
+        width: 600
+        standardButtons: Dialog.Ok
+        onOpened: themeSelectionBox.forceActiveFocus()
+
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                text: "Choisis librement les couleurs A et B. Elles recolorent ensemble les dégradés, halos, logos, animations et ressources KDE."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            ComboBox {
+                id: themeSelectionBox
+                Layout.fillWidth: true
+                model: themeManager.options
+                textRole: "name"
+                Component.onCompleted: {
+                    const options = themeManager.options
+                    for (let i = 0; i < options.length; ++i) {
+                        if (options[i].id === themeManager.currentTheme) {
+                            currentIndex = i
+                            break
+                        }
+                    }
+                }
+                onActivated: function(index) {
+                    const options = themeManager.options
+                    if (index >= 0 && index < options.length)
+                        themeManager.setTheme(options[index].id)
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                TextField {
+                    id: primaryAccentInput
+                    Layout.fillWidth: true
+                    placeholderText: "Couleur A · #RRGGBB"
+                    text: window.themeColors.accent_primary
+                    onEditingFinished: window.commitAccentColors()
+                }
+                Button {
+                    text: "Palette A"
+                    onClicked: window.openAccentPicker("primary")
+                }
+                TextField {
+                    id: secondaryAccentInput
+                    Layout.fillWidth: true
+                    placeholderText: "Couleur B · #RRGGBB"
+                    text: window.themeColors.accent_secondary
+                    onEditingFinished: window.commitAccentColors()
+                }
+                Button {
+                    text: "Palette B"
+                    onClicked: window.openAccentPicker("secondary")
+                }
+            }
+            Label {
+                visible: window.themeColors.contrast_warning
+                text: window.themeColors.contrast_warning_text
+                color: "#F4C66A"
+                wrapMode: Text.WordWrap
+                font.pixelSize: 10
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 9
+                    radius: 5
+                    color: window.themeColors.accent_primary
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 9
+                    radius: 5
+                    color: window.themeColors.accent_secondary
+                }
+            }
+            Label {
+                text: "Tu pourras modifier ton thème plus tard dans le Centre de contrôle."
+                color: window.muted
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+        }
+
+        onAccepted: modeSelectorController.completeThemeSelection()
+    }
+
+    Component.onCompleted: {
+        if (!modeSelectorController.themeSelectionComplete)
+            themeSelectionDialog.open()
     }
 
     Rectangle {
@@ -93,12 +265,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: "#102b3a"; opacity: 0.18
+            color: window.themeColors.accent_primary_soft; opacity: 0.24
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: "#321437"; opacity: 0.15
+            color: window.themeColors.accent_secondary_soft; opacity: 0.22
         }
 
         ColumnLayout {
@@ -143,7 +315,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.cyan
+                    color: window.primaryTextAccent
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -157,7 +329,7 @@ ApplicationWindow {
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: "#101923"
-                border.color: "#254253"
+                border.color: window.themeColors.accent_primary_soft
 
                 RowLayout {
                     anchors.fill: parent
@@ -170,7 +342,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.cyan
+                            color: window.primaryTextAccent
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -197,8 +369,8 @@ ApplicationWindow {
                         onClicked: modeSelectorController.completeOnboarding()
                         background: Rectangle {
                             radius: 8
-                            color: "#17313d"
-                            border.color: window.cyan
+                            color: window.themeColors.accent_primary_soft
+                            border.color: window.primaryTextAccent
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -222,18 +394,39 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
+                    enabled: themeManager.assetsReady
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.primaryAccent : "#303a49"
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            radius: 28
+                            color: "transparent"
+                            border.width: 7
+                            border.color: window.primaryGlow
+                            opacity: desktopCard.activeFocus ? 0.10 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -2
+                            radius: 24
+                            color: "transparent"
+                            border.width: 3
+                            border.color: window.secondaryGlow
+                            opacity: desktopCard.activeFocus ? 0.14 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: themeManager.assets.desktop_logo
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -270,18 +463,39 @@ ApplicationWindow {
                     id: gamingCard
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    enabled: themeManager.assetsReady
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? "#25172a" : "#15121d"
+                        color: gamingCard.down ? window.themeColors.accent_secondary_soft : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.secondaryAccent : window.themeColors.accent_secondary_soft
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            radius: 28
+                            color: "transparent"
+                            border.width: 7
+                            border.color: window.secondaryGlow
+                            opacity: gamingCard.activeFocus ? 0.10 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -2
+                            radius: 24
+                            color: "transparent"
+                            border.width: 3
+                            border.color: window.primaryGlow
+                            opacity: gamingCard.activeFocus ? 0.14 : 0
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: themeManager.assets.gaming_logo
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -316,8 +530,8 @@ ApplicationWindow {
             }
 
             Label {
-                text: modeManager.status
-                color: window.magenta
+                text: themeManager.assetsReady ? modeManager.status : "Préparation des ressources du thème…"
+                color: themeManager.assetsReady ? window.secondaryAccent : window.primaryAccent
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -432,7 +646,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"

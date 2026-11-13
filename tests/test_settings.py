@@ -7,6 +7,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from desktop.themes import custom_theme_id
 from leos_core.settings import SettingsStore
 
 
@@ -24,7 +25,19 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertTrue(settings.get("silent_notifications_in_gaming"))
             self.assertEqual(settings.get("transition_app_policy"), "ask")
             self.assertFalse(settings.get("onboarding_complete"))
+            self.assertFalse(settings.get("theme_selection_complete"))
             self.assertFalse(path.exists())
+
+    def test_theme_selection_completion_persists_between_instances(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            self.assertFalse(settings.get("theme_selection_complete"))
+            settings.set("theme", "cyan")
+            settings.set("theme_selection_complete", True)
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme"), "cyan")
+            self.assertTrue(reloaded.get("theme_selection_complete"))
 
     def test_onboarding_completion_persists_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -240,6 +253,21 @@ class SettingsStoreTests(unittest.TestCase):
             lock_path = path.with_name(path.name + ".lock")
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
+
+    def test_custom_two_accent_theme_persists_between_processes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            theme = custom_theme_id("#102030", "#E0A0F0")
+            settings = SettingsStore(path)
+            settings.set("theme", theme)
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme"), theme)
+
+    def test_malformed_custom_theme_id_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            with self.assertRaises(ValueError):
+                settings.set("theme", "custom-not-valid")
 
 if __name__ == "__main__":
     unittest.main()

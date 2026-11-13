@@ -19,6 +19,9 @@ SETTINGS_MODULES: dict[str, str] = {
     "keyboard": "kcm_keyboard",
     "mouse": "kcm_mouse",
     "wallpaper": "kcm_wallpaper",
+    "icons": "kcm_icons",
+    "desktop-theme": "kcm_desktoptheme",
+    "window-decoration": "kcm_kwindecoration",
 }
 
 
