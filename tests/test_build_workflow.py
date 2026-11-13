@@ -229,8 +229,16 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)
         control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn("source: leosTheme.desktopWallpaperUrl", control_center)
+        self.assertIn("source: leosTheme.gamingWallpaperUrl", control_center)
+        theme_controller = (ROOT / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        assets = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        main = (ROOT / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("ThemeController()", main)
+        self.assertIn('setContextProperty("leosTheme", theme)', main)
+        self.assertIn("build_themed_branding_assets", theme_controller)
+        self.assertIn("desktop-leos.svg", assets)
+        self.assertIn("gaming-leos.svg", assets)
 
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
