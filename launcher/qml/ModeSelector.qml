@@ -23,7 +23,7 @@ ApplicationWindow {
     property bool transitionInProgress: false
 
     function requestModeWithIntro(mode) {
-        if (transitionInProgress)
+        if (transitionInProgress || !themeManager.assetsReady)
             return
         pendingMode = mode
         if (!modeSelectorController.animationsEnabled) {
@@ -313,6 +313,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
+                    enabled: themeManager.assetsReady
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
@@ -361,6 +362,7 @@ ApplicationWindow {
                     id: gamingCard
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    enabled: themeManager.assetsReady
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
@@ -407,8 +409,8 @@ ApplicationWindow {
             }
 
             Label {
-                text: modeManager.status
-                color: window.magenta
+                text: themeManager.assetsReady ? modeManager.status : "Préparation des ressources du thème…"
+                color: themeManager.assetsReady ? window.magenta : window.cyan
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
