@@ -58,6 +58,10 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 
 Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
 
+## Signature et génération de l'ISO
+
+La publication des images et la génération de l'installateur ISO exigent une paire de clés Cosign : la clé privée est stockée exclusivement dans le secret GitHub `SIGNING_SECRET`, tandis que la clé publique `cosign.pub` est versionnée à la racine du dépôt. Voir le [guide de configuration et de sécurité](docs/signing.md). Tant que ces prérequis ne sont pas configurés, aucune image signée ni ISO ne peut être produite.
+
 ## Gaming Mode
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
