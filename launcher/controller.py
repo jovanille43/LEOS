@@ -8,7 +8,6 @@ from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import mapper_from_preferences, open_first_available_gamepad
 from leos_core.settings import SettingsStore
-from desktop.themes import theme_options, visual_tokens_for_theme
 
 
 class ModeSelectorController(QObject):
@@ -17,7 +16,6 @@ class ModeSelectorController(QObject):
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
     onboardingChanged = Signal()
-    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -55,33 +53,9 @@ class ModeSelectorController(QObject):
     def onboardingComplete(self) -> bool:
         return bool(self._settings.get("onboarding_complete", False))
 
-    @Property(str, notify=themeChanged)
-    def theme(self) -> str:
-        return str(self._settings.get("theme", "leos-original"))
-
-    @Property("QVariantMap", notify=themeChanged)
-    def themePalette(self) -> dict[str, str]:
-        return visual_tokens_for_theme(self.theme)
-
-    @Property("QVariantList", notify=themeChanged)
-    def themeOptions(self) -> list[dict[str, str]]:
-        return theme_options()
-
-    @Property(bool, notify=themeChanged)
+    @Property(bool, notify=onboardingChanged)
     def themeSelectionComplete(self) -> bool:
         return bool(self._settings.get("theme_selection_complete", False))
-
-    @Slot(str, result=bool)
-    def setTheme(self, theme: str) -> bool:
-        """Persist a known two-accent theme selected during first-run setup."""
-        if theme not in {option["id"] for option in theme_options()}:
-            return False
-        try:
-            self._settings.set("theme", theme)
-        except (OSError, ValueError, TypeError, KeyError):
-            return False
-        self.themeChanged.emit()
-        return True
 
     @Slot(result=bool)
     def completeThemeSelection(self) -> bool:
@@ -92,7 +66,7 @@ class ModeSelectorController(QObject):
             self._settings.set("theme_selection_complete", True)
         except (OSError, ValueError, TypeError, KeyError):
             return False
-        self.themeChanged.emit()
+        self.onboardingChanged.emit()
         return True
 
     @Slot(result=bool)
