@@ -142,6 +142,10 @@ class KdeVisualThemeManager:
             return {}
         if type(value.get("apply_pending")) is not bool:
             return {}
+        for field in ("restore_icons_done", "restore_plasma_done", "restore_aurorae_done"):
+            if field in value and type(value[field]) is not bool:
+                return {}
+            value.setdefault(field, False)
         return value
 
     def can_restore(self) -> bool:
@@ -346,6 +350,9 @@ class KdeVisualThemeManager:
             "last_aurorae_library": AURORAE_LIBRARY,
             "last_aurorae_theme": aurorae_id,
             "apply_pending": True,
+            "restore_icons_done": False,
+            "restore_plasma_done": False,
+            "restore_aurorae_done": False,
         }
         self._write_state(state)
 
@@ -422,46 +429,61 @@ class KdeVisualThemeManager:
         if not state:
             raise FileNotFoundError("Aucune sauvegarde du thème KDE LEOS n'est disponible.")
 
-        current_icons = _read_ini_value(self.kdeglobals, "Icons", "Theme")
-        current_plasma = self.plasma_style.current_style()
-        current_aurorae_library = _read_ini_value(
-            self.kwinrc, "org.kde.kdecoration2", "library"
-        )
-        current_aurorae_theme = _read_ini_value(
-            self.kwinrc, "org.kde.kdecoration2", "theme"
-        )
         restored: list[str] = []
         preserved: list[str] = []
 
-        if current_icons == state["last_icons"]:
-            self._write_key(self.kdeglobals, "Icons", "Theme", state["previous_icons"])
-            self._refresh_icons()
-            restored.append("icônes")
-        else:
-            preserved.append("icônes modifiées depuis l'application LEOS")
+        if not state["restore_icons_done"]:
+            current_icons = _read_ini_value(self.kdeglobals, "Icons", "Theme")
+            if current_icons == state["last_icons"]:
+                self._write_key(
+                    self.kdeglobals, "Icons", "Theme", state["previous_icons"]
+                )
+                try:
+                    self._refresh_icons()
+                except (FileNotFoundError, OSError, RuntimeError, ValueError):
+                    # The config value is restored; a session restart can reload icons.
+                    pass
+                restored.append("icônes")
+            else:
+                preserved.append("icônes modifiées depuis l'application LEOS")
+            state["restore_icons_done"] = True
+            self._write_state(state)
 
-        if current_plasma == state["last_plasma"]:
-            self.plasma_style.restore_previous_style()
-            restored.append("Plasma")
-        else:
-            preserved.append("style Plasma modifié depuis l'application LEOS")
+        if not state["restore_plasma_done"]:
+            current_plasma = self.plasma_style.current_style()
+            if current_plasma == state["last_plasma"]:
+                self.plasma_style.restore_previous_style()
+                restored.append("Plasma")
+            else:
+                preserved.append("style Plasma modifié depuis l'application LEOS")
+            state["restore_plasma_done"] = True
+            self._write_state(state)
 
-        if (
-            current_aurorae_library == state["last_aurorae_library"]
-            and current_aurorae_theme == state["last_aurorae_theme"]
-        ):
-            self._write_key(
-                self.kwinrc, "org.kde.kdecoration2", "library",
-                state["previous_aurorae_library"],
+        if not state["restore_aurorae_done"]:
+            current_aurorae_library = _read_ini_value(
+                self.kwinrc, "org.kde.kdecoration2", "library"
             )
-            self._write_key(
-                self.kwinrc, "org.kde.kdecoration2", "theme",
-                state["previous_aurorae_theme"],
+            current_aurorae_theme = _read_ini_value(
+                self.kwinrc, "org.kde.kdecoration2", "theme"
             )
-            self._reconfigure_kwin()
-            restored.append("Aurorae")
-        else:
-            preserved.append("décoration modifiée depuis l'application LEOS")
+            if (
+                current_aurorae_library == state["last_aurorae_library"]
+                and current_aurorae_theme == state["last_aurorae_theme"]
+            ):
+                self._write_key(
+                    self.kwinrc, "org.kde.kdecoration2", "library",
+                    state["previous_aurorae_library"],
+                )
+                self._write_key(
+                    self.kwinrc, "org.kde.kdecoration2", "theme",
+                    state["previous_aurorae_theme"],
+                )
+                self._reconfigure_kwin()
+                restored.append("Aurorae")
+            else:
+                preserved.append("décoration modifiée depuis l'application LEOS")
+            state["restore_aurorae_done"] = True
+            self._write_state(state)
 
         if self.state_file.is_symlink():
             raise ValueError("Le fichier de sauvegarde KDE est un lien symbolique")
