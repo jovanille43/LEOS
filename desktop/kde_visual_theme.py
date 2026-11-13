@@ -351,21 +351,27 @@ class KdeVisualThemeManager:
 
         completed: list[str] = []
         try:
-            self._write_key(self.kdeglobals, "Icons", "Theme", package_id)
             completed.append("icons")
+            self._write_key(self.kdeglobals, "Icons", "Theme", package_id)
 
-            self.plasma_style.apply_style(package_id)
             completed.append("plasma")
+            self.plasma_style.apply_style(package_id)
 
+            completed.append("aurorae")
             self._write_key(
                 self.kwinrc, "org.kde.kdecoration2", "library", AURORAE_LIBRARY
             )
             self._write_key(
                 self.kwinrc, "org.kde.kdecoration2", "theme", aurorae_id
             )
-            completed.append("aurorae")
             self._reconfigure_kwin()
-            icons_refreshed = self._refresh_icons()
+            try:
+                icons_refreshed = self._refresh_icons()
+            except (FileNotFoundError, OSError, RuntimeError, ValueError):
+                icons_refreshed = False
+
+            state["apply_pending"] = False
+            self._write_state(state)
         except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
             rollback_errors: list[str] = []
             if "aurorae" in completed:
@@ -381,7 +387,7 @@ class KdeVisualThemeManager:
                     self._reconfigure_kwin()
                 except (FileNotFoundError, OSError, RuntimeError, ValueError):
                     rollback_errors.append("Aurorae")
-            if "plasma" in completed:
+            if "plasma" in completed and self.plasma_style.can_restore():
                 try:
                     self.plasma_style.restore_previous_style()
                 except (FileNotFoundError, OSError, RuntimeError, ValueError):
@@ -403,8 +409,6 @@ class KdeVisualThemeManager:
                 + ". La sauvegarde LEOS est conservée."
             ) from error
 
-        state["apply_pending"] = False
-        self._write_state(state)
         if icons_refreshed:
             return f"Thème KDE LEOS « {theme} » appliqué aux icônes, à Plasma et aux décorations."
         return (
