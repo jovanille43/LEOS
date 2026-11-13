@@ -73,12 +73,21 @@ contours gris peu saturés sont préservés.
 Depuis Centre de contrôle → Apparence, l'action **Installer les ressources dans
 mon profil** exporte, après confirmation, les trois paquets vers les emplacements
 XDG utilisateur (`icons/`, `plasma/desktoptheme/` et `aurorae/themes/`). Les
-thèmes déjà présents et différents ne sont jamais écrasés. L'export ne sélectionne
-pas les thèmes à la place de l'utilisateur : trois raccourcis ouvrent les
-panneaux KDE Icônes, Style Plasma et Décorations de fenêtres pour faire ces
-choix séparément. Le retour à un thème précédent est donc effectué depuis KDE ;
-LEOS ne sélectionne ni ne restaure encore automatiquement ces trois éléments et
-ne supprime pas les paquets exportés.
+thèmes déjà présents et différents ne sont jamais écrasés.
+
+Le bouton **Appliquer le thème complet** applique, après confirmation, la paire
+active aux icônes, au Plasma Style et aux décorations Aurorae. LEOS sauvegarde
+les valeurs KDE précédentes dans un fichier d'état privé. **Restaurer le
+précédent** remet chaque composant à son réglage d'avant LEOS uniquement si sa
+valeur n'a pas été modifiée manuellement entre-temps. En cas d'échec partiel,
+LEOS tente un retour arrière et garde sa sauvegarde si celui-ci est incomplet.
+La progression de restauration est enregistrée pour permettre une nouvelle
+tentative.
+
+Trois raccourcis ouvrent aussi les panneaux KDE Icônes, Style Plasma et
+Décorations de fenêtres. Les paquets exportés restent dans le profil utilisateur ;
+leur désinstallation guidée et la validation sur une vraie session Bazzite sont
+encore à faire.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
