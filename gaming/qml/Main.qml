@@ -12,9 +12,10 @@ ApplicationWindow {
     title: "LEOS Gaming"
     color: "#08090d"
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property var themeColors: themeManager.palette
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedIndex: -1
     property string selectedTitle: ""
     property string selectedPlatform: ""
@@ -398,12 +399,12 @@ ApplicationWindow {
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
-            color: "#102331"; opacity: 0.20
+            color: window.themeColors.accent_primary_soft; opacity: 0.20
         }
         Rectangle {
             width: 520; height: 520; radius: 260
             x: -width * 0.5; y: parent.height - height * 0.45
-            color: "#2a1232"; opacity: 0.15
+            color: window.themeColors.accent_secondary_soft; opacity: 0.15
         }
 
         ColumnLayout {
@@ -622,7 +623,7 @@ ApplicationWindow {
                                     }
                                     background: Rectangle {
                                         radius: 6
-                                        color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
+                                        color: leos.activePowerProfile === modelData ? window.themeColors.accent_primary_soft : "#202630"
                                         border.width: window.quickPanelFocusIndex === index + 1 ? 2 : 1
                                         border.color: window.quickPanelFocusIndex === index + 1 ? window.cyan : (leos.activePowerProfile === modelData ? window.cyan : "#344052")
                                     }
@@ -799,7 +800,7 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 8
-                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? "#1a2c38" : "#151a24"
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.themeColors.accent_primary_soft : "#151a24"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
                                 border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
                             }
@@ -827,7 +828,7 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: "#17313d"
+                                color: window.themeColors.accent_primary_soft
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
                                 border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
                             }
@@ -869,7 +870,7 @@ ApplicationWindow {
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
                                     radius: 13
-                                    color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
+                                    color: window.selectedIndex === gameCard.index ? window.themeColors.accent_primary_soft : "#151a24"
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
                                     border.color: window.selectedIndex === gameCard.index ? window.cyan : "#2a3444"
                                     Behavior on color { ColorAnimation { duration: 150 } }
@@ -896,7 +897,7 @@ ApplicationWindow {
                                                 radius: width / 2
                                                 x: -parent.width * 0.55
                                                 y: parent.height * 0.25
-                                                color: "#123b4b"
+                                                color: window.themeColors.accent_secondary_soft
                                                 opacity: 0.55
                                             }
                                             Column {
@@ -1135,7 +1136,7 @@ ApplicationWindow {
                                     onClicked: window.launchSelectedGame()
                                     background: Rectangle {
                                         radius: 10
-                                        color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
+                                        color: launchSelectedGameButton.enabled ? window.themeColors.accent_primary_soft : "#202630"
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
                                         border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.cyan : "#344052"
                                     }
