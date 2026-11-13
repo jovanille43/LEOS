@@ -2,7 +2,7 @@
 
 ## Décision produit
 
-Chaque thème LEOS est une **paire de deux couleurs d'accent distinctes**. Le joueur choisit un thème lors du premier démarrage ; il peut ensuite le modifier dans Centre de contrôle → Apparence.
+LEOS utilise une **paire de deux couleurs d'accent entièrement personnalisable**. Le joueur peut saisir librement A et B avec un champ HEX ou le sélecteur natif, dès le premier démarrage puis dans Centre de contrôle → Apparence. Les deux couleurs peuvent être identiques ou proches : la liberté de choix n'est jamais bloquée.
 
 Le style néon est une constante de l'identité LEOS, quel que soit l'assortiment choisi : fonds sombres, tracés lumineux, halos diffus, reflets et transitions bicolores restent présents. Le thème remplace les couleurs, pas le langage visuel.
 
@@ -24,7 +24,7 @@ Une palette contient au minimum :
 - un rôle de transition pour les dégradés ;
 - les tokens neutres (fond, surfaces, bordures et textes).
 
-Les deux accents restent distincts. Les nuances sont calculées à partir de chaque accent, sans réduire la paire à une couleur unique.
+Les deux accents restent deux rôles indépendants, même si le joueur leur donne la même valeur. Les nuances sont calculées à partir de chacun, sans réduire la paire à une couleur unique. Les anciennes palettes du catalogue sont des préréglages facultatifs.
 
 Les quatre paires communiquées sont intégrées au catalogue avec des valeurs initiales volontairement lumineuses :
 
@@ -37,12 +37,12 @@ Les quatre paires communiquées sont intégrées au catalogue avec des valeurs i
 
 Les halos sont éclaircis séparément et les transitions intermédiaires sont calculées automatiquement.
 
-Le catalogue `desktop/themes.py` est la source de vérité. Les sélecteurs QML et la validation des préférences consomment ce catalogue ; ajouter un assortiment ne nécessite donc pas de maintenir plusieurs listes indépendantes. Les palettes historiques sont conservées pour compatibilité. **Aucun nouvel assortiment n'est ajouté avant que le joueur ait communiqué les paires voulues.**
+`desktop/themes.py` reste la source de vérité pour les palettes, l'encodage des paires personnalisées et les tokens dérivés. Les paires personnalisées sont sérialisées dans un identifiant stable `custom-<A><B>` afin que toutes les applications et les moteurs d'assets puissent partager un même réglage. Une paire qui correspond exactement à un préréglage réutilise son identifiant existant. Les palettes historiques restent disponibles comme raccourcis, pas comme limites.
 
 ## Parcours utilisateur
 
-1. Lors du premier démarrage, le sélecteur présente les thèmes connus et un aperçu des deux couleurs.
-2. Le joueur choisit sa paire ; le choix est mémorisé indépendamment du guide d'accueil Desktop/Gaming.
+1. Lors du premier démarrage, le sélecteur présente les préréglages facultatifs, deux champs HEX, deux sélecteurs de couleur et un aperçu.
+2. Le joueur compose librement sa paire ; le choix est mémorisé indépendamment du guide d'accueil Desktop/Gaming.
 3. Les ressources graphiques légères sont générées dans le cache utilisateur. L'entrée dans Desktop/Gaming attend leur disponibilité, mais pas le traitement vidéo long.
 4. Le choix peut être modifié à tout moment depuis Centre de contrôle → Apparence.
 5. Les applications LEOS observent les préférences partagées et actualisent leur palette. Le schéma de couleurs KDE reste une opération distincte et explicitement confirmée.
@@ -52,7 +52,7 @@ Le catalogue `desktop/themes.py` est la source de vérité. Les sélecteurs QML 
 ### Interfaces QML
 Les principales interfaces LEOS consomment la palette partagée via `ThemeManager`. Les accents, focus, sélection et surfaces teintées utilisent les rôles sémantiques `primaryAccent` et `secondaryAccent`. Le sélecteur de modes, les cartes de jeux sélectionnées, la navigation du Centre de contrôle, le menu des applications, les notifications non lues et la Boutique possèdent des contours lumineux à deux couches alimentés par `accent_primary_glow` et `accent_secondary_glow`. Les fonds structurels, bordures neutres et couleurs de statut (erreur/avertissement/état matériel) ne sont pas transformés aveuglément.
 
-La recherche de couleurs restantes doit distinguer les accents codés en dur des neutres et des couleurs fonctionnelles : remplacer toute valeur bleutée arbitrairement risquerait de dégrader le contraste ou de recolorer un statut qui n'est pas un accent.
+Les textes qui utilisent un accent passent par `accent_primary_text` et `accent_secondary_text`. Ces rôles utilisent l'accent lorsque le contraste sur les surfaces de référence atteint 4,5:1 ; sinon ils basculent vers le texte neutre clair. Les aplats d'accent disposent aussi de rôles texte noir/blanc calculés. Un avertissement signale un contraste insuffisant sur surface (moins de 3:1) ou deux accents presque indiscernables (moins de 1,5:1) ; les valeurs choisies ne sont ni refusées ni modifiées. Les couleurs fonctionnelles (erreur/avertissement/état matériel) ne sont pas transformées.
 
 ### Emblèmes PNG
 Les PNG transparents officiels restent les sources maîtresses. Le moteur génère des copies dans le cache utilisateur et transforme le dégradé cyan→magenta de façon continue vers la paire sélectionnée : les pixels intermédiaires sont interpolés entre les deux nouveaux accents au lieu d'être affectés brutalement à l'un ou l'autre. Il conserve l'alpha, la progression de luminosité, la chute des halos et les détails métalliques. Le dessin, les positions et la répartition spatiale du dégradé restent ceux de l'original. Les originaux empaquetés ne sont jamais écrasés.
@@ -83,13 +83,13 @@ Trois raccourcis ouvrent également les modules KDE Icônes, Style Plasma et Dé
 - La génération graphique légère est asynchrone ; un échec conserve les ressources officielles.
 - La vidéo est facultative et possède un repli explicite.
 - Les ressources de tiers et les fichiers personnels ne sont jamais recolorés.
-- Les contrastes du texte et des états de focus doivent rester lisibles pour chaque future paire.
+- Les rôles de texte adaptatifs, les avertissements de faible contraste et la sauvegarde sans restriction des paires personnalisées sont couverts par les tests automatisés.
 
 ## État du socle préparé
 
 - [x] Catalogue central de thèmes bicolores et rôles dérivés pour les halos, surfaces teintées et dégradés.
 - [x] Persistance du thème et distinction entre choix initial et guide d'accueil.
-- [x] Sélection au premier démarrage et sélecteur du Centre de contrôle reliés au même catalogue.
+- [x] Gestionnaire partagé qui diffuse la palette entre les applications LEOS.
 - [x] Gestionnaire partagé qui diffuse la palette entre les applications LEOS.
 - [x] Principales interfaces QML raccordées aux deux accents sémantiques.
 - [x] Génération en cache des deux emblèmes officiels et des deux fonds SVG recolorés.
@@ -107,7 +107,7 @@ Les validations GitHub Actions confirment les contrôles automatisés du code et
 
 ## Critères d'acceptation finaux
 
-1. Chaque paire du catalogue possède deux accents distincts et des nuances lisibles, sans perdre les halos, les fonds sombres et les dégradés néon.
+1. Toute paire valide A/B, y compris des couleurs identiques ou peu contrastées, est acceptée sans altération ; les avertissements et rôles de texte adaptatifs protègent autant que possible la lisibilité.
 2. Un seul choix pilote toutes les applications LEOS raccordées, sans liste de thèmes dupliquée.
 3. Les logos, halos, dégradés et fonds d'écran gardent leur géométrie et leurs détails neutres.
 4. Les vidéos converties gardent leur piste audio ; un problème de codec revient aux fichiers officiels sans bloquer LEOS.
