@@ -262,7 +262,9 @@ class BuildWorkflowTests(unittest.TestCase):
         for recipe in ("recipe.yml", "recipe-nvidia.yml", "recipe-nvidia-open.yml"):
             with self.subTest(recipe=recipe):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
-                self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
+                start = source.index("for recipe in recipe.yml")
+                end = source.index('output="$RUNNER_TEMP', start)
+                self.assertIn(recipe, source[start:end])
 
     def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
