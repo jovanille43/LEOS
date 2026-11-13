@@ -12,7 +12,7 @@ ApplicationWindow {
     title: "LEOS — Choix du mode"
     color: "#07080c"
 
-    property var themeColors: modeSelectorController.themePalette
+    property var themeColors: themeManager.palette
     property color cyan: themeColors.accent_primary
     property color magenta: themeColors.accent_secondary
     property color primaryGlow: themeColors.accent_primary_glow
@@ -106,10 +106,10 @@ ApplicationWindow {
             ComboBox {
                 id: themeSelectionBox
                 Layout.fillWidth: true
-                model: modeSelectorController.themeOptions
+                model: themeManager.options
                 textRole: "name"
                 Component.onCompleted: {
-                    const options = modeSelectorController.themeOptions
+                    const options = themeManager.options
                     for (let i = 0; i < options.length; ++i) {
                         if (options[i].id === modeSelectorController.theme) {
                             currentIndex = i
@@ -120,7 +120,7 @@ ApplicationWindow {
                 onActivated: function(index) {
                     const options = modeSelectorController.themeOptions
                     if (index >= 0 && index < options.length)
-                        modeSelectorController.setTheme(options[index].id)
+                        themeManager.setTheme(options[index].id)
                 }
             }
             RowLayout {
