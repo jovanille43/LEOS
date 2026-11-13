@@ -15,6 +15,8 @@ ApplicationWindow {
     property var themeColors: themeManager.palette
     property color primaryAccent: themeColors.accent_primary
     property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
@@ -440,7 +442,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "GAMING MODE"
-                        color: window.primaryAccent
+                        color: window.primaryTextAccent
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -536,7 +538,7 @@ ApplicationWindow {
                     spacing: 22
 
                     ColumnLayout {
-                        Label { text: "PERFORMANCES"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PERFORMANCES"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: "white"; font.pixelSize: 15 }
                         Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: "white"; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: "white"; font.pixelSize: 15 }
@@ -545,13 +547,13 @@ ApplicationWindow {
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
-                        Label { text: "TEMPÉRATURE"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "TEMPÉRATURE"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: 15 }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
                     ColumnLayout {
-                        Label { text: "JEUX"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "JEUX"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         CheckBox {
                             text: "Overlay FPS · MangoHud"
                             checked: leos.mangoHudEnabled
@@ -562,7 +564,7 @@ ApplicationWindow {
                                 radius: 6
                                 color: "transparent"
                                 border.width: quickPanel.visible && window.quickPanelFocusIndex === 0 ? 2 : 0
-                                border.color: window.primaryAccent
+                                border.color: window.primaryTextAccent
                             }
                         }
                         Label {
@@ -594,7 +596,7 @@ ApplicationWindow {
                     ColumnLayout {
                         Layout.preferredWidth: 220
                         spacing: 6
-                        Label { text: "PROFIL ÉNERGIE"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PROFIL ÉNERGIE"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: leos.powerProfileStatus
                             color: window.muted
@@ -936,7 +938,7 @@ ApplicationWindow {
                                                 Label {
                                                     anchors.horizontalCenter: parent.horizontalCenter
                                                     text: "LEOS"
-                                                    color: window.primaryAccent
+                                                    color: window.primaryTextAccent
                                                     font.pixelSize: 7
                                                     font.letterSpacing: 2
                                                 }
@@ -971,7 +973,7 @@ ApplicationWindow {
                                             }
                                             Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
-                                                color: window.secondaryAccent
+                                                color: window.secondaryTextAccent
                                                 font.pixelSize: 9
                                                 font.weight: Font.Bold
                                             }
@@ -1017,7 +1019,7 @@ ApplicationWindow {
 
                                 Label {
                                     text: "JEU SÉLECTIONNÉ"
-                                    color: window.primaryAccent
+                                    color: window.primaryTextAccent
                                     font.pixelSize: 10
                                     font.letterSpacing: 2
                                 }
@@ -1283,7 +1285,7 @@ ApplicationWindow {
                     returnDialog.close()
                     window.requestDesktopReturn()
                 }
-                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryAccent }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: returnToDesktopButton.text
                     color: "white"
@@ -1321,7 +1323,7 @@ ApplicationWindow {
                     leos.applyPowerProfile(window.pendingPowerProfile)
                     statusText.text = leos.powerProfileStatus
                 }
-                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryAccent }
+                background: Rectangle { radius: 9; color: window.themeColors.accent_primary_soft; border.color: window.primaryTextAccent }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
                     color: "white"
