@@ -19,7 +19,7 @@ import tempfile
 from pathlib import Path
 from typing import Mapping
 
-from desktop.themes import THEME_PALETTES, palette_for_theme
+from desktop.themes import THEME_NAMES, THEME_PALETTES, palette_for_theme
 
 _HEX_COLOR = re.compile(r"#[0-9A-Fa-f]{6}")
 _SOURCE_PRIMARY_RGB = (0.0, 217.0 / 255.0, 1.0)
@@ -396,6 +396,228 @@ def render_video_theme(
             pass
 
 
+_SVG_PAINT_ATTRIBUTE = re.compile(
+    r'(?P<prefix>\b(?:stop-color|stroke|fill)\s*=\s*["\']|(?:stop-color|stroke|fill)\s*:\s*)'
+    r'(?P<color>#[0-9A-Fa-f]{6})(?P<suffix>["\']?)',
+    re.IGNORECASE,
+)
+
+
+def recolor_kde_svg_markup(
+    markup: str,
+    accent_primary: str,
+    accent_secondary: str,
+) -> str:
+    """Recolor bright KDE SVG accents while protecting dark and slate neutrals.
+
+    Gradient stops retain the full source-gradient mapping. Standalone fills
+    and strokes are recolored only when bright and sufficiently saturated,
+    so inactive slate outlines and dark window/widget surfaces remain intact.
+    """
+    if not isinstance(markup, str) or len(markup.encode("utf-8")) > _MAX_SVG_BYTES:
+        raise ValueError("KDE SVG source is invalid or exceeds its size limit")
+    if not _valid_hex(accent_primary) or not _valid_hex(accent_secondary):
+        raise ValueError("Theme accent colors must be six-digit hexadecimal values")
+
+    def replace(match: re.Match[str]) -> str:
+        prefix = match.group("prefix")
+        color = match.group("color")
+        attribute = prefix.lower().split("=", 1)[0].split(":", 1)[0].strip()
+        if attribute != "stop-color":
+            rgb = tuple(
+                int(color[index:index + 2], 16) / 255.0
+                for index in (1, 3, 5)
+            )
+            _hue, saturation, value = colorsys.rgb_to_hsv(*rgb)
+            if saturation < 0.42 or value < 0.30:
+                return match.group(0)
+        recolored = recolor_hex_color(
+            color, accent_primary, accent_secondary
+        )
+        return f"{prefix}{recolored}{match.group('suffix')}"
+
+    return _SVG_PAINT_ATTRIBUTE.sub(replace, markup)
+
+
+def _replace_ini_section_values(
+    markup: str,
+    section: str,
+    values: Mapping[str, str],
+) -> str:
+    """Replace required keys in one INI section without reformatting the file."""
+    lines = markup.splitlines()
+    active_section = ""
+    remaining = set(values)
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            active_section = stripped[1:-1]
+            continue
+        if active_section != section or "=" not in line:
+            continue
+        key = line.split("=", 1)[0].strip()
+        if key not in remaining:
+            continue
+        indentation = line[: len(line) - len(line.lstrip())]
+        lines[index] = f"{indentation}{key}={values[key]}"
+        remaining.remove(key)
+    if remaining:
+        raise ValueError(
+            f"Theme metadata is missing required keys in [{section}]: "
+            + ", ".join(sorted(remaining))
+        )
+    result = "\n".join(lines)
+    return result + ("\n" if markup.endswith("\n") else "")
+
+
+def render_kde_theme_package(
+    source_dir: Path,
+    output_dir: Path,
+    palette: Mapping[str, str],
+    theme: str,
+    package_kind: str,
+) -> Path:
+    """Build a recolored, distinctly named KDE resource package in user cache.
+
+    The source package is read-only. Every SVG is copied and selectively
+    recolored; metadata receives a unique package ID so KDE can distinguish
+    each generated variant. A lock and atomic directory rename protect
+    concurrent LEOS processes from observing a partially copied package.
+    """
+    source_dir = Path(source_dir)
+    output_dir = Path(output_dir)
+    if theme not in THEME_NAMES:
+        raise ValueError(f"Unknown LEOS theme: {theme}")
+    if package_kind not in {"icons", "plasma", "aurorae"}:
+        raise ValueError("Unsupported KDE theme package type")
+    if source_dir.is_symlink() or not source_dir.is_dir():
+        raise FileNotFoundError("Official LEOS KDE resource directory is unavailable")
+    if not _valid_hex(palette.get("accent_primary", "")) or not _valid_hex(
+        palette.get("accent_secondary", "")
+    ):
+        raise ValueError("Theme accent colors must be six-digit hexadecimal values")
+
+    theme_label = THEME_NAMES[theme].removeprefix("LEOS ")
+    display_name = f"LEOS — {theme_label}"
+    package_id = f"leos-{theme}"
+    expected_manifest = {
+        "version": 1,
+        "theme": theme,
+        "kind": package_kind,
+        "package_id": package_id,
+    }
+
+    _safe_output_directory(output_dir.parent)
+    if output_dir.is_symlink():
+        raise ValueError("Generated KDE theme package cannot be a symbolic link")
+    lock_path = output_dir.parent / f".{output_dir.name}.lock"
+    if lock_path.is_symlink():
+        raise ValueError("Generated KDE theme lock cannot be a symbolic link")
+
+    with lock_path.open("a", encoding="utf-8") as lock:
+        os.chmod(lock_path, 0o600)
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+
+        if output_dir.exists():
+            if not output_dir.is_dir() or output_dir.is_symlink():
+                raise ValueError("Generated KDE theme destination is not a safe directory")
+            manifest_path = output_dir / ".leos-theme-package.json"
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                manifest = None
+            if manifest == expected_manifest:
+                return output_dir
+            shutil.rmtree(output_dir)
+
+        temporary = Path(
+            tempfile.mkdtemp(prefix=f"leos-{package_kind}-", dir=output_dir.parent)
+        )
+        try:
+            for current, directories, files in os.walk(
+                source_dir, topdown=True, followlinks=False
+            ):
+                current_path = Path(current)
+                relative_dir = current_path.relative_to(source_dir)
+                target_dir = temporary / relative_dir
+                target_dir.mkdir(parents=True, exist_ok=True)
+
+                for directory in directories:
+                    if (current_path / directory).is_symlink():
+                        raise ValueError("KDE source package contains a symbolic-link directory")
+
+                for filename in sorted(files):
+                    original = current_path / filename
+                    if original.is_symlink() or not original.is_file():
+                        raise ValueError("KDE source package contains a non-regular file")
+                    relative_file = original.relative_to(source_dir)
+                    if relative_file.is_absolute() or ".." in relative_file.parts:
+                        raise ValueError("KDE source package contains an unsafe path")
+                    destination = temporary / relative_file
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+
+                    if original.suffix.lower() == ".svg":
+                        markup = original.read_text(encoding="utf-8")
+                        rendered = recolor_kde_svg_markup(
+                            markup,
+                            palette["accent_primary"],
+                            palette["accent_secondary"],
+                        )
+                        destination.write_text(rendered, encoding="utf-8")
+                    elif original.name == "index.theme":
+                        markup = original.read_text(encoding="utf-8")
+                        rendered = _replace_ini_section_values(
+                            markup,
+                            "Icon Theme",
+                            {
+                                "Name": display_name,
+                                "Comment": f"LEOS icon theme — {theme_label}",
+                            },
+                        )
+                        destination.write_text(rendered, encoding="utf-8")
+                    elif original.name == "metadata.desktop":
+                        markup = original.read_text(encoding="utf-8")
+                        rendered = _replace_ini_section_values(
+                            markup,
+                            "Desktop Entry",
+                            {
+                                "Name": display_name,
+                                "Comment": f"LEOS window decoration — {theme_label}",
+                                "X-KDE-PluginInfo-Name": package_id,
+                            },
+                        )
+                        destination.write_text(rendered, encoding="utf-8")
+                    elif original.name == "metadata.json":
+                        metadata = json.loads(original.read_text(encoding="utf-8"))
+                        plugin = metadata.get("KPlugin")
+                        if not isinstance(plugin, dict):
+                            raise ValueError("Plasma theme metadata has no KPlugin object")
+                        plugin["Id"] = package_id
+                        plugin["Name"] = display_name
+                        plugin["Description"] = (
+                            f"LEOS Plasma style with the {theme_label} two-accent palette."
+                        )
+                        destination.write_text(
+                            json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+                            encoding="utf-8",
+                        )
+                    else:
+                        shutil.copyfile(original, destination)
+
+            manifest_path = temporary / ".leos-theme-package.json"
+            manifest_path.write_text(
+                json.dumps(expected_manifest, separators=(",", ":")) + "\n",
+                encoding="utf-8",
+            )
+            os.chmod(manifest_path, 0o600)
+            os.replace(temporary, output_dir)
+        finally:
+            if temporary.exists():
+                shutil.rmtree(temporary, ignore_errors=True)
+
+    return output_dir
+
+
 class ThemeAssetManager:
     """Create cached logo and wallpaper copies without touching packaged assets."""
 
@@ -403,8 +625,36 @@ class ThemeAssetManager:
         self,
         branding_dir: Path | None = None,
         cache_dir: Path | None = None,
+        icon_theme_dir: Path | None = None,
+        plasma_theme_dir: Path | None = None,
+        aurorae_theme_dir: Path | None = None,
     ) -> None:
-        self.branding_dir = branding_dir or Path(__file__).resolve().parents[1] / "branding"
+        project_root = Path(__file__).resolve().parents[1]
+        self.branding_dir = branding_dir or project_root / "branding"
+
+        def resource_dir(
+            supplied: Path | None,
+            repository_path: str,
+            installed_path: str,
+        ) -> Path:
+            if supplied is not None:
+                return Path(supplied)
+            candidate = project_root / repository_path
+            return candidate if candidate.is_dir() else Path(installed_path)
+
+        self.icon_theme_dir = resource_dir(
+            icon_theme_dir, "icons/leos", "/usr/share/icons/leos"
+        )
+        self.plasma_theme_dir = resource_dir(
+            plasma_theme_dir,
+            "plasma-theme/leos",
+            "/usr/share/plasma/desktoptheme/leos",
+        )
+        self.aurorae_theme_dir = resource_dir(
+            aurorae_theme_dir,
+            "aurorae/leos",
+            "/usr/share/aurorae/themes/leos",
+        )
         if cache_dir is None:
             configured = Path(os.environ.get("XDG_CACHE_HOME", "")).expanduser()
             cache_dir = (
@@ -431,21 +681,76 @@ class ThemeAssetManager:
             try:
                 info = source.stat()
                 source_versions.append(
-                    f"{source.name}:{info.st_size}:{info.st_mtime_ns}"
+                    f"branding/{source.name}:{info.st_size}:{info.st_mtime_ns}"
                 )
             except OSError:
-                source_versions.append(f"{source.name}:missing")
+                source_versions.append(f"branding/{source.name}:missing")
+
+        for label, source_dir in (
+            ("icons", self.icon_theme_dir),
+            ("plasma", self.plasma_theme_dir),
+            ("aurorae", self.aurorae_theme_dir),
+        ):
+            if source_dir.is_symlink() or not source_dir.is_dir():
+                source_versions.append(f"{label}:missing-or-unsafe")
+                continue
+            for source in sorted(source_dir.rglob("*")):
+                relative = source.relative_to(source_dir).as_posix()
+                if source.is_symlink():
+                    source_versions.append(f"{label}/{relative}:symlink")
+                    continue
+                if source.is_file():
+                    try:
+                        info = source.stat()
+                        source_versions.append(
+                            f"{label}/{relative}:{info.st_size}:{info.st_mtime_ns}"
+                        )
+                    except OSError:
+                        source_versions.append(f"{label}/{relative}:unreadable")
         fingerprint = hashlib.sha256(
             (
                 theme
                 + palette["accent_primary"]
                 + palette["accent_secondary"]
                 + "|".join(source_versions)
-            ).encode("ascii")
+            ).encode("utf-8")
         ).hexdigest()[:16]
         output_dir = self.cache_dir / "leos" / "themes" / fingerprint
         _safe_output_directory(output_dir)
         return output_dir
+
+    def kde_resource_paths_for_theme(self, theme: str) -> dict[str, str]:
+        """Generate cached icon, Plasma Style and Aurorae variants without applying them."""
+        if theme not in THEME_PALETTES:
+            raise ValueError(f"Unknown LEOS theme: {theme}")
+        palette = palette_for_theme(theme)
+        if (
+            palette["accent_primary"].lower() == "#00d9ff"
+            and palette["accent_secondary"].lower() == "#e33bff"
+        ):
+            return {}
+
+        output_dir = self._output_dir_for_theme(theme) / "kde"
+        package_id = f"leos-{theme}"
+        definitions = (
+            ("icon_theme", "icons", self.icon_theme_dir),
+            ("plasma_theme", "plasma", self.plasma_theme_dir),
+            ("aurorae_theme", "aurorae", self.aurorae_theme_dir),
+        )
+        assets: dict[str, str] = {}
+        for asset_key, package_kind, source_dir in definitions:
+            if not source_dir.is_dir() or source_dir.is_symlink():
+                continue
+            package_path = render_kde_theme_package(
+                source_dir,
+                output_dir / package_kind / package_id,
+                palette,
+                theme,
+                package_kind,
+            )
+            assets[f"{asset_key}_path"] = str(package_path)
+            assets[f"{asset_key}_name"] = package_id
+        return assets
 
     def paths_for_theme(self, theme: str) -> dict[str, str]:
         """Generate logos and wallpapers quickly; never wait for video encoding."""
@@ -492,12 +797,14 @@ class ThemeAssetManager:
                 gaming_logo,
             )
 
-        return {
+        assets = {
             "desktop_logo": desktop_logo.as_uri(),
             "gaming_logo": gaming_logo.as_uri(),
             "desktop_wallpaper": desktop_wallpaper.as_uri(),
             "gaming_wallpaper": gaming_wallpaper.as_uri(),
         }
+        assets.update(self.kde_resource_paths_for_theme(theme))
+        return assets
 
     def video_paths_for_theme(self, theme: str) -> dict[str, str]:
         """Generate both themed introductions in an independent background task.
