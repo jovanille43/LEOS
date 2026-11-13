@@ -19,7 +19,7 @@ from typing import Any, Callable
 
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.theme_assets import ThemeAssetManager
-from desktop.themes import THEME_PALETTES, is_valid_theme_id, palette_for_theme
+from desktop.themes import is_valid_theme_id, palette_for_theme
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.paths import state_home as xdg_state_home
 
