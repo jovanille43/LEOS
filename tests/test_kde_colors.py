@@ -13,6 +13,8 @@ from desktop.kde_colors import (
     MANAGED_BY,
     THEME_NAMES,
     build_colorscheme,
+    build_custom_colorscheme,
+    custom_scheme_id,
 )
 
 
@@ -63,6 +65,34 @@ class KdeColorSchemeTests(unittest.TestCase):
             self.assertIn("BackgroundNormal", parser[group])
             self.assertIn("ForegroundNormal", parser[group])
             self.assertIn("DecorationFocus", parser[group])
+
+    def test_builds_custom_gradient_kde_scheme(self):
+        content = build_custom_colorscheme("#00ffff", "#ff8800")
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
+        parser.read_string(content)
+        self.assertEqual(custom_scheme_id("#00ffff", "#ff8800"), "LEOS-00FFFF-FF8800")
+        self.assertEqual(parser["General"]["ColorScheme"], "LEOS-00FFFF-FF8800")
+        self.assertEqual(parser["General"]["AccentColor"], "0,255,255")
+        self.assertEqual(parser["Colors:Selection"]["BackgroundNormal"], "0,255,255")
+        self.assertEqual(parser["Colors:Selection"]["DecorationHover"], "255,136,0")
+        self.assertEqual(parser["LEOS"]["ThemeId"], "custom")
+
+    def test_custom_kde_scheme_is_applied_after_user_confirmation(self):
+        message = self.manager.apply_custom_theme("#00FFFF", "#FF8800")
+        args, kwargs = self.runner.calls[0]
+        self.assertEqual(args, ["/usr/bin/plasma-apply-colorscheme", "LEOS-00FFFF-FF8800"])
+        self.assertFalse(kwargs["shell"])
+        self.assertIn("LEOS personnalisé", message)
+        self.assertTrue(self.manager.can_restore())
+        self.assertTrue(
+            (self.data / "color-schemes" / "LEOS-00FFFF-FF8800.colors").is_file()
+        )
+
+    def test_custom_scheme_rejects_invalid_hex_colors(self):
+        for first, second in (("cyan", "#FF8800"), ("#00FFFF", "#FFF"), ("", "#FF8800")):
+            with self.subTest(first=first, second=second), self.assertRaises(ValueError):
+                build_custom_colorscheme(first, second)
 
     def test_generates_all_five_palettes(self):
         for theme in THEME_NAMES:
