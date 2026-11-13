@@ -34,6 +34,46 @@ class HardwareInventoryTests(unittest.TestCase):
         self.assertEqual(set(snapshot), expected)
         self.assertTrue(all(isinstance(value, str) for value in snapshot.values()))
 
+    def test_controller_inventory_detects_generic_linux_joystick_handlers(self):
+        devices = (
+            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\\n'
+            'N: Name="HID 0810:0001"\\n'
+            'H: Handlers=event23 js0\\n'
+            'B: EV=1b\\n'
+            '\\n'
+            'I: Bus=0003 Vendor=046d Product=c31c Version=0111\\n'
+            'N: Name="USB Keyboard"\\n'
+            'H: Handlers=sysrq kbd event4\\n'
+            'B: EV=120013\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "HID 0810:0001")
+
+    def test_controller_inventory_keeps_known_names_without_joystick_handler(self):
+        devices = (
+            'I: Bus=0005 Vendor=054c Product=0ce6 Version=0100\\n'
+            'N: Name="Wireless Controller"\\n'
+            'H: Handlers=event19\\n'
+            'B: EV=1b\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "Wireless Controller")
+
+    def test_controller_inventory_ignores_non_gamepad_input_devices(self):
+        devices = (
+            'I: Bus=0003 Vendor=046d Product=c31c Version=0111\\n'
+            'N: Name="USB Keyboard"\\n'
+            'H: Handlers=sysrq kbd event4\\n'
+            'B: EV=120013\\n'
+            '\\n'
+            'I: Bus=0003 Vendor=046d Product=c077 Version=0111\\n'
+            'N: Name="USB Mouse"\\n'
+            'H: Handlers=mouse0 event5\\n'
+            'B: EV=17\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
+
     def test_cpu_details_reads_arm_processor_field_and_online_cpu_list(self):
         responses = {
             "/proc/cpuinfo": "Processor : ARMv8 Processor rev 1 (v8l)\n",
