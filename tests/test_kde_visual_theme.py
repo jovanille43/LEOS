@@ -134,6 +134,14 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
                 theme, data_directory=self.data_home
             )
 
+        self.system_plasma = self.root / "system-plasma"
+        system_leos = self.system_plasma / "leos"
+        system_leos.mkdir(parents=True)
+        (system_leos / "metadata.json").write_text(
+            (self.plasma_source / "metadata.json").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+
         self.runner = FakeKdeRunner()
         self.runner.plasmarc = self.plasmarc
         executables = {
@@ -147,7 +155,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
             data_home=self.data_home,
             config_home=self.config_home,
             state_home=self.state_home,
-            system_theme_root=self.root / "system-plasma",
+            system_theme_root=self.system_plasma,
             apply_executable=executables["plasma-apply-desktoptheme"],
             runner=self.runner,
         )
@@ -217,8 +225,8 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         self.assertEqual(self.manager._state()["previous_icons"], "breeze")
         self.assertEqual(self.manager._state()["previous_plasma"], "breeze-dark")
         self.assertEqual(self.manager._state()["previous_aurorae_theme"], "Breeze")
-        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "leos-gaming")
-        self.assertEqual(self.plasma.current_style(), "leos-gaming")
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "leos")
+        self.assertEqual(self.plasma.current_style(), "leos")
         self.manager.restore_previous_theme()
         self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "breeze")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
@@ -239,10 +247,10 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.manager.apply_theme("light")
 
-        self.assertIn("Theme=breeze", self.kdeglobals.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kdeglobals, "Icons", "Theme"), "breeze")
         self.assertEqual(self.plasma.current_style(), "breeze-dark")
         self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "library"), "org.kde.kwin.breeze")
-        self.assertIn("theme=Breeze", self.kwinrc.read_text(encoding="utf-8"))
+        self.assertEqual(self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"), "Breeze")
         self.assertFalse(self.manager.can_restore())
         self.assertFalse(self.plasma.can_restore())
 
@@ -309,7 +317,7 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
             plasma_style=self.plasma,
             config_home=self.config_home,
             state_home=self.state_home,
-            data_home=self.data_home,
+            data_home=self.root / "unexported-data",
             runner=self.runner,
             find_executable=lambda name: "/usr/bin/" + name,
         )
