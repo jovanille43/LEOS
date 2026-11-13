@@ -8,6 +8,8 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 | --- | --- |
 | `branding/desktop-logo.jpeg` | Lion seul, Desktop Mode |
 | `branding/gaming-logo.jpeg` | Lion avec manette, Gaming Mode |
+| `branding/desktop-logo-alpha.png` | Copie dérivée de `desktop-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Desktop |
+| `branding/gaming-logo-alpha.png` | Copie dérivée de `gaming-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Gaming |
 | `branding/reference-comparison.jpeg` | Référence interne uniquement |
 
 Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
@@ -19,7 +21,7 @@ Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libe
 | `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), lion seul, halos cyan/magenta discrets |
 | `branding/wallpapers/gaming-leos.svg` | Fond LEOS Gaming 4K (3840 × 2160), lion avec manette, halos cyan/magenta plus dynamiques |
 
-Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
+Chaque SVG référence par un lien relatif (`../desktop-logo-alpha.png` ou `../gaming-logo-alpha.png`) une copie dérivée du JPEG officiel correspondant : le JPEG fourni reste la source unique et n'est jamais modifié, la copie est régénérable à l'identique avec `python3 tools/derive_emblem_alpha.py` (vérification : `--check`). Le PNG supprime le rectangle noir que le JPEG, sans transparence, dessinait sur les halos du fond ; composé sur du noir, il redonne l'emblème d'origine à 4 niveaux près. Les courbes décoratives du fond Gaming s'arrêtent avant le halo de l'emblème, qui n'est plus masqué par un rectangle noir. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
 
 ## Animations intégrées
 
@@ -39,7 +41,7 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 ## Intégrité des fichiers déployés
 
-Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des huit ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des dix ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG et les deux PNG dérivés sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
 
 ## État des fichiers présents sur GitHub
 

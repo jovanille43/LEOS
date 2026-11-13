@@ -35,6 +35,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = (
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -69,6 +71,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertEqual(set(listed), {
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -76,7 +80,7 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         })
-        self.assertEqual(len(listed), 8)
+        self.assertEqual(len(listed), 10)
 
     def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -84,8 +88,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
         self.assertIn('images[0].attrib.get("href") != emblem', source)
         self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
+        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png"', source)
+        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png"', source)
         self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
         self.assertIn("if not target.is_file()", source)
 
@@ -105,7 +109,7 @@ class BuildWorkflowTests(unittest.TestCase):
             line for line in deployed.splitlines()
             if line and not line.startswith("#")
         ]
-        self.assertEqual(len(entries), 8)
+        self.assertEqual(len(entries), 10)
         for line in entries:
             self.assertRegex(line, r"^[0-9a-f]{64}  branding/.+")
 
@@ -123,6 +127,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = {
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -333,6 +339,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = (
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -352,8 +360,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
         self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
         self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
+        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png"', source)
+        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png"', source)
         self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
         self.assertIn("if not target.is_file()", source)
     def test_recipe_checks_validate_and_decode_all_branding_video_audio(self):

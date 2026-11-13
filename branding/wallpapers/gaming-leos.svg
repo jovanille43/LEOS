@@ -39,16 +39,16 @@
   <rect width="3840" height="2160" fill="url(#magenta-halo)"/>
 
   <g filter="url(#glow)" opacity=".38">
-    <path d="M-180 1710C740 1320 1050 680 1920 770"
+    <path d="M-180 1710C567 1393 912 912 1480 790"
           fill="none" stroke="#00cfff" stroke-opacity=".34" stroke-width="38"/>
-    <path d="M4020 450C3110 820 2780 1450 1920 1370"
+    <path d="M4020 450C3283 750 2926 1220 2360 1345"
           fill="none" stroke="#e33bff" stroke-opacity=".30" stroke-width="40"/>
   </g>
   <g fill="none" stroke="url(#energy-line)" stroke-width="3">
-    <path d="M-140 1640C700 1290 1050 700 1880 780"/>
-    <path d="M-140 1700C700 1350 1050 760 1880 840" stroke-opacity=".42"/>
-    <path d="M3980 520C3150 870 2790 1460 1960 1380"/>
-    <path d="M3980 580C3150 930 2790 1520 1960 1440" stroke-opacity=".42"/>
+    <path d="M-140 1640C552 1352 911 901 1480 795"/>
+    <path d="M-140 1700C552 1412 911 961 1480 855" stroke-opacity=".42"/>
+    <path d="M3980 520C3296 808 2931 1260 2360 1365"/>
+    <path d="M3980 580C3296 868 2931 1320 2360 1425" stroke-opacity=".42"/>
   </g>
 
   <g fill="none" stroke-width="2">
@@ -70,6 +70,6 @@
   <!-- Keep the supplied gaming emblem as the single source of truth. -->
   <image x="1060" y="180" width="1720" height="1800"
          preserveAspectRatio="xMidYMid meet"
-         href="../gaming-logo.jpeg"
-         xlink:href="../gaming-logo.jpeg"/>
+         href="../gaming-logo-alpha.png"
+         xlink:href="../gaming-logo-alpha.png"/>
 </svg>
