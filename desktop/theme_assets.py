@@ -501,7 +501,7 @@ def render_kde_theme_package(
     display_name = f"LEOS — {theme_label}"
     package_id = f"leos-{theme}"
     expected_manifest = {
-        "version": 1,
+        "version": 2,
         "theme": theme,
         "kind": package_kind,
         "package_id": package_id,
@@ -645,7 +645,7 @@ def _validate_generated_package(
         raise ValueError("Generated KDE package manifest is invalid") from error
 
     expected = {
-        "version": 1,
+        "version": 2,
         "theme": theme,
         "kind": package_kind,
         "package_id": f"leos-{theme}",
