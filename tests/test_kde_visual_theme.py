@@ -246,6 +246,57 @@ class KdeVisualThemeManagerTests(unittest.TestCase):
         self.assertFalse(self.manager.can_restore())
         self.assertFalse(self.plasma.can_restore())
 
+    def test_partial_aurorae_restore_is_completed_on_retry(self):
+        self.manager.apply_theme("light")
+
+        # Simulate a process interruption after KWin's library key was restored
+        # but before the Aurorae theme key and state flag were updated.
+        FakeKdeRunner._write_value(
+            self.kwinrc,
+            "org.kde.kdecoration2",
+            "library",
+            "org.kde.kwin.breeze",
+        )
+        message = self.manager.restore_previous_theme()
+
+        self.assertIn("restauré", message)
+        self.assertFalse(self.manager.can_restore())
+        self.assertEqual(
+            self._config_value(self.kwinrc, "org.kde.kdecoration2", "library"),
+            "org.kde.kwin.breeze",
+        )
+        self.assertEqual(
+            self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"),
+            "Breeze",
+        )
+        self.assertEqual(self.plasma.current_style(), "breeze-dark")
+        self.assertEqual(
+            self._config_value(self.kdeglobals, "Icons", "Theme"),
+            "breeze",
+        )
+
+    def test_restore_preserves_manual_aurorae_change(self):
+        self.manager.apply_theme("light")
+        FakeKdeRunner._write_value(
+            self.kwinrc,
+            "org.kde.kdecoration2",
+            "theme",
+            "__aurorae__svg__my-custom-decoration",
+        )
+
+        message = self.manager.restore_previous_theme()
+
+        self.assertIn("décoration modifiée", message)
+        self.assertEqual(
+            self._config_value(self.kwinrc, "org.kde.kdecoration2", "theme"),
+            "__aurorae__svg__my-custom-decoration",
+        )
+        self.assertEqual(self.plasma.current_style(), "breeze-dark")
+        self.assertEqual(
+            self._config_value(self.kdeglobals, "Icons", "Theme"),
+            "breeze",
+        )
+
     def test_application_requires_all_three_exported_resources(self):
         manager = KdeVisualThemeManager(
             assets=ThemeAssetManager(
