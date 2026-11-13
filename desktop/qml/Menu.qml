@@ -50,7 +50,7 @@ ApplicationWindow {
                 spacing: 10
                 Image {
                     id: desktopMenuLogo
-                    source: "../../branding/desktop-logo.jpeg"
+                    source: leosTheme.desktopLogoUrl
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
