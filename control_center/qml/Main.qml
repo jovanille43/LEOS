@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -23,6 +24,16 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string themeColorNotice: ""
+
+    function commitThemeColors(colorA, colorB) {
+        const validColor = /^#[0-9a-fA-F]{6}$/
+        if (!validColor.test(colorA) || !validColor.test(colorB)) {
+            themeColorNotice = "Format attendu : #RRGGBB pour chaque couleur."
+            return
+        }
+        themeColorNotice = controlCenter.setThemeColors(colorA.toUpperCase(), colorB.toUpperCase())
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -38,8 +49,8 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
-            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            themeColorAField.text = controlCenter.themeColorA
+            themeColorBField.text = controlCenter.themeColorB
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -53,6 +64,20 @@ ApplicationWindow {
             const priorities = ["all", "important", "critical"]
             notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
         }
+    }
+
+    ColorDialog {
+        id: colorADialog
+        title: "Choisir la couleur A"
+        selectedColor: Qt.color(controlCenter.themeColorA)
+        onAccepted: window.commitThemeColors(selectedColor.toString(), themeColorBField.text)
+    }
+
+    ColorDialog {
+        id: colorBDialog
+        title: "Choisir la couleur B"
+        selectedColor: Qt.color(controlCenter.themeColorB)
+        onAccepted: window.commitThemeColors(themeColorAField.text, selectedColor.toString())
     }
 
     Dialog {
@@ -442,53 +467,126 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 252
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
-                                    spacing: 12
+                                    spacing: 10
+
                                     Label {
-                                        text: "THÈME LEOS"
+                                        text: "COULEURS DU THÈME LEOS"
                                         color: window.cyan
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Choisis librement les deux extrémités du dégradé LEOS. Les fonds, les contrastes et la structure de l'interface restent identiques."
                                         color: window.muted
-                                        font.pixelSize: 12
-                                    }
-                                    ComboBox {
-                                        id: themeBox
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
-                                        Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
-                                        }
-                                        onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            controlCenter.setTheme(values[currentIndex])
-                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 8
-                                        Rectangle {
+                                        spacing: 14
+
+                                        ColumnLayout {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_primary
+                                            spacing: 5
+                                            Label {
+                                                text: "COULEUR A"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.letterSpacing: 1
+                                            }
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                TextField {
+                                                    id: themeColorAField
+                                                    Layout.fillWidth: true
+                                                    text: controlCenter.themeColorA
+                                                    maximumLength: 7
+                                                    placeholderText: "#00D9FF"
+                                                    color: window.themeColors.text
+                                                    onEditingFinished: window.commitThemeColors(text, themeColorBField.text)
+                                                }
+                                                Button {
+                                                    text: "●"
+                                                    onClicked: colorADialog.open()
+                                                    background: Rectangle {
+                                                        radius: 8
+                                                        color: controlCenter.themeColorA
+                                                        border.color: window.themeColors.border
+                                                    }
+                                                    contentItem: Label {
+                                                        text: "●"
+                                                        color: "white"
+                                                        horizontalAlignment: Text.AlignHCenter
+                                                        verticalAlignment: Text.AlignVCenter
+                                                    }
+                                                }
+                                            }
                                         }
-                                        Rectangle {
+
+                                        ColumnLayout {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_secondary
+                                            spacing: 5
+                                            Label {
+                                                text: "COULEUR B"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.letterSpacing: 1
+                                            }
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                TextField {
+                                                    id: themeColorBField
+                                                    Layout.fillWidth: true
+                                                    text: controlCenter.themeColorB
+                                                    maximumLength: 7
+                                                    placeholderText: "#E33BFF"
+                                                    color: window.themeColors.text
+                                                    onEditingFinished: window.commitThemeColors(themeColorAField.text, text)
+                                                }
+                                                Button {
+                                                    text: "●"
+                                                    onClicked: colorBDialog.open()
+                                                    background: Rectangle {
+                                                        radius: 8
+                                                        color: controlCenter.themeColorB
+                                                        border.color: window.themeColors.border
+                                                    }
+                                                    contentItem: Label {
+                                                        text: "●"
+                                                        color: "white"
+                                                        horizontalAlignment: Text.AlignHCenter
+                                                        verticalAlignment: Text.AlignVCenter
+                                                    }
+                                                }
+                                            }
                                         }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 12
+                                        radius: 6
+                                        gradient: Gradient {
+                                            orientation: Gradient.Horizontal
+                                            GradientStop { position: 0.0; color: Qt.color(controlCenter.themeColorA) }
+                                            GradientStop { position: 1.0; color: Qt.color(controlCenter.themeColorB) }
+                                        }
+                                    }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        text: window.themeColorNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
                                     }
                                 }
                             }
