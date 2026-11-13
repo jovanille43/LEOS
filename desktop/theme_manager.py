@@ -42,7 +42,15 @@ class ThemeManager(QObject):
         self._theme_id = str(self.settings.get("theme", "leos-original"))
         self._asset_manager = ThemeAssetManager()
         self._asset_tasks: list[_ThemeAssetTask] = []
-        self._asset_paths = self._asset_manager.paths_for_theme(self._theme_id)
+        branding = self._asset_manager.branding_dir
+        self._asset_paths = {
+            "desktop_logo": (branding / "desktop-logo-alpha.png").resolve().as_uri(),
+            "gaming_logo": (branding / "gaming-logo-alpha.png").resolve().as_uri(),
+            "desktop_wallpaper": (branding / "wallpapers" / "desktop-leos.svg").resolve().as_uri(),
+            "gaming_wallpaper": (branding / "wallpapers" / "gaming-leos.svg").resolve().as_uri(),
+        }
+        if self._theme_id != "leos-original":
+            self._generate_assets(self._theme_id)
         self._timer = QTimer(self)
         self._timer.setInterval(max(250, int(refresh_interval_ms)))
         self._timer.timeout.connect(self.refresh)
