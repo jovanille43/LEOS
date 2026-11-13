@@ -251,6 +251,51 @@ def source_asset_urls(branding_root: Path | None = None) -> dict[str, str]:
     }
 
 
+def _cache_directory(color_a: str, color_b: str, branding_root: Path) -> Path:
+    fingerprints = []
+    for relative in (
+        "desktop-logo.jpeg", "gaming-logo.jpeg",
+        "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
+        "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
+    ):
+        path = branding_root / relative
+        try:
+            info = path.stat()
+            fingerprints.append(f"{relative}:{info.st_size}:{info.st_mtime_ns}")
+        except OSError:
+            fingerprints.append(f"{relative}:missing")
+    source_fingerprint = "|".join(fingerprints)
+    pair_id = hashlib.sha256(
+        f"{normalize_color(color_a)}|{normalize_color(color_b)}|{source_fingerprint}".encode("utf-8")
+    ).hexdigest()[:20]
+    return _cache_root() / pair_id
+
+
+def cached_themed_branding_asset_urls(
+    color_a: str,
+    color_b: str,
+    branding_root: Path | None = None,
+) -> dict[str, str]:
+    """Return ready cached variants and official source fallbacks without waiting."""
+    root = branding_root or _branding_root()
+    result = source_asset_urls(root)
+    cache = _cache_directory(color_a, color_b, root)
+    if cache.is_symlink() or not cache.is_dir():
+        return result
+    expected = {
+        "desktopLogoUrl": cache / "desktop-logo.png",
+        "gamingLogoUrl": cache / "gaming-logo.png",
+        "desktopWallpaperUrl": cache / "desktop-leos.svg",
+        "gamingWallpaperUrl": cache / "gaming-leos.svg",
+        "desktopIntroUrl": cache / "desktop-intro.mov",
+        "gamingIntroUrl": cache / "gaming-intro.mp4",
+    }
+    for key, path in expected.items():
+        if path.is_file() and not path.is_symlink() and path.stat().st_size > 0:
+            result[key] = path.as_uri()
+    return result
+
+
 def build_themed_branding_assets(
     color_a: str,
     color_b: str,
@@ -261,8 +306,7 @@ def build_themed_branding_assets(
     second = normalize_color(color_b)
     root = branding_root or _branding_root()
     original_urls = source_asset_urls(root)
-    pair_id = hashlib.sha256(f"{first}|{second}".encode("ascii")).hexdigest()[:20]
-    cache = _cache_root() / pair_id
+    cache = _cache_directory(first, second, root)
     _safe_cache_directory(cache)
 
     lock_path = cache / ".build.lock"
@@ -272,7 +316,10 @@ def build_themed_branding_assets(
     matrix = build_color_matrix(first, second)
     with lock_path.open("a", encoding="utf-8") as lock:
         os.chmod(lock_path, 0o600)
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return cached_themed_branding_asset_urls(first, second, root)
         try:
             assets: dict[str, str] = {}
             logo_paths: dict[str, Path] = {}
@@ -300,7 +347,7 @@ def build_themed_branding_assets(
                 if not output.is_file() or output.stat().st_size == 0:
                     _transform_svg(source, output, matrix, logo_paths[emblem_key])
                 assets["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"] = (
-                    output.as_uri() if output.is_file() and not output.is_symlink()
+                    output.as_uri() if output.is_file() and not output.is_symlink() and output.stat().st_size > 0
                     else original_urls["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"]
                 )
 
@@ -312,7 +359,7 @@ def build_themed_branding_assets(
                 if not output.is_file() or output.stat().st_size == 0:
                     _transform_video(source, output, matrix)
                 assets["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"] = (
-                    output.as_uri() if output.is_file() and not output.is_symlink()
+                    output.as_uri() if output.is_file() and not output.is_symlink() and output.stat().st_size > 0
                     else original_urls["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"]
                 )
             return assets
