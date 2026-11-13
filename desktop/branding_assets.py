@@ -16,7 +16,6 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any
 
 from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color
 
@@ -41,6 +40,31 @@ def _rgb01(hex_color: str) -> tuple[float, float, float]:
     return tuple(int(color[index:index + 2], 16) / 255.0 for index in (1, 3, 5))
 
 
+def _inverse_3x3(matrix: tuple[tuple[float, float, float], ...]) -> tuple[tuple[float, float, float], ...]:
+    """Invert a 3x3 matrix using pivoted Gaussian elimination."""
+    rows = [
+        [float(matrix[row][col]) for col in range(3)]
+        + [1.0 if row == col else 0.0 for col in range(3)]
+        for row in range(3)
+    ]
+    for column in range(3):
+        pivot = max(range(column, 3), key=lambda row: abs(rows[row][column]))
+        if abs(rows[pivot][column]) < 1e-10:
+            raise ValueError("The original LEOS gradient colors do not form an invertible transform")
+        rows[column], rows[pivot] = rows[pivot], rows[column]
+        divisor = rows[column][column]
+        rows[column] = [value / divisor for value in rows[column]]
+        for row in range(3):
+            if row == column:
+                continue
+            factor = rows[row][column]
+            rows[row] = [
+                rows[row][index] - factor * rows[column][index]
+                for index in range(6)
+            ]
+    return tuple(tuple(rows[row][col + 3] for col in range(3)) for row in range(3))
+
+
 def build_color_matrix(
     color_a: str,
     color_b: str,
@@ -48,19 +72,31 @@ def build_color_matrix(
     source_b: str = DEFAULT_COLOR_B,
 ) -> tuple[tuple[float, float, float], ...]:
     """Map old A/B gradient endpoints to new A/B while preserving neutral grey."""
-    import numpy as np
-
-    old_a = np.asarray(_rgb01(source_a), dtype=float)
-    old_b = np.asarray(_rgb01(source_b), dtype=float)
-    new_a = np.asarray(_rgb01(color_a), dtype=float)
-    new_b = np.asarray(_rgb01(color_b), dtype=float)
+    old_a = _rgb01(source_a)
+    old_b = _rgb01(source_b)
+    new_a = _rgb01(color_a)
+    new_b = _rgb01(color_b)
 
     # Columns are source A, source B and neutral white. The neutral constraint
     # keeps the silver lion, white highlights and grey details colour-neutral.
-    source = np.column_stack((old_a, old_b, np.ones(3, dtype=float)))
-    target = np.column_stack((new_a, new_b, np.ones(3, dtype=float)))
-    matrix = target @ np.linalg.inv(source)
-    return tuple(tuple(float(value) for value in row) for row in matrix)
+    source = (
+        (old_a[0], old_b[0], 1.0),
+        (old_a[1], old_b[1], 1.0),
+        (old_a[2], old_b[2], 1.0),
+    )
+    target = (
+        (new_a[0], new_b[0], 1.0),
+        (new_a[1], new_b[1], 1.0),
+        (new_a[2], new_b[2], 1.0),
+    )
+    inverse = _inverse_3x3(source)
+    return tuple(
+        tuple(
+            sum(target[row][inner] * inverse[inner][col] for inner in range(3))
+            for col in range(3)
+        )
+        for row in range(3)
+    )
 
 
 def transform_rgb(
@@ -239,22 +275,30 @@ def build_themed_branding_assets(
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         try:
             assets: dict[str, str] = {}
+            logo_paths: dict[str, Path] = {}
             for key, filename in _IMAGE_NAMES.items():
                 output = cache / (Path(filename).stem + ".png")
                 source = root / filename
-                if not output.is_file() or output.is_symlink():
+                if output.is_symlink():
+                    raise OSError("LEOS theme logo cache cannot contain symbolic links")
+                if not output.is_file() or output.stat().st_size == 0:
                     _image_transform(source, output, matrix)
-                assets["desktopLogoUrl" if key == "desktop_logo" else "gamingLogoUrl"] = (
-                    output.as_uri() if output.is_file() and not output.is_symlink()
-                    else original_urls["desktopLogoUrl" if key == "desktop_logo" else "gamingLogoUrl"]
-                )
+                asset_key = "desktopLogoUrl" if key == "desktop_logo" else "gamingLogoUrl"
+                if output.is_file() and not output.is_symlink() and output.stat().st_size > 0:
+                    logo_paths[key] = output
+                    assets[asset_key] = output.as_uri()
+                else:
+                    logo_paths[key] = source
+                    assets[asset_key] = original_urls[asset_key]
 
             for key, (filename, emblem_name) in _WALLPAPER_NAMES.items():
                 output = cache / filename
                 source = root / "wallpapers" / filename
-                emblem_key = "desktopLogoUrl" if key == "desktop_wallpaper" else "gamingLogoUrl"
-                emblem_path = Path(assets[emblem_key].removeprefix("file://"))
-                _transform_svg(source, output, matrix, emblem_path)
+                if output.is_symlink():
+                    raise OSError("LEOS theme wallpaper cache cannot contain symbolic links")
+                emblem_key = "desktop_logo" if key == "desktop_wallpaper" else "gaming_logo"
+                if not output.is_file() or output.stat().st_size == 0:
+                    _transform_svg(source, output, matrix, logo_paths[emblem_key])
                 assets["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"] = (
                     output.as_uri() if output.is_file() and not output.is_symlink()
                     else original_urls["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"]
@@ -263,7 +307,9 @@ def build_themed_branding_assets(
             for key, filename in _VIDEO_NAMES.items():
                 output = cache / filename
                 source = root / "animations" / filename
-                if not output.is_file() or output.is_symlink():
+                if output.is_symlink():
+                    raise OSError("LEOS theme video cache cannot contain symbolic links")
+                if not output.is_file() or output.stat().st_size == 0:
                     _transform_video(source, output, matrix)
                 assets["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"] = (
                     output.as_uri() if output.is_file() and not output.is_symlink()
