@@ -42,13 +42,13 @@ Les principales interfaces LEOS consomment la palette partagée via `ThemeManage
 La recherche de couleurs restantes doit distinguer les accents codés en dur des neutres et des couleurs fonctionnelles : remplacer toute valeur bleutée arbitrairement risquerait de dégrader le contraste ou de recolorer un statut qui n'est pas un accent.
 
 ### Emblèmes PNG
-Les PNG transparents officiels restent les sources maîtresses. Le moteur génère des copies dans le cache utilisateur et cible les teintes saturées proches des anciens accents cyan et magenta. Il conserve l'alpha et la luminosité relative des pixels afin de préserver les reflets, les halos et les détails métalliques. Les originaux empaquetés ne sont jamais écrasés.
+Les PNG transparents officiels restent les sources maîtresses. Le moteur génère des copies dans le cache utilisateur et transforme le dégradé cyan→magenta de façon continue vers la paire sélectionnée : les pixels intermédiaires sont interpolés entre les deux nouveaux accents au lieu d'être affectés brutalement à l'un ou l'autre. Il conserve l'alpha, la progression de luminosité, la chute des halos et les détails métalliques. Le dessin, les positions et la répartition spatiale du dégradé restent ceux de l'original. Les originaux empaquetés ne sont jamais écrasés.
 
 ### Fonds d'écran SVG
 Les deux SVG 4K officiels sont traités comme des modèles. Le moteur génère une copie recolorée dans le cache et la relie à l'emblème correspondant généré pour la même paire. Le fond sombre, la grille, les ombres et les éléments métalliques restent neutres. Les fichiers SVG source et les PNG originaux restent inchangés.
 
 ### Introductions vidéo
-Les fichiers MOV/MP4 officiels sont conservés comme sources. Le moteur peut construire une LUT 3D sélective et demander à FFmpeg de réencoder les introductions : seules les familles de teintes cyan/magenta sont remappées vers les deux couleurs choisies, les niveaux lumineux sont conservés et la piste audio est gardée (encodée en AAC dans les variantes MP4).
+Les fichiers MOV/MP4 officiels sont conservés comme sources. Le moteur construit une LUT 3D de résolution 49³ et demande à FFmpeg de réencoder les introductions. La même fonction d'interpolation continue que pour les PNG transforme la progression cyan→magenta vers les deux accents choisis ; elle évite une coupure chromatique au milieu du dégradé. Les niveaux lumineux sont conservés et la piste audio est gardée (encodée en AAC dans les variantes MP4).
 
 Le traitement vidéo s'exécute dans un processus séparé afin de ne pas bloquer le sélecteur ni dépendre de sa durée de vie. Si FFmpeg ou un encodeur compatible n'est pas disponible, si la conversion échoue ou si le cache n'est pas prêt, LEOS garde la vidéo officielle. L'absence de FFmpeg ne doit jamais empêcher la session de démarrer.
 
