@@ -110,52 +110,7 @@ jobs:
       - name: Test theme-aware intro video conversion
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import shutil
-          import subprocess
-          import tempfile
-          from pathlib import Path
-
-          from desktop.branding_assets import (
-              _available_video_encoder,
-              _transform_video,
-              build_color_matrix,
-          )
-
-          ffmpeg = shutil.which("ffmpeg")
-          if not ffmpeg or not _available_video_encoder(ffmpeg):
-              raise SystemExit("No supported FFmpeg video encoder is available.")
-          with tempfile.TemporaryDirectory() as directory:
-              root = Path(directory)
-              source = root / "fixture.mp4"
-              output = root / "fixture-themed.mp4"
-              subprocess.run(
-                  [
-                      ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
-                      "-f", "lavfi", "-i", "testsrc2=size=320x180:rate=10",
-                      "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=44100",
-                      "-t", "1", "-c:v", "mpeg4", "-q:v", "5", "-c:a", "aac",
-                      "-shortest", str(source),
-                  ],
-                  shell=False, check=True, capture_output=True, timeout=30,
-              )
-              if not _transform_video(
-                  source, output, build_color_matrix("#FF8800", "#0055CC")
-              ):
-                  raise SystemExit("LEOS could not create a recolored intro video.")
-              probe = subprocess.run(
-                  [
-                      shutil.which("ffprobe"), "-v", "error",
-                      "-show_entries", "stream=codec_type",
-                      "-of", "csv=p=0", str(output),
-                  ],
-                  shell=False, check=True, capture_output=True, text=True, timeout=20,
-              )
-              streams = set(probe.stdout.splitlines())
-              if not {"video", "audio"}.issubset(streams):
-                  raise SystemExit(f"Recolored intro lost a stream: {streams}")
-              print("Validated recolored intro video with audio retained.")
-          PY
+          python3 tests/validate_branding_assets.py --video
 
       - name: Verify deployed branding SHA-256 fingerprints
         run: sha256sum --check branding/DEPLOYED_SHA256SUMS
@@ -176,32 +131,7 @@ jobs:
       - name: Validate wallpaper SVG assets and official emblem links
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-
-          namespace = "{http://www.w3.org/2000/svg}"
-          xlink_href = "{http://www.w3.org/1999/xlink}href"
-          expected = {
-              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg",
-              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg",
-          }
-          for wallpaper, emblem in expected.items():
-              root = ET.parse(wallpaper).getroot()
-              if root.attrib.get("viewBox") != "0 0 3840 2160":
-                  raise SystemExit(f"Invalid 4K viewBox: {wallpaper}")
-              images = root.findall(f".//{namespace}image")
-              if (
-                  len(images) != 1
-                  or images[0].attrib.get("href") != emblem
-                  or images[0].attrib.get(xlink_href) != emblem
-              ):
-                  raise SystemExit(f"Unexpected official emblem reference: {wallpaper}")
-              target = (wallpaper.parent / emblem).resolve()
-              if not target.is_file():
-                  raise SystemExit(f"Wallpaper emblem is missing: {target}")
-              print(f"Validated {wallpaper} -> {target}")
-          PY
+          python3 tests/validate_branding_assets.py --svg
       - name: Validate LEOS image recipes
         run: |
           set -euo pipefail
