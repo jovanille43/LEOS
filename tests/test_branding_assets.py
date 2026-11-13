@@ -108,7 +108,6 @@ class BrandingAssetTests(unittest.TestCase):
         listing = """ V..... libopenh264 OpenH264 H.264 / AVC
  V..... mpeg4 MPEG-4 part 2
 """
-        self.assertEqual(_available_video_encoder.__name__, "_available_video_encoder")
         # Keep the parser decision separate from the local machine's codecs.
         from unittest.mock import patch
         from types import SimpleNamespace
