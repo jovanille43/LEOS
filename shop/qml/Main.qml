@@ -13,6 +13,8 @@ ApplicationWindow {
     property var themeColors: themeManager.palette
     property color primaryAccent: themeColors.accent_primary
     property color secondaryAccent: themeColors.accent_secondary
+    property color primaryTextAccent: themeColors.accent_primary_text
+    property color secondaryTextAccent: themeColors.accent_secondary_text
     property color primaryGlow: themeColors.accent_primary_glow
     property color secondaryGlow: themeColors.accent_secondary_glow
     property color muted: themeColors.muted_text
@@ -58,7 +60,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "BOUTIQUE"
-                        color: window.primaryAccent
+                        color: window.primaryTextAccent
                         font.pixelSize: 10
                         font.letterSpacing: 4
                     }
@@ -156,7 +158,7 @@ ApplicationWindow {
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
-                                        color: window.primaryAccent
+                                        color: window.primaryTextAccent
                                         font.pixelSize: 20
                                         font.weight: Font.Bold
                                     }
@@ -213,7 +215,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 20
                         spacing: 12
-                        Label { text: "FICHE APPLICATION"; color: window.primaryAccent; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "FICHE APPLICATION"; color: window.primaryTextAccent; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
                             color: "white"
@@ -229,9 +231,9 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
-                        Label { text: "SOURCE"; color: window.primaryAccent; font.pixelSize: 9 }
+                        Label { text: "SOURCE"; color: window.primaryTextAccent; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
-                        Label { text: "COMPATIBILITÉ"; color: window.primaryAccent; font.pixelSize: 9 }
+                        Label { text: "COMPATIBILITÉ"; color: window.primaryTextAccent; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
                             color: window.muted
@@ -249,7 +251,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
                             text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
-                            color: window.primaryAccent
+                            color: window.primaryTextAccent
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
