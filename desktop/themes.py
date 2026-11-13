@@ -12,10 +12,10 @@ DEFAULT_THEME = "leos-original"
 
 THEME_NAMES: dict[str, str] = {
     "leos-original": "LEOS Original",
-    "light": "Light",
-    "cyan": "Cyan",
-    "magenta": "Magenta",
-    "gaming": "Gaming",
+    "light": "LEOS Light",
+    "cyan": "LEOS Cyan",
+    "magenta": "LEOS Magenta",
+    "gaming": "LEOS Gaming",
 }
 
 THEME_PALETTES: dict[str, dict[str, str]] = {
