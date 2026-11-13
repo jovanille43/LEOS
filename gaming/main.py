@@ -23,8 +23,6 @@ def main() -> int:
     app = QGuiApplication(sys.argv)
     app.setApplicationName("LEOS Gaming")
     app.setOrganizationName("LEOS")
-    theme_manager = ThemeManager()
-
     try:
         instance_lock = acquire_instance_lock("gaming")
     except OSError:
@@ -44,13 +42,14 @@ def main() -> int:
         )
         return 0
 
+    theme_manager = ThemeManager()
     try:
-        return _run_locked_session(app, instance_lock)
+        return _run_locked_session(app, instance_lock, theme_manager)
     finally:
         instance_lock.release()
 
 
-def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
+def _run_locked_session(app: QGuiApplication, _instance_lock, theme_manager: ThemeManager) -> int:
     controller = GamingController()
     controller.desktopRequested.connect(app.quit)
 
