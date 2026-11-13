@@ -24,6 +24,7 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertTrue(settings.get("silent_notifications_in_gaming"))
             self.assertEqual(settings.get("transition_app_policy"), "ask")
             self.assertFalse(settings.get("onboarding_complete"))
+            self.assertFalse(settings.get("theme_selection_complete"))
             self.assertFalse(path.exists())
 
     def test_onboarding_completion_persists_between_instances(self) -> None:
@@ -33,6 +34,16 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(settings.get("onboarding_complete"))
             settings.set("onboarding_complete", True)
             self.assertTrue(SettingsStore(path).get("onboarding_complete"))
+
+    def test_theme_selection_completion_persists_independently(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme", "magenta")
+            settings.set("theme_selection_complete", True)
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme"), "magenta")
+            self.assertTrue(reloaded.get("theme_selection_complete"))
 
     def test_values_persist_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
