@@ -624,8 +624,50 @@ def _audio_details() -> tuple[str, str, str]:
     return server, output, inputs
 
 
+def _parse_input_bitmap(block: str, capability: str) -> int | None:
+    """Parse one Linux /proc input capability bitmap on the x86_64 baseline."""
+    match = re.search(
+        rf"(?m)^B:\\s+{re.escape(capability)}=([0-9a-fA-F ]+)$", block
+    )
+    if not match:
+        return None
+
+    words = match.group(1).split()
+    if not words or any(not re.fullmatch(r"[0-9a-fA-F]{1,16}", word) for word in words):
+        return None
+
+    # The kernel prints unsigned-long bitmap words from most to least
+    # significant. LEOS currently targets x86_64, where unsigned long is 64-bit.
+    bitmap = 0
+    for word in words:
+        bitmap = (bitmap << 64) | int(word, 16)
+    return bitmap
+
+
+def _has_evdev_gamepad_capabilities(block: str) -> bool:
+    """Recognize an event-only gamepad without mistaking keyboards or touchscreens."""
+    events = _parse_input_bitmap(block, "EV")
+    keys = _parse_input_bitmap(block, "KEY")
+    axes = _parse_input_bitmap(block, "ABS")
+    if events is None or keys is None or axes is None:
+        return False
+
+    # Require EV_KEY + EV_ABS, at least one joystick/gamepad button, and a
+    # recognizable pair of stick or hat axes. A touchscreen's X/Y axes alone
+    # are therefore not enough to classify it as a controller.
+    if not (events & (1 << 0x01)) or not (events & (1 << 0x03)):
+        return False
+    has_gamepad_button = any(keys & (1 << code) for code in range(0x120, 0x13F))
+    axis_pairs = ((0x00, 0x01), (0x03, 0x04), (0x10, 0x11))
+    has_axis_pair = any(
+        axes & (1 << first) and axes & (1 << second)
+        for first, second in axis_pairs
+    )
+    return has_gamepad_button and has_axis_pair
+
+
 def _controller_details() -> str:
-    """List controllers by recognizable names or Linux joystick handlers."""
+    """List controllers by names, joydev handlers, or evdev capabilities."""
     devices = _read("/proc/bus/input/devices")
     names: list[str] = []
     controller_name = re.compile(
@@ -633,21 +675,30 @@ def _controller_details() -> str:
         re.IGNORECASE,
     )
     joystick_handler = re.compile(
-        r"^H:\s+Handlers=.*(?:^|\s)(js\d+)(?:\s|$)", re.MULTILINE
+        r"^H:\\s+Handlers=.*(?:^|\\s)(js\\d+)(?:\\s|$)", re.MULTILINE
+    )
+    event_handler = re.compile(
+        r"^H:\\s+Handlers=.*(?:^|\\s)(event\\d+)(?:\\s|$)", re.MULTILINE
     )
 
-    for block in devices.split("\n\n"):
-        name_match = re.search(r'^N:\s+Name="([^"]+)"', block, re.MULTILINE)
-        handler_match = joystick_handler.search(block)
+    for block in devices.split("\\n\\n"):
+        name_match = re.search(r'^N:\\s+Name="([^"]+)"', block, re.MULTILINE)
+        joystick_match = joystick_handler.search(block)
+        event_match = event_handler.search(block)
         name = name_match.group(1).strip() if name_match else ""
+        event_gamepad = bool(event_match and _has_evdev_gamepad_capabilities(block))
 
-        # Linux's joydev handler is a stronger signal than a vendor/product
-        # name. It also catches generic HID devices whose names do not mention
-        # "gamepad", "controller" or a known console brand.
-        if not name and handler_match:
-            name = f"Manette Linux ({handler_match.group(1)})"
+        # joydev is the strongest generic signal. Some modern HID devices
+        # expose only eventN, so use their kernel-declared button/axis bitmaps
+        # as a conservative fallback when joydev is unavailable.
+        if not name and joystick_match:
+            name = f"Manette Linux ({joystick_match.group(1)})"
+        elif not name and event_gamepad and event_match:
+            name = f"Manette Linux ({event_match.group(1)})"
 
-        if not name or not (controller_name.search(name) or handler_match):
+        if not name or not (
+            controller_name.search(name) or joystick_match or event_gamepad
+        ):
             continue
         if name not in names:
             names.append(name)
