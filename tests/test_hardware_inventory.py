@@ -74,6 +74,58 @@ class HardwareInventoryTests(unittest.TestCase):
         with patch.object(hardware, "_read", return_value=devices):
             self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
 
+    def test_controller_inventory_detects_generic_event_only_gamepad_from_capabilities(self):
+        def bitmap(*codes):
+            value = sum(1 << code for code in codes)
+            highest_word = value.bit_length() // 64
+            words = [
+                (value >> (word * 64)) & ((1 << 64) - 1)
+                for word in range(highest_word, -1, -1)
+            ]
+            return " ".join(f"{word:x}" for word in words)
+
+        devices = (
+            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\\n'
+            'N: Name="HID 0810:0001"\\n'
+            'H: Handlers=event42\\n'
+            f'B: EV={bitmap(0x01, 0x03)}\\n'
+            f'B: KEY={bitmap(0x130, 0x131, 0x13C)}\\n'
+            f'B: ABS={bitmap(0x00, 0x01, 0x10, 0x11)}\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "HID 0810:0001")
+
+    def test_controller_inventory_does_not_mistake_touchscreen_for_gamepad(self):
+        def bitmap(*codes):
+            value = sum(1 << code for code in codes)
+            highest_word = value.bit_length() // 64
+            words = [
+                (value >> (word * 64)) & ((1 << 64) - 1)
+                for word in range(highest_word, -1, -1)
+            ]
+            return " ".join(f"{word:x}" for word in words)
+
+        devices = (
+            'I: Bus=0018 Vendor=0000 Product=0000 Version=0000\\n'
+            'N: Name="Generic Touchscreen"\\n'
+            'H: Handlers=event7\\n'
+            f'B: EV={bitmap(0x01, 0x03)}\\n'
+            f'B: KEY={bitmap(0x14A)}\\n'
+            f'B: ABS={bitmap(0x00, 0x01, 0x35, 0x36)}\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
+
+    def test_controller_inventory_does_not_infer_event_only_gamepad_without_capability_data(self):
+        devices = (
+            'I: Bus=0003 Vendor=0810 Product=0001 Version=0100\\n'
+            'N: Name="HID 0810:0001"\\n'
+            'H: Handlers=event42\\n'
+            'B: EV=1b\\n'
+        )
+        with patch.object(hardware, "_read", return_value=devices):
+            self.assertEqual(hardware._controller_details(), "Aucune manette détectée")
+
     def test_cpu_details_reads_arm_processor_field_and_online_cpu_list(self):
         responses = {
             "/proc/cpuinfo": "Processor : ARMv8 Processor rev 1 (v8l)\n",
