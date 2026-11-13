@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -27,6 +28,22 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string editingAccent: "primary"
+
+    function commitAccentColors() {
+        if (!controlCenter.setAccentColors(primaryAccentInput.text.trim(), secondaryAccentInput.text.trim())) {
+            primaryAccentInput.text = window.themeColors.accent_primary
+            secondaryAccentInput.text = window.themeColors.accent_secondary
+        }
+    }
+
+    function openAccentPicker(which) {
+        window.editingAccent = which
+        accentPicker.selectedColor = which === "primary"
+            ? window.themeColors.accent_primary
+            : window.themeColors.accent_secondary
+        accentPicker.open()
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -44,6 +61,8 @@ ApplicationWindow {
         function onSettingsChanged() {
             const themes = controlCenter.themeOptions.map(option => option.id)
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            primaryAccentInput.text = controlCenter.themePalette.accent_primary
+            secondaryAccentInput.text = controlCenter.themePalette.accent_secondary
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -56,6 +75,19 @@ ApplicationWindow {
             notificationDurationBox.currentIndex = Math.max(0, durations.indexOf(controlCenter.notificationDuration))
             const priorities = ["all", "important", "critical"]
             notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
+        }
+    }
+
+    ColorDialog {
+        id: accentPicker
+        title: "Choisir une couleur d'accent"
+        onAccepted: {
+            const chosen = selectedColor.toString().toUpperCase()
+            if (window.editingAccent === "primary")
+                primaryAccentInput.text = chosen
+            else
+                secondaryAccentInput.text = chosen
+            window.commitAccentColors()
         }
     }
 
@@ -506,7 +538,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 252
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -539,6 +571,40 @@ ApplicationWindow {
                                             if (currentIndex >= 0 && currentIndex < options.length)
                                                 controlCenter.setTheme(options[currentIndex].id)
                                         }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        TextField {
+                                            id: primaryAccentInput
+                                            Layout.fillWidth: true
+                                            placeholderText: "Couleur A · #RRGGBB"
+                                            text: window.themeColors.accent_primary
+                                            onEditingFinished: window.commitAccentColors()
+                                        }
+                                        Button {
+                                            text: "Palette A"
+                                            onClicked: window.openAccentPicker("primary")
+                                        }
+                                        TextField {
+                                            id: secondaryAccentInput
+                                            Layout.fillWidth: true
+                                            placeholderText: "Couleur B · #RRGGBB"
+                                            text: window.themeColors.accent_secondary
+                                            onEditingFinished: window.commitAccentColors()
+                                        }
+                                        Button {
+                                            text: "Palette B"
+                                            onClicked: window.openAccentPicker("secondary")
+                                        }
+                                    }
+                                    Label {
+                                        visible: window.themeColors.contrast_warning
+                                        text: window.themeColors.contrast_warning_text
+                                        color: "#F4C66A"
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
