@@ -80,6 +80,35 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertTrue(sections.issubset(set(SETTINGS_MODULES)))
         self.assertIn("wallpaper", SETTINGS_MODULES)
 
+    def test_appearance_resource_shortcuts_use_allowlisted_kde_modules(self):
+        from control_center.settings_modules import SETTINGS_MODULES, settings_module_command
+
+        self.assertEqual(SETTINGS_MODULES["icons"], "kcm_icons")
+        self.assertEqual(SETTINGS_MODULES["desktop-theme"], "kcm_desktoptheme")
+        self.assertEqual(SETTINGS_MODULES["window-decoration"], "kcm_kwindecoration")
+        finder = lambda name: "/usr/bin/kcmshell6" if name == "kcmshell6" else None
+        self.assertEqual(
+            settings_module_command("icons", finder),
+            ["/usr/bin/kcmshell6", "kcm_icons"],
+        )
+        self.assertEqual(
+            settings_module_command("desktop-theme", finder),
+            ["/usr/bin/kcmshell6", "kcm_desktoptheme"],
+        )
+        self.assertEqual(
+            settings_module_command("window-decoration", finder),
+            ["/usr/bin/kcmshell6", "kcm_kwindecoration"],
+        )
+
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        self.assertIn('controlCenter.openSettingsModule("icons")', qml)
+        self.assertIn('controlCenter.openSettingsModule("desktop-theme")', qml)
+        self.assertIn('controlCenter.openSettingsModule("window-decoration")', qml)
+        self.assertIn("enabled: controlCenter.kdeThemeResourcesExported", qml)
+        self.assertIn("def kdeThemeResourcesExported(self)", controller)
+
     def test_appearance_exposes_both_leos_wallpapers_and_native_kde_selection(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
