@@ -64,8 +64,13 @@ empaquetées ne sont jamais modifiées. Les introductions MOV/MP4 passent par le
 manifeste commun et peuvent être recolorées en arrière-plan avec une LUT 3D
 sélective via FFmpeg ; l'audio est conservé et les originaux restent le repli.
 Le rendu visuel des vidéos dérivées doit encore être inspecté sur Bazzite.
-Les SVG du thème d'icônes, du Plasma Style et d'Aurorae conservent encore des
-accents fixes et restent à migrer.
+Pour les palettes non originales, le moteur génère également des copies
+recolorées du thème d'icônes, du Plasma Style et d'Aurorae dans le cache privé
+utilisateur. Chaque variante reçoit un identifiant KDE distinct. Les dégradés
+sont recolorés sans modifier leur structure ; les surfaces sombres et les
+contours gris peu saturés sont préservés. Ces paquets restent dans le cache :
+ils ne sont ni exportés ni activés dans le profil KDE sans une action explicite
+qui sera ajoutée séparément.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
