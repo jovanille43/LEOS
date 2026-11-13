@@ -122,6 +122,13 @@ ApplicationWindow {
         function onChanged() {
             primaryAccentInput.text = themeManager.palette.accent_primary
             secondaryAccentInput.text = themeManager.palette.accent_secondary
+            const options = themeManager.options
+            for (let i = 0; i < options.length; ++i) {
+                if (options[i].id === themeManager.currentTheme) {
+                    themeSelectionBox.currentIndex = i
+                    break
+                }
+            }
         }
     }
 
