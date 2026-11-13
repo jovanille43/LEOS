@@ -66,33 +66,7 @@ jobs:
                 echo "Linting ${file}"
                 qmllint-qt6 "${file}"
               done
-              PYTHONPATH=/workspace python3 - <<'PY'
-              import tempfile
-              from pathlib import Path
-              from PySide6.QtGui import QColor, QImage
-              from desktop.branding_assets import _image_transform, build_color_matrix
-
-              with tempfile.TemporaryDirectory() as directory:
-                  root = Path(directory)
-                  source = root / "source.png"
-                  output = root / "derived.png"
-                  image = QImage(3, 1, QImage.Format.Format_ARGB32)
-                  image.setPixelColor(0, 0, QColor(0, 217, 255))
-                  image.setPixelColor(1, 0, QColor(227, 59, 255))
-                  image.setPixelColor(2, 0, QColor(128, 128, 128))
-                  if not image.save(str(source), "PNG"):
-                      raise SystemExit("Could not create the image transform fixture")
-                  matrix = build_color_matrix("#FF8800", "#0055CC")
-                  if not _image_transform(source, output, matrix):
-                      raise SystemExit("LEOS logo recoloring did not produce an image")
-                  result = QImage(str(output))
-                  expected = ((255, 136, 0), (0, 85, 204), (128, 128, 128))
-                  for column, rgb in enumerate(expected):
-                      actual = result.pixelColor(column, 0)
-                      if (actual.red(), actual.green(), actual.blue()) != rgb:
-                          raise SystemExit(f"Unexpected recolored pixel: {actual.name()}")
-              print("Validated derived logo endpoints and neutral metallic grey.")
-              PY
+              PYTHONPATH=/workspace python3 /workspace/tests/integration/branding_image_smoke.py
             '
 
       - name: Set up Python for source and unit tests
