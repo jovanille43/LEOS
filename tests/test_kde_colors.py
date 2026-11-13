@@ -15,8 +15,6 @@ from desktop.kde_colors import (
     build_colorscheme,
     build_custom_colorscheme,
     custom_scheme_id,
-    build_custom_colorscheme,
-    custom_scheme_id,
 )
 
 
@@ -124,52 +122,6 @@ class KdeColorSchemeTests(unittest.TestCase):
     def test_generates_all_five_palettes(self):
         for theme in THEME_NAMES:
             self.assertIn("[LEOS]", build_colorscheme(theme))
-
-    def test_custom_a_b_pair_generates_a_matching_kde_gradient(self):
-        content = build_custom_colorscheme("#00FF88", "#D000AA")
-        parser = configparser.ConfigParser(interpolation=None)
-        parser.optionxform = str
-        parser.read_string(content)
-        self.assertEqual(
-            parser["General"]["ColorScheme"],
-            "LEOS-00FF88-D000AA",
-        )
-        self.assertEqual(parser["General"]["Name"], "LEOS personnalisé")
-        self.assertEqual(parser["General"]["AccentColor"], "0,255,136")
-        self.assertEqual(parser["LEOS"]["ThemeId"], "custom")
-
-    def test_custom_scheme_ids_are_deterministic_and_safe(self):
-        first = custom_scheme_id("#00ff88", "#d000aa")
-        second = custom_scheme_id("#00FF88", "#D000AA")
-        self.assertEqual(first, second)
-        self.assertNotEqual(first, custom_scheme_id("#00FF88", "#D000AB"))
-        self.assertRegex(first, r"^LEOS-[A-F0-9]{6}-[A-F0-9]{6}$")
-
-    def test_custom_scheme_rejects_invalid_color_endpoints(self):
-        for color_a, color_b in (
-            ("cyan", "#D000AA"),
-            ("#00FF88", "#FFF"),
-            ("#11223344", "#D000AA"),
-        ):
-            with self.subTest(color_a=color_a, color_b=color_b):
-                with self.assertRaises(ValueError):
-                    build_custom_colorscheme(color_a, color_b)
-
-    def test_installs_and_applies_custom_gradient_with_rollback_state(self):
-        path = self.manager.install_custom_scheme("#00FF88", "#D000AA")
-        self.assertEqual(
-            path.name,
-            "LEOS-00FF88-D000AA.colors",
-        )
-        message = self.manager.apply_custom_theme("#00FF88", "#D000AA")
-        self.assertIn("LEOS personnalisé", message)
-        args, kwargs = self.runner.calls[-1]
-        self.assertEqual(args, [
-            "/usr/bin/plasma-apply-colorscheme",
-            "LEOS-00FF88-D000AA",
-        ])
-        self.assertFalse(kwargs["shell"])
-        self.assertTrue(self.manager.can_restore())
 
     def test_unknown_theme_is_rejected(self):
         with self.assertRaises(ValueError):
