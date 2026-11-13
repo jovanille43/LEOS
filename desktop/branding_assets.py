@@ -201,10 +201,40 @@ def _transform_svg(
     return destination.is_file() and destination.stat().st_size > 0
 
 
+def _available_video_encoder(ffmpeg: str) -> str | None:
+    """Choose a common encoder supported by the installed FFmpeg build."""
+    try:
+        result = subprocess.run(
+            [ffmpeg, "-hide_banner", "-encoders"],
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    available = set()
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and len(parts[0]) == 6:
+            available.add(parts[1])
+    for candidate in ("libx264", "libopenh264", "mpeg4"):
+        if candidate in available:
+            return candidate
+    return None
+
+
 def _transform_video(source: Path, destination: Path, matrix) -> bool:
-    """Re-encode one intro with the exact same RGB endpoint transform and copied audio."""
+    """Re-encode one intro with the same RGB transform and retain its audio."""
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg or source.is_symlink() or not source.is_file():
+        return False
+
+    encoder = _available_video_encoder(ffmpeg)
+    if encoder is None:
         return False
 
     keys = ("rr", "rg", "rb", "gr", "gg", "gb", "br", "bg", "bb")
@@ -218,10 +248,14 @@ def _transform_video(source: Path, destination: Path, matrix) -> bool:
         "-i", str(source),
         "-map", "0:v:0", "-map", "0:a?",
         "-vf", color_filter + ",format=yuv420p",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-        "-c:a", "copy", "-map_metadata", "0",
-        str(temporary),
     ]
+    if encoder == "libx264":
+        command.extend(["-c:v", encoder, "-preset", "veryfast", "-crf", "20"])
+    elif encoder == "libopenh264":
+        command.extend(["-c:v", encoder, "-b:v", "5M", "-maxrate", "7M", "-bufsize", "10M"])
+    else:
+        command.extend(["-c:v", encoder, "-q:v", "3"])
+    command.extend(["-c:a", "copy", "-map_metadata", "0", str(temporary)])
     try:
         result = subprocess.run(
             command, shell=False, capture_output=True, text=True,
