@@ -6,6 +6,23 @@ LEOS repose sur Bazzite et son système de déploiements OSTree. La récupérati
 
 Cette procédure concerne les images LEOS basées sur Bazzite avec OSTree. Les intitulés exacts du menu de démarrage peuvent varier selon la version de Bazzite et le firmware.
 
+## Sauvegarder et restaurer les préférences LEOS
+
+Le Centre de contrôle propose une page **Sauvegardes** dédiée aux réglages propres à LEOS. Elle permet de créer une copie privée des préférences connues : couleurs A/B, dernier mode utilisé, animations, sons, notifications et autres valeurs enregistrées par LEOS.
+
+Les fichiers sont conservés dans `$XDG_STATE_HOME/leos/settings-backups/` (par défaut `~/.local/state/leos/settings-backups/`). Chaque sauvegarde comprend un fichier de données et un manifeste d'intégrité SHA-256. Le dossier et les fichiers sont créés avec des permissions privées ; les liens symboliques, fichiers non réguliers, données incomplètes et sauvegardes altérées sont refusés.
+
+Pour restaurer :
+
+1. Ouvrir le Centre de contrôle puis **Sauvegardes**.
+2. Vérifier qu'une sauvegarde est disponible et choisir **Restaurer la dernière**.
+3. Lire la confirmation : seule la configuration LEOS est remplacée.
+4. Confirmer l'action. LEOS crée automatiquement une sauvegarde de l'état courant avant d'appliquer la copie vérifiée.
+
+La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par défaut `~/.config/leos/settings.json`). Elle ne modifie ni les données personnelles, ni les comptes, ni les jeux, ni les applications, ni les panneaux ou fichiers de configuration KDE. La validation des valeurs est rejouée avant écriture ; une sauvegarde invalide n'est jamais appliquée. Une restauration explicitement confirmée peut également remplacer un fichier de préférences LEOS devenu illisible.
+
+**Important :** ces sauvegardes sont locales au disque. Elles ne protègent pas contre la panne ou la perte de ce disque. Pour une protection externe, copie le dossier `settings-backups` sur un support distinct et conserve ensemble les fichiers `.bak` et `.json` ayant le même identifiant. Elles ne remplacent pas une sauvegarde des documents et données personnelles.
+
 ## Avant une mise à jour
 
 1. Sauvegarder les fichiers personnels importants sur un autre support.
