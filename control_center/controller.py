@@ -17,6 +17,7 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
+from leos_core.settings_backup import SettingsBackupManager
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
@@ -144,10 +145,13 @@ class ControlCenterController(QObject):
     networkChanged = Signal()
     diagnosticsChanged = Signal()
     cleanupChanged = Signal()
+    settingsBackupChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self.settingsBackups = SettingsBackupManager(self.settings)
+        self._settings_backup_snapshot = self._read_settings_backup_snapshot()
         self._shared_settings_snapshot = self._read_shared_settings_snapshot()
         self._settings_sync_timer = QTimer(self)
         self._settings_sync_timer.setInterval(1500)
@@ -253,6 +257,30 @@ class ControlCenterController(QObject):
         self._deployment_timer.timeout.connect(self.refreshPendingSystemUpdate)
         self._deployment_timer.start()
         QTimer.singleShot(2500, self.refreshPendingSystemUpdate)
+
+    def _read_settings_backup_snapshot(self) -> dict[str, object]:
+        entries = self.settingsBackups.list_backups()
+        latest = entries[0] if entries else {}
+        return {
+            "available": bool(entries),
+            "count": len(entries),
+            "latestCreatedUtc": str(latest.get("created_utc", "")),
+            "latestId": str(latest.get("backup_id", "")),
+        }
+
+    def _refresh_settings_backup_snapshot(self) -> None:
+        snapshot = self._read_settings_backup_snapshot()
+        if snapshot != self._settings_backup_snapshot:
+            self._settings_backup_snapshot = snapshot
+            self.settingsBackupChanged.emit()
+
+    @Property("QVariantMap", notify=settingsBackupChanged)
+    def settingsBackupSnapshot(self) -> dict[str, object]:
+        return dict(self._settings_backup_snapshot)
+
+    @Slot()
+    def refreshSettingsBackups(self) -> None:
+        self._refresh_settings_backup_snapshot()
 
     def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
         keys = (
@@ -849,6 +877,47 @@ class ControlCenterController(QObject):
     def setDesktopWidgetsEnabled(self, enabled: bool) -> None:
         self.desktopLayout.set_widgets_enabled(enabled)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def createSettingsBackup(self) -> str:
+        """Create a verified private snapshot of all LEOS preferences."""
+        try:
+            backup_id = self.settingsBackups.create_backup()
+        except (OSError, ValueError, TypeError):
+            message = "La sauvegarde des préférences LEOS n'a pas pu être créée."
+            post_notification("Sauvegarde LEOS impossible", message, "error")
+            return message
+        self._refresh_settings_backup_snapshot()
+        message = f"Sauvegarde des préférences créée ({backup_id[:8]})."
+        post_notification("Préférences LEOS sauvegardées", message, "success")
+        return message
+
+    @Slot(bool, result=str)
+    def restoreLatestSettingsBackup(self, confirmed: bool) -> str:
+        """Restore the last verified preference snapshot after UI confirmation."""
+        if confirmed is not True:
+            return "Confirmation explicite requise ; aucun réglage n'a été modifié."
+        backup_id = self.settingsBackups.latest_backup_id()
+        if backup_id is None:
+            return "Aucune sauvegarde LEOS vérifiée n'est disponible."
+        try:
+            self.settingsBackups.restore_backup(backup_id, confirmed=True)
+        except (OSError, ValueError, TypeError, PermissionError):
+            message = (
+                "La restauration a échoué. Les réglages actuels ont été conservés "
+                "ou leur état de secours est resté sauvegardé."
+            )
+            post_notification("Restauration LEOS impossible", message, "error")
+            return message
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self.settingsChanged.emit()
+        self._refresh_settings_backup_snapshot()
+        message = (
+            "Les préférences LEOS ont été restaurées. Une sauvegarde de l'état "
+            "précédent a été créée automatiquement."
+        )
+        post_notification("Préférences LEOS restaurées", message, "success")
+        return message
 
     @Slot(result=str)
     def createPlasmaBackup(self) -> str:
