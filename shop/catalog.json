@@ -127,5 +127,14 @@
     "source": "Flathub",
     "compatibility": "Un BIOS obtenu légalement depuis une console compatible peut être nécessaire. Les jeux ne sont pas fournis.",
     "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
+  },
+  {
+    "id": "info.cemu.Cemu",
+    "name": "Cemu",
+    "category": "Émulation",
+    "description": "Émulateur Nintendo Wii U pour Linux, compatible avec les jeux et homebrews Wii U pris en charge.",
+    "source": "Flathub",
+    "compatibility": "Application Flatpak x86_64. Les performances dépendent du CPU, du GPU et des pilotes Vulkan/OpenGL ; les jeux et données système ne sont pas fournis.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite. Aucun jeu, clé ou fichier système n'est téléchargé par LEOS."
   }
 ]
