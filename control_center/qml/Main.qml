@@ -144,6 +144,17 @@ ApplicationWindow {
         }
     }
 
+    FolderDialog {
+        id: settingsBackupExportDialog
+        title: "Choisir un dossier externe pour la sauvegarde"
+        onAccepted: {
+            window.settingsBackupNotice = controlCenter.exportSettingsBackup(
+                window.pendingSettingsBackupId,
+                selectedFolder.toLocalFile()
+            )
+        }
+    }
+
     Dialog {
         id: settingsBackupConfirmation
         modal: true
@@ -2206,7 +2217,22 @@ ApplicationWindow {
                                                 settingsBackupConfirmation.open()
                                             }
                                         }
+                                        Button {
+                                            text: "EXPORTER LA SÉLECTION"
+                                            enabled: settingsBackupSelector.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingSettingsBackupId = settingsBackupSelector.currentValue
+                                                settingsBackupExportDialog.open()
+                                            }
+                                        }
                                         Item { Layout.fillWidth: true }
+                                    }
+                                    Label {
+                                        text: "L'export copie la sauvegarde et son manifeste SHA-256 vers le dossier choisi. Les fichiers existants ne sont jamais écrasés."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     Label {
                                         text: window.settingsBackupNotice
