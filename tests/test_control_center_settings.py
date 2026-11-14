@@ -122,6 +122,30 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("text: settingsNavigationButton.text", qml)
         self.assertNotIn("text: parent.text", qml)
 
+    def test_control_center_shutdown_stops_periodic_work_and_processes(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        main = (root / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("def shutdown(self)", controller)
+        for timer in (
+            "_settings_sync_timer",
+            "_hardware_timer",
+            "_network_timer",
+            "_diagnostics_timer",
+            "_cleanup_timer",
+            "_system_update_timeout",
+            "_deployment_timeout",
+            "_deployment_timer",
+        ):
+            with self.subTest(timer=timer):
+                self.assertIn(f"self.{timer},", controller)
+        self.assertIn("self._system_update_process.kill()", controller)
+        self.assertIn("self._deployment_process", controller)
+        self.assertIn("self.monitor.stop()", controller)
+        self.assertIn("app.aboutToQuit.connect(controller.shutdown)", main)
+        self.assertIn("controller.shutdown()", main)
+        self.assertIn("if self._shutting_down:", controller)
+
     def test_overview_uses_real_shared_monitor_values(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
