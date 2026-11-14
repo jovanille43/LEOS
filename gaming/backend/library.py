@@ -418,6 +418,11 @@ class GameLibraryModel(QAbstractListModel):
                 ):
                     discovered.setdefault(game["id"], game)
 
+        # Discover local ROM/disc files in conventional user folders only.
+        # The scanner reads metadata only; it never opens or launches a game.
+        for game in discover_emulated_games():
+            discovered.setdefault(game["id"], game)
+
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
