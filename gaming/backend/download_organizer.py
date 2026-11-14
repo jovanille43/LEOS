@@ -94,18 +94,19 @@ def resolve_download_directory(
                 if len(parts) != 1:
                     break
                 value = parts[0]
+                home_relative = value.startswith("${HOME}/") or value.startswith("$HOME/")
                 if value.startswith("${HOME}/"):
                     value = str(base / value[len("${HOME}/"):])
                 elif value.startswith("$HOME/"):
                     value = str(base / value[len("$HOME/"):])
-                else:
-                    # Only literal absolute paths inside HOME are accepted.
-                    if "$" in value or value.startswith("~"):
-                        break
+                elif "$" in value or value.startswith("~"):
+                    break
                 candidate = Path(value)
                 if not candidate.is_absolute():
                     break
                 resolved = candidate.resolve(strict=False)
+                if home_relative:
+                    resolved.relative_to(base)
                 if resolved != base and resolved != Path(resolved.anchor):
                     return resolved
                 break
@@ -120,17 +121,35 @@ def resolve_download_directory(
 
 
 def _move_without_overwrite(source: Path, destination: Path) -> None:
-    """Move a regular file atomically, with a verified copy fallback across filesystems."""
-    try:
-        source.rename(destination)
-        return
-    except OSError as error:
-        if error.errno != errno.EXDEV:
-            raise
-
+    """Move without replacing any existing destination, including across filesystems."""
     before = source.stat(follow_symlinks=False)
     if not stat.S_ISREG(before.st_mode):
         raise OSError("Download is not a regular file")
+    try:
+        # A hard link is an atomic no-replace operation on a single filesystem.
+        os.link(source, destination, follow_symlinks=False)
+        try:
+            source.unlink()
+        except OSError:
+            try:
+                destination.unlink()
+            except OSError:
+                pass
+            raise
+        return
+    except FileExistsError:
+        raise
+    except OSError as error:
+        if error.errno not in {
+            errno.EXDEV,
+            errno.EPERM,
+            errno.EACCES,
+            errno.EMLINK,
+            getattr(errno, "EOPNOTSUPP", errno.EPERM),
+            getattr(errno, "ENOTSUP", errno.EPERM),
+        }:
+            raise
+
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=".leos-move-", dir=destination.parent
     )
@@ -155,10 +174,19 @@ def _move_without_overwrite(source: Path, destination: Path) -> None:
             or copied != before.st_size
         ):
             raise OSError("Download changed while being copied")
-        if destination.exists():
-            raise OSError("Destination already exists")
-        temporary.rename(destination)
-        source.unlink()
+        try:
+            os.link(temporary, destination, follow_symlinks=False)
+        except FileExistsError:
+            raise
+        temporary.unlink()
+        try:
+            source.unlink()
+        except OSError:
+            try:
+                destination.unlink()
+            except OSError:
+                pass
+            raise
     except Exception:
         try:
             temporary.unlink()
@@ -350,10 +378,13 @@ class DownloadOrganizer:
                 return []
             downloads_resolved = downloads.resolve(strict=True)
             root_resolved = root.resolve(strict=False)
+            if downloads_resolved in (self.home, Path(downloads_resolved.anchor)):
+                return []
+            if root_resolved == self.home or root_resolved == Path(root_resolved.anchor):
+                return []
             if downloads_resolved == root_resolved:
                 return []
-            if root_resolved != self.home:
-                root_resolved.relative_to(self.home)
+            root_resolved.relative_to(self.home)
         except (OSError, ValueError):
             return []
 
