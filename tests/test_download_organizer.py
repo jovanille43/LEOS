@@ -16,6 +16,12 @@ from gaming.backend.download_organizer import (
 
 
 class DownloadOrganizerTests(unittest.TestCase):
+    def test_defaults_to_dedicated_jeux_inbox(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            organizer = DownloadOrganizer(home=home)
+            self.assertEqual(organizer.downloads_dir, home / "Jeux")
+
     def test_resolves_custom_xdg_download_directory_without_shell_evaluation(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
