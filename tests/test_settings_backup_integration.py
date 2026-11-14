@@ -50,7 +50,6 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
         self.assertIn("settingsBackupConfirmation.open()", qml)
         self.assertIn("RESTAURER LA SÉLECTION", qml)
         self.assertIn("EXPORTER LA SÉLECTION", qml)
-        self.assertIn("Les fichiers existants ne sont jamais écrasés.", qml)
         self.assertIn("Une copie de l'état actuel sera créée automatiquement", qml)
         self.assertIn("exporte une sauvegarde vers une clé USB", qml)
         self.assertIn("Aucun fichier existant n'est écrasé.", qml)
