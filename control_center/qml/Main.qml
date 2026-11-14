@@ -525,7 +525,7 @@ ApplicationWindow {
                                                     Layout.fillWidth: true
                                                     text: controlCenter.themeColorA
                                                     maximumLength: 7
-                                                    placeholderText: "#00D9FF"
+                                                    placeholderText: "#RRGGBB"
                                                     color: window.themeColors.text
                                                     onEditingFinished: window.commitThemeColors(text, themeColorBField.text)
                                                 }
@@ -563,7 +563,7 @@ ApplicationWindow {
                                                     Layout.fillWidth: true
                                                     text: controlCenter.themeColorB
                                                     maximumLength: 7
-                                                    placeholderText: "#E33BFF"
+                                                    placeholderText: "#RRGGBB"
                                                     color: window.themeColors.text
                                                     onEditingFinished: window.commitThemeColors(themeColorAField.text, text)
                                                 }
