@@ -321,8 +321,11 @@ ApplicationWindow {
     }
 
     function handleGamepadAction(action) {
-        if (returningToDesktop)
+        if (returningToDesktop) {
+            if (action === "back")
+                finishDesktopReturn()
             return
+        }
         if (returnDialog.visible) {
             if (action === "confirm") {
                 returnDialog.close()
@@ -1264,7 +1267,7 @@ ApplicationWindow {
             Label {
                 id: skipIntroLabel
                 anchors.centerIn: parent
-                text: "ÉCHAP OU CLIC POUR PASSER"
+                text: "ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER"
                 color: "white"
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
