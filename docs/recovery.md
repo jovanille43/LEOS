@@ -21,6 +21,8 @@ Pour restaurer :
 
 Pour exporter une copie hors du PC, sélectionner la sauvegarde voulue puis choisir **Exporter la sélection**. Choisir un dossier sur un support externe monté. LEOS y copie ensemble le fichier `.bak` et son manifeste `.json`, sans écraser des fichiers existants. Conserver les deux fichiers ayant le même identifiant : le manifeste permet de contrôler l'intégrité de la copie avant restauration.
 
+Pour importer une copie externe, choisir **Importer depuis un support** puis sélectionner le manifeste `.json` ; le fichier `.bak` correspondant doit rester dans le même dossier. LEOS vérifie l'identifiant, la version du format, les valeurs de préférences et le SHA-256 avant l'import. Une sauvegarde déjà présente ou altérée est refusée sans remplacer les fichiers locaux.
+
 La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par défaut `~/.config/leos/settings.json`). Elle ne modifie ni les données personnelles, ni les comptes, ni les jeux, ni les applications, ni les panneaux ou fichiers de configuration KDE. Les préférences de disposition dans `desktop-layout.json` et la configuration de Plasma ne sont pas incluses dans cette sauvegarde ; elles disposent de mécanismes distincts. La validation des valeurs est rejouée avant écriture ; une sauvegarde invalide n'est jamais appliquée. Une restauration explicitement confirmée peut également remplacer un fichier de préférences LEOS devenu illisible.
 
 **Important :** la sauvegarde automatique reste locale au disque et ne protège pas contre la panne ou la perte de ce disque. Utilise l'export vers un support distinct pour conserver une copie externe. Ces snapshots ne remplacent pas une sauvegarde des documents et données personnelles.
