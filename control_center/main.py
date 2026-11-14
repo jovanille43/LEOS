@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import traceback
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -22,20 +23,31 @@ def main() -> int:
     app.setApplicationName("LEOS Control Center")
     app.setOrganizationName("LEOS")
 
-    controller = ControlCenterController()
-    theme = ThemeController()
-    engine = QQmlApplicationEngine()
-    context = engine.rootContext()
-    context.setContextProperty("controlCenter", controller)
-    context.setContextProperty("leosTheme", theme)
-    context.setContextProperty("systemMonitor", controller.monitor)
-    qml_file = Path(__file__).parent / "qml" / "Main.qml"
-    engine.load(QUrl.fromLocalFile(str(qml_file)))
+    controller = None
+    theme = None
+    try:
+        controller = ControlCenterController()
+        theme = ThemeController()
+        engine = QQmlApplicationEngine()
+        context = engine.rootContext()
+        context.setContextProperty("controlCenter", controller)
+        context.setContextProperty("leosTheme", theme)
+        context.setContextProperty("systemMonitor", controller.monitor)
+        qml_file = Path(__file__).parent / "qml" / "Main.qml"
+        engine.load(QUrl.fromLocalFile(str(qml_file)))
+    except Exception:
+        traceback.print_exc()
+        if controller is not None:
+            controller.shutdown()
+        if theme is not None:
+            theme.shutdown()
+        return 1
     if not engine.rootObjects():
+        controller.shutdown()
         theme.shutdown()
         return 1
     controller.monitor.start()
-    app.aboutToQuit.connect(controller.monitor.stop)
+    app.aboutToQuit.connect(controller.shutdown)
     app.aboutToQuit.connect(theme.shutdown)
     return app.exec()
 
