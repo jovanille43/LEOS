@@ -62,7 +62,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade. LEOS ne parcourt pas les dossiers ROM, ne télécharge aucun jeu et n'installe ni émulateur ni cœur.
+- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade ; une catégorie Émulation regroupe les entrées RetroArch et les ajouts manuels explicitement classés comme émulation. La boutique propose RetroArch, Dolphin, PCSX2, PPSSPP et DuckStation via Flathub après confirmation. LEOS ne parcourt pas les dossiers ROM, ne télécharge aucun jeu, BIOS ou cœur et n'installe rien automatiquement.
 - Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
 - Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
 - Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
@@ -72,7 +72,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
 - Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
 - MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge ; les autres intégrations d'émulateurs et de catalogues console restent à développer.
+- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge ; Dolphin, PCSX2, PPSSPP et DuckStation peuvent être installés depuis la boutique, puis ajoutés à la bibliothèque via leurs raccourcis ou l'ajout manuel. L'import automatique de leurs bibliothèques reste à développer.
 
 ## Desktop Mode
 
@@ -161,7 +161,8 @@ LEOS/
 - [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
-- [ ] Intégrations d'émulateurs.
+- [x] Catalogue boutique d'émulateurs RetroArch, Dolphin, PCSX2, PPSSPP et DuckStation ; catégorie Émulation dans Gaming.
+- [ ] Imports automatiques des bibliothèques Dolphin, PCSX2, PPSSPP et DuckStation.
 - [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
 - [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
