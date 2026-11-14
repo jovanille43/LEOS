@@ -285,7 +285,7 @@ class ControlCenterController(QObject):
             {
                 "backupId": str(entry["backup_id"]),
                 "createdUtc": str(entry["created_utc"]),
-                "label": str(entry["created_utc"]).replace("T", " ").replace("+00:00", " UTC")[:23],
+                "label": str(entry["created_utc"])[:19].replace("T", " ") + " UTC",
             }
             for entry in entries
         ]
