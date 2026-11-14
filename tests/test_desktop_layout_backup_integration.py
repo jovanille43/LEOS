@@ -42,7 +42,7 @@ class DesktopLayoutBackupIntegrationTests(unittest.TestCase):
     def test_restore_requires_confirmation_and_creates_a_recovery_backup(self):
         backup = (ROOT / "desktop/layout_backup.py").read_text(encoding="utf-8")
         self.assertIn("if confirmed is not True:", backup)
-        self.assertIn("recovery_backup_id = self.create_backup()", backup)
+        self.assertIn("recovery_backup_id = self.create_backup(preserve_backup_ids={backup_id})", backup)
         self.assertIn("self.store.replace_all(layout, confirmed=True)", backup)
         self.assertIn("self.store.validate_current_file()", backup)
 
