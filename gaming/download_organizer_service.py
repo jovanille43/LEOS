@@ -80,7 +80,14 @@ def main() -> int:
         # Another session instance is already supervising Downloads, or the
         # per-user runtime directory is unavailable.
         return 0
-    organizer = DownloadOrganizer()
+    inbox = Path.home() / "Jeux"
+    try:
+        if inbox.is_symlink():
+            return 0
+        inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
+    except OSError:
+        return 1
+    organizer = DownloadOrganizer(downloads_dir=inbox)
     try:
         while True:
             try:
