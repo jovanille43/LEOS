@@ -29,6 +29,18 @@ La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par d
 
 **Important :** la sauvegarde automatique reste locale au disque et ne protège pas contre la panne ou la perte de ce disque. Utilise l'export vers un support distinct pour conserver une copie externe. Ces snapshots ne remplacent pas une sauvegarde des documents et données personnelles.
 
+## Sauvegarder et restaurer les dispositions du bureau LEOS
+
+Le Centre de contrôle propose un bloc indépendant **Sauvegarde des dispositions LEOS** dans les réglages du bureau. Il protège uniquement les préférences propres à LEOS enregistrées dans `$XDG_CONFIG_HOME/leos/desktop-layout.json` (par défaut `~/.config/leos/desktop-layout.json`) : profil choisi, activation et position du dock, alignement, masquage automatique et activation des widgets.
+
+Les points de restauration sont conservés dans `$XDG_STATE_HOME/leos/desktop-layout-backups/` (par défaut `~/.local/state/leos/desktop-layout-backups/`). Chaque sauvegarde comprend un fichier `.bak` et un manifeste `.json` avec identifiant, version du format, taille et empreinte SHA-256. Le dossier est privé, les fichiers sont limités à 0600 et LEOS conserve au maximum 20 sauvegardes vérifiées. Les données invalides, les liens symboliques, les fichiers non réguliers et les paires dont l'empreinte ne correspond pas sont refusés.
+
+Pour créer une sauvegarde, utiliser **Créer une sauvegarde**. Pour déplacer une copie vers un support USB, sélectionner une entrée puis **Exporter** ; les deux fichiers sont copiés ensemble, sans écraser de fichier déjà présent. Pour importer, choisir **Importer** et sélectionner le manifeste `.json`, en conservant le fichier `.bak` correspondant dans le même dossier. L'identifiant, le schéma, les valeurs et l'empreinte sont revérifiés avant l'import.
+
+La restauration demande une confirmation explicite et crée automatiquement une sauvegarde de l'état actuel avant de remplacer les préférences. Si le fichier courant est corrompu, trop volumineux, illisible ou lié symboliquement, LEOS refuse la restauration et le laisse intact plutôt que de risquer de perdre son contenu. La copie restaurée ne modifie pas directement les panneaux ou applets KDE.
+
+**Périmètre séparé :** ces copies ne comprennent ni les paramètres généraux `settings.json`, ni la configuration réelle des panneaux et applets Plasma (`plasma-org.kde.plasma.desktop-appletsrc`), ni les fichiers personnels. Les préférences générales et la configuration Plasma gardent leurs propres mécanismes de sauvegarde. Une sauvegarde locale ne protège pas contre la perte du disque : exporter vers un support physique distinct reste nécessaire.
+
 ## Avant une mise à jour
 
 1. Sauvegarder les fichiers personnels importants sur un autre support.
