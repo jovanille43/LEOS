@@ -16,6 +16,13 @@ class GamingEmulatorLaunchIntegrationTests(unittest.TestCase):
         self.assertIn("process.setProgram(emulator_command[0])", source)
         self.assertIn("process.setArguments(emulator_command[1:])", source)
 
+    def test_qml_exposes_a_user_confirmed_launch_action_for_local_files(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("enabled: window.selectedIndex >= 0", qml)
+        self.assertIn('"OUVRIR AVEC UN ÉMULATEUR"', qml)
+        library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        self.assertIn("émulateur selon format et installation", library)
+
     def test_flatpak_file_forwarding_is_used_without_shell_execution(self):
         source = (ROOT / "gaming/backend/emulator_launch.py").read_text(encoding="utf-8")
         self.assertIn('"--file-forwarding"', source)
