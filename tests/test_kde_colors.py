@@ -1,7 +1,6 @@
 """Tests for LEOS KDE Plasma color-scheme generation and application."""
 import configparser
 import os
-import subprocess
 import tempfile
 import unittest
 from unittest import mock
