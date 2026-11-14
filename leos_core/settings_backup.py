@@ -135,6 +135,9 @@ class SettingsBackupManager:
         os.chmod(self.backup_dir, 0o700)
 
     def create_backup(self) -> str:
+        return self._create_backup()
+
+    def _create_backup(self, *, preserve_backup_ids: set[str] | None = None) -> str:
         values = self.settings.snapshot(tuple(DEFAULTS))
         validated = validate_settings_values(dict(zip(DEFAULTS, values)), require_complete=True)
         payload = {
@@ -163,15 +166,19 @@ class SettingsBackupManager:
         except Exception:
             backup_path.unlink(missing_ok=True)
             raise
-        self._prune_old_backups()
+        self._prune_old_backups(preserve_backup_ids=preserve_backup_ids or set())
         return backup_id
 
-    def _prune_old_backups(self) -> None:
-        """Retain a bounded set of verified restore points."""
+    def _prune_old_backups(self, *, preserve_backup_ids: set[str] | None = None) -> None:
+        """Retain a bounded set of verified restore points, honoring active restores."""
         entries = self.list_backups()
-        for entry in entries[MAX_RETAINED_BACKUPS:]:
+        excess = max(0, len(entries) - MAX_RETAINED_BACKUPS)
+        preserved = preserve_backup_ids or set()
+        for entry in reversed(entries):
+            if excess <= 0:
+                break
             backup_id = str(entry.get("backup_id", ""))
-            if _BACKUP_ID.fullmatch(backup_id) is None:
+            if backup_id in preserved or _BACKUP_ID.fullmatch(backup_id) is None:
                 continue
             for suffix in (".bak", ".json"):
                 path = self.backup_dir / f"{backup_id}{suffix}"
@@ -182,6 +189,7 @@ class SettingsBackupManager:
                 except OSError:
                     # A failed cleanup must never invalidate the new backup.
                     continue
+            excess -= 1
 
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
@@ -248,6 +256,6 @@ class SettingsBackupManager:
         if verified is None:
             raise ValueError("LEOS settings backup is missing, unsafe or invalid")
         _manifest, values = verified
-        recovery_backup_id = self.create_backup()
+        recovery_backup_id = self._create_backup(preserve_backup_ids={backup_id})
         self.settings.replace_all(values, confirmed=True)
         return recovery_backup_id
