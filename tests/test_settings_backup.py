@@ -121,7 +121,7 @@ class SettingsBackupTests(unittest.TestCase):
         target = Path(self.temporary.name) / "outside-settings.json"
         original = b'{"theme":"keep-outside"}'
         target.write_bytes(original)
-        self.settings_path.unlink()
+        self.settings_path.unlink(missing_ok=True)
         try:
             self.settings_path.symlink_to(target)
         except (OSError, NotImplementedError):
