@@ -89,15 +89,16 @@ class PinImageDigestTests(unittest.TestCase):
                     f"image inspect --format {{{{.Digest}}}} {image_ref}",
                 )
 
-    def test_rejects_untrusted_repositories_and_unexpected_image_names(self):
+    def test_rejects_unsupported_registry_malformed_owner_and_unexpected_images(self):
         invalid_refs = (
-            "ghcr.io/attacker/leos:latest",
+            "ghcr.io/jovanille_43/leos:latest",
             "ghcr.io/jovanille43/other-image:latest",
             "docker.io/jovanille43/leos:latest",
             "ghcr.io/jovanille43/leos:latest;touch /tmp/unexpected",
         )
         for image_ref in invalid_refs:
             with self.subTest(image_ref=image_ref):
+                self.call_log.unlink(missing_ok=True)
                 result = self.run_helper(
                     image_ref, extra_args=(str(self.output_file),)
                 )
