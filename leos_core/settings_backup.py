@@ -191,6 +191,76 @@ class SettingsBackupManager:
                     continue
             excess -= 1
 
+    @staticmethod
+    def _write_new_export_file(directory: Path, filename: str, data: bytes) -> Path:
+        """Create one export file without following or overwriting an existing path."""
+        target = directory / filename
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(target, flags, 0o600)
+        try:
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(data)
+                stream.flush()
+                os.fsync(stream.fileno())
+        except Exception:
+            try:
+                target.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise
+        return target
+
+    def export_backup(self, backup_id: str, destination_directory: Path | str) -> tuple[Path, Path]:
+        """Export one verified backup and its manifest to an existing external folder."""
+        verified = self._verified_backup(backup_id)
+        if verified is None:
+            raise ValueError("LEOS settings backup is missing, unsafe or invalid")
+
+        destination = Path(destination_directory).expanduser()
+        if not destination.is_absolute():
+            raise ValueError("Export destination must be an absolute directory")
+        if destination.is_symlink():
+            raise ValueError("Symbolic-link export directories are not accepted")
+        try:
+            destination = destination.resolve(strict=True)
+        except OSError:
+            raise ValueError("Export destination is unavailable") from None
+        if not destination.is_dir():
+            raise ValueError("Export destination is not a directory")
+
+        manifest_path = self.backup_dir / f"{backup_id}.json"
+        backup_path = self.backup_dir / f"{backup_id}.bak"
+        manifest_data = _read_regular_file(manifest_path, MAX_BACKUP_MANIFEST_BYTES)
+        backup_data = _read_regular_file(backup_path, MAX_SETTINGS_BYTES)
+        manifest, values = verified
+        if (
+            len(backup_data) != manifest["size"]
+            or hashlib.sha256(backup_data).hexdigest() != manifest["sha256"]
+            or values is None
+        ):
+            raise ValueError("LEOS settings backup changed during export")
+
+        backup_name = f"{backup_id}.bak"
+        manifest_name = f"{backup_id}.json"
+        targets = (destination / backup_name, destination / manifest_name)
+        if any(path.exists() or path.is_symlink() for path in targets):
+            raise FileExistsError("An export with this backup identifier already exists")
+
+        created: list[Path] = []
+        try:
+            created.append(self._write_new_export_file(destination, backup_name, backup_data))
+            created.append(self._write_new_export_file(destination, manifest_name, manifest_data))
+        except Exception:
+            for path in created:
+                try:
+                    if not path.is_symlink() and path.is_file():
+                        path.unlink()
+                except OSError:
+                    pass
+            raise
+        return targets
+
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             return None
