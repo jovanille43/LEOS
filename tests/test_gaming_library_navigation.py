@@ -34,6 +34,13 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("Math.min(3, index)", self.qml)
         self.assertIn("window.toolbarFocusIndex === 3", self.qml)
 
+    def test_gamepad_can_open_change_and_close_the_source_filter(self):
+        self.assertIn("sourceFilterBox.popup.open()", self.qml)
+        self.assertIn("if (sourceFilterBox.popup.visible)", self.qml)
+        self.assertIn("sourceFilterBox.currentIndex + delta", self.qml)
+        self.assertIn("sourceFilterBox.popup.close()", self.qml)
+        self.assertIn('action === "confirm" || action === "back"', self.qml)
+
     def test_grid_boundaries_enter_toolbar_and_game_details(self):
         self.assertIn("selectedIndex < columns", self.qml)
         self.assertIn("selectedIndex % columns === columns - 1", self.qml)
