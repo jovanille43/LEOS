@@ -27,6 +27,13 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("leos.refreshLibrary()", self.qml)
         self.assertIn("addDialog.open()", self.qml)
 
+    def test_source_filter_is_reachable_from_keyboard_and_gamepad_toolbar(self):
+        self.assertIn("id: sourceFilterBox", self.qml)
+        self.assertIn("gameLibrary.setSourceFilter(currentText)", self.qml)
+        self.assertIn("sourceFilterBox.forceActiveFocus()", self.qml)
+        self.assertIn("Math.min(3, index)", self.qml)
+        self.assertIn("window.toolbarFocusIndex === 3", self.qml)
+
     def test_grid_boundaries_enter_toolbar_and_game_details(self):
         self.assertIn("selectedIndex < columns", self.qml)
         self.assertIn("selectedIndex % columns === columns - 1", self.qml)
