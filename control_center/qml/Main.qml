@@ -2164,7 +2164,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 270
+                                Layout.preferredHeight: 320
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -2246,7 +2246,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 145
+                                Layout.preferredHeight: 160
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -2261,14 +2261,14 @@ ApplicationWindow {
                                         font.letterSpacing: 1.2
                                     }
                                     Label {
-                                        text: "La restauration remplace uniquement le fichier de préférences LEOS. Elle crée d'abord une sauvegarde de l'état actuel. Elle ne modifie ni Plasma, ni les panneaux KDE, ni les applications installées."
+                                        text: "La restauration remplace uniquement settings.json et conserve une copie de l'état précédent. Les profils de disposition desktop-layout.json et la configuration réelle de Plasma utilisent des sauvegardes distinctes."
                                         color: window.themeColors.text
                                         font.pixelSize: 11
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
                                     Label {
-                                        text: "Les sauvegardes restent sur ce disque : copie le dossier de sauvegarde sur un support externe pour te protéger contre une panne ou une réinstallation."
+                                        text: "Pour te protéger contre la perte du disque, exporte une sauvegarde vers une clé USB ou un autre support. Les deux fichiers sont copiés ensemble et aucun fichier existant n'est écrasé."
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
