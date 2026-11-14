@@ -26,6 +26,7 @@ ApplicationWindow {
     property string diagnosticReportNotice: ""
     property string themeColorNotice: ""
     property string settingsBackupNotice: ""
+    property string pendingSettingsBackupId: ""
 
     function colorToHex(value) {
         function channel(component) {
@@ -149,13 +150,13 @@ ApplicationWindow {
         title: "Restaurer les préférences LEOS ?"
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
-            text: "LEOS va remplacer les préférences actuelles par la dernière sauvegarde vérifiée. Une copie de l'état actuel sera créée automatiquement avant la restauration. Les applications, fichiers personnels, comptes et données de jeux ne seront pas modifiés."
+            text: "LEOS va remplacer les préférences actuelles par la sauvegarde sélectionnée et vérifiée. Une copie de l'état actuel sera créée automatiquement avant la restauration. Les applications, fichiers personnels, comptes et données de jeux ne seront pas modifiés."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
             width: 440
             padding: 12
         }
-        onAccepted: window.settingsBackupNotice = controlCenter.restoreLatestSettingsBackup(true)
+        onAccepted: window.settingsBackupNotice = controlCenter.restoreSettingsBackup(window.pendingSettingsBackupId, true)
     }
 
     Dialog {
@@ -2152,14 +2153,14 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 230
+                                Layout.preferredHeight: 270
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
-                                    spacing: 12
+                                    spacing: 10
                                     Label {
                                         text: "PRÉFÉRENCES LEOS"
                                         color: window.cyan
@@ -2175,12 +2176,21 @@ ApplicationWindow {
                                     }
                                     Label {
                                         text: controlCenter.settingsBackupSnapshot.available
-                                            ? controlCenter.settingsBackupSnapshot.count + " sauvegarde(s) vérifiée(s) · dernière copie : " + controlCenter.settingsBackupSnapshot.latestCreatedUtc
+                                            ? controlCenter.settingsBackupSnapshot.count + " sauvegarde(s) vérifiée(s) · la plus récente est proposée par défaut."
                                             : "Aucune sauvegarde vérifiée pour le moment."
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
+                                    }
+                                    ComboBox {
+                                        id: settingsBackupSelector
+                                        Layout.fillWidth: true
+                                        model: controlCenter.settingsBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        currentIndex: count > 0 ? 0 : -1
+                                        enabled: count > 0
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -2189,9 +2199,12 @@ ApplicationWindow {
                                             onClicked: window.settingsBackupNotice = controlCenter.createSettingsBackup()
                                         }
                                         Button {
-                                            text: "RESTAURER LA DERNIÈRE"
-                                            enabled: controlCenter.settingsBackupSnapshot.available
-                                            onClicked: settingsBackupConfirmation.open()
+                                            text: "RESTAURER LA SÉLECTION"
+                                            enabled: settingsBackupSelector.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingSettingsBackupId = settingsBackupSelector.currentValue
+                                                settingsBackupConfirmation.open()
+                                            }
                                         }
                                         Item { Layout.fillWidth: true }
                                     }
