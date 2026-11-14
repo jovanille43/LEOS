@@ -1,6 +1,6 @@
 # Packaging système LEOS
 
-Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image pendant la construction.
+Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image pendant la construction. Les ressources non-recette destinées à être copiées dans l'image résident dans `files/` et sont installées avec le module BlueBuild `files`, afin de conserver une séparation nette entre les recettes de construction et les fichiers d'image.
 
 ## Emplacements prévus
 
