@@ -15,7 +15,7 @@ from shop.catalog import CatalogModel
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
     trusted_flathub_remote_url,
-    parse_flatpak_inventory,
+    parse_flatpak_inventory_details,
 )
 from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
@@ -250,13 +250,14 @@ class StoreController(QObject):
                 post_notification("Boutique LEOS", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
                 return
-            user_apps, system_apps = parse_flatpak_inventory(stdout)
-            self.catalog.setInstalled(user_apps, system_apps)
+            user_apps, system_apps, custom_apps = parse_flatpak_inventory_details(stdout)
+            self.catalog.setInstalled(user_apps, system_apps, custom_apps)
             self.catalogUpdated.emit()
-            total = len(user_apps | system_apps)
+            total = len(user_apps | system_apps | custom_apps)
             self._set_status(
                 f"{total} application(s) Flatpak détectée(s) "
-                f"({len(user_apps)} utilisateur, {len(system_apps)} système)."
+                f"({len(user_apps)} utilisateur, {len(system_apps)} système, "
+                f"{len(custom_apps)} installation(s) personnalisée(s))."
             )
             self.operationFinished.emit(True, self._status)
             return
