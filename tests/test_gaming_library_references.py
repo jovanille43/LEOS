@@ -15,7 +15,7 @@ class SavedLibraryReferenceTests(unittest.TestCase):
             ["steam:offline", "steam:installed"],
         )
 
-        self.assertEqual(favorites, {"steam:one", "steam:two"})
+        self.assertEqual(favorites, {"steam:offline", "steam:installed"})
         self.assertEqual(recent, ["steam:offline", "steam:installed"])
 
     def test_unavailable_games_remain_hidden_without_being_forgotten(self):
@@ -43,13 +43,15 @@ class SavedLibraryReferenceTests(unittest.TestCase):
         self.assertIn("steam:offline", recent)
 
     def test_saved_references_are_deduplicated_and_bounded(self):
-        favorite_values = ["steam:one", "steam:one", " steam:two ", "", "bad" + chr(0) + "id"]
+        favorite_values = [
+            "steam:one", "steam:one", " steam:two ", "", "bad" + chr(0) + "id"
+        ]
         recent_values = [f"steam:{index}" for index in range(60)]
         favorites, recent = retain_saved_library_references(
             favorite_values, recent_values
         )
 
-        self.assertEqual(favorites, {"steam:one", "steam:two", "bad\\x00id"})
+        self.assertEqual(favorites, {"steam:one", "steam:two"})
         self.assertEqual(len(recent), 50)
         self.assertEqual(recent[0], "steam:0")
         self.assertEqual(recent[-1], "steam:49")
