@@ -167,7 +167,7 @@ class SettingsBackupManager:
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             return None
-        if any(candidate.is_symlink() for candidate in (self.backup_dir, self.backup_dir.parent)):
+        if any(candidate.is_symlink() for candidate in (self.backup_dir, *self.backup_dir.parents)):
             return None
         manifest_path = self.backup_dir / f"{backup_id}.json"
         backup_path = self.backup_dir / f"{backup_id}.bak"
@@ -199,8 +199,7 @@ class SettingsBackupManager:
 
     def list_backups(self) -> list[dict[str, Any]]:
         if (
-            self.backup_dir.is_symlink()
-            or self.backup_dir.parent.is_symlink()
+            any(candidate.is_symlink() for candidate in (self.backup_dir, *self.backup_dir.parents))
             or not self.backup_dir.is_dir()
         ):
             return []
