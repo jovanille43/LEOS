@@ -253,6 +253,41 @@ class DownloadOrganizerTests(unittest.TestCase):
             self.assertEqual(original.read_bytes(), b"keep this")
             self.assertTrue((destination / "Game (2).wua").is_file())
 
+
+    def test_finds_game_after_many_unrelated_downloads(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            downloads = home / "Downloads"
+            downloads.mkdir()
+            for index in range(300):
+                (downloads / f"document-{index}.txt").write_text("not a game")
+            game = downloads / "Game.gba"
+            game.write_bytes(b"game")
+            modified = game.stat().st_mtime
+            organizer = DownloadOrganizer(
+                downloads, home / "Emulation" / "ROMs", home=home,
+                stability_seconds=0,
+            )
+            organizer.poll(now=modified + 1)
+            organizer.poll(now=modified + 2)
+            moved = organizer.poll(now=modified + 3)
+            self.assertEqual(len(moved), 1)
+            self.assertTrue(
+                (home / "Emulation" / "ROMs" / "Nintendo" / "Game Boy Advance" / "Game.gba").is_file()
+            )
+
+    def test_low_level_move_never_overwrites_existing_destination(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            source = home / "source.gba"
+            destination = home / "destination.gba"
+            source.write_bytes(b"new")
+            destination.write_bytes(b"keep")
+            with self.assertRaises(FileExistsError):
+                _move_without_overwrite(source, destination)
+            self.assertEqual(source.read_bytes(), b"new")
+            self.assertEqual(destination.read_bytes(), b"keep")
+
     def test_ignores_symbolic_link_downloads(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
