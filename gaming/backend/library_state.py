@@ -163,7 +163,7 @@ def retain_saved_library_references(
             if (
                 not isinstance(item, str)
                 or not 0 < len(item.strip()) <= 512
-                or "\\x00" in item
+                or chr(0) in item
             ):
                 continue
             value = item.strip()
