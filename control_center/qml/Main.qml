@@ -144,6 +144,18 @@ ApplicationWindow {
         }
     }
 
+    FileDialog {
+        id: settingsBackupImportDialog
+        title: "Choisir le manifeste d'une sauvegarde LEOS"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Manifeste de sauvegarde LEOS (*.json)"]
+        onAccepted: {
+            window.settingsBackupNotice = controlCenter.importSettingsBackup(
+                selectedFile.toLocalFile()
+            )
+        }
+    }
+
     FolderDialog {
         id: settingsBackupExportDialog
         title: "Choisir un dossier externe pour la sauvegarde"
@@ -2164,7 +2176,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 320
+                                Layout.preferredHeight: 350
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -2210,6 +2222,14 @@ ApplicationWindow {
                                             onClicked: window.settingsBackupNotice = controlCenter.createSettingsBackup()
                                         }
                                         Button {
+                                            text: "IMPORTER DEPUIS UN SUPPORT"
+                                            onClicked: settingsBackupImportDialog.open()
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
                                             text: "RESTAURER LA SÉLECTION"
                                             enabled: settingsBackupSelector.currentIndex >= 0
                                             onClicked: {
@@ -2228,7 +2248,7 @@ ApplicationWindow {
                                         Item { Layout.fillWidth: true }
                                     }
                                     Label {
-                                        text: "L'export copie la sauvegarde et son manifeste SHA-256 vers le dossier choisi. Les fichiers existants ne sont jamais écrasés."
+                                        text: "L'export copie la sauvegarde et son manifeste SHA-256 vers le dossier choisi. Pour importer, sélectionne le manifeste .json et laisse le fichier .bak dans le même dossier. Aucun fichier existant n'est écrasé."
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
