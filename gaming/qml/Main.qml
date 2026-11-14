@@ -846,7 +846,7 @@ ApplicationWindow {
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
-                                    window.toolbarFocusIndex = 1
+                                    window.toolbarFocusIndex = 2
                                 }
                             }
                             onClicked: {
@@ -857,7 +857,7 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 8
-                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.accentSurface(window.cyan, 0.20) : "#151a24"
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.accentSurface(window.cyan, 0.20) : "#151a24"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
                                 border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
                             }
@@ -875,12 +875,12 @@ ApplicationWindow {
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
-                                    window.toolbarFocusIndex = 2
+                                    window.toolbarFocusIndex = 3
                                 }
                             }
                             onClicked: {
                                 window.navigationArea = "toolbar"
-                                window.toolbarFocusIndex = 2
+                                window.toolbarFocusIndex = 3
                                 addDialog.open()
                             }
                             background: Rectangle {
