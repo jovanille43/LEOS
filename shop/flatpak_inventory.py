@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
+INSTALLATION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 def flatpak_uninstall_args(app_id: str, scope: str) -> list[str]:
@@ -19,15 +20,17 @@ def flatpak_uninstall_args(app_id: str, scope: str) -> list[str]:
     return ["uninstall", scope_flag, "--assumeyes", app_id]
 
 
-def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
-    """Return separate user and system app IDs from --columns output.
+def parse_flatpak_inventory_details(
+    output: str,
+) -> tuple[set[str], set[str], set[str]]:
+    """Separate user, default-system and custom-system app installations.
 
-    Flatpak's table output includes a header. The application ID is a
-    whitespace-free token; the installation column is either 'user' or a
-    named/system installation.
+    Custom system installations are reported separately because they cannot
+    safely be treated as the default system scope.
     """
     user_apps: set[str] = set()
     system_apps: set[str] = set()
+    custom_apps: set[str] = set()
     for line in output.splitlines():
         columns = line.split()
         if len(columns) < 2:
@@ -37,12 +40,20 @@ def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
             continue
         if not APP_ID_RE.fullmatch(app_id):
             continue
-        if installation.casefold() == "user":
+        normalized_installation = installation.casefold()
+        if normalized_installation == "user":
             user_apps.add(app_id)
-        else:
+        elif normalized_installation in {"system", "default"}:
             system_apps.add(app_id)
-    return user_apps, system_apps
+        elif INSTALLATION_ID_RE.fullmatch(installation):
+            custom_apps.add(app_id)
+    return user_apps, system_apps, custom_apps
 
+
+def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
+    """Return only user and default-system app IDs for legacy callers."""
+    user_apps, system_apps, _custom_apps = parse_flatpak_inventory_details(output)
+    return user_apps, system_apps
 
 
 def trusted_flathub_remote_url(output: str) -> str:
