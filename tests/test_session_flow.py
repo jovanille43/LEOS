@@ -313,5 +313,23 @@ class SessionFlowTests(unittest.TestCase):
 
 
 
+    def test_both_mode_intros_can_be_skipped_with_escape_gamepad_or_click(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('sequence: "Esc"', selector)
+        self.assertIn("enabled: window.transitionInProgress", selector)
+        self.assertIn("onActivated: window.finishModeTransition()", selector)
+        self.assertIn('if (action === "back")\n                finishModeTransition()', selector)
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", selector)
+        self.assertIn("onClicked: window.finishModeTransition()", selector)
+        self.assertIn('sequence: "Esc"', gaming)
+        self.assertIn("enabled: window.returningToDesktop", gaming)
+        self.assertIn("onActivated: window.finishDesktopReturn()", gaming)
+        self.assertIn('if (action === "back")\n                finishDesktopReturn()', gaming)
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", gaming)
+        self.assertIn("onClicked: window.finishDesktopReturn()", gaming)
+
+
+
 if __name__ == "__main__":
     unittest.main()
