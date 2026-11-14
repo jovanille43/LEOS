@@ -61,8 +61,10 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
             controller.index("@Slot()", controller.index("def shutdown(self)"))
         ]
 
-        self.assertIn("if self._shutting_down or self._power_profile_task is not None", refresh)
-        self.assertIn("if self._shutting_down or self._power_profile_task is not None", refresh)
+        self.assertEqual(
+            refresh.count("if self._shutting_down or self._power_profile_task is not None"),
+            2,
+        )
         self.assertIn("if self._shutting_down:", completed)
         self.assertIn("self._shutting_down = True", shutdown)
         self.assertIn("if self._shutting_down:", shutdown)
