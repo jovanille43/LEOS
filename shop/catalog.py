@@ -45,6 +45,7 @@ class CatalogModel(QAbstractListModel):
             self.load_error = "Le catalogue LEOS est indisponible ou invalide. Aucune installation ne peut être lancée."
         self._installed_user: set[str] = set()
         self._installed_system: set[str] = set()
+        self._installed_custom: set[str] = set()
 
     def roleNames(self):
         return self.ROLE_NAMES
@@ -58,12 +59,18 @@ class CatalogModel(QAbstractListModel):
         item = self._items[index.row()]
         app_id = item["id"]
         if role == self.InstalledRole:
-            return app_id in self._installed_user or app_id in self._installed_system
+            return (
+                app_id in self._installed_user
+                or app_id in self._installed_system
+                or app_id in self._installed_custom
+            )
         if role == self.InstalledScopeRole:
             if app_id in self._installed_system:
                 return "system"
             if app_id in self._installed_user:
                 return "user"
+            if app_id in self._installed_custom:
+                return "other"
             return ""
         values = {
             self.AppIdRole: app_id,
@@ -81,9 +88,11 @@ class CatalogModel(QAbstractListModel):
         self,
         user_app_ids: set[str],
         system_app_ids: set[str] | None = None,
+        custom_app_ids: set[str] | None = None,
     ) -> None:
         self._installed_user = set(user_app_ids)
         self._installed_system = set(system_app_ids or set())
+        self._installed_custom = set(custom_app_ids or set())
         if self._items:
             self.dataChanged.emit(
                 self.index(0, 0),
@@ -98,6 +107,7 @@ class CatalogModel(QAbstractListModel):
             item["installed_scope"] = (
                 "system" if app_id in self._installed_system
                 else "user" if app_id in self._installed_user
+                else "other" if app_id in self._installed_custom
                 else ""
             )
             return item
