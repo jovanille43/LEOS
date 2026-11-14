@@ -31,6 +31,9 @@ for _platform, _extensions in PLATFORM_EXTENSIONS:
         # Prefer a console-specific category over the generic catch-all.
         if _platform != "Émulation":
             EXTENSION_PLATFORM.setdefault(_extension, _platform)
+# Shared disc/container extensions do not identify a console on their own.
+for _ambiguous in (".iso", ".cue", ".bin", ".zip", ".7z", ".m3u"):
+    EXTENSION_PLATFORM[_ambiguous] = "Émulation"
 
 
 def default_scan_roots(home: Path | None = None) -> tuple[Path, ...]:
