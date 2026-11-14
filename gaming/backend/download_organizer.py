@@ -12,17 +12,24 @@ from itertools import islice
 import re
 import shlex
 import stat
+import tempfile
 import time
-from pathlib import Path
+import zipfile
+from pathlib import Path, PurePosixPath
 
 MAX_DOWNLOAD_SCAN_ENTRIES = 250
+MAX_ARCHIVE_ENTRIES = 2_000
+MAX_ARCHIVE_MEMBER_BYTES = 32 * 1024 ** 3
+MAX_ARCHIVE_COMPRESSION_RATIO = 500
 MAX_DOWNLOAD_CONFIG_BYTES = 16 * 1024
 DEFAULT_STABILITY_SECONDS = 15.0
 REQUIRED_STABLE_RECHECKS = 2
 
 # Extensions whose system is sufficiently unambiguous to file without asking.
-# Ambiguous formats (.iso, .bin, .cue, .chd, .m3u, .zip, .7z, .pkg, .rvz)
+# Ambiguous formats (.iso, .bin, .cue, .chd, .m3u, .7z, .rar, .pkg, .rvz)
 # are deliberately excluded: moving them blindly could misclassify a game.
+# ZIP archives are handled separately and only when exactly one safe game file
+# can be identified inside.
 DESTINATION_BY_EXTENSION: dict[str, tuple[str, str]] = {
     ".nes": ("Nintendo", "NES"),
     ".fds": ("Nintendo", "Famicom Disk System"),
@@ -118,6 +125,141 @@ def _collision_free_path(directory: Path, filename: str) -> Path:
     raise OSError("Too many files with the same name in the target folder")
 
 
+def _extract_single_game_zip(
+    archive_path: Path,
+    root: Path,
+    expected_signature: tuple[int, int],
+) -> dict[str, str] | None:
+    """Extract one unambiguous ROM from a stable ZIP without trusting its paths."""
+    temporary_path: Path | None = None
+    archived_original: Path | None = None
+    original_path = archive_path
+    try:
+        with zipfile.ZipFile(archive_path, "r") as archive:
+            members = archive.infolist()
+            if not members or len(members) > MAX_ARCHIVE_ENTRIES:
+                return None
+
+            candidates: list[tuple[zipfile.ZipInfo, tuple[str, str]]] = []
+            for member in members:
+                if member.is_dir() or member.flag_bits & 0x1:
+                    continue
+                member_path = PurePosixPath(member.filename)
+                if (
+                    member_path.is_absolute()
+                    or not member_path.parts
+                    or any(part in {"", ".", ".."} for part in member_path.parts)
+                    or "\\" in member.filename
+                    or ":" in member_path.parts[0]
+                ):
+                    continue
+                if any(ord(character) < 32 for character in member_path.name):
+                    continue
+                if len(member_path.name) > 240:
+                    continue
+                mode = (member.external_attr >> 16) & 0xFFFF
+                file_type = stat.S_IFMT(mode)
+                if file_type not in (0, stat.S_IFREG):
+                    continue
+                destination = DESTINATION_BY_EXTENSION.get(
+                    Path(member_path.name).suffix.casefold()
+                )
+                if destination is not None:
+                    candidates.append((member, destination))
+
+            # Multi-game packs need a user choice; never guess which one to keep.
+            if len(candidates) != 1:
+                return None
+            member, (system, console) = candidates[0]
+            if (
+                member.file_size <= 0
+                or member.file_size > MAX_ARCHIVE_MEMBER_BYTES
+                or member.compress_size <= 0
+                or member.file_size / member.compress_size > MAX_ARCHIVE_COMPRESSION_RATIO
+            ):
+                return None
+
+            target_directory = root / system / console
+            target_directory.mkdir(parents=True, exist_ok=True)
+            real_target_directory = target_directory.resolve(strict=True)
+            real_target_directory.relative_to(root)
+            if target_directory.is_symlink():
+                return None
+            final_target = _collision_free_path(
+                real_target_directory, PurePosixPath(member.filename).name
+            )
+            descriptor, temporary_name = tempfile.mkstemp(
+                prefix=".leos-extract-", suffix=final_target.suffix,
+                dir=real_target_directory,
+            )
+            temporary_path = Path(temporary_name)
+            copied = 0
+            with os.fdopen(descriptor, "wb") as output, archive.open(member, "r") as source:
+                while True:
+                    chunk = source.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    copied += len(chunk)
+                    if copied > member.file_size or copied > MAX_ARCHIVE_MEMBER_BYTES:
+                        raise ValueError("Archive member exceeded its declared size")
+                    output.write(chunk)
+                output.flush()
+                os.fsync(output.fileno())
+            if copied != member.file_size:
+                raise ValueError("Incomplete archive member")
+
+        current = archive_path.stat(follow_symlinks=False)
+        if (
+            not stat.S_ISREG(current.st_mode)
+            or (current.st_size, current.st_mtime_ns) != expected_signature
+        ):
+            raise ValueError("Archive changed while being processed")
+
+        archive_directory = root.parent / ".archives"
+        archive_directory.mkdir(parents=True, exist_ok=True)
+        real_archive_directory = archive_directory.resolve(strict=True)
+        real_archive_directory.relative_to(root.parent.resolve(strict=True))
+        if archive_directory.is_symlink():
+            raise OSError("Archive destination is a symbolic link")
+        archived_original = _collision_free_path(
+            real_archive_directory, archive_path.name
+        )
+        if archived_original.exists():
+            raise OSError("Archive destination already exists")
+        archive_path.rename(archived_original)
+        try:
+            if final_target.exists():
+                raise OSError("Game destination already exists")
+            temporary_path.rename(final_target)
+            temporary_path = None
+        except OSError:
+            try:
+                archived_original.rename(original_path)
+                archived_original = None
+            except OSError:
+                pass
+            raise
+
+        return {
+            "name": final_target.name,
+            "system": system,
+            "console": console,
+            "destination": str(final_target),
+            "archive": str(archived_original),
+        }
+    except (
+        OSError, RuntimeError, ValueError, zipfile.BadZipFile,
+        zipfile.LargeZipFile, NotImplementedError,
+    ):
+        return None
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink()
+            except OSError:
+                pass
+
+
 class DownloadOrganizer:
     """Poll a downloads folder and move only completed, known game files."""
 
@@ -182,8 +324,12 @@ class DownloadOrganizer:
                 path = Path(entry.path)
                 if path.suffix.casefold() in PARTIAL_SUFFIXES:
                     continue
+                is_zip_archive = path.suffix.casefold() == ".zip"
                 destination = DESTINATION_BY_EXTENSION.get(path.suffix.casefold())
-                if destination is None or not entry.is_file(follow_symlinks=False):
+                if (
+                    (destination is None and not is_zip_archive)
+                    or not entry.is_file(follow_symlinks=False)
+                ):
                     continue
                 info = entry.stat(follow_symlinks=False)
                 if not stat.S_ISREG(info.st_mode) or info.st_size <= 0:
@@ -207,6 +353,17 @@ class DownloadOrganizer:
                 ):
                     continue
 
+                if is_zip_archive:
+                    organized = _extract_single_game_zip(
+                        path, root_resolved, signature
+                    )
+                    if organized is not None:
+                        self._observed.pop(key, None)
+                        moved.append(organized)
+                    continue
+
+                if destination is None:
+                    continue
                 system, console = destination
                 target_directory = root_resolved / system / console
                 target_directory.mkdir(parents=True, exist_ok=True)
