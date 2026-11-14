@@ -168,6 +168,24 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertNotIn('placeholderText: "#00D9FF"', qml)
         self.assertNotIn('placeholderText: "#E33BFF"', qml)
 
+    def test_leos_studio_offers_safe_gradient_presets_without_losing_free_choice(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('{ label: "LEOS Studio", page: 1 }', qml)
+        for preset in (
+            "Cyan · Magenta",
+            "Émeraude · Or",
+            "Bleu · Violet",
+            "Corail · Ambre",
+        ):
+            with self.subTest(preset=preset):
+                self.assertIn(preset, qml)
+        self.assertIn("window.commitThemeColors(modelData.a, modelData.b)", qml)
+        self.assertIn("colorADialog.open()", qml)
+        self.assertIn("colorBDialog.open()", qml)
+        self.assertIn("desktopWallpaperUrl", qml)
+        self.assertIn("gamingWallpaperUrl", qml)
+
     def test_all_leos_qml_applications_use_the_shared_gradient(self):
         root = Path(__file__).resolve().parents[1]
         qml_files = (
