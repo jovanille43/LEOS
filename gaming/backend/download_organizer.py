@@ -8,6 +8,7 @@ organizer never executes files or overwrites an existing destination.
 from __future__ import annotations
 
 import errno
+from contextlib import ExitStack
 import os
 from itertools import islice
 import re
@@ -124,36 +125,81 @@ def resolve_download_directory(
     return base / "Downloads"
 
 
+def _file_signature(info: os.stat_result) -> tuple[int, int, int, int, int]:
+    """Identify a stable regular file across polling and copy operations."""
+    return (
+        int(info.st_dev),
+        int(info.st_ino),
+        int(info.st_size),
+        int(info.st_mtime_ns),
+        int(info.st_ctime_ns),
+    )
+
+
+def _same_inode(left: os.stat_result, right: os.stat_result) -> bool:
+    return left.st_dev == right.st_dev and left.st_ino == right.st_ino
+
+
+def _same_link_version(left: os.stat_result, right: os.stat_result) -> bool:
+    """Compare a linked inode without ctime, which changes when link count changes."""
+    return (
+        _same_inode(left, right)
+        and left.st_size == right.st_size
+        and left.st_mtime_ns == right.st_mtime_ns
+    )
+
+
+def _unlink_if_same_inode(path: Path, expected: os.stat_result) -> None:
+    """Remove only the destination entry created by this operation."""
+    try:
+        current = path.stat(follow_symlinks=False)
+        if _same_inode(current, expected):
+            path.unlink()
+    except FileNotFoundError:
+        pass
+
+
 def _move_without_overwrite(
     source: Path,
     destination: Path,
-    expected_signature: tuple[int, int] | None = None,
+    expected_signature: tuple[int, int, int, int, int] | tuple[int, int] | None = None,
 ) -> None:
-    """Move without replacing any existing destination, including across filesystems."""
+    """Move a stable file without overwriting or deleting a replacement source."""
     before = source.stat(follow_symlinks=False)
     if not stat.S_ISREG(before.st_mode):
         raise OSError("Download is not a regular file")
-    if expected_signature is not None and (
-        before.st_size, before.st_mtime_ns
-    ) != expected_signature:
-        raise OSError("Download changed before being moved")
+    if expected_signature is not None:
+        actual_signature = (
+            (before.st_size, before.st_mtime_ns)
+            if len(expected_signature) == 2
+            else _file_signature(before)
+        )
+        if actual_signature != expected_signature:
+            raise OSError(errno.ESTALE, "Download changed before being moved")
+
     try:
         # A hard link is an atomic no-replace operation on a single filesystem.
         os.link(source, destination, follow_symlinks=False)
+        linked = destination.stat(follow_symlinks=False)
         current = source.stat(follow_symlinks=False)
         if (
             not stat.S_ISREG(current.st_mode)
-            or (current.st_size, current.st_mtime_ns) != (before.st_size, before.st_mtime_ns)
+            or not _same_link_version(before, linked)
+            or not _same_link_version(before, current)
         ):
-            destination.unlink()
-            raise OSError("Download changed while being moved")
+            _unlink_if_same_inode(destination, linked)
+            raise OSError(errno.ESTALE, "Download changed while being moved")
+        # Re-check the source entry immediately before unlinking it. In
+        # particular, do not remove a replacement file with the same size and
+        # timestamp but a different inode.
+        current = source.stat(follow_symlinks=False)
+        if not _same_link_version(before, current):
+            _unlink_if_same_inode(destination, linked)
+            raise OSError(errno.ESTALE, "Download source was replaced during the move")
         try:
             source.unlink()
         except OSError:
-            try:
-                destination.unlink()
-            except OSError:
-                pass
+            _unlink_if_same_inode(destination, linked)
             raise
         return
     except FileExistsError:
@@ -171,13 +217,27 @@ def _move_without_overwrite(
 
     if shutil.disk_usage(destination.parent).free < before.st_size + 16 * 1024 * 1024:
         raise OSError("Not enough free space to safely move the download")
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=".leos-move-", dir=destination.parent
-    )
-    temporary = Path(temporary_name)
+
+    source_flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    source_flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    source_fd = os.open(source, source_flags)
+    descriptor = -1
+    temporary: Path | None = None
     copied = 0
     try:
-        with source.open("rb") as incoming, os.fdopen(descriptor, "wb") as outgoing:
+        opened = os.fstat(source_fd)
+        if not stat.S_ISREG(opened.st_mode) or _file_signature(opened) != _file_signature(before):
+            raise OSError(errno.ESTALE, "Download was replaced before being copied")
+
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=".leos-move-", dir=destination.parent
+        )
+        temporary = Path(temporary_name)
+        with ExitStack() as stack:
+            incoming = stack.enter_context(os.fdopen(source_fd, "rb"))
+            source_fd = -1
+            outgoing = stack.enter_context(os.fdopen(descriptor, "wb"))
+            descriptor = -1
             while True:
                 chunk = incoming.read(1024 * 1024)
                 if not chunk:
@@ -186,34 +246,46 @@ def _move_without_overwrite(
                 if copied > before.st_size:
                     raise OSError("Download changed while being copied")
                 outgoing.write(chunk)
+
+            after_fd = os.fstat(incoming.fileno())
+            after_path = source.stat(follow_symlinks=False)
+            if (
+                not stat.S_ISREG(after_path.st_mode)
+                or _file_signature(after_fd) != _file_signature(before)
+                or _file_signature(after_path) != _file_signature(before)
+                or copied != before.st_size
+            ):
+                raise OSError(errno.ESTALE, "Download changed while being copied")
             outgoing.flush()
             os.fsync(outgoing.fileno())
-        after = source.stat(follow_symlinks=False)
-        if (
-            not stat.S_ISREG(after.st_mode)
-            or (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns)
-            or copied != before.st_size
-        ):
-            raise OSError("Download changed while being copied")
-        try:
-            os.link(temporary, destination, follow_symlinks=False)
-        except FileExistsError:
-            raise
+
+        # The destination appears atomically only after the verified copy is
+        # complete. Record its inode so cleanup can never remove a replacement.
+        temporary_info = temporary.stat(follow_symlinks=False)
+        os.link(temporary, destination, follow_symlinks=False)
+        linked = destination.stat(follow_symlinks=False)
+        if not _same_inode(temporary_info, linked):
+            _unlink_if_same_inode(destination, linked)
+            raise OSError(errno.ESTALE, "Destination changed during the move")
         temporary.unlink()
+        temporary = None
+
+        current = source.stat(follow_symlinks=False)
+        if _file_signature(current) != _file_signature(before):
+            _unlink_if_same_inode(destination, linked)
+            raise OSError(errno.ESTALE, "Download source was replaced before removal")
         try:
             source.unlink()
         except OSError:
-            try:
-                destination.unlink()
-            except OSError:
-                pass
+            _unlink_if_same_inode(destination, linked)
             raise
-    except Exception:
-        try:
-            temporary.unlink()
-        except OSError:
-            pass
-        raise
+    finally:
+        if source_fd >= 0:
+            os.close(source_fd)
+        if descriptor >= 0:
+            os.close(descriptor)
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def _collision_free_path(directory: Path, filename: str) -> Path:
