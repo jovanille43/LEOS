@@ -22,3 +22,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - Le code n'a pas encore été exécuté sur Bazzite. Le comportement de Flatpak, les modules QML et l'affichage des sorties doivent être testés dans l'image LEOS.
 
 La boutique ne remplace ni Discover, ni Flatpak, ni les intégrations de lanceurs. Elle prépare une interface LEOS unifiée et transparente.
+
+## Fermeture pendant une opération
+
+À la fermeture de la boutique, le processus Flatpak en cours est interrompu et son délai de surveillance est arrêté. Si une installation ou une désinstallation a été interrompue, LEOS ne prétend pas connaître son résultat : actualise l'inventaire Flatpak avant de relancer une opération. Le nettoyage est également appelé si l'interface QML ne peut pas démarrer.
