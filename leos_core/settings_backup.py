@@ -430,19 +430,30 @@ class SettingsBackupManager:
             raise ValueError("LEOS settings backup is missing, unsafe or invalid")
         _manifest, values = verified
 
-        # Preserve the live settings before replacing them. A valid file gets a
-        # normal restorable snapshot; unreadable bytes are quarantined verbatim.
-        try:
-            self.settings.validate_current_file()
-        except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
-            raw_settings = _read_regular_file(
-                self.settings.path,
-                MAX_SETTINGS_BYTES,
-                allow_empty=True,
-            )
-            recovery_backup_id = self._quarantine_corrupt_settings(raw_settings)
-        else:
-            recovery_backup_id = self._create_backup(preserve_backup_ids={backup_id})
+        # Preserve the live settings and replace them under one exclusive
+        # SettingsStore lock. This prevents another LEOS process from changing
+        # preferences between the recovery snapshot and the restore commit.
+        recovery_backup_id = ""
 
-        self.settings.replace_all(values, confirmed=True)
+        def preserve_current_state() -> None:
+            nonlocal recovery_backup_id
+            try:
+                self.settings.validate_current_file()
+            except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
+                raw_settings = _read_regular_file(
+                    self.settings.path,
+                    MAX_SETTINGS_BYTES,
+                    allow_empty=True,
+                )
+                recovery_backup_id = self._quarantine_corrupt_settings(raw_settings)
+            else:
+                recovery_backup_id = self._create_backup(
+                    preserve_backup_ids={backup_id}
+                )
+
+        self.settings.replace_all(
+            values,
+            confirmed=True,
+            before_replace=preserve_current_state,
+        )
         return recovery_backup_id
