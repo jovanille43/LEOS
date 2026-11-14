@@ -353,5 +353,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("except Exception:", cleanup)
 
 
+    def test_gaming_failure_notification_is_best_effort(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        reporter = main[main.index("def _report_startup_failure"):main.index("def _cleanup_failed_startup")]
+        self.assertIn("try:", reporter)
+        self.assertIn("post_notification(", reporter)
+        self.assertIn("except Exception:", reporter)
+        self.assertIn("traceback.print_exc()", reporter)
+        self.assertIn("import traceback", main)
+
+
 if __name__ == "__main__":
     unittest.main()
