@@ -1,6 +1,7 @@
 """Tests for shared LEOS settings."""
 
 import json
+import fcntl
 import os
 import tempfile
 import unittest
@@ -348,6 +349,58 @@ class SettingsStoreTests(unittest.TestCase):
 
             settings.replace_all(snapshot, confirmed=True)
             self.assertEqual(SettingsStore(path).get("theme"), "cyan")
+
+    def test_replace_all_runs_recovery_callback_while_exclusive_lock_is_held(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#112233")
+            replacement = {key: settings.get(key) for key in DEFAULTS}
+            replacement["theme_color_a"] = "#AABBCC"
+            lock_path = path.with_name(path.name + ".lock")
+            observations: list[bool] = []
+
+            def preserve_before_replace() -> None:
+                with lock_path.open("a", encoding="utf-8") as competing_lock:
+                    try:
+                        fcntl.flock(
+                            competing_lock.fileno(),
+                            fcntl.LOCK_EX | fcntl.LOCK_NB,
+                        )
+                    except BlockingIOError:
+                        observations.append(True)
+                    else:
+                        fcntl.flock(competing_lock.fileno(), fcntl.LOCK_UN)
+                        observations.append(False)
+                current = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(current["theme_color_a"], "#112233")
+
+            settings.replace_all(
+                replacement,
+                confirmed=True,
+                before_replace=preserve_before_replace,
+            )
+
+            self.assertEqual(observations, [True])
+            self.assertEqual(SettingsStore(path).get("theme_color_a"), "#AABBCC")
+
+    def test_replace_all_rejects_non_callable_recovery_callback_without_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#112233")
+            original = path.read_bytes()
+            replacement = {key: settings.get(key) for key in DEFAULTS}
+            replacement["theme_color_a"] = "#AABBCC"
+
+            with self.assertRaises(TypeError):
+                settings.replace_all(
+                    replacement,
+                    confirmed=True,
+                    before_replace="not-callable",
+                )
+
+            self.assertEqual(path.read_bytes(), original)
 
     def test_replace_all_can_recover_corrupt_file_without_weakening_normal_writes(self) -> None:
         from leos_core.settings import DEFAULTS
