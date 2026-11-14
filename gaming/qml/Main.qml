@@ -191,6 +191,7 @@ ApplicationWindow {
             searchField.forceActiveFocus()
         } else if (toolbarFocusIndex === 1) {
             sourceFilterBox.forceActiveFocus()
+            sourceFilterBox.popup.open()
         } else if (toolbarFocusIndex === 2) {
             clearSelection()
             leos.refreshLibrary()
@@ -346,6 +347,20 @@ ApplicationWindow {
                 statusText.text = leos.powerProfileStatus
             } else if (action === "back") {
                 powerProfileDialog.close()
+            }
+            return
+        }
+        if (sourceFilterBox.popup.visible) {
+            if (action === "up" || action === "down") {
+                const delta = action === "up" ? -1 : 1
+                sourceFilterBox.currentIndex = Math.max(
+                    0,
+                    Math.min(sourceFilterBox.count - 1, sourceFilterBox.currentIndex + delta)
+                )
+                gameLibrary.setSourceFilter(sourceFilterBox.currentText)
+                clearSelection()
+            } else if (action === "confirm" || action === "back") {
+                sourceFilterBox.popup.close()
             }
             return
         }
