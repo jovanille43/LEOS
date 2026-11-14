@@ -1,6 +1,6 @@
 """Verified, private backups of LEOS desktop layout preferences.
 
-These snapshots cover only desktop/layout.json. KDE Plasma applet state is
+These snapshots cover only desktop-layout.json. KDE Plasma applet state is
 managed separately by PlasmaBackupManager.
 """
 from __future__ import annotations
@@ -210,11 +210,13 @@ class DesktopLayoutBackupManager:
         self._prune_old_backups(preserve_backup_ids=preserve_backup_ids or set())
         return backup_id
 
-    def create_backup(self) -> str:
+    def create_backup(self, *, preserve_backup_ids: set[str] | None = None) -> str:
         """Back up the current persisted layout; reject corruption, never defaults."""
         persisted = self.store.validate_current_file()
         layout = persisted if persisted is not None else self.store.get()
-        return self._create_backup_for_layout(layout)
+        return self._create_backup_for_layout(
+            layout, preserve_backup_ids=preserve_backup_ids
+        )
 
     def _verified_backup(
         self, backup_id: str
@@ -406,7 +408,7 @@ class DesktopLayoutBackupManager:
         # A corrupt, oversized or symlinked current layout blocks restoration.
         # Never replace the original file or back up silent fallback defaults.
         self.store.validate_current_file()
-        recovery_backup_id = self.create_backup()
+        recovery_backup_id = self.create_backup(preserve_backup_ids={backup_id})
         rechecked = self._verified_backup(backup_id)
         if (
             rechecked is None
