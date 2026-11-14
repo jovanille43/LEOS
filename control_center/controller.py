@@ -904,6 +904,23 @@ class ControlCenterController(QObject):
         post_notification("Préférences LEOS sauvegardées", message, "success")
         return message
 
+    @Slot(str, str, result=str)
+    def exportSettingsBackup(self, backup_id: str, destination_directory: str) -> str:
+        """Export a selected verified preference snapshot to another mounted folder."""
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde LEOS avant de l'exporter."
+        try:
+            self.settingsBackups.export_backup(backup_id, destination_directory)
+        except FileExistsError:
+            return "Ces fichiers existent déjà dans le dossier choisi ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = "L'export a échoué. Vérifie que le support est monté et que le dossier est accessible."
+            post_notification("Export LEOS impossible", message, "warning")
+            return message
+        message = "Sauvegarde LEOS exportée avec son manifeste SHA-256."
+        post_notification("Sauvegarde LEOS exportée", message, "success")
+        return message
+
     @Slot(str, bool, result=str)
     def restoreSettingsBackup(self, backup_id: str, confirmed: bool) -> str:
         """Restore a selected verified preference snapshot after UI confirmation."""
