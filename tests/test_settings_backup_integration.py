@@ -47,7 +47,8 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
         self.assertIn("EXPORTER LA SÉLECTION", qml)
         self.assertIn("Les fichiers existants ne sont jamais écrasés.", qml)
         self.assertIn("Une copie de l'état actuel sera créée automatiquement", qml)
-        self.assertIn("Les sauvegardes restent sur ce disque", qml)
+        self.assertIn("exporte une sauvegarde vers une clé USB", qml)
+        self.assertIn("aucun fichier existant n'est écrasé", qml)
 
     def test_settings_backup_does_not_include_personal_files_or_system_operations(self):
         module = (ROOT / "leos_core/settings_backup.py").read_text(encoding="utf-8")
