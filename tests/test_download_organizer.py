@@ -11,6 +11,7 @@ from pathlib import Path
 from gaming.backend.download_organizer import (
     DownloadOrganizer,
     resolve_download_directory,
+    _file_signature,
     _move_without_overwrite,
 )
 
@@ -90,6 +91,30 @@ class DownloadOrganizerTests(unittest.TestCase):
 
             self.assertFalse(source.exists())
             self.assertEqual(destination.read_bytes(), b"verified game contents")
+
+    def test_rejects_same_size_same_mtime_source_replacement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            source = home / "source.gba"
+            replacement = home / ".replacement.gba"
+            destination = home / "destination.gba"
+            source.write_bytes(b"original game")
+            original_info = source.stat()
+            expected = _file_signature(original_info)
+
+            replacement.write_bytes(b"replaced game")
+            self.assertEqual(replacement.stat().st_size, original_info.st_size)
+            os.utime(
+                replacement,
+                ns=(original_info.st_atime_ns, original_info.st_mtime_ns),
+            )
+            os.replace(replacement, source)
+
+            with self.assertRaises(OSError):
+                _move_without_overwrite(source, destination, expected)
+
+            self.assertEqual(source.read_bytes(), b"replaced game")
+            self.assertFalse(destination.exists())
 
     def test_uses_existing_french_downloads_folder_as_fallback(self):
         with tempfile.TemporaryDirectory() as directory:
