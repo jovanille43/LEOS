@@ -126,6 +126,18 @@ class SettingsStore:
         self._values = DEFAULTS.copy()
         self.load()
 
+    def validate_current_file(self) -> None:
+        """Raise when an existing settings file cannot be read safely as JSON.
+
+        A missing file is valid and represents first-run defaults. This check is
+        intentionally separate from load(), which falls back to defaults for UI
+        resilience and must not be mistaken for a verified backup source.
+        """
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
+        if self.path.exists():
+            _read_settings_file(self.path)
+
     def load(self) -> None:
         # Never retain stale values when another LEOS process replaces the
         # shared preferences with a missing, corrupt, or oversized file.
