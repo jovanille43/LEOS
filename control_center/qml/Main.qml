@@ -220,46 +220,54 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     spacing: 9
 
-                    Repeater {
-                        model: [
-                            { label: "Vue d'ensemble", page: 0 },
-                            { label: "Apparence", page: 1 },
-                            { label: "Matériel & connexions", page: 2 },
-                            { label: "Performances", page: 3 },
-                            { label: "Paramètres KDE", page: 4 },
-                            { label: "Mises à jour", page: 5 },
-                            { label: "Notifications", page: 6 },
-                            { label: "Diagnostic système", page: 7 },
-                            { label: "Nettoyage", page: 8 },
-                            { label: "Réseau", page: 9 },
-                            { label: "Sauvegardes", page: 10 }
-                        ]
-                        delegate: Button {
-                            id: settingsNavigationButton
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 48
-                            text: modelData.label
-                            onClicked: {
-                                window.selectedPage = modelData.page
-                                window.launchNotice = ""
-                            }
-                            background: Rectangle {
-                                radius: 10
-                                color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
-                            }
-                            contentItem: Label {
-                                text: settingsNavigationButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: 8
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                        ColumnLayout {
+                            width: parent.width
+                            spacing: 7
+                            Repeater {
+                                model: [
+                                    { label: "Vue d'ensemble", page: 0 },
+                                    { label: "Apparence", page: 1 },
+                                    { label: "Matériel & connexions", page: 2 },
+                                    { label: "Performances", page: 3 },
+                                    { label: "Paramètres KDE", page: 4 },
+                                    { label: "Mises à jour", page: 5 },
+                                    { label: "Notifications", page: 6 },
+                                    { label: "Diagnostic système", page: 7 },
+                                    { label: "Nettoyage", page: 8 },
+                                    { label: "Réseau", page: 9 },
+                                    { label: "Sauvegardes", page: 10 }
+                                ]
+                                delegate: Button {
+                                    id: settingsNavigationButton
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 48
+                                    text: modelData.label
+                                    onClicked: {
+                                        window.selectedPage = modelData.page
+                                        window.launchNotice = ""
+                                    }
+                                    background: Rectangle {
+                                        radius: 10
+                                        color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
+                                        border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
+                                    }
+                                    contentItem: Label {
+                                        text: settingsNavigationButton.text
+                                        color: window.themeColors.text
+                                        font.pixelSize: 12
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: 8
+                                    }
+                                }
                             }
                         }
                     }
-
-                    Item { Layout.fillHeight: true }
                     Label {
                         text: "LEOS • BUILD EN DÉVELOPPEMENT"
                         color: window.themeColors.muted_text
