@@ -42,7 +42,6 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertLess(verify, generate)
         self.assertIn("sha256sum", source)
 
-
     def test_iso_workflow_pins_one_digest_before_signature_verification(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         login = source.index("Authenticate to GitHub Container Registry")
@@ -63,21 +62,8 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn('podman_bin="${PODMAN_BIN:-podman}"', helper)
         self.assertIn('pull --authfile "$authfile" "$image_ref"', helper)
         self.assertIn("image inspect --format '{{.Digest}}'", helper)
-        self.assertIn('^sha256:[0-9a-f]{64}
-        python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
-        recipe = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        group = re.compile(r"^\s+group:\s*(\S+)", re.M)
-        python_group = group.search(python)
-        recipe_group = group.search(recipe)
-        self.assertIsNotNone(python_group)
-        self.assertIsNotNone(recipe_group)
-        self.assertNotEqual(python_group.group(1), recipe_group.group(1))
-
-
-if __name__ == "__main__":
-    unittest.main()
-, helper)
-        self.assertIn('printf \'ref=%s@%s\\n\'', helper)
+        self.assertIn(r"^sha256:[0-9a-f]{64}$", helper)
+        self.assertIn(r"printf 'ref=%s@%s\n'", helper)
         self.assertIn("leos-nvidia-open", helper)
 
     def test_workflow_groups_are_separate(self):
