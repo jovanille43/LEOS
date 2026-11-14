@@ -25,6 +25,7 @@ ApplicationWindow {
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
     property string themeColorNotice: ""
+    property string settingsBackupNotice: ""
 
     function colorToHex(value) {
         function channel(component) {
@@ -143,6 +144,21 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: settingsBackupConfirmation
+        modal: true
+        title: "Restaurer les préférences LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer les préférences actuelles par la dernière sauvegarde vérifiée. Une copie de l'état actuel sera créée automatiquement avant la restauration. Les applications, fichiers personnels, comptes et données de jeux ne seront pas modifiés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.settingsBackupNotice = controlCenter.restoreLatestSettingsBackup(true)
+    }
+
+    Dialog {
         id: plasmaDockConfirmation
         modal: true
         title: "Appliquer le dock LEOS ?"
@@ -215,7 +231,8 @@ ApplicationWindow {
                             { label: "Notifications", page: 6 },
                             { label: "Diagnostic système", page: 7 },
                             { label: "Nettoyage", page: 8 },
-                            { label: "Réseau", page: 9 }
+                            { label: "Réseau", page: 9 },
+                            { label: "Sauvegardes", page: 10 }
                         ]
                         delegate: Button {
                             id: settingsNavigationButton
@@ -2102,6 +2119,115 @@ ApplicationWindow {
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+                            Label {
+                                text: "SAUVEGARDES ET RÉCUPÉRATION"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "Protège les préférences de LEOS avant de tester un nouveau thème ou de modifier les réglages. Les sauvegardes sont privées et conservées dans ton profil utilisateur."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 230
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 12
+                                    Label {
+                                        text: "PRÉFÉRENCES LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 1.8
+                                    }
+                                    Label {
+                                        text: "Une sauvegarde inclut les couleurs A/B, le dernier mode utilisé, les préférences d'animation et de son, les notifications et les réglages LEOS connus."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: controlCenter.settingsBackupSnapshot.available
+                                            ? controlCenter.settingsBackupSnapshot.count + " sauvegarde(s) vérifiée(s) · dernière copie : " + controlCenter.settingsBackupSnapshot.latestCreatedUtc
+                                            : "Aucune sauvegarde vérifiée pour le moment."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "CRÉER UNE SAUVEGARDE"
+                                            onClicked: window.settingsBackupNotice = controlCenter.createSettingsBackup()
+                                        }
+                                        Button {
+                                            text: "RESTAURER LA DERNIÈRE"
+                                            enabled: controlCenter.settingsBackupSnapshot.available
+                                            onClicked: settingsBackupConfirmation.open()
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                    }
+                                    Label {
+                                        text: window.settingsBackupNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 145
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    spacing: 7
+                                    Label {
+                                        text: "CE QUI EST INCLUS — ET CE QUI NE L'EST PAS"
+                                        color: window.cyan
+                                        font.pixelSize: 10
+                                        font.letterSpacing: 1.2
+                                    }
+                                    Label {
+                                        text: "La restauration remplace uniquement le fichier de préférences LEOS. Elle crée d'abord une sauvegarde de l'état actuel. Elle ne modifie ni Plasma, ni les panneaux KDE, ni les applications installées."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Les sauvegardes restent sur ce disque : copie le dossier de sauvegarde sur un support externe pour te protéger contre une panne ou une réinstallation."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
                             }
                             Item { Layout.fillHeight: true }
                         }
