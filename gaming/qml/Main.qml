@@ -1125,8 +1125,8 @@ ApplicationWindow {
                                 Button {
                                     id: launchSelectedGameButton
                                     Layout.fillWidth: true
-                                    enabled: window.selectedIndex >= 0
-                                    text: "JOUER"
+                                    enabled: window.selectedIndex >= 0 && window.selectedSource !== "Fichiers locaux"
+                                    text: window.selectedSource === "Fichiers locaux" ? "LANCEMENT À CONFIGURER" : "JOUER"
                                     onActiveFocusChanged: {
                                         if (activeFocus) {
                                             window.navigationArea = "details"
