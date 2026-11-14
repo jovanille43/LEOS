@@ -27,7 +27,7 @@ from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
-from .retroarch import (
+from .emulation_discovery import discover_emulated_games\nfrom .retroarch import (
     RETROARCH_FLATPAK_ID, find_retroarch_playlist_directories,
     find_retroarch_thumbnail_directories, load_retroarch_games,
 )
