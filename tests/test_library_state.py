@@ -157,6 +157,15 @@ class LibraryStateTests(unittest.TestCase):
             ["steam:1"],
         )
 
+    def test_emulation_category_includes_retroarch_playlists_only(self):
+        games = [
+            {"id": "retroarch:1", "title": "Metroid", "platform": "Nintendo", "source": "RetroArch"},
+            {"id": "steam:1", "title": "Metroidvania", "platform": "PC", "source": "Steam"},
+            {"id": "manual:emu", "title": "Arcade title", "platform": "Émulation", "source": "Ajout manuel"},
+        ]
+        result = filter_games(games, "Émulation", set(), [])
+        self.assertEqual([game["id"] for game in result], ["retroarch:1", "manual:emu"])
+
     def test_favorites_filter_by_game_identifier(self):
         result = filter_games(self.games, "Favoris", {"steam:1", "manual:sega"}, [])
         self.assertEqual([item["id"] for item in result], ["steam:1", "manual:sega"])
