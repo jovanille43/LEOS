@@ -21,6 +21,7 @@ BACKUP_SCHEMA_VERSION = 1
 _BACKUP_ID = re.compile(r"^[0-9a-f]{32}$")
 MAX_BACKUP_MANIFEST_BYTES = 16 * 1024
 MAX_BACKUP_MANIFESTS_SCANNED = 256
+MAX_RETAINED_BACKUPS = 20
 
 
 def _backup_root() -> Path:
@@ -162,7 +163,25 @@ class SettingsBackupManager:
         except Exception:
             backup_path.unlink(missing_ok=True)
             raise
+        self._prune_old_backups()
         return backup_id
+
+    def _prune_old_backups(self) -> None:
+        """Retain a bounded set of verified restore points."""
+        entries = self.list_backups()
+        for entry in entries[MAX_RETAINED_BACKUPS:]:
+            backup_id = str(entry.get("backup_id", ""))
+            if _BACKUP_ID.fullmatch(backup_id) is None:
+                continue
+            for suffix in (".bak", ".json"):
+                path = self.backup_dir / f"{backup_id}{suffix}"
+                if path.is_symlink():
+                    continue
+                try:
+                    path.unlink(missing_ok=True)
+                except OSError:
+                    # A failed cleanup must never invalidate the new backup.
+                    continue
 
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
