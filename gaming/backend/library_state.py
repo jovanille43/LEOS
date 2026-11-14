@@ -116,6 +116,34 @@ CATEGORIES = (
     "Récemment joués",
 )
 
+SOURCE_FILTERS = (
+    "Toutes les sources",
+    "Steam",
+    "Heroic",
+    "Lutris",
+    "RetroArch",
+    "Fichiers locaux",
+    "Ajout manuel",
+)
+
+
+def _matches_source_filter(game: dict[str, Any], source_filter: str) -> bool:
+    """Match a provider filter against stable IDs and provider metadata."""
+    if source_filter == "Toutes les sources":
+        return True
+
+    game_id = str(game.get("id", "")).casefold()
+    source = str(game.get("source", "")).casefold()
+    matches = {
+        "Steam": game_id.startswith("steam:") or "steam" in source,
+        "Heroic": game_id.startswith("heroic:") or "heroic" in source,
+        "Lutris": game_id.startswith("lutris:") or "lutris" in source,
+        "RetroArch": game_id.startswith("retroarch:") or "retroarch" in source,
+        "Fichiers locaux": game_id.startswith("emulator:") or source == "fichiers locaux",
+        "Ajout manuel": game_id.startswith("manual:") or "ajout manuel" in source,
+    }
+    return matches.get(source_filter, True)
+
 
 def filter_games(
     games: list[dict[str, Any]],
@@ -123,8 +151,9 @@ def filter_games(
     favorites: set[str],
     recent: list[str],
     search_query: str = "",
+    source_filter: str = "Toutes les sources",
 ) -> list[dict[str, Any]]:
-    """Filter games by category and a case-insensitive search query."""
+    """Filter games by category, provider and a case-insensitive search query."""
     if category == "Favoris":
         result = [game for game in games if game.get("id") in favorites]
     elif category == "Récemment joués":
@@ -161,6 +190,12 @@ def filter_games(
                 if platform in str(game.get("platform", "")).casefold()
             ]
         )
+
+    if source_filter in SOURCE_FILTERS and source_filter != "Toutes les sources":
+        result = [
+            game for game in result
+            if _matches_source_filter(game, source_filter)
+        ]
 
     query = normalize_search_text(search_query)
     if not query:
