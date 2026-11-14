@@ -392,6 +392,7 @@ class GamingController(QObject):
         if self._shutting_down:
             return
         self._shutting_down = True
+        self.library.shutdown()
         self.monitor.stop()
         self._notification_refresh_timer.stop()
         self._theme_sync_timer.stop()
