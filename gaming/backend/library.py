@@ -517,7 +517,7 @@ class GameLibraryModel(QAbstractListModel):
                 installation_status(game)
                 if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:"))
                 else (
-                    "Fichier local · lancement à configurer"
+                    "Fichier local · émulateur selon format et installation"
                     if str(game.get("id", "")).startswith("emulator:")
                     else "Ajout manuel"
                 )
