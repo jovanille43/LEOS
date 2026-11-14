@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "product": "LEOS",
+  "mode": "desktop",
+  "theme": "leos-original",
+  "appearance": {
+    "color_scheme": "dark",
+    "background": "#090B10",
+    "surface": "#121720",
+    "surface_elevated": "#182732",
+    "border": "#293342",
+    "text": "#F4F7FB",
+    "muted_text": "#909AAC",
+    "accent_primary": "#00D9FF",
+    "accent_secondary": "#E33BFF",
+    "corner_radius": 12,
+    "animations_enabled": true
+  },
+  "desktop": {
+    "show_desktop_icons": false,
+    "dock": {
+      "enabled": true,
+      "position": "bottom",
+      "alignment": "center",
+      "auto_hide": false,
+      "pinned_applications": [
+        "org.mozilla.firefox",
+        "com.brave.Browser",
+        "steam",
+        "org.kde.dolphin",
+        "org.kde.systemsettings"
+      ]
+    },
+    "widgets": {
+      "enabled_by_default": false,
+      "user_can_add": true
+    }
+  },
+  "safety": {
+    "apply_to_existing_user_profile_automatically": false,
+    "preserve_existing_kde_configuration": true,
+    "allow_user_customization": true
+  }
+}
