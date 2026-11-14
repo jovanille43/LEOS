@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from gaming.backend.download_organizer import (
@@ -109,6 +110,58 @@ class DownloadOrganizerTests(unittest.TestCase):
             organizer.poll(now=10_000)
             self.assertEqual(organizer.poll(now=10_020), [])
             self.assertTrue(all((downloads / name).is_file() for name in names))
+
+
+    def test_extracts_single_game_from_zip_and_archives_original(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            downloads = home / "Downloads"
+            downloads.mkdir()
+            archive_path = downloads / "Wii U game.zip"
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr("Games/The Legend of Zelda.wua", b"mock Wii U data")
+                archive.writestr("README.txt", "instructions")
+            modified = archive_path.stat().st_mtime
+            organizer = DownloadOrganizer(
+                downloads, home / "Emulation" / "ROMs", home=home,
+                stability_seconds=0,
+            )
+            organizer.poll(now=modified + 1)
+            organizer.poll(now=modified + 2)
+            moved = organizer.poll(now=modified + 3)
+
+            self.assertEqual(len(moved), 1)
+            game = home / "Emulation" / "ROMs" / "Nintendo" / "Wii U" / "The Legend of Zelda.wua"
+            original = home / "Emulation" / ".archives" / archive_path.name
+            self.assertEqual(game.read_bytes(), b"mock Wii U data")
+            self.assertTrue(original.is_file())
+            self.assertFalse(archive_path.exists())
+            self.assertEqual(moved[0]["archive"], str(original))
+
+    def test_rejects_zip_path_traversal_and_multi_game_archives(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            downloads = home / "Downloads"
+            downloads.mkdir()
+            unsafe = downloads / "unsafe.zip"
+            with zipfile.ZipFile(unsafe, "w") as archive:
+                archive.writestr("../escape.wua", b"must not escape")
+            multiple = downloads / "multiple.zip"
+            with zipfile.ZipFile(multiple, "w") as archive:
+                archive.writestr("one.wua", b"one")
+                archive.writestr("two.wua", b"two")
+            modified = max(unsafe.stat().st_mtime, multiple.stat().st_mtime)
+            organizer = DownloadOrganizer(
+                downloads, home / "Emulation" / "ROMs", home=home,
+                stability_seconds=0,
+            )
+            organizer.poll(now=modified + 1)
+            organizer.poll(now=modified + 2)
+            self.assertEqual(organizer.poll(now=modified + 3), [])
+            self.assertTrue(unsafe.is_file())
+            self.assertTrue(multiple.is_file())
+            self.assertFalse((home / "escape.wua").exists())
+            self.assertFalse((home / "Emulation" / "ROMs" / "Nintendo" / "Wii U" / "one.wua").exists())
 
     def test_ignores_browser_partial_downloads_and_zero_byte_files(self):
         with tempfile.TemporaryDirectory() as directory:
