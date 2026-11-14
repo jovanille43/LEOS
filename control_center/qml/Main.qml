@@ -27,6 +27,8 @@ ApplicationWindow {
     property string themeColorNotice: ""
     property string settingsBackupNotice: ""
     property string pendingSettingsBackupId: ""
+    property string desktopLayoutBackupNotice: ""
+    property string pendingDesktopLayoutBackupId: ""
 
     function colorToHex(value) {
         function channel(component) {
@@ -180,6 +182,46 @@ ApplicationWindow {
             padding: 12
         }
         onAccepted: window.settingsBackupNotice = controlCenter.restoreSettingsBackup(window.pendingSettingsBackupId, true)
+    }
+
+    FileDialog {
+        id: desktopLayoutBackupImportDialog
+        title: "Choisir le manifeste d'une sauvegarde de disposition LEOS"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Manifeste de disposition LEOS (*.json)"]
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.importDesktopLayoutBackup(
+                selectedFile.toLocalFile()
+            )
+        }
+    }
+
+    FolderDialog {
+        id: desktopLayoutBackupExportDialog
+        title: "Choisir un dossier externe pour la disposition LEOS"
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.exportDesktopLayoutBackup(
+                window.pendingDesktopLayoutBackupId,
+                selectedFolder.toLocalFile()
+            )
+        }
+    }
+
+    Dialog {
+        id: desktopLayoutBackupConfirmation
+        modal: true
+        title: "Restaurer la disposition du bureau ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer uniquement ses préférences de disposition (profil, dock et widgets) par la sauvegarde vérifiée. Une copie de l'état actuel sera créée avant la restauration. Les panneaux et applets KDE Plasma ne sont pas inclus et ne seront pas modifiés par cette opération."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.desktopLayoutBackupNotice = controlCenter.restoreDesktopLayoutBackup(
+            window.pendingDesktopLayoutBackupId, true
+        )
     }
 
     Dialog {
@@ -1043,6 +1085,81 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 282
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "SAUVEGARDE DES DISPOSITIONS LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Sauvegarde séparément le profil Desktop, les réglages du dock et l'activation des widgets. Jusqu'à 20 copies vérifiées sont conservées."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    ComboBox {
+                                        id: desktopLayoutBackupBox
+                                        Layout.fillWidth: true
+                                        model: controlCenter.desktopLayoutBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        currentIndex: count > 0 ? 0 : -1
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "Créer une sauvegarde"
+                                            onClicked: window.desktopLayoutBackupNotice = controlCenter.createDesktopLayoutBackup()
+                                        }
+                                        Button {
+                                            text: "Restaurer"
+                                            enabled: desktopLayoutBackupBox.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingDesktopLayoutBackupId = desktopLayoutBackupBox.currentValue
+                                                desktopLayoutBackupConfirmation.open()
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "Importer"
+                                            onClicked: desktopLayoutBackupImportDialog.open()
+                                        }
+                                        Button {
+                                            text: "Exporter"
+                                            enabled: desktopLayoutBackupBox.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingDesktopLayoutBackupId = desktopLayoutBackupBox.currentValue
+                                                desktopLayoutBackupExportDialog.open()
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: window.desktopLayoutBackupNotice.length > 0
+                                            ? window.desktopLayoutBackupNotice
+                                            : (controlCenter.desktopLayoutBackupSnapshot.available
+                                                ? controlCenter.desktopLayoutBackupSnapshot.count + " sauvegarde(s) vérifiée(s)."
+                                                : "Aucune sauvegarde de disposition pour le moment.")
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 195
