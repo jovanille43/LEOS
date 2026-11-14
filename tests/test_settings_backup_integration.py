@@ -55,6 +55,15 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
         self.assertIn("exporte une sauvegarde vers une clé USB", qml)
         self.assertIn("Aucun fichier existant n'est écrasé.", qml)
 
+    def test_backup_refuses_fallback_defaults_and_quarantines_corrupt_settings_on_restore(self):
+        settings = (ROOT / "leos_core/settings.py").read_text(encoding="utf-8")
+        backup = (ROOT / "leos_core/settings_backup.py").read_text(encoding="utf-8")
+        self.assertIn("def validate_current_file(self)", settings)
+        self.assertIn("self.settings.validate_current_file()", backup)
+        self.assertIn("def _quarantine_corrupt_settings", backup)
+        self.assertIn("allow_empty=True", backup)
+        self.assertIn("hashlib.sha256(raw_settings).hexdigest()", backup)
+
     def test_settings_backup_does_not_include_personal_files_or_system_operations(self):
         module = (ROOT / "leos_core/settings_backup.py").read_text(encoding="utf-8")
         self.assertIn("DEFAULTS", module)
