@@ -159,6 +159,12 @@ class DesktopLayoutStore:
         if not validate_layout(value):
             raise ValueError("Refusing to restore an invalid LEOS desktop layout")
         self.validate_current_file()
+        self._commit_layout(value)
+
+    def _commit_layout(self, value: object) -> None:
+        """Persist a candidate layout and roll memory back if the write fails."""
+        if not validate_layout(value):
+            raise ValueError("Refusing to save invalid LEOS desktop layout")
         previous = self._layout
         self._layout = json.loads(json.dumps(value))
         try:
@@ -178,13 +184,13 @@ class DesktopLayoutStore:
         if profile not in PROFILES:
             raise ValueError(f"Unknown LEOS desktop profile: {profile}")
         selected = PROFILES[profile]
-        self._layout = {
+        candidate = {
             "schema_version": 1,
             "profile": profile,
             "dock": dict(selected["dock"]),
             "widgets_enabled": selected["widgets_enabled"],
         }
-        self.save()
+        self._commit_layout(candidate)
 
     def set_dock(self, *, enabled: bool | None = None, position: str | None = None,
                  alignment: str | None = None, auto_hide: bool | None = None) -> None:
@@ -201,17 +207,19 @@ class DesktopLayoutStore:
             if key == "alignment" and (not isinstance(value, str) or value not in ALIGNMENTS):
                 raise ValueError("Invalid dock alignment")
             dock[key] = value
-        self._layout["dock"] = dock
-        self._layout["profile"] = "custom"
+        candidate = self.get()
+        candidate["dock"] = dock
+        candidate["profile"] = "custom"
         # "custom" is an explicit state, not a selectable built-in preset.
-        self.save()
+        self._commit_layout(candidate)
 
     def set_widgets_enabled(self, enabled: bool) -> None:
         if not isinstance(enabled, bool):
             raise TypeError("enabled must be a boolean")
-        self._layout["widgets_enabled"] = enabled
-        self._layout["profile"] = "custom"
-        self.save()
+        candidate = self.get()
+        candidate["widgets_enabled"] = enabled
+        candidate["profile"] = "custom"
+        self._commit_layout(candidate)
 
     def save(self) -> None:
         if not validate_layout(self._layout):
