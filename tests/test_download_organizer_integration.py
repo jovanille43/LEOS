@@ -43,7 +43,8 @@ class DownloadOrganizerIntegrationTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertNotIn("subprocess", source)
-        self.assertNotIn("zipfile", source)
+        self.assertIn("zipfile.ZipFile", source)
+        self.assertIn("len(candidates) != 1", source)
         self.assertIn("path.rename(target)", source)
         self.assertIn('".wua": ("Nintendo", "Wii U")', source)
 
