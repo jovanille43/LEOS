@@ -6,7 +6,8 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 
 - `main.py` : initialise Qt Quick et connecte les services backend.
 - `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel. Les jaquettes manquantes ou devenues illisibles ont un visuel de remplacement à monogramme ; les sélections changent avec une transition douce.
-- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic, Lutris et des listes RetroArch, ajout manuel, favoris et historique récent.\n- `backend/download_organizer.py` et `download_organizer_service.py` : surveillance des téléchargements terminés et rangement prudent des ROM aux formats reconnus dans `~/Emulation/ROMs`, actif dès l'ouverture de la session KDE.
+- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic, Lutris et des listes RetroArch, ajout manuel, favoris et historique récent.
+- `backend/download_organizer.py` et `download_organizer_service.py` : surveillance des téléchargements terminés et rangement prudent des ROM aux formats reconnus dans `~/Emulation/ROMs`, actif dès l'ouverture de la session KDE.
 - `backend/system_monitor.py` : CPU/RAM, températures CPU/GPU et télémétrie GPU/VRAM via DRM/hwmon ; un repli facultatif sur `nvidia-smi` couvre les pilotes NVIDIA propriétaires. Les données non fournies par le pilote ou l'outil restent indisponibles.
 - `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/mangohud.py` : détection facultative de MangoHud et ajout du wrapper uniquement aux commandes de lancement direct lorsque l'utilisateur active l'overlay. Aucun paquet n'est installé et aucune configuration globale n'est modifiée.
