@@ -53,6 +53,8 @@ DESTINATION_BY_EXTENSION: dict[str, tuple[str, str]] = {
     ".wuhb": ("Nintendo", "Wii U"),
     ".wud": ("Nintendo", "Wii U"),
     ".wux": ("Nintendo", "Wii U"),
+    ".nsp": ("Nintendo", "Switch"),
+    ".xci": ("Nintendo", "Switch"),
     ".sms": ("SEGA", "Master System"),
     ".gg": ("SEGA", "Game Gear"),
     ".md": ("SEGA", "Mega Drive"),
