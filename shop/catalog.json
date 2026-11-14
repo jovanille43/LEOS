@@ -82,5 +82,50 @@
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
     "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.libretro.RetroArch",
+    "name": "RetroArch",
+    "category": "Émulation",
+    "description": "Frontend multi-systèmes pour lancer des jeux via des cœurs compatibles. LEOS importe ses playlists locales ; les cœurs et jeux restent à installer séparément.",
+    "source": "Flathub",
+    "compatibility": "Nécessite un ou plusieurs cœurs compatibles avec les systèmes souhaités. Aucun jeu, BIOS ou cœur propriétaire n'est fourni.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
+  },
+  {
+    "id": "org.DolphinEmu.dolphin-emu",
+    "name": "Dolphin",
+    "category": "Émulation",
+    "description": "Émulateur GameCube et Wii avec prise en charge des manettes et de Vulkan/OpenGL.",
+    "source": "Flathub",
+    "compatibility": "Les performances dépendent du CPU, du GPU et des pilotes. Les jeux et fichiers système Nintendo ne sont pas fournis.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
+  },
+  {
+    "id": "net.pcsx2.PCSX2",
+    "name": "PCSX2",
+    "category": "Émulation",
+    "description": "Émulateur PlayStation 2 pour Linux.",
+    "source": "Flathub",
+    "compatibility": "Un BIOS obtenu légalement depuis une console compatible est nécessaire. Les jeux ne sont pas fournis.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
+  },
+  {
+    "id": "org.ppsspp.PPSSPP",
+    "name": "PPSSPP",
+    "category": "Émulation",
+    "description": "Émulateur PlayStation Portable, adapté aux PC et appareils modestes.",
+    "source": "Flathub",
+    "compatibility": "Les jeux ne sont pas fournis ; les performances varient selon le titre et le matériel.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
+  },
+  {
+    "id": "org.duckstation.DuckStation",
+    "name": "DuckStation",
+    "category": "Émulation",
+    "description": "Émulateur PlayStation avec rendu moderne et options de mise à l'échelle.",
+    "source": "Flathub",
+    "compatibility": "Un BIOS obtenu légalement depuis une console compatible peut être nécessaire. Les jeux ne sont pas fournis.",
+    "operation_note": "Installation Flatpak utilisateur après vérification de la source Flathub et confirmation explicite."
   }
 ]
