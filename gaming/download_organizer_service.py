@@ -50,6 +50,12 @@ def _notify(moved: list[dict[str, str]]) -> None:
     details = "\n".join(
         f"{label} : {count}" for label, count in sorted(by_console.items())
     )
+    archived_zips = sum(1 for item in moved if item.get("archive"))
+    if archived_zips:
+        details += (
+            f"\n{archived_zips} archive(s) ZIP originale(s) conservée(s) "
+            "dans Emulation/.archives."
+        )
     try:
         subprocess.run(
             [
