@@ -90,7 +90,7 @@ class EmulationDiscoveryTests(unittest.TestCase):
             (root / "Game.chd").touch()
             self.assertEqual(discover_emulated_games([root], max_files=0), [])
             self.assertEqual(discover_emulated_games([root], max_depth=-1), [])
-            self.assertEqual(discover_emulated_games([root], max_depth=MAX_DEPTH := 9), [])
+            self.assertEqual(discover_emulated_games([root], max_depth=9), [])
 
 
 if __name__ == "__main__":
