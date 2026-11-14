@@ -233,11 +233,19 @@ ApplicationWindow {
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
+                        Label {
+                            Layout.fillWidth: true
+                            visible: detailsPane.installedScope === "other"
+                            text: "Cette application est installée dans une installation Flatpak personnalisée. LEOS la détecte, mais ne la modifie pas pour éviter de cibler la mauvaise installation."
+                            color: window.cyan
+                            font.pixelSize: 10
+                            wrapMode: Text.WordWrap
+                        }
                         Item { Layout.fillHeight: true }
                         Button {
                             id: installRemoveButton
                             Layout.fillWidth: true
-                            enabled: detailsPane.appId.length > 0 && !store.busy
+                            enabled: detailsPane.appId.length > 0 && !store.busy && detailsPane.installedScope !== "other"
                             text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
                             onClicked: operationDialog.open()
                             background: Rectangle {
