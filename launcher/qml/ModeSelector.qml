@@ -21,6 +21,18 @@ ApplicationWindow {
     property string themeColorNotice: ""
     property bool transitionInProgress: false
 
+    function accentSurface(accentColor, strength) {
+        const base = Qt.color(themeColors.surface)
+        const tint = accentColor
+        const amount = Math.max(0.0, Math.min(1.0, strength))
+        return Qt.rgba(
+            base.r * (1.0 - amount) + tint.r * amount,
+            base.g * (1.0 - amount) + tint.g * amount,
+            base.b * (1.0 - amount) + tint.b * amount,
+            1.0
+        )
+    }
+
     function colorToHex(color) {
         function byteHex(value) {
             const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
@@ -189,7 +201,7 @@ ApplicationWindow {
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: "#101923"
-                border.color: "#254253"
+                border.color: window.accentSurface(window.cyan, 0.30)
 
                 RowLayout {
                     anchors.fill: parent
@@ -326,9 +338,9 @@ ApplicationWindow {
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? "#1a2630" : "#111720"
+                        color: desktopCard.down ? window.accentSurface(window.cyan, 0.24) : "#111720"
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.cyan : window.accentSurface(window.cyan, 0.24)
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -374,9 +386,9 @@ ApplicationWindow {
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? "#25172a" : "#15121d"
+                        color: gamingCard.down ? window.accentSurface(window.magenta, 0.24) : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.magenta : window.accentSurface(window.magenta, 0.24)
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -533,7 +545,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.accentSurface(window.cyan, 0.24); border.color: window.cyan }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
