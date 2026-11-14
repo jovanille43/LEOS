@@ -9,7 +9,7 @@ import re
 import tempfile
 import stat
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.json_utils import json_nesting_within_limit
@@ -213,12 +213,20 @@ class SettingsStore:
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
-    def replace_all(self, values: dict[str, Any], *, confirmed: bool = False) -> None:
+    def replace_all(
+        self,
+        values: dict[str, Any],
+        *,
+        confirmed: bool = False,
+        before_replace: Callable[[], None] | None = None,
+    ) -> None:
         """Atomically replace the complete preference set after explicit confirmation.
 
         This recovery-only operation deliberately bypasses a corrupt existing JSON
         file, but still validates the replacement and serializes access with the
-        same lock used by normal settings writes.
+        same lock used by normal settings writes. The optional pre-replacement
+        callback runs while that lock is held so callers can preserve the exact
+        pre-restore state before the atomic replacement.
         """
         if confirmed is not True:
             raise PermissionError("Explicit confirmation is required to replace LEOS preferences")
@@ -234,6 +242,15 @@ class SettingsStore:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
             previous = self._values
             try:
+                # Refresh only after acquiring the cross-process lock. The
+                # recovery callback and replacement observe one serialized
+                # pre-restore settings state.
+                self.load()
+                if before_replace is not None:
+                    if not callable(before_replace):
+                        raise TypeError("before_replace must be callable")
+                    before_replace()
+                previous = self._values
                 self._values = {**DEFAULTS, **validated}
                 self.save()
             except Exception:
