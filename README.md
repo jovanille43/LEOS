@@ -61,7 +61,7 @@ Desktop Mode conserve **KDE Plasma** comme environnement de bureau. LEOS y ajout
 Le code du mode Desktop comprend notamment :
 
 - **Menu LEOS** : recherche d’applications installées, catégories, favoris ordonnés et applications récemment utilisées.
-- **Centre de contrôle** : réglages LEOS, informations matérielles, connexions, notifications, mises à jour et outils de diagnostic.
+- **Centre de contrôle** : réglages LEOS, informations matérielles, connexions, notifications, mises à jour, outils de diagnostic et page de sauvegarde/restauration vérifiée des préférences LEOS.
 - **Centre des manettes** : détection des contrôleurs, test des boutons et des axes, profils de navigation et calibration utilisés par l’interface LEOS.
 - **Boutique LEOS** : catalogue d’applications et gestion des applications Flatpak avec confirmation.
 - **Personnalisation Plasma** : aperçu des fonds d’écran LEOS, profils de disposition et préparation d’un dock. L’application d’une disposition de panneau exige une sauvegarde et une confirmation ; les configurations multi-panneaux non prises en charge sont refusées sans modification.
@@ -260,6 +260,7 @@ Ne tente pas d’installer une recette BlueBuild directement sur un ordinateur p
 
 - [Architecture générale](docs/architecture.md)
 - [Premier démarrage](docs/first-run.md)
+- [Sauvegardes et récupération](docs/recovery.md)
 - [Compatibilité matérielle](docs/hardware-compatibility.md)
 - [Matrice de validation matérielle](docs/hardware-validation.md)
 - [Bluetooth](docs/bluetooth.md)
