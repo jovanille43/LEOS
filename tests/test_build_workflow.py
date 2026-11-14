@@ -205,6 +205,15 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("type: signing", common)
         self.assertIn("src: branding", common)
 
+    def test_leos_config_payload_uses_files_module_and_keeps_runtime_path(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("type: files", recipe)
+        self.assertIn("source: leos-config", recipe)
+        self.assertIn("destination: /usr/share/leos", recipe)
+        payload = ROOT / "files/leos-config/config/desktop-defaults.json"
+        self.assertTrue(payload.is_file())
+        self.assertFalse((ROOT / "config").exists())
+
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: branding", recipe)
