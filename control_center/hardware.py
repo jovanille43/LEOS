@@ -8,7 +8,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import Sequence
 
 
 MAX_HARDWARE_TEXT_BYTES = 4 * 1024 * 1024
