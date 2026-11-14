@@ -139,8 +139,11 @@ class SettingsModuleCommandTests(unittest.TestCase):
         ):
             with self.subTest(timer=timer):
                 self.assertIn(f"self.{timer},", controller)
-        self.assertIn("self._system_update_process.kill()", controller)
-        self.assertIn("self._deployment_process", controller)
+        self.assertIn(
+            "for process in (self._system_update_process, self._deployment_process):",
+            controller,
+        )
+        self.assertIn("process.kill()", controller)
         self.assertIn("self.monitor.stop()", controller)
         self.assertIn("app.aboutToQuit.connect(controller.shutdown)", main)
         self.assertIn("controller.shutdown()", main)
