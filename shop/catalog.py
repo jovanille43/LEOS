@@ -1,4 +1,4 @@
-"""Curated catalogue model with explicit user/system installation state."""
+"""Curated catalogue model with user, default-system and custom installation state."""
 
 from __future__ import annotations
 
