@@ -55,6 +55,18 @@ class EmulationDiscoveryTests(unittest.TestCase):
                 },
             )
 
+    def test_discovers_nintendo_switch_nsp_and_xci_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "Jeux"
+            root.mkdir()
+            (root / "Mario Kart.nsp").touch()
+            (root / "Zelda.xci").touch()
+            games = discover_emulated_games([root])
+            self.assertEqual(
+                {game["title"]: game["platform"] for game in games},
+                {"Mario Kart": "Nintendo", "Zelda": "Nintendo"},
+            )
+
     def test_skips_hidden_directories_and_symbolic_links(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "Games"
