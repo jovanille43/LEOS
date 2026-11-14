@@ -1,6 +1,7 @@
 """Read-only GPU telemetry from Linux DRM sysfs."""
 
 import csv
+import math
 import re
 import shutil
 import subprocess
@@ -273,7 +274,7 @@ def normalize_gpu_metrics(metrics: object) -> dict[str, object]:
             parsed = float(value)
         except (TypeError, ValueError, OverflowError):
             return -1.0
-        if not __import__("math").isfinite(parsed) or not minimum <= parsed <= maximum:
+        if not math.isfinite(parsed) or not minimum <= parsed <= maximum:
             return -1.0
         return parsed
 
