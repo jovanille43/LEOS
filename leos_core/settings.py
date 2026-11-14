@@ -88,6 +88,36 @@ ALLOWED_VALUES = {
 }
 
 
+def validate_settings_values(
+    values: object,
+    *,
+    require_complete: bool = False,
+) -> dict[str, Any]:
+    """Validate known LEOS preferences without reading or modifying a file."""
+    if not isinstance(values, dict) or not values:
+        raise ValueError("LEOS settings must be a non-empty dictionary")
+    if require_complete and set(values) != set(DEFAULTS):
+        raise ValueError("A complete LEOS settings snapshot must contain every known key")
+
+    validated: dict[str, Any] = {}
+    for key, value in values.items():
+        if key not in DEFAULTS:
+            raise KeyError(f"Unknown LEOS setting: {key}")
+        if not isinstance(value, type(DEFAULTS[key])):
+            raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
+        if key in _THEME_COLOR_KEYS:
+            if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                raise ValueError(f"Invalid hex color for {key}")
+            value = value.strip().upper()
+        allowed = ALLOWED_VALUES.get(key)
+        if allowed is not None and value not in allowed:
+            raise ValueError(f"Invalid value for {key}: {value}")
+        if key == "notification_duration_seconds" and value not in {3, 5, 8}:
+            raise ValueError(f"Invalid value for {key}: {value}")
+        validated[key] = value
+    return validated
+
+
 class SettingsStore:
     """Stores user preferences in XDG_CONFIG_HOME without editing system files."""
 
@@ -145,22 +175,7 @@ class SettingsStore:
         if not isinstance(updates, dict) or not updates:
             raise ValueError("LEOS settings updates must be a non-empty dictionary")
 
-        validated: dict[str, Any] = {}
-        for key, value in updates.items():
-            if key not in DEFAULTS:
-                raise KeyError(f"Unknown LEOS setting: {key}")
-            if not isinstance(value, type(DEFAULTS[key])):
-                raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
-            if key in _THEME_COLOR_KEYS:
-                if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
-                    raise ValueError(f"Invalid hex color for {key}")
-                value = value.strip().upper()
-            allowed = ALLOWED_VALUES.get(key)
-            if allowed is not None and value not in allowed:
-                raise ValueError(f"Invalid value for {key}: {value}")
-            if key == "notification_duration_seconds" and value not in {3, 5, 8}:
-                raise ValueError(f"Invalid value for {key}: {value}")
-            validated[key] = value
+        validated = validate_settings_values(updates)
 
         # Serialize read-modify-write across Desktop, Gaming and Control Center.
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -183,6 +198,35 @@ class SettingsStore:
                 self.load()
                 self._values.update(validated)
                 self.save()
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def replace_all(self, values: dict[str, Any], *, confirmed: bool = False) -> None:
+        """Atomically replace the complete preference set after explicit confirmation.
+
+        This recovery-only operation deliberately bypasses a corrupt existing JSON
+        file, but still validates the replacement and serializes access with the
+        same lock used by normal settings writes.
+        """
+        if confirmed is not True:
+            raise PermissionError("Explicit confirmation is required to replace LEOS preferences")
+        validated = validate_settings_values(values, require_complete=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("LEOS settings lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            previous = self._values
+            try:
+                self._values = {**DEFAULTS, **validated}
+                self.save()
+            except Exception:
+                self._values = previous
+                raise
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
