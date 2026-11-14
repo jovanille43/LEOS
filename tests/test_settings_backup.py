@@ -145,6 +145,18 @@ class SettingsBackupTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.manager.restore_backup(backup_id, confirmed=True)
 
+    def test_backup_retention_keeps_only_the_most_recent_verified_copies(self) -> None:
+        from leos_core.settings_backup import MAX_RETAINED_BACKUPS
+
+        created = [
+            self.manager.create_backup()
+            for _ in range(MAX_RETAINED_BACKUPS + 3)
+        ]
+        entries = self.manager.list_backups()
+        self.assertEqual(len(entries), MAX_RETAINED_BACKUPS)
+        self.assertEqual(self.manager.latest_backup_id(), created[-1])
+        self.assertNotIn(created[0], [entry["backup_id"] for entry in entries])
+
     def test_backup_scan_is_bounded(self) -> None:
         from unittest.mock import patch
 
