@@ -294,7 +294,8 @@ def normalize_gpu_metrics(metrics: object) -> dict[str, object]:
     memory_used = nonnegative_integer("memory_used")
     if memory_total <= 0:
         memory_total = -1
-    if memory_used < 0:
+        memory_used = -1
+    elif memory_used < 0 or memory_used > memory_total:
         memory_used = -1
 
     return {
