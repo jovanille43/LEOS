@@ -2,6 +2,7 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from desktop.layouts import DesktopLayoutStore, DEFAULT_LAYOUT, PROFILES, validate_layout
@@ -158,6 +159,19 @@ class DesktopLayoutTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 store.validate_current_file()
             self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
+
+    def test_failed_layout_write_rolls_back_the_in_memory_candidate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            store.apply_profile("minimal")
+            previous = path.read_text(encoding="utf-8")
+            previous_layout = store.get()
+            with patch.object(store, "save", side_effect=OSError("disk unavailable")):
+                with self.assertRaises(OSError):
+                    store.set_dock(position="right")
+            self.assertEqual(store.get(), previous_layout)
+            self.assertEqual(path.read_text(encoding="utf-8"), previous)
 
     def test_replace_all_requires_explicit_confirmation(self):
         with tempfile.TemporaryDirectory() as directory:
