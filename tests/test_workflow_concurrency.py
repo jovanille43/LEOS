@@ -45,7 +45,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
         recipe = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        group = re.compile(r"^\\s+group:\\s*(\\S+)", re.M)
+        group = re.compile(r"^\s+group:\s*(\S+)", re.M)
         python_group = group.search(python)
         recipe_group = group.search(recipe)
         self.assertIsNotNone(python_group)
