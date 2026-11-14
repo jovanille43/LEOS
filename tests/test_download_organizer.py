@@ -51,7 +51,7 @@ class DownloadOrganizerTests(unittest.TestCase):
             config = home / ".config"
             config.mkdir()
             (config / "user-dirs.dirs").write_text(
-                f'XDG_DOWNLOAD_DIR="{external_downloads}"\\n',
+                f'XDG_DOWNLOAD_DIR="{external_downloads}"\n',
                 encoding="utf-8",
             )
             self.assertEqual(
