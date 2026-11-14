@@ -278,6 +278,18 @@ class ControlCenterController(QObject):
     def settingsBackupSnapshot(self) -> dict[str, object]:
         return dict(self._settings_backup_snapshot)
 
+    @Property("QVariantList", notify=settingsBackupChanged)
+    def settingsBackupEntries(self) -> list[dict[str, str]]:
+        entries = self.settingsBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "createdUtc": str(entry["created_utc"]),
+                "label": str(entry["created_utc"]).replace("T", " ").replace("+00:00", " UTC")[:23],
+            }
+            for entry in entries
+        ]
+
     @Slot()
     def refreshSettingsBackups(self) -> None:
         self._refresh_settings_backup_snapshot()
@@ -892,14 +904,13 @@ class ControlCenterController(QObject):
         post_notification("Préférences LEOS sauvegardées", message, "success")
         return message
 
-    @Slot(bool, result=str)
-    def restoreLatestSettingsBackup(self, confirmed: bool) -> str:
-        """Restore the last verified preference snapshot after UI confirmation."""
+    @Slot(str, bool, result=str)
+    def restoreSettingsBackup(self, backup_id: str, confirmed: bool) -> str:
+        """Restore a selected verified preference snapshot after UI confirmation."""
         if confirmed is not True:
             return "Confirmation explicite requise ; aucun réglage n'a été modifié."
-        backup_id = self.settingsBackups.latest_backup_id()
-        if backup_id is None:
-            return "Aucune sauvegarde LEOS vérifiée n'est disponible."
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde LEOS vérifiée avant de restaurer."
         try:
             self.settingsBackups.restore_backup(backup_id, confirmed=True)
         except (OSError, ValueError, TypeError, PermissionError):
@@ -918,6 +929,14 @@ class ControlCenterController(QObject):
         )
         post_notification("Préférences LEOS restaurées", message, "success")
         return message
+
+    @Slot(bool, result=str)
+    def restoreLatestSettingsBackup(self, confirmed: bool) -> str:
+        """Compatibility wrapper for callers that intentionally select the newest backup."""
+        backup_id = self.settingsBackups.latest_backup_id()
+        if backup_id is None:
+            return "Aucune sauvegarde LEOS vérifiée n'est disponible."
+        return self.restoreSettingsBackup(backup_id, confirmed)
 
     @Slot(result=str)
     def createPlasmaBackup(self) -> str:
