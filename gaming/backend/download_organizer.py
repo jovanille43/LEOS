@@ -20,6 +20,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 MAX_DOWNLOAD_SCAN_ENTRIES = 250
+MAX_DOWNLOAD_DIRECTORY_ENTRIES = 5_000
 MAX_ARCHIVE_ENTRIES = 2_000
 MAX_ARCHIVE_FILE_BYTES = 32 * 1024 ** 3
 MAX_ARCHIVE_MEMBER_BYTES = 16 * 1024 ** 3
@@ -337,7 +338,7 @@ def _extract_single_game_zip(
         try:
             if final_target.exists():
                 raise OSError("Game destination already exists")
-            temporary_path.rename(final_target)
+            _move_without_overwrite(temporary_path, final_target)
             temporary_path = None
         except OSError:
             try:
@@ -419,9 +420,20 @@ class DownloadOrganizer:
         except ValueError:
             pass
 
+        recognized_suffixes = set(DESTINATION_BY_EXTENSION) | {".zip"}
         try:
+            candidates = []
             with os.scandir(downloads_resolved) as entries:
-                candidates = list(islice(entries, self.max_entries))
+                for entry in islice(entries, MAX_DOWNLOAD_DIRECTORY_ENTRIES):
+                    if (
+                        entry.name.startswith(".")
+                        or entry.is_symlink()
+                        or Path(entry.name).suffix.casefold() not in recognized_suffixes
+                    ):
+                        continue
+                    candidates.append(entry)
+                    if len(candidates) >= self.max_entries:
+                        break
         except OSError:
             return []
 
