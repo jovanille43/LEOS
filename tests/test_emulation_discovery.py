@@ -37,6 +37,24 @@ class EmulationDiscoveryTests(unittest.TestCase):
             self.assertTrue(by_title["Gran Turismo"]["id"].startswith("emulator:"))
             self.assertEqual(by_title["Gran Turismo"]["path"], str((root / "Gran Turismo.chd").resolve()))
 
+
+    def test_discovers_cemu_wii_u_formats_as_nintendo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "Emulation"
+            root.mkdir()
+            (root / "Breath of the Wild.wua").touch()
+            (root / "Homebrew.wuhb").touch()
+            (root / "Dump.wud").touch()
+            games = discover_emulated_games([root])
+            self.assertEqual(
+                {game["title"]: game["platform"] for game in games},
+                {
+                    "Breath of the Wild": "Nintendo",
+                    "Homebrew": "Nintendo",
+                    "Dump": "Nintendo",
+                },
+            )
+
     def test_skips_hidden_directories_and_symbolic_links(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "Games"
