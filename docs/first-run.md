@@ -37,6 +37,10 @@ Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une p
 
 Aucun service indépendant ne présente une seconde fenêtre de bienvenue au démarrage de session. Le lanceur orchestre le parcours après le choix de mode.
 
+## Dossier de téléchargement des jeux
+
+Sur un profil neuf, si le dossier de téléchargement XDG pointe encore vers le dossier standard \`~/Downloads\` ou \`~/Téléchargements\`, le service de session LEOS le définit sur \`~/Jeux\`. Un chemin XDG personnalisé est conservé et surveillé à la place. Les fichiers de jeux reconnus sont triés après stabilisation du téléchargement ; les formats ambigus et les archives contenant plusieurs jeux restent dans le dossier d'arrivée pour un choix manuel. LEOS ne télécharge aucun jeu, BIOS, firmware ni clé.
+
 ## Ce que LEOS ne fait pas automatiquement
 
 Le premier démarrage ne modifie pas :
@@ -58,6 +62,7 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 - [ ] Choisir Desktop ou Gaming mémorise également la lecture du guide.
 - [ ] Un problème d'écriture des préférences ne bloque pas le démarrage d'un mode.
 - [ ] La proposition d'applications apparaît uniquement après l'entrée dans Desktop.
+- [ ] Le dossier XDG standard devient `~/Jeux` sur un profil neuf, sans écraser un dossier de téléchargement personnalisé.
 - [ ] Choisir Non n'ajoute pas Flathub et ne lance aucun Flatpak.
 - [ ] Choisir Oui installe seulement les applications manquantes après confirmation.
 - [ ] Une erreur sur une application n'empêche pas les autres installations ; le parcours reste réessayable sans doublonner les applications déjà présentes.
