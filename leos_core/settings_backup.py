@@ -266,6 +266,76 @@ class SettingsBackupManager:
             raise
         return targets
 
+    def import_backup(self, manifest_path: Path | str) -> str:
+        """Import a backup selected by its JSON manifest after full verification."""
+        source_manifest = Path(manifest_path).expanduser()
+        if (
+            not source_manifest.is_absolute()
+            or source_manifest.suffix.lower() != ".json"
+            or source_manifest.is_symlink()
+            or source_manifest.parent.is_symlink()
+        ):
+            raise ValueError("Selected LEOS backup manifest path is invalid")
+        try:
+            source_directory = source_manifest.parent.resolve(strict=True)
+            source_manifest = source_directory / source_manifest.name
+        except OSError:
+            raise ValueError("Selected LEOS backup folder is unavailable") from None
+
+        backup_id = source_manifest.stem
+        if _BACKUP_ID.fullmatch(backup_id) is None:
+            raise ValueError("Selected LEOS backup manifest has an invalid identifier")
+        backup_path = source_directory / f"{backup_id}.bak"
+        if backup_path.is_symlink():
+            raise ValueError("Symbolic-link LEOS backup files are not accepted")
+
+        try:
+            manifest_data = _read_regular_file(source_manifest, MAX_BACKUP_MANIFEST_BYTES)
+            backup_data = _read_regular_file(backup_path, MAX_SETTINGS_BYTES)
+            manifest_text = manifest_data.decode("utf-8")
+            if not json_nesting_within_limit(manifest_text):
+                raise ValueError("Invalid LEOS backup manifest structure")
+            manifest = json.loads(manifest_text)
+        except (OSError, UnicodeError, json.JSONDecodeError, RecursionError, ValueError):
+            raise ValueError("Selected LEOS backup pair is missing, unsafe or unreadable") from None
+
+        if (
+            not isinstance(manifest, dict)
+            or type(manifest.get("schema_version")) is not int
+            or manifest.get("schema_version") != BACKUP_SCHEMA_VERSION
+            or manifest.get("backup_id") != backup_id
+            or type(manifest.get("size")) is not int
+            or not isinstance(manifest.get("sha256"), str)
+            or re.fullmatch(r"[0-9a-f]{64}", manifest["sha256"]) is None
+            or not isinstance(manifest.get("created_utc"), str)
+            or len(manifest["created_utc"]) > 64
+            or len(backup_data) != manifest["size"]
+            or hashlib.sha256(backup_data).hexdigest() != manifest["sha256"]
+            or _decode_backup(backup_data) is None
+        ):
+            raise ValueError("Selected LEOS backup failed integrity or settings validation")
+
+        self._ensure_backup_directory()
+        backup_target = self.backup_dir / f"{backup_id}.bak"
+        manifest_target = self.backup_dir / f"{backup_id}.json"
+        if any(path.exists() or path.is_symlink() for path in (backup_target, manifest_target)):
+            raise FileExistsError("This LEOS backup identifier is already present")
+
+        created: list[Path] = []
+        try:
+            created.append(self._write_new_export_file(self.backup_dir, backup_target.name, backup_data))
+            created.append(self._write_new_export_file(self.backup_dir, manifest_target.name, manifest_data))
+        except Exception:
+            for path in created:
+                try:
+                    if not path.is_symlink() and path.is_file():
+                        path.unlink()
+                except OSError:
+                    pass
+            raise
+        self._prune_old_backups()
+        return backup_id
+
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             return None
