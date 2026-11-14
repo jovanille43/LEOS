@@ -331,5 +331,29 @@ class SessionFlowTests(unittest.TestCase):
 
 
 
+    def test_gaming_startup_failure_is_reported_without_persisting_gaming_mode(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        failure_report = main[main.index("def _report_startup_failure"):main.index("def _cleanup_failed_startup")]
+        self.assertIn("post_notification(", failure_report)
+        self.assertIn("LEOS Gaming n'a pas pu démarrer", failure_report)
+        self.assertIn('"error"', failure_report)
+        startup = main[main.index("def _run_locked_session"):main.index("# Persist Gaming")]
+        self.assertIn("except Exception:", startup)
+        self.assertIn("_cleanup_failed_startup(controller, theme)", startup)
+        self.assertIn("_report_startup_failure()", startup)
+        self.assertIn("if not engine.rootObjects():", startup)
+        self.assertLess(
+            main.index("if not engine.rootObjects():"),
+            main.index('controller.settings.set("last_mode", "gaming")'),
+        )
+
+    def test_failed_gaming_startup_cleanup_attempts_both_components(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        cleanup = main[main.index("def _cleanup_failed_startup"):main.index("def _run_locked_session")]
+        self.assertIn("controller.shutdown()", cleanup)
+        self.assertIn("theme.shutdown()", cleanup)
+        self.assertIn("except Exception:", cleanup)
+
+
 if __name__ == "__main__":
     unittest.main()
