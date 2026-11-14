@@ -12,6 +12,8 @@ Le Centre de contrôle propose une page **Sauvegardes** dédiée aux réglages p
 
 Les fichiers sont conservés dans `$XDG_STATE_HOME/leos/settings-backups/` (par défaut `~/.local/state/leos/settings-backups/`). Chaque sauvegarde comprend un fichier de données et un manifeste d'intégrité SHA-256. Le dossier et les fichiers sont créés avec des permissions privées ; les liens symboliques, fichiers non réguliers, données incomplètes et sauvegardes altérées sont refusés. LEOS conserve au maximum 20 sauvegardes vérifiées et supprime les plus anciennes après la création réussie d'une nouvelle copie.
 
+La création d'une sauvegarde est refusée si un fichier de préférences existant est illisible ou trop volumineux : LEOS ne doit pas transformer ses valeurs de repli en copie présentée comme fidèle. Lors d'une restauration explicitement confirmée, un fichier corrompu mais de taille prise en charge est d'abord conservé à l'identique dans un fichier privé `corrupt-settings-<identifiant>.bin`, accompagné d'un manifeste `.meta` contenant sa taille et son SHA-256. Si ce fichier est trop volumineux ou ne peut pas être lu en sécurité, la restauration est refusée et le fichier actuel reste inchangé.
+
 Pour restaurer :
 
 1. Ouvrir le Centre de contrôle puis **Sauvegardes**.
