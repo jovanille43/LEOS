@@ -21,6 +21,7 @@ from .library_state import (
     MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
     MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, SOURCE_FILTERS,
     validate_manual_game_input, write_bounded_json,
+    retain_saved_library_references,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
@@ -431,12 +432,14 @@ class GameLibraryModel(QAbstractListModel):
             game["title"] = normalize_display_title(str(game.get("title", "")))
         games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
         duplicate_metadata = duplicate_title_metadata(games)
-        available_ids = {game["id"] for game in games}
-        favorites = set(self._read_id_list(self._favorites_file)) & available_ids
-        recent = [
-            game_id for game_id in self._read_id_list(self._recent_file)
-            if game_id in available_ids
-        ][:50]
+        # Keep references for temporarily unavailable libraries. The
+        # presentation layer naturally hides IDs that are not in this scan;
+        # dropping them here would erase favourites when an external drive is
+        # disconnected.
+        favorites, recent = retain_saved_library_references(
+            self._read_id_list(self._favorites_file),
+            self._read_id_list(self._recent_file),
+        )
         return games, duplicate_metadata, favorites, recent
 
     def _apply_filter(self) -> None:
