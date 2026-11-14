@@ -1,5 +1,8 @@
 """Tests for mode transition notification wiring."""
 import unittest
+from unittest.mock import patch
+
+from desktop.notifications import post_notification
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,6 +60,20 @@ class ModeNotificationTests(unittest.TestCase):
         manager = (ROOT / "launcher/mode_manager.py").read_text(encoding="utf-8")
         self.assertIn('if not isinstance(mode, str) or mode not in {"desktop", "gaming"}:', manager)
         self.assertIn("def rememberMode(self, mode: str) -> bool:", manager)
+
+    def test_native_notification_failure_never_interrupts_the_calling_action(self):
+        with (
+            patch("desktop.notifications.NotificationStore") as store,
+            patch(
+                "desktop.notifications._show_native_notification",
+                side_effect=RuntimeError("desktop notification bus unavailable"),
+            ),
+        ):
+            store.return_value.add.return_value = "notification-id"
+            result = post_notification("LEOS", "Test", "info", native=True)
+
+        self.assertEqual(result, "notification-id")
+        store.return_value.add.assert_called_once_with("LEOS", "Test", "info")
 
     def test_mode_notification_does_not_use_native_popup_command(self):
         source = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
