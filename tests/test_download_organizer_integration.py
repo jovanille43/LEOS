@@ -45,7 +45,7 @@ class DownloadOrganizerIntegrationTests(unittest.TestCase):
         self.assertNotIn("subprocess", source)
         self.assertIn("zipfile.ZipFile", source)
         self.assertIn("len(candidates) != 1", source)
-        self.assertIn("_move_without_overwrite(path, target)", source)
+        self.assertIn("_move_without_overwrite(path, target, signature)", source)
         self.assertIn('".wua": ("Nintendo", "Wii U")', source)
 
 
