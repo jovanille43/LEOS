@@ -93,4 +93,8 @@ modules:
     src: desktop/autostart/leos-session.desktop
     dest: /usr/etc/xdg/autostart/
 
+  - type: copy
+    src: desktop/autostart/leos-download-organizer.desktop
+    dest: /usr/etc/xdg/autostart/
+
   - type: signing
