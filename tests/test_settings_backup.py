@@ -116,7 +116,8 @@ class SettingsBackupTests(unittest.TestCase):
             self.manager.restore_backup(backup_id, confirmed=True)
 
         self.assertEqual(self.settings_path.read_bytes(), oversized)
-        self.assertIsNone(self.manager.latest_backup_id() if not self.backup_dir.exists() else None)
+        self.assertIsNotNone(self.manager._verified_backup(backup_id))
+        self.assertEqual(list(self.backup_dir.glob("corrupt-settings-*.bin")), [])
 
     def test_tampered_backup_is_rejected(self) -> None:
         backup_id = self.manager.create_backup()
