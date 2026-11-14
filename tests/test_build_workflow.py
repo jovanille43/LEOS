@@ -64,7 +64,7 @@ class BuildWorkflowTests(unittest.TestCase):
     def test_manual_build_required_asset_list_matches_checksum_manifest(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         manifest = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
-        manifest_paths = set(re.findall(r"^[0-9a-f]{64}  (branding/\\S+)$", manifest, re.M))
+        manifest_paths = set(re.findall(r"^[0-9a-f]{64}  (branding/\S+)$", manifest, re.M))
         block_start = source.index("required_assets=(")
         block_end = source.index(")", block_start)
         listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
