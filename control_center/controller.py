@@ -575,8 +575,14 @@ class ControlCenterController(QObject):
             self.settings.set("last_notified_system_update", checksum)
             post_notification("Mise à jour système prête", message, "success")
 
-    def _on_deployment_status_error(self, _error) -> None:
-        if self._deployment_timed_out:
+    def _on_deployment_status_error(self, error) -> None:
+        # Crashes and runtime I/O errors are finalized by finished(). Only
+        # FailedToStart has no child process and therefore needs this path to
+        # release the in-flight slot immediately.
+        if (
+            self._deployment_timed_out
+            or error != QProcess.ProcessError.FailedToStart
+        ):
             return
         self._deployment_timeout.stop()
         self._deployment_check_running = False
@@ -636,8 +642,13 @@ class ControlCenterController(QObject):
             post_notification("Échec de vérification des mises à jour", message, "error")
         self.systemUpdatesChanged.emit()
 
-    def _on_system_update_check_error(self, _error) -> None:
-        if self._system_update_timed_out:
+    def _on_system_update_check_error(self, error) -> None:
+        # Keep the process slot occupied until finished() handles a crash or
+        # runtime error; FailedToStart is the only error without a later finish.
+        if (
+            self._system_update_timed_out
+            or error != QProcess.ProcessError.FailedToStart
+        ):
             return
         self._system_update_timeout.stop()
         self._system_update_check_running = False
