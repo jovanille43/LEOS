@@ -12,6 +12,7 @@ import os
 from itertools import islice
 import re
 import shlex
+import shutil
 import stat
 import tempfile
 import time
@@ -21,7 +22,7 @@ from pathlib import Path, PurePosixPath
 MAX_DOWNLOAD_SCAN_ENTRIES = 250
 MAX_ARCHIVE_ENTRIES = 2_000
 MAX_ARCHIVE_FILE_BYTES = 32 * 1024 ** 3
-MAX_ARCHIVE_MEMBER_BYTES = 32 * 1024 ** 3
+MAX_ARCHIVE_MEMBER_BYTES = 16 * 1024 ** 3
 MAX_ARCHIVE_COMPRESSION_RATIO = 500
 MAX_DOWNLOAD_CONFIG_BYTES = 16 * 1024
 DEFAULT_STABILITY_SECONDS = 15.0
@@ -150,6 +151,8 @@ def _move_without_overwrite(source: Path, destination: Path) -> None:
         }:
             raise
 
+    if shutil.disk_usage(destination.parent).free < before.st_size + 16 * 1024 * 1024:
+        raise OSError("Not enough free space to safely move the download")
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=".leos-move-", dir=destination.parent
     )
@@ -338,7 +341,7 @@ def _extract_single_game_zip(
         }
     except (
         OSError, RuntimeError, ValueError, zipfile.BadZipFile,
-        zipfile.LargeZipFile, NotImplementedError,
+        zipfile.LargeZipFile, NotImplementedError, EOFError, KeyError,
     ):
         return None
     finally:
@@ -464,8 +467,8 @@ class DownloadOrganizer:
                 if target_directory.is_symlink():
                     continue
                 target = _collision_free_path(real_target_directory, entry.name)
-                # rename is atomic on the usual single-filesystem home layout.
-                # It is never used with an existing destination.
+                # Link/unlink or a verified temporary copy preserves the source
+                # until a no-overwrite destination has been created.
                 if target.exists():
                     continue
                 _move_without_overwrite(path, target)
