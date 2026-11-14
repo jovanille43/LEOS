@@ -1,6 +1,7 @@
 """Tests for bounded and non-stale GitHub Actions validation workflows."""
 
 from pathlib import Path
+import re
 import unittest
 
 
@@ -44,10 +45,12 @@ class WorkflowConcurrencyTests(unittest.TestCase):
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
         recipe = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        self.assertNotEqual(
-            "leos-python-${{ github.ref }}",
-            "leos-bluebuild-${{ github.ref }}",
-        )
+        group = re.compile(r"^\\s+group:\\s*(\\S+)", re.M)
+        python_group = group.search(python)
+        recipe_group = group.search(recipe)
+        self.assertIsNotNone(python_group)
+        self.assertIsNotNone(recipe_group)
+        self.assertNotEqual(python_group.group(1), recipe_group.group(1))
 
 
 if __name__ == "__main__":
