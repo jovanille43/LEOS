@@ -34,6 +34,20 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('before.taskManager.writeConfig("launchers", before.launchers)', script)
         self.assertIn('candidate.widgets("org.kde.plasma.taskmanager")', script)
 
+    def test_empty_or_unavailable_favourites_preserve_existing_plasma_launchers(self):
+        script = build_panel_management_script(self.store.get(), [])
+        sync_start = script.index("if (resolvedLaunchers.length > 0)")
+        sync_end = script.index('panel.currentConfigGroup = ["LEOS"]', sync_start)
+        sync_block = script[sync_start:sync_end]
+        self.assertIn('manager.writeConfig("launchers", resolvedLaunchers)', sync_block)
+        self.assertIn('} else if (pinnedApps.length > 0)', sync_block)
+        self.assertIn('LEOS_PINNED_LAUNCHERS_UNAVAILABLE=1', sync_block)
+        self.assertIn('LEOS_NO_PINNED_LAUNCHERS=1', sync_block)
+        self.assertNotIn(
+            'pinnedApps.length === 0 || resolvedLaunchers.length > 0',
+            sync_block,
+        )
+
     def test_saved_favourites_reject_invalid_or_duplicate_desktop_ids(self):
         for value in (["../evil.desktop"], ["/tmp/evil.desktop"], ["missing"], ["a.desktop", "a.desktop"]):
             with self.subTest(value=value), self.assertRaises(ValueError):
