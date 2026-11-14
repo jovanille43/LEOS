@@ -136,6 +136,8 @@ def filter_games(
         result = [
             game for game in games
             if "retroarch" in str(game.get("source", "")).casefold()
+            or str(game.get("source", "")).casefold() == "fichiers locaux"
+            or str(game.get("id", "")).casefold().startswith("emulator:")
             or "émulation" in str(game.get("platform", "")).casefold()
             or "emulation" in str(game.get("platform", "")).casefold()
         ]
