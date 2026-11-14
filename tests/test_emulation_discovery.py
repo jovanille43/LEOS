@@ -15,7 +15,7 @@ class EmulationDiscoveryTests(unittest.TestCase):
         home = Path("/home/example")
         self.assertEqual(
             default_scan_roots(home),
-            tuple(home / name for name in ("Games", "ROMs", "Roms", "Emulation")),
+            tuple(home / name for name in ("Jeux", "Games", "ROMs", "Roms", "Emulation")),
         )
 
     def test_discovers_supported_files_without_reading_or_executing_them(self):
