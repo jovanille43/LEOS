@@ -17,10 +17,11 @@ def normalize_axis_value(
         return 0
     if maximum <= minimum:
         return 0
+    midpoint = (minimum + maximum) // 2
     calibrated_center = (
-        center if type(center) is int else (minimum + maximum) // 2
+        center if type(center) is int and minimum < center < maximum
+        else midpoint
     )
-    calibrated_center = max(minimum, min(maximum, calibrated_center))
     if value >= calibrated_center:
         span = maximum - calibrated_center
         normalized = (value - calibrated_center) / span if span else 0.0
