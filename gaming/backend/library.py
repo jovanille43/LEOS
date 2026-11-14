@@ -19,7 +19,7 @@ from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
     MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
-    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, SOURCE_FILTERS,
     validate_manual_game_input, write_bounded_json,
 )
 from .steam_artwork import find_steam_artwork
@@ -83,6 +83,7 @@ class GameLibraryModel(QAbstractListModel):
         self._favorites: set[str] = set()
         self._recent: list[str] = []
         self._category = "Accueil"
+        self._source_filter = "Toutes les sources"
         self._search_query = ""
         self._last_launch_status = "Sélectionne un jeu à lancer."
         self._scan_task: _LibraryScanTask | None = None
@@ -446,6 +447,7 @@ class GameLibraryModel(QAbstractListModel):
             self._favorites,
             self._recent,
             self._search_query,
+            self._source_filter,
         )
         self.endResetModel()
 
@@ -462,6 +464,13 @@ class GameLibraryModel(QAbstractListModel):
         if category not in CATEGORIES or category == self._category:
             return
         self._category = category
+        self._apply_filter()
+
+    @Slot(str)
+    def setSourceFilter(self, source_filter: str) -> None:
+        if source_filter not in SOURCE_FILTERS or source_filter == self._source_filter:
+            return
+        self._source_filter = source_filter
         self._apply_filter()
 
     @Slot(int, result=bool)
