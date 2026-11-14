@@ -12,6 +12,7 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
         self.assertIn("SettingsBackupManager(self.settings)", controller)
         self.assertIn("def settingsBackupSnapshot", controller)
         self.assertIn("def settingsBackupEntries", controller)
+        self.assertIn('"backupIds": tuple(str(entry["backup_id"]) for entry in entries)', controller)
         self.assertIn("def createSettingsBackup", controller)
         self.assertIn("def exportSettingsBackup", controller)
         self.assertIn("def importSettingsBackup", controller)
