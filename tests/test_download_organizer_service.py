@@ -13,7 +13,7 @@ class DownloadOrganizerServiceTests(unittest.TestCase):
         config = home / ".config"
         config.mkdir(parents=True)
         (config / "user-dirs.dirs").write_text(
-            f'XDG_DOWNLOAD_DIR="{value}"\\n',
+            f'XDG_DOWNLOAD_DIR="{value}"' + "\n",
             encoding="utf-8",
         )
         return config
