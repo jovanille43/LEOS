@@ -334,7 +334,7 @@ def _extract_single_game_zip(
         )
         if archived_original.exists():
             raise OSError("Archive destination already exists")
-        _move_without_overwrite(archive_path, archived_original)
+        _move_without_overwrite(archive_path, archived_original, expected_signature)
         try:
             if final_target.exists():
                 raise OSError("Game destination already exists")
