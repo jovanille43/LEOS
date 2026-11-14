@@ -953,8 +953,8 @@ class ControlCenterController(QObject):
             self.settingsBackups.restore_backup(backup_id, confirmed=True)
         except (OSError, ValueError, TypeError, PermissionError):
             message = (
-                "La restauration a échoué. Les réglages actuels ont été conservés "
-                "ou leur état de secours est resté sauvegardé."
+                "Restauration impossible : LEOS n'a pas pu vérifier la sauvegarde "
+                "ou préserver l'état actuel. Aucun réglage n'a été remplacé."
             )
             post_notification("Restauration LEOS impossible", message, "error")
             return message
