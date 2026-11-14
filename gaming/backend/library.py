@@ -28,6 +28,7 @@ from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
 from .emulation_discovery import discover_emulated_games
+from .emulator_launch import build_emulator_launch_command
 from .retroarch import (
     RETROARCH_FLATPAK_ID, find_retroarch_playlist_directories,
     find_retroarch_thumbnail_directories, load_retroarch_games,
@@ -587,6 +588,24 @@ class GameLibraryModel(QAbstractListModel):
             return False
         game = self._visible_games[row]
         launch = game.get("launch", [])
+        if not launch and game.get("source") == "Fichiers locaux":
+            emulator_command, error = build_emulator_launch_command(game.get("path", ""))
+            if not emulator_command:
+                self._last_launch_status = error
+                return False
+            process = QProcess()
+            process.setProgram(emulator_command[0])
+            process.setArguments(emulator_command[1:])
+            launched = process.startDetached()
+            self._last_launch_status = (
+                "Demande transmise à l'émulateur ; le chargement du jeu n'est pas confirmé."
+                if launched else
+                "Le système n'a pas réussi à démarrer l'émulateur."
+            )
+            if launched:
+                self._record_recent(str(game["id"]))
+            return bool(launched)
+
         if not launch or not all(isinstance(part, str) for part in launch):
             self._last_launch_status = "Aucune commande de lancement valide n'est enregistrée."
             return False
