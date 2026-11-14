@@ -285,6 +285,128 @@ ApplicationWindow {
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 166
+                                spacing: 26
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 7
+                                    Label {
+                                        text: "STICK GAUCHE"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        font.letterSpacing: 1
+                                    }
+                                    Item {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        width: 116
+                                        height: 116
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: "#0b1119"
+                                            border.color: controllerCenter.leftStickAvailable ? window.cyan : window.line
+                                            opacity: controllerCenter.leftStickAvailable ? 1.0 : 0.45
+                                        }
+                                        Rectangle {
+                                            width: 1
+                                            height: parent.height - 16
+                                            anchors.centerIn: parent
+                                            color: "#344052"
+                                        }
+                                        Rectangle {
+                                            width: parent.width - 16
+                                            height: 1
+                                            anchors.centerIn: parent
+                                            color: "#344052"
+                                        }
+                                        Rectangle {
+                                            width: 12
+                                            height: 12
+                                            radius: 6
+                                            visible: controllerCenter.leftStickAvailable
+                                            x: parent.width / 2 - width / 2 + controllerCenter.leftStickX * 0.38
+                                            y: parent.height / 2 - height / 2 - controllerCenter.leftStickY * 0.38
+                                            color: window.cyan
+                                            border.color: "white"
+                                            border.width: 1
+                                        }
+                                    }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        text: controllerCenter.leftStickAvailable
+                                            ? "X " + controllerCenter.leftStickX + " %  ·  Y " + controllerCenter.leftStickY + " %"
+                                            : "Non exposé par cette manette"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 7
+                                    Label {
+                                        text: "STICK DROIT"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        font.letterSpacing: 1
+                                    }
+                                    Item {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        width: 116
+                                        height: 116
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: "#0b1119"
+                                            border.color: controllerCenter.rightStickAvailable ? window.magenta : window.line
+                                            opacity: controllerCenter.rightStickAvailable ? 1.0 : 0.45
+                                        }
+                                        Rectangle {
+                                            width: 1
+                                            height: parent.height - 16
+                                            anchors.centerIn: parent
+                                            color: "#344052"
+                                        }
+                                        Rectangle {
+                                            width: parent.width - 16
+                                            height: 1
+                                            anchors.centerIn: parent
+                                            color: "#344052"
+                                        }
+                                        Rectangle {
+                                            width: 12
+                                            height: 12
+                                            radius: 6
+                                            visible: controllerCenter.rightStickAvailable
+                                            x: parent.width / 2 - width / 2 + controllerCenter.rightStickX * 0.38
+                                            y: parent.height / 2 - height / 2 - controllerCenter.rightStickY * 0.38
+                                            color: window.magenta
+                                            border.color: "white"
+                                            border.width: 1
+                                        }
+                                    }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        text: controllerCenter.rightStickAvailable
+                                            ? "X " + controllerCenter.rightStickX + " %  ·  Y " + controllerCenter.rightStickY + " %"
+                                            : "Non exposé par cette manette"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: "Aperçu uniquement : la zone morte et le neutre calibré ne modifient pas les entrées envoyées aux jeux."
+                                color: window.muted
+                                font.pixelSize: 9
+                                wrapMode: Text.WordWrap
+                            }
                             Item { Layout.fillHeight: true }
                             Label {
                                 Layout.fillWidth: true
