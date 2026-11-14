@@ -897,8 +897,12 @@ class ControlCenterController(QObject):
         """Create a verified private snapshot of all LEOS preferences."""
         try:
             backup_id = self.settingsBackups.create_backup()
-        except (OSError, ValueError, TypeError):
-            message = "La sauvegarde des préférences LEOS n'a pas pu être créée."
+        except (OSError, ValueError, TypeError, RecursionError):
+            message = (
+                "Sauvegarde non créée : le fichier de préférences actuel est illisible, "
+                "non sûr ou inaccessible. LEOS n'a pas enregistré de valeurs par défaut "
+                "à la place de tes réglages."
+            )
             post_notification("Sauvegarde LEOS impossible", message, "error")
             return message
         self._refresh_settings_backup_snapshot()
