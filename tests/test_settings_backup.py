@@ -258,8 +258,6 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertNotIn(created[0], [entry["backup_id"] for entry in entries])
 
     def test_export_copies_verified_backup_pair_to_external_directory(self) -> None:
-        import hashlib
-
         backup_id = self.manager.create_backup()
         export_dir = Path(self.temporary.name) / "external-drive"
         export_dir.mkdir()
