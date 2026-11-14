@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 
-from .gpu_metrics import read_gpu_metrics
+from .gpu_metrics import normalize_gpu_metrics, read_gpu_metrics, unavailable_gpu_metrics
 from PySide6.QtCore import QObject, Property, QTimer, Signal
 
 try:
@@ -131,14 +131,16 @@ class SystemMonitor(QObject):
                 self._network_receive_rate = self._network_send_rate = -1.0
 
         try:
-            gpu = read_gpu_metrics()
-            self._gpu_name = str(gpu["name"])
-            self._gpu_usage = float(gpu["usage"])
-            self._gpu_temperature = float(gpu["temperature"])
-            self._gpu_memory_used = int(gpu["memory_used"])
-            self._gpu_memory_total = int(gpu["memory_total"])
-        except (OSError, RuntimeError, KeyError, TypeError, ValueError):
-            pass
+            gpu = normalize_gpu_metrics(read_gpu_metrics())
+        except Exception:
+            # GPU telemetry is optional. A transient driver/provider failure
+            # must not leave stale values visible as if they were current.
+            gpu = unavailable_gpu_metrics()
+        self._gpu_name = str(gpu["name"])
+        self._gpu_usage = float(gpu["usage"])
+        self._gpu_temperature = float(gpu["temperature"])
+        self._gpu_memory_used = int(gpu["memory_used"])
+        self._gpu_memory_total = int(gpu["memory_total"])
         self.metricsChanged.emit()
 
     @Property(float, notify=metricsChanged)
