@@ -18,7 +18,7 @@ MAX_PATH_LENGTH = 4096
 # Broad formats shared by common emulators. Extensions are intentionally
 # conservative; archives are not unpacked and disc images are not inspected.
 PLATFORM_EXTENSIONS: tuple[tuple[str, frozenset[str]], ...] = (
-    ("Nintendo", frozenset({".nes", ".fds", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".n64", ".z64", ".v64", ".iso", ".gcm", ".wbfs", ".rvz", ".wud", ".wux"})),
+    ("Nintendo", frozenset({".nes", ".fds", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".n64", ".z64", ".v64", ".sfc", ".smc", ".iso", ".gcm", ".wbfs", ".rvz", ".wud", ".wux"})),
     ("PlayStation", frozenset({".cue", ".bin", ".iso", ".chd", ".pbp", ".cso", ".zso", ".pkg", ".m3u"})),
     ("SEGA", frozenset({".sms", ".gg", ".md", ".gen", ".32x", ".cue", ".iso"})),
     ("Arcade", frozenset({".zip", ".7z"})),
