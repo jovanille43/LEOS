@@ -205,10 +205,8 @@ class SessionFlowTests(unittest.TestCase):
     def test_failed_gaming_qml_startup_releases_controller_resources(self):
         main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
-        self.assertLess(
-            main.index("if not engine.rootObjects():"),
-            main.index("controller.shutdown()"),
-        )
+        root_failure = main[main.index("if not engine.rootObjects():"):]
+        self.assertIn("_cleanup_failed_startup(controller, theme)", root_failure)
         self.assertIn("self.monitor.stop()", controller)
         self.assertIn("self._gamepad_poll_timer.stop()", controller)
         self.assertIn("self._gamepad_refresh_timer.stop()", controller)
