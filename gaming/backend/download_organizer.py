@@ -1,8 +1,8 @@
 """Safe automatic filing of completed game downloads into LEOS ROM folders.
 
-Only a conservative set of unambiguous, single-file formats is moved. The
-organizer never extracts archives, inspects ROM contents, executes files, or
-overwrites an existing destination.
+Only a conservative set of unambiguous, single-file formats is moved. A ZIP
+is extracted only when it contains exactly one recognized game file. The
+organizer never executes files or overwrites an existing destination.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from pathlib import Path, PurePosixPath
 
 MAX_DOWNLOAD_SCAN_ENTRIES = 250
 MAX_ARCHIVE_ENTRIES = 2_000
+MAX_ARCHIVE_FILE_BYTES = 32 * 1024 ** 3
 MAX_ARCHIVE_MEMBER_BYTES = 32 * 1024 ** 3
 MAX_ARCHIVE_COMPRESSION_RATIO = 500
 MAX_DOWNLOAD_CONFIG_BYTES = 16 * 1024
@@ -135,6 +136,13 @@ def _extract_single_game_zip(
     archived_original: Path | None = None
     original_path = archive_path
     try:
+        archive_info = archive_path.stat(follow_symlinks=False)
+        if (
+            not stat.S_ISREG(archive_info.st_mode)
+            or archive_info.st_size > MAX_ARCHIVE_FILE_BYTES
+            or (archive_info.st_size, archive_info.st_mtime_ns) != expected_signature
+        ):
+            return None
         with zipfile.ZipFile(archive_path, "r") as archive:
             members = archive.infolist()
             if not members or len(members) > MAX_ARCHIVE_ENTRIES:
