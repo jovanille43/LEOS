@@ -120,6 +120,18 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("self._append_output(self._stdout, self._process.readAllStandardOutput().data())", source)
         self.assertIn("self._append_output(self._stderr, self._process.readAllStandardError().data())", source)
 
+    def test_store_shutdown_kills_active_flatpak_process_and_resets_state(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        main = (ROOT / "shop/main.py").read_text(encoding="utf-8")
+        shutdown = source[source.index("def shutdown"):source.index("def _append_output")]
+        self.assertIn("self._timeout_timer.stop()", shutdown)
+        self.assertIn("self._set_busy(False)", shutdown)
+        self.assertIn("self._process.kill()", shutdown)
+        self.assertIn("waitForFinished(1000)", shutdown)
+        self.assertIn("Actualise l'inventaire Flatpak", shutdown)
+        self.assertIn("app.aboutToQuit.connect(store.shutdown)", main)
+        self.assertIn("store.shutdown()", main)
+
     def test_store_search_normalizes_accents_spaces_and_searches_metadata(self):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("function normalizedSearchText(value)", qml)
