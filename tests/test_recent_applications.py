@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
-from desktop.recent_applications import RecentApplications, MAX_RECENT_ENTRIES
+from desktop.recent_applications import RecentApplications, MAX_RECENT_ENTRIES, MAX_RECENT_FILE_BYTES
 
 
 class RecentApplicationsTests(unittest.TestCase):
