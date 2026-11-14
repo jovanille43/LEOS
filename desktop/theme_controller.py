@@ -9,7 +9,7 @@ from desktop.branding_assets import (
     cached_themed_branding_asset_urls,
     source_asset_urls,
 )
-from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, palette_for_colors
+from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors
 from leos_core.settings import SettingsStore
 
 
@@ -42,9 +42,13 @@ class ThemeController(QObject):
     themeChanged = Signal()
     themeAssetsChanged = Signal()
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(
+        self,
+        parent: QObject | None = None,
+        settings: SettingsStore | None = None,
+    ) -> None:
         super().__init__(parent)
-        self.settings = SettingsStore()
+        self.settings = settings or SettingsStore()
         self._snapshot = self._read_snapshot()
         self._assets = cached_themed_branding_asset_urls(*self._snapshot)
         self._asset_task: _BrandingAssetTask | None = None
@@ -69,6 +73,29 @@ class ThemeController(QObject):
             str(self.settings.get("theme_color_a", DEFAULT_COLOR_A)),
             str(self.settings.get("theme_color_b", DEFAULT_COLOR_B)),
         )
+
+    @Property(str, notify=themeChanged)
+    def themeColorA(self) -> str:
+        return str(self.settings.get("theme_color_a", DEFAULT_COLOR_A))
+
+    @Property(str, notify=themeChanged)
+    def themeColorB(self) -> str:
+        return str(self.settings.get("theme_color_b", DEFAULT_COLOR_B))
+
+    @Slot(str, str, result=str)
+    def setThemeColors(self, color_a: str, color_b: str) -> str:
+        """Persist a complete A/B pair and immediately refresh every bound view."""
+        try:
+            normalized_a = normalize_color(color_a)
+            normalized_b = normalize_color(color_b)
+            self.settings.set_many({
+                "theme_color_a": normalized_a,
+                "theme_color_b": normalized_b,
+            })
+        except (OSError, ValueError, TypeError, KeyError):
+            return "Les couleurs n'ont pas pu être enregistrées. Vérifie le format #RRGGBB."
+        self.refresh()
+        return "Dégradé LEOS mis à jour."
 
     @Property(str, notify=themeAssetsChanged)
     def desktopLogoUrl(self) -> str:

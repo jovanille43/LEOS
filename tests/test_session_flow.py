@@ -28,6 +28,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
 
+    def test_first_run_mode_selector_offers_a_b_theme_customization(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        self.assertIn("visible: !modeSelectorController.onboardingComplete", selector)
+        self.assertIn("initialColorADialog", selector)
+        self.assertIn("initialColorBDialog", selector)
+        self.assertIn("leosTheme.setThemeColors", selector)
+        self.assertIn("GradientStop", selector)
+        self.assertIn("def setThemeColors(self, color_a: str, color_b: str)", controller)
+        self.assertIn("self.settings.set_many", controller)
+        self.assertIn("plus tard dans le Centre de contrôle", selector)
+
     def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")

@@ -1,7 +1,12 @@
 """Tests for the shared A/B LEOS gradient palette."""
 
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from desktop.theme_controller import ThemeController
+from leos_core.settings import SettingsStore
 
 from desktop.themes import (
     DEFAULT_COLOR_A,
@@ -128,6 +133,41 @@ class DesktopThemeTests(unittest.TestCase):
         invalid = palette_for_colors()
         invalid["accent_primary"] = "cyan"
         self.assertFalse(validate_palette(invalid))
+
+    def test_shared_theme_controller_saves_custom_colors_atomically(self):
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            with patch.object(ThemeController, "_start_asset_generation"):
+                controller = ThemeController(settings=settings)
+                try:
+                    message = controller.setThemeColors("#00ff88", "#ff8800")
+                    self.assertEqual(message, "Dégradé LEOS mis à jour.")
+                    self.assertEqual(controller.themeColorA, "#00FF88")
+                    self.assertEqual(controller.themeColorB, "#FF8800")
+                    self.assertEqual(
+                        controller.themePalette["accent_primary"], "#00FF88"
+                    )
+                    self.assertEqual(
+                        controller.themePalette["accent_secondary"], "#FF8800"
+                    )
+                    reloaded = SettingsStore(Path(directory) / "settings.json")
+                    self.assertEqual(reloaded.get("theme_color_a"), "#00FF88")
+                    self.assertEqual(reloaded.get("theme_color_b"), "#FF8800")
+                finally:
+                    controller.shutdown()
+
+    def test_shared_theme_controller_rejects_invalid_color_without_changing_pair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            with patch.object(ThemeController, "_start_asset_generation"):
+                controller = ThemeController(settings=settings)
+                try:
+                    message = controller.setThemeColors("cyan", "#FF8800")
+                    self.assertIn("#RRGGBB", message)
+                    self.assertEqual(controller.themeColorA, DEFAULT_COLOR_A)
+                    self.assertEqual(controller.themeColorB, DEFAULT_COLOR_B)
+                finally:
+                    controller.shutdown()
 
     def test_control_center_is_bound_to_live_custom_theme_tokens(self):
         root = Path(__file__).resolve().parents[1]

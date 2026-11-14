@@ -18,7 +18,20 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
     property date currentDate: new Date()
     property string pendingMode: ""
+    property string themeColorNotice: ""
     property bool transitionInProgress: false
+
+    function colorToHex(color) {
+        function byteHex(value) {
+            const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return valueHex.length === 1 ? "0" + valueHex : valueHex
+        }
+        return "#" + byteHex(color.r) + byteHex(color.g) + byteHex(color.b)
+    }
+
+    function commitThemeColors(colorA, colorB) {
+        themeColorNotice = leosTheme.setThemeColors(colorA, colorB)
+    }
 
     function requestModeWithIntro(mode) {
         if (transitionInProgress)
@@ -74,6 +87,26 @@ ApplicationWindow {
             else
                 window.requestModeWithIntro("desktop")
         }
+    }
+
+    ColorDialog {
+        id: initialColorADialog
+        title: "Choisir la couleur A"
+        selectedColor: Qt.color(leosTheme.themeColorA)
+        onAccepted: window.commitThemeColors(
+            window.colorToHex(selectedColor),
+            leosTheme.themeColorB
+        )
+    }
+
+    ColorDialog {
+        id: initialColorBDialog
+        title: "Choisir la couleur B"
+        selectedColor: Qt.color(leosTheme.themeColorB)
+        onAccepted: window.commitThemeColors(
+            leosTheme.themeColorA,
+            window.colorToHex(selectedColor)
+        )
     }
 
     Timer {
@@ -152,7 +185,7 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 104
+                Layout.preferredHeight: 154
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: "#101923"
@@ -165,6 +198,7 @@ ApplicationWindow {
 
                     ColumnLayout {
                         Layout.fillWidth: true
+                        Layout.preferredWidth: 390
                         spacing: 5
 
                         Label {
@@ -182,11 +216,79 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Label {
-                            text: "Tes applications restent ouvertes. Aucun réglage KDE ni logiciel facultatif n'est modifié sans ton accord."
+                            text: "Personnalise ton dégradé maintenant ou plus tard dans le Centre de contrôle. Tes applications et réglages système restent intacts."
                             color: window.muted
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 250
+                        spacing: 7
+
+                        Label {
+                            text: "TES COULEURS LEOS"
+                            color: window.themeColors.text
+                            font.pixelSize: 9
+                            font.letterSpacing: 1.3
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Button {
+                                text: "A · " + leosTheme.themeColorA
+                                Layout.fillWidth: true
+                                onClicked: initialColorADialog.open()
+                                background: Rectangle {
+                                    radius: 8
+                                    color: "#151B25"
+                                    border.color: leosTheme.themeColorA
+                                }
+                                contentItem: Label {
+                                    text: parent.text
+                                    color: "white"
+                                    font.pixelSize: 10
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                            Button {
+                                text: "B · " + leosTheme.themeColorB
+                                Layout.fillWidth: true
+                                onClicked: initialColorBDialog.open()
+                                background: Rectangle {
+                                    radius: 8
+                                    color: "#151B25"
+                                    border.color: leosTheme.themeColorB
+                                }
+                                contentItem: Label {
+                                    text: parent.text
+                                    color: "white"
+                                    font.pixelSize: 10
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 9
+                            radius: 5
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+                                GradientStop { position: 0.0; color: Qt.color(leosTheme.themeColorA) }
+                                GradientStop { position: 1.0; color: Qt.color(leosTheme.themeColorB) }
+                            }
+                        }
+                        Label {
+                            text: window.themeColorNotice
+                            visible: text.length > 0
+                            color: window.muted
+                            font.pixelSize: 9
                         }
                     }
 
