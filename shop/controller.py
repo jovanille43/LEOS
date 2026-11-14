@@ -351,7 +351,7 @@ class StoreController(QObject):
         if failed_action in {"install", "uninstall"}:
             self._set_status(
                 "Le délai Flatpak est dépassé. Arrêt de l'opération en cours ; "
-                "l'inventaire sera à actualiser avant toute nouvelle tentative."
+                "son état doit être vérifié dans l'inventaire avant toute nouvelle tentative."
             )
         else:
             self._set_status(
