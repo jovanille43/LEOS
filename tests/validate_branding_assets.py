@@ -99,8 +99,6 @@ def validate_video() -> None:
 
 
 def validate_svg() -> None:
-    import re
-
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         source = root / "desktop-leos.svg"
