@@ -26,7 +26,7 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_verifies_original_branding_assets_before_publication(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        deployed = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
         self.assertIn("Verify official LEOS branding assets", source)
         self.assertLess(
             source.index("Verify official LEOS branding assets"),
@@ -45,6 +45,7 @@ class BuildWorkflowTests(unittest.TestCase):
         for path in expected:
             with self.subTest(path=path):
                 self.assertIn(path, source)
+                self.assertIn(path, deployed)
 
     def test_branding_checksum_manifest_has_six_unique_valid_entries(self):
         sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8").splitlines()
@@ -62,7 +63,8 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_manual_build_required_asset_list_matches_checksum_manifest(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        manifest = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
+        manifest_paths = set(re.findall(r"^[0-9a-f]{64}  (branding/\\S+)$", manifest, re.M))
         block_start = source.index("required_assets=(")
         block_end = source.index(")", block_start)
         listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
@@ -77,6 +79,7 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/wallpapers/gaming-leos.svg",
         })
         self.assertEqual(len(listed), 8)
+        self.assertEqual(set(listed), manifest_paths)
 
     def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
