@@ -7,6 +7,7 @@ organizer never executes files or overwrites an existing destination.
 
 from __future__ import annotations
 
+import errno
 import os
 from itertools import islice
 import re
@@ -69,7 +70,12 @@ def resolve_download_directory(
 ) -> Path:
     """Resolve XDG_DOWNLOAD_DIR without evaluating shell expressions."""
     base = Path(home or Path.home()).expanduser().resolve()
-    config = Path(config_home) if config_home is not None else base / ".config"
+    if config_home is not None:
+        config = Path(config_home)
+    else:
+        configured = os.environ.get("XDG_CONFIG_HOME", "")
+        candidate_config = Path(configured).expanduser() if configured else base / ".config"
+        config = candidate_config if candidate_config.is_absolute() else base / ".config"
     user_dirs = config / "user-dirs.dirs"
     try:
         if user_dirs.is_symlink():
@@ -100,8 +106,7 @@ def resolve_download_directory(
                 if not candidate.is_absolute():
                     break
                 resolved = candidate.resolve(strict=False)
-                resolved.relative_to(base)
-                if resolved != base and not resolved.is_symlink():
+                if resolved != base and resolved != Path(resolved.anchor):
                     return resolved
                 break
     except (OSError, UnicodeError, ValueError):
@@ -112,6 +117,54 @@ def resolve_download_directory(
         if candidate.is_dir() and not candidate.is_symlink():
             return candidate
     return base / "Downloads"
+
+
+def _move_without_overwrite(source: Path, destination: Path) -> None:
+    """Move a regular file atomically, with a verified copy fallback across filesystems."""
+    try:
+        source.rename(destination)
+        return
+    except OSError as error:
+        if error.errno != errno.EXDEV:
+            raise
+
+    before = source.stat(follow_symlinks=False)
+    if not stat.S_ISREG(before.st_mode):
+        raise OSError("Download is not a regular file")
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=".leos-move-", dir=destination.parent
+    )
+    temporary = Path(temporary_name)
+    copied = 0
+    try:
+        with source.open("rb") as incoming, os.fdopen(descriptor, "wb") as outgoing:
+            while True:
+                chunk = incoming.read(1024 * 1024)
+                if not chunk:
+                    break
+                copied += len(chunk)
+                if copied > before.st_size:
+                    raise OSError("Download changed while being copied")
+                outgoing.write(chunk)
+            outgoing.flush()
+            os.fsync(outgoing.fileno())
+        after = source.stat(follow_symlinks=False)
+        if (
+            not stat.S_ISREG(after.st_mode)
+            or (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns)
+            or copied != before.st_size
+        ):
+            raise OSError("Download changed while being copied")
+        if destination.exists():
+            raise OSError("Destination already exists")
+        temporary.rename(destination)
+        source.unlink()
+    except Exception:
+        try:
+            temporary.unlink()
+        except OSError:
+            pass
+        raise
 
 
 def _collision_free_path(directory: Path, filename: str) -> Path:
@@ -234,7 +287,7 @@ def _extract_single_game_zip(
         )
         if archived_original.exists():
             raise OSError("Archive destination already exists")
-        archive_path.rename(archived_original)
+        _move_without_overwrite(archive_path, archived_original)
         try:
             if final_target.exists():
                 raise OSError("Game destination already exists")
@@ -242,7 +295,7 @@ def _extract_single_game_zip(
             temporary_path = None
         except OSError:
             try:
-                archived_original.rename(original_path)
+                _move_without_overwrite(archived_original, original_path)
                 archived_original = None
             except OSError:
                 pass
@@ -299,8 +352,8 @@ class DownloadOrganizer:
             root_resolved = root.resolve(strict=False)
             if downloads_resolved == root_resolved:
                 return []
-            downloads_resolved.relative_to(self.home)
-            root_resolved.relative_to(self.home)
+            if root_resolved != self.home:
+                root_resolved.relative_to(self.home)
         except (OSError, ValueError):
             return []
 
@@ -384,7 +437,7 @@ class DownloadOrganizer:
                 # It is never used with an existing destination.
                 if target.exists():
                     continue
-                path.rename(target)
+                _move_without_overwrite(path, target)
                 self._observed.pop(key, None)
                 moved.append({
                     "name": target.name,
