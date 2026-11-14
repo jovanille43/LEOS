@@ -55,12 +55,15 @@ class _LibraryScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
+        if self.library._closed:
+            return
         try:
             snapshot = self.library._collect_library_snapshot()
         except Exception:
             # Retain the last good library snapshot and let a later refresh retry.
             snapshot = None
-        self.signals.completed.emit(snapshot)
+        if not self.library._closed:
+            self.signals.completed.emit(snapshot)
 
 
 class GameLibraryModel(QAbstractListModel):
@@ -89,7 +92,13 @@ class GameLibraryModel(QAbstractListModel):
         self._last_launch_status = "Sélectionne un jeu à lancer."
         self._scan_task: _LibraryScanTask | None = None
         self._refresh_pending = False
+        self._closed = False
         self.refresh()
+
+    def shutdown(self) -> None:
+        """Prevent background discovery from updating or restarting after exit."""
+        self._closed = True
+        self._refresh_pending = False
 
     def roleNames(self) -> dict[int, QByteArray]:
         return {
@@ -318,6 +327,8 @@ class GameLibraryModel(QAbstractListModel):
 
     def refresh(self) -> None:
         """Schedule a library scan away from the QML thread."""
+        if self._closed:
+            return
         if self._scan_task is not None:
             self._refresh_pending = True
             return
@@ -329,6 +340,8 @@ class GameLibraryModel(QAbstractListModel):
     @Slot(object)
     def _on_library_scan_completed(self, snapshot: object) -> None:
         self._scan_task = None
+        if self._closed:
+            return
         if isinstance(snapshot, tuple) and len(snapshot) == 4:
             games, duplicate_metadata, favorites, recent = snapshot
             self._games = games
