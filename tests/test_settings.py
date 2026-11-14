@@ -104,7 +104,6 @@ class SettingsStoreTests(unittest.TestCase):
     def test_validate_current_file_rejects_corrupt_existing_json(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
-            path.parent.mkdir(parents=True)
             corrupt = b"{broken json"
             path.write_bytes(corrupt)
             with self.assertRaises((ValueError, json.JSONDecodeError)):
