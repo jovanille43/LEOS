@@ -297,7 +297,7 @@ ApplicationWindow {
                             Repeater {
                                 model: [
                                     { label: "Vue d'ensemble", page: 0 },
-                                    { label: "Apparence", page: 1 },
+                                    { label: "LEOS Studio", page: 1 },
                                     { label: "Matériel & connexions", page: 2 },
                                     { label: "Performances", page: 3 },
                                     { label: "Paramètres KDE", page: 4 },
@@ -574,7 +574,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 252
+                                Layout.preferredHeight: 310
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -584,13 +584,13 @@ ApplicationWindow {
                                     spacing: 10
 
                                     Label {
-                                        text: "COULEURS DU THÈME LEOS"
+                                        text: "LEOS STUDIO · IDENTITÉ VISUELLE"
                                         color: window.cyan
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis librement les deux extrémités du dégradé LEOS. Les fonds, les contrastes et la structure de l'interface restent identiques."
+                                        text: "Compose librement le dégradé A/B ou pars d'un préréglage. La structure sombre reste intacte ; les interfaces, logos, fonds LEOS et intros animées suivent les couleurs choisies."
                                         color: window.muted
                                         font.pixelSize: 11
                                         wrapMode: Text.WordWrap
@@ -672,6 +672,54 @@ ApplicationWindow {
                                                         horizontalAlignment: Text.AlignHCenter
                                                         verticalAlignment: Text.AlignVCenter
                                                     }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Label {
+                                        text: "PRÉRÉGLAGES DU DÉGRADÉ"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        font.letterSpacing: 1
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 7
+                                        Repeater {
+                                            model: [
+                                                { label: "Cyan · Magenta", a: "#00D9FF", b: "#E33BFF" },
+                                                { label: "Émeraude · Or", a: "#00C896", b: "#FFD166" },
+                                                { label: "Bleu · Violet", a: "#3A86FF", b: "#9B5DE5" },
+                                                { label: "Corail · Ambre", a: "#FF5A5F", b: "#FFB000" }
+                                            ]
+                                            delegate: Button {
+                                                required property var modelData
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 34
+                                                text: modelData.label
+                                                onClicked: {
+                                                    themeColorAField.text = modelData.a
+                                                    themeColorBField.text = modelData.b
+                                                    window.commitThemeColors(modelData.a, modelData.b)
+                                                }
+                                                background: Rectangle {
+                                                    radius: 7
+                                                    gradient: Gradient {
+                                                        orientation: Gradient.Horizontal
+                                                        GradientStop { position: 0.0; color: modelData.a }
+                                                        GradientStop { position: 1.0; color: modelData.b }
+                                                    }
+                                                    border.color: window.themeColors.border
+                                                }
+                                                contentItem: Label {
+                                                    text: modelData.label
+                                                    color: "white"
+                                                    font.pixelSize: 9
+                                                    font.weight: Font.DemiBold
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    elide: Text.ElideRight
                                                 }
                                             }
                                         }
