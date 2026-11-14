@@ -121,14 +121,29 @@ def resolve_download_directory(
     return base / "Downloads"
 
 
-def _move_without_overwrite(source: Path, destination: Path) -> None:
+def _move_without_overwrite(
+    source: Path,
+    destination: Path,
+    expected_signature: tuple[int, int] | None = None,
+) -> None:
     """Move without replacing any existing destination, including across filesystems."""
     before = source.stat(follow_symlinks=False)
     if not stat.S_ISREG(before.st_mode):
         raise OSError("Download is not a regular file")
+    if expected_signature is not None and (
+        before.st_size, before.st_mtime_ns
+    ) != expected_signature:
+        raise OSError("Download changed before being moved")
     try:
         # A hard link is an atomic no-replace operation on a single filesystem.
         os.link(source, destination, follow_symlinks=False)
+        current = source.stat(follow_symlinks=False)
+        if (
+            not stat.S_ISREG(current.st_mode)
+            or (current.st_size, current.st_mtime_ns) != (before.st_size, before.st_mtime_ns)
+        ):
+            destination.unlink()
+            raise OSError("Download changed while being moved")
         try:
             source.unlink()
         except OSError:
@@ -471,7 +486,7 @@ class DownloadOrganizer:
                 # until a no-overwrite destination has been created.
                 if target.exists():
                     continue
-                _move_without_overwrite(path, target)
+                _move_without_overwrite(path, target, signature)
                 self._observed.pop(key, None)
                 moved.append({
                     "name": target.name,
