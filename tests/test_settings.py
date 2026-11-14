@@ -301,5 +301,43 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
 
+    def test_replace_all_requires_confirmation_and_a_complete_valid_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme", "magenta")
+            snapshot = {key: settings.get(key) for key in __import__(
+                "leos_core.settings", fromlist=["DEFAULTS"]
+            ).DEFAULTS}
+            snapshot["theme"] = "cyan"
+            with self.assertRaises(PermissionError):
+                settings.replace_all(snapshot)
+            incomplete = dict(snapshot)
+            incomplete.pop("theme_color_a")
+            with self.assertRaises(ValueError):
+                settings.replace_all(incomplete, confirmed=True)
+            self.assertEqual(settings.get("theme"), "magenta")
+
+            settings.replace_all(snapshot, confirmed=True)
+            self.assertEqual(SettingsStore(path).get("theme"), "cyan")
+
+    def test_replace_all_can_recover_corrupt_file_without_weakening_normal_writes(self) -> None:
+        from leos_core.settings import DEFAULTS
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text("{broken", encoding="utf-8")
+            settings = SettingsStore(path)
+            snapshot = dict(DEFAULTS)
+            snapshot["theme_color_a"] = "#112233"
+            with self.assertRaises(ValueError):
+                settings.set("theme", "cyan")
+            self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
+
+            settings.replace_all(snapshot, confirmed=True)
+            self.assertEqual(SettingsStore(path).get("theme_color_a"), "#112233")
+            self.assertTrue(path.read_text(encoding="utf-8").startswith("{"))
+
+
 if __name__ == "__main__":
     unittest.main()
