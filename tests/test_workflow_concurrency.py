@@ -66,6 +66,18 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn(r"printf 'ref=%s@%s\n'", helper)
         self.assertIn("leos-nvidia-open", helper)
 
+
+    def test_iso_artifacts_include_a_source_and_checksum_provenance_manifest(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn('echo "provenance=LEOS-$VARIANT-$IMAGE_TAG.iso.json"', source)
+        self.assertIn("MANIFEST_NAME:", source)
+        self.assertIn('"source_image": os.environ["IMAGE_REF"]', source)
+        self.assertIn('"iso_sha256": os.environ["ISO_SHA256"]', source)
+        self.assertIn('"source_commit": os.environ["GITHUB_SHA"]', source)
+        self.assertIn('"workflow_run_id": int(os.environ["GITHUB_RUN_ID"])', source)
+        self.assertIn('sha256sum --check "$ISO_NAME.sha256"', source)
+        self.assertIn("steps.image.outputs.provenance", source)
+
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
         recipe = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
