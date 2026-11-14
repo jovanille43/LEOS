@@ -94,3 +94,7 @@ Le relevé s'exécute hors du thread graphique, sans générer de trafic de test
 ## Apparence et fonds d'écran
 
 La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. Le bouton de sélection ouvre le module natif KDE `kcm_wallpaper` ; l'utilisateur choisit lui-même le fichier dans `/usr/share/leos/branding/wallpapers/` et confirme dans KDE. Aucun fond d'écran n'est appliqué automatiquement par le Centre de contrôle.
+
+## Cycle de vie
+
+À la fermeture du Centre de contrôle, les minuteries d'inventaire, de diagnostic et de synchronisation sont arrêtées, les processus auxiliaires de lecture de l'état système sont interrompus et le moniteur partagé est stoppé. Le même nettoyage est effectué si l'interface QML ne peut pas être chargée. Les analyses déjà lancées en arrière-plan ne mettent plus à jour l'interface après le début de l'arrêt.
