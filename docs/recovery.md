@@ -10,12 +10,12 @@ Cette procédure concerne les images LEOS basées sur Bazzite avec OSTree. Les i
 
 Le Centre de contrôle propose une page **Sauvegardes** dédiée aux réglages propres à LEOS. Elle permet de créer une copie privée des préférences connues : couleurs A/B, dernier mode utilisé, animations, sons, notifications et autres valeurs enregistrées par LEOS.
 
-Les fichiers sont conservés dans `$XDG_STATE_HOME/leos/settings-backups/` (par défaut `~/.local/state/leos/settings-backups/`). Chaque sauvegarde comprend un fichier de données et un manifeste d'intégrité SHA-256. Le dossier et les fichiers sont créés avec des permissions privées ; les liens symboliques, fichiers non réguliers, données incomplètes et sauvegardes altérées sont refusés.
+Les fichiers sont conservés dans `$XDG_STATE_HOME/leos/settings-backups/` (par défaut `~/.local/state/leos/settings-backups/`). Chaque sauvegarde comprend un fichier de données et un manifeste d'intégrité SHA-256. Le dossier et les fichiers sont créés avec des permissions privées ; les liens symboliques, fichiers non réguliers, données incomplètes et sauvegardes altérées sont refusés. LEOS conserve au maximum 20 sauvegardes vérifiées et supprime les plus anciennes après la création réussie d'une nouvelle copie.
 
 Pour restaurer :
 
 1. Ouvrir le Centre de contrôle puis **Sauvegardes**.
-2. Vérifier qu'une sauvegarde est disponible et choisir **Restaurer la dernière**.
+2. Vérifier la liste des sauvegardes disponibles et sélectionner la date souhaitée ; la plus récente est présélectionnée.
 3. Lire la confirmation : seule la configuration LEOS est remplacée.
 4. Confirmer l'action. LEOS crée automatiquement une sauvegarde de l'état courant avant d'appliquer la copie vérifiée.
 
