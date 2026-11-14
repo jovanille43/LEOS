@@ -206,8 +206,6 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(SettingsStore(path).get("transition_app_policy"), "ask")
 
     def test_legacy_automatic_transition_policy_falls_back_to_ask(self) -> None:
-        import json
-
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
             path.write_text(
