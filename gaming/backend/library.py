@@ -515,7 +515,11 @@ class GameLibraryModel(QAbstractListModel):
             "installStatus": (
                 installation_status(game)
                 if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:"))
-                else "Ajout manuel"
+                else (
+                    "Fichier local · lancement à configurer"
+                    if str(game.get("id", "")).startswith("emulator:")
+                    else "Ajout manuel"
+                )
             ),
             "appId": str(game.get("app_id", "")),
             "duplicateCount": int(self._duplicate_metadata.get(game["id"], {}).get("count", 1)),
