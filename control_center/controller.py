@@ -13,6 +13,7 @@ from desktop.plasma_adapter import build_panel_management_script
 from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
+from desktop.layout_backup import DesktopLayoutBackupManager
 from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
@@ -158,6 +159,8 @@ class ControlCenterController(QObject):
         self._settings_sync_timer.timeout.connect(self.refreshSharedSettings)
         self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
+        self.desktopLayoutBackups = DesktopLayoutBackupManager(self.desktopLayout)
+        self._desktop_layout_backup_snapshot = self._read_desktop_layout_backup_snapshot()
         self.plasmaBackups = PlasmaBackupManager()
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
@@ -275,6 +278,39 @@ class ControlCenterController(QObject):
         if snapshot != self._settings_backup_snapshot:
             self._settings_backup_snapshot = snapshot
             self.settingsBackupChanged.emit()
+
+    def _read_desktop_layout_backup_snapshot(self) -> dict[str, object]:
+        entries = self.desktopLayoutBackups.list_backups()
+        latest = entries[0] if entries else {}
+        return {
+            "available": bool(entries),
+            "count": len(entries),
+            "latestCreatedUtc": str(latest.get("created_utc", "")),
+            "latestId": str(latest.get("backup_id", "")),
+            "backupIds": tuple(str(entry["backup_id"]) for entry in entries),
+        }
+
+    def _refresh_desktop_layout_backup_snapshot(self) -> None:
+        snapshot = self._read_desktop_layout_backup_snapshot()
+        if snapshot != self._desktop_layout_backup_snapshot:
+            self._desktop_layout_backup_snapshot = snapshot
+            self.settingsBackupChanged.emit()
+
+    @Property("QVariantMap", notify=settingsBackupChanged)
+    def desktopLayoutBackupSnapshot(self) -> dict[str, object]:
+        return dict(self._desktop_layout_backup_snapshot)
+
+    @Property("QVariantList", notify=settingsBackupChanged)
+    def desktopLayoutBackupEntries(self) -> list[dict[str, str]]:
+        entries = self.desktopLayoutBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "createdUtc": str(entry["created_utc"]),
+                "label": str(entry["created_utc"])[:19].replace("T", " ") + " UTC",
+            }
+            for entry in entries
+        ]
 
     @Property("QVariantMap", notify=settingsBackupChanged)
     def settingsBackupSnapshot(self) -> dict[str, object]:
@@ -891,6 +927,81 @@ class ControlCenterController(QObject):
     def setDesktopWidgetsEnabled(self, enabled: bool) -> None:
         self.desktopLayout.set_widgets_enabled(enabled)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def createDesktopLayoutBackup(self) -> str:
+        """Create a verified backup of LEOS desktop layout preferences."""
+        try:
+            backup_id = self.desktopLayoutBackups.create_backup()
+        except (OSError, ValueError, TypeError, RecursionError):
+            message = (
+                "Sauvegarde de la disposition impossible : le fichier actuel est absent de façon "
+                "inattendue, illisible, corrompu ou non sûr. Aucun réglage par défaut n'a été substitué."
+            )
+            post_notification("Sauvegarde de la disposition impossible", message, "error")
+            return message
+        self._refresh_desktop_layout_backup_snapshot()
+        message = f"Disposition du bureau sauvegardée ({backup_id[:8]})."
+        post_notification("Disposition LEOS sauvegardée", message, "success")
+        return message
+
+    @Slot(str, str, result=str)
+    def exportDesktopLayoutBackup(self, backup_id: str, destination_directory: str) -> str:
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde de disposition avant l'export."
+        try:
+            self.desktopLayoutBackups.export_backup(backup_id, destination_directory)
+        except FileExistsError:
+            return "Ces fichiers existent déjà dans le dossier choisi ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = "L'export de la disposition a échoué. Vérifie le support et le dossier choisi."
+            post_notification("Export de disposition impossible", message, "warning")
+            return message
+        message = "Sauvegarde de disposition exportée avec vérification SHA-256."
+        post_notification("Disposition LEOS exportée", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def importDesktopLayoutBackup(self, manifest_path: str) -> str:
+        try:
+            backup_id = self.desktopLayoutBackups.import_backup(manifest_path)
+        except FileExistsError:
+            return "Cette sauvegarde de disposition existe déjà ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = (
+                "Import impossible. Sélectionne le manifeste .json d'une sauvegarde LEOS "
+                "et conserve son fichier .bak dans le même dossier."
+            )
+            post_notification("Import de disposition impossible", message, "warning")
+            return message
+        self._refresh_desktop_layout_backup_snapshot()
+        message = f"Sauvegarde de disposition importée et vérifiée ({backup_id[:8]})."
+        post_notification("Disposition LEOS importée", message, "success")
+        return message
+
+    @Slot(str, bool, result=str)
+    def restoreDesktopLayoutBackup(self, backup_id: str, confirmed: bool) -> str:
+        if confirmed is not True:
+            return "Confirmation explicite requise ; aucune disposition n'a été modifiée."
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde de disposition vérifiée avant la restauration."
+        try:
+            recovery_id = self.desktopLayoutBackups.restore_backup(backup_id, confirmed=True)
+        except (OSError, ValueError, TypeError, PermissionError):
+            message = (
+                "Restauration impossible : la sauvegarde n'a pas pu être vérifiée ou le fichier "
+                "actuel est corrompu/non sûr. Aucun fichier de disposition n'a été remplacé."
+            )
+            post_notification("Restauration de disposition impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        self._refresh_desktop_layout_backup_snapshot()
+        message = (
+            "Disposition LEOS restaurée. La disposition précédente a été sauvegardée automatiquement "
+            f"({recovery_id[:8]})."
+        )
+        post_notification("Disposition LEOS restaurée", message, "success")
+        return message
 
     @Slot(result=str)
     def createSettingsBackup(self) -> str:
