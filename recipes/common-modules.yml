@@ -9,6 +9,7 @@ modules:
         - python3-evdev
         - vulkan-tools
         - libnotify
+        - xdg-user-dirs
         - aurorae
         - qt6-qtmultimedia
         - qt6-qtsvg
@@ -91,6 +92,10 @@ modules:
 
   - type: copy
     src: desktop/autostart/leos-session.desktop
+    dest: /usr/etc/xdg/autostart/
+
+  - type: copy
+    src: desktop/autostart/leos-download-organizer.desktop
     dest: /usr/etc/xdg/autostart/
 
   - type: signing

@@ -26,6 +26,66 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(settings.get("onboarding_complete"))
             self.assertFalse(path.exists())
 
+    def test_custom_theme_colors_default_validate_and_persist(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme_color_a"), "#00D9FF")
+            self.assertEqual(settings.get("theme_color_b"), "#E33BFF")
+
+            settings.set("theme_color_a", "#00ff88")
+            settings.set("theme_color_b", " #AA11CC ")
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme_color_a"), "#00FF88")
+            self.assertEqual(reloaded.get("theme_color_b"), "#AA11CC")
+
+    def test_invalid_custom_theme_colors_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            for value in ("cyan", "#FFF", "#12345678", "123456", ""):
+                with self.subTest(value=value), self.assertRaises(ValueError):
+                    settings.set("theme_color_a", value)
+            with self.assertRaises(TypeError):
+                settings.set("theme_color_b", 123)
+
+    def test_invalid_colors_in_existing_settings_fall_back_to_safe_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                json.dumps({"theme_color_a": "magenta", "theme_color_b": "#12"}),
+                encoding="utf-8",
+            )
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme_color_a"), "#00D9FF")
+            self.assertEqual(settings.get("theme_color_b"), "#E33BFF")
+
+    def test_set_many_updates_related_theme_colors_atomically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set_many({
+                "theme_color_a": "#112233",
+                "theme_color_b": "#AABBCC",
+                "sounds_enabled": False,
+            })
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme_color_a"), "#112233")
+            self.assertEqual(reloaded.get("theme_color_b"), "#AABBCC")
+            self.assertFalse(reloaded.get("sounds_enabled"))
+
+    def test_set_many_validates_every_value_before_writing_any(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#010203")
+            before = path.read_text(encoding="utf-8")
+            with self.assertRaises(ValueError):
+                settings.set_many({
+                    "theme_color_a": "#AABBCC",
+                    "theme_color_b": "not-a-color",
+                })
+            self.assertEqual(path.read_text(encoding="utf-8"), before)
+
     def test_onboarding_completion_persists_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"

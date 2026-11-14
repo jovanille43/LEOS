@@ -47,6 +47,7 @@ def main() -> int:
     from PySide6.QtCore import QUrl
     from PySide6.QtGui import QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine
+    from desktop.theme_controller import ThemeController
 
     app = QGuiApplication([sys.argv[0]])
     app.setApplicationName("LEOS Mode Selector")
@@ -54,6 +55,7 @@ def main() -> int:
 
     manager = ModeManager(settings)
     selector_controller = ModeSelectorController()
+    theme = ThemeController()
 
     def handle_mode(mode: str) -> None:
         if mode == "gaming":
@@ -84,11 +86,14 @@ def main() -> int:
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("modeManager", manager)
     engine.rootContext().setContextProperty("modeSelectorController", selector_controller)
+    engine.rootContext().setContextProperty("leosTheme", theme)
     app.aboutToQuit.connect(selector_controller.shutdown)
+    app.aboutToQuit.connect(theme.shutdown)
     qml_file = Path(__file__).parent / "qml" / "ModeSelector.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         selector_controller.shutdown()
+        theme.shutdown()
         return 1
 
     exit_code = app.exec()

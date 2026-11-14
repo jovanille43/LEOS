@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -256,7 +256,7 @@ class ControlCenterController(QObject):
 
     def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
         keys = (
-            "last_mode", "theme", "performance_profile", "animations_enabled",
+            "last_mode", "theme", "theme_color_a", "theme_color_b", "performance_profile", "animations_enabled",
             "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
             "notification_duration_seconds", "notification_minimum_priority",
             "notification_sounds_enabled", "silent_notifications_in_gaming",
@@ -605,10 +605,18 @@ class ControlCenterController(QObject):
     def theme(self) -> str:
         return str(self.settings.get("theme"))
 
+    @Property(str, notify=settingsChanged)
+    def themeColorA(self) -> str:
+        return str(self.settings.get("theme_color_a", DEFAULT_COLOR_A))
+
+    @Property(str, notify=settingsChanged)
+    def themeColorB(self) -> str:
+        return str(self.settings.get("theme_color_b", DEFAULT_COLOR_B))
+
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
-        """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        """Expose the shared custom gradient to LEOS-owned QML without changing KDE."""
+        return palette_for_colors(self.themeColorA, self.themeColorB)
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -717,8 +725,21 @@ class ControlCenterController(QObject):
         self.settings.set("gaming_overlay_enabled", enabled)
         self.settingsChanged.emit()
 
+    @Slot(str, str, result=str)
+    def setThemeColors(self, color_a: str, color_b: str) -> str:
+        """Persist both gradient endpoints after validating the complete pair."""
+        try:
+            normalized_a = normalize_color(color_a)
+            normalized_b = normalize_color(color_b)
+            self.settings.set_many({"theme_color_a": normalized_a, "theme_color_b": normalized_b})
+        except (OSError, ValueError, TypeError, KeyError):
+            return "Les couleurs n'ont pas pu être enregistrées. Vérifie le format #RRGGBB."
+        self.settingsChanged.emit()
+        return "Dégradé LEOS mis à jour."
+
     @Slot(str)
     def setTheme(self, theme: str) -> None:
+        """Keep the legacy setting slot for older integrations."""
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
 
@@ -726,7 +747,7 @@ class ControlCenterController(QObject):
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
         try:
-            message = self.kdeColorSchemes.apply_theme(self.theme)
+            message = self.kdeColorSchemes.apply_custom_theme(self.themeColorA, self.themeColorB)
         except FileNotFoundError:
             message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
             post_notification("Thème KDE non appliqué", message, "error")

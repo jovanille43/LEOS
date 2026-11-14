@@ -1,6 +1,7 @@
 """Read-only GPU telemetry from Linux DRM sysfs."""
 
 import csv
+import math
 import re
 import shutil
 import subprocess
@@ -242,4 +243,65 @@ def read_gpu_metrics(sys_root: Path = Path("/sys")) -> dict[str, object]:
         "temperature": -1.0,
         "memory_used": -1,
         "memory_total": -1,
+    }
+
+
+def unavailable_gpu_metrics() -> dict[str, object]:
+    """Return a fresh snapshot with every optional GPU measurement unavailable."""
+    return {
+        "name": "GPU non détecté",
+        "usage": -1.0,
+        "temperature": -1.0,
+        "memory_used": -1,
+        "memory_total": -1,
+    }
+
+
+def normalize_gpu_metrics(metrics: object) -> dict[str, object]:
+    """Validate one provider snapshot before publishing it to the live UI."""
+    if not isinstance(metrics, dict):
+        return unavailable_gpu_metrics()
+
+    name = metrics.get("name")
+    if not isinstance(name, str) or not name.strip():
+        name = "GPU non détecté"
+
+    def finite_number(key: str, minimum: float, maximum: float) -> float:
+        value = metrics.get(key)
+        if isinstance(value, bool):
+            return -1.0
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return -1.0
+        if not math.isfinite(parsed) or not minimum <= parsed <= maximum:
+            return -1.0
+        return parsed
+
+    def nonnegative_integer(key: str) -> int:
+        value = metrics.get(key)
+        if isinstance(value, bool):
+            return -1
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError, OverflowError):
+            return -1
+        if parsed < 0 or parsed != value:
+            return -1
+        return parsed
+
+    memory_total = nonnegative_integer("memory_total")
+    memory_used = nonnegative_integer("memory_used")
+    if memory_total <= 0:
+        memory_total = -1
+        memory_used = -1
+    elif memory_used < 0 or memory_used > memory_total:
+        memory_used = -1
+
+    return {
+        "name": name.strip()[:256],
+        "usage": finite_number("usage", 0.0, 100.0),
+        "temperature": finite_number("temperature", 0.0, 150.0),
+        "memory_used": memory_used,
+        "memory_total": memory_total,
     }

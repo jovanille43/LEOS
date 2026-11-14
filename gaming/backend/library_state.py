@@ -111,6 +111,7 @@ CATEGORIES = (
     "PlayStation",
     "SEGA",
     "Arcade",
+    "Émulation",
     "Favoris",
     "Récemment joués",
 )
@@ -131,6 +132,15 @@ def filter_games(
         result = [by_id[game_id] for game_id in recent if game_id in by_id]
     elif category == "Accueil":
         result = list(games)
+    elif category == "Émulation":
+        result = [
+            game for game in games
+            if "retroarch" in str(game.get("source", "")).casefold()
+            or str(game.get("source", "")).casefold() == "fichiers locaux"
+            or str(game.get("id", "")).casefold().startswith("emulator:")
+            or "émulation" in str(game.get("platform", "")).casefold()
+            or "emulation" in str(game.get("platform", "")).casefold()
+        ]
     elif category == "PC Gaming":
         result = [
             game for game in games

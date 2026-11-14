@@ -37,30 +37,47 @@ Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les
 
 ## Moteur de thèmes LEOS
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` définit le moteur de couleurs partagé. Le joueur
+choisit librement deux couleurs opaques au format `#RRGGBB` :
 
-Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
-Une action distincte dans le Centre de contrôle permet, après confirmation,
-d'exporter le thème sous forme de schéma KDE `.colors` dans l'espace utilisateur
-`$XDG_DATA_HOME/color-schemes` (par défaut `~/.local/share/color-schemes`),
-puis d'appeler `plasma-apply-colorscheme` sans shell.
+- **Couleur A** : première extrémité du dégradé ;
+- **Couleur B** : seconde extrémité du dégradé.
 
-L'application est limitée au schéma de couleurs KDE : elle ne remplace pas le
-Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
-écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
-respectent le schéma global changent. Le système immuable Bazzite n'est pas
-modifié.
+Les deux valeurs sont enregistrées ensemble dans le profil utilisateur par
+`leos_core.SettingsStore`. Le fond sombre, les surfaces, les bordures et les
+contrastes de l'interface restent cohérents ; seules les couleurs d'accent et
+les arrêts du dégradé sont remplacés. Les interfaces LEOS Desktop, Gaming,
+le sélecteur de mode, le menu, les notifications, le Centre des manettes et la
+Boutique lisent le même réglage et se rafraîchissent lorsqu'il change.
 
-Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
-permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
-peut pas être identifié, si le fichier LEOS existe déjà sous une forme
-différente, ou si l'état de restauration est absent alors qu'un thème LEOS est
-déjà actif, l'application est refusée. Les fichiers .colors existants ne sont
-jamais écrasés s'ils diffèrent du contenu généré par LEOS.
+Par défaut, le changement de couleurs concerne uniquement les interfaces LEOS.
+Une action distincte du Centre de contrôle permet, après confirmation, de créer
+un schéma KDE `.colors` correspondant exactement à la paire A/B dans
+`$XDG_DATA_HOME/color-schemes` (par défaut
+`~/.local/share/color-schemes`), puis de l'appliquer avec
+`plasma-apply-colorscheme` sans shell. Le schéma actif précédent est conservé
+pour pouvoir être restauré.
 
+L'export KDE ne remplace pas le Plasma Style, les icônes, les curseurs, le fond
+d'écran, les panneaux ni les écrans de connexion. Le système immuable Bazzite
+n'est pas modifié.
+
+## Variantes visuelles du thème
+
+Le module `desktop/branding_assets.py` génère des variantes personnalisées des
+deux emblèmes JPEG, des fonds SVG 4K et des vidéos d'introduction. Une matrice
+RVB commune remplace les deux extrémités de couleur historiques par A et B tout
+en conservant les gris neutres (reflets métalliques, argent et blancs). Les
+variantes sont stockées sous `$XDG_CACHE_HOME/leos/theme-assets` (par défaut
+`~/.cache/leos/theme-assets`) et les interfaces les récupèrent sans modifier
+les ressources empaquetées dans `/usr/share/leos/branding`.
+
+La génération se fait en arrière-plan. Les images sont transformées avec Qt
+Gui, les SVG réutilisent l'emblème PNG recoloré et les vidéos sont traitées par
+`ffmpeg` lorsqu'il est présent. Si la conversion vidéo échoue ou si un outil
+n'est pas disponible, LEOS utilise l'animation officielle d'origine. La source
+reste toujours intacte ; le thème et l'application restent utilisables même si
+une variante optionnelle ne peut pas être produite.
 
 ## Profils de disposition et dock
 

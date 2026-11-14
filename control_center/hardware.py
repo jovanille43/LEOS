@@ -80,8 +80,16 @@ def _cpu_details() -> tuple[str, str]:
     logical = len(online_ids) or processor_entries or os.cpu_count() or 0
     return model or "Non détecté", f"{logical} thread(s)" if logical else "Indisponible"
 
+MAX_CPU_LIST_CHARACTERS = 65_536
+MAX_CPU_LIST_MEMBERS = 65_536
+MAX_CPU_ID = 2_147_483_647
+
+
 def _parse_cpu_list(value: str) -> set[int]:
-    """Parse Linux CPU-list syntax such as '0-3,8,10-11'."""
+    """Parse Linux CPU-list syntax without expanding unbounded ranges."""
+    if not isinstance(value, str) or len(value) > MAX_CPU_LIST_CHARACTERS:
+        return set()
+
     cpus: set[int] = set()
     for item in value.strip().split(","):
         if not item:
@@ -89,13 +97,20 @@ def _parse_cpu_list(value: str) -> set[int]:
         try:
             if "-" in item:
                 first, last = (int(part) for part in item.split("-", 1))
-                if first < 0 or last < first:
+                if first < 0 or last < first or last > MAX_CPU_ID:
                     continue
+                count = last - first + 1
+                # sysfs is normally kernel-generated, but malformed virtual or
+                # container data must not allocate an enormous set on the UI path.
+                if count > MAX_CPU_LIST_MEMBERS or len(cpus) + count > MAX_CPU_LIST_MEMBERS:
+                    return set()
                 cpus.update(range(first, last + 1))
             else:
                 cpu = int(item)
-                if cpu >= 0:
+                if 0 <= cpu <= MAX_CPU_ID:
                     cpus.add(cpu)
+                    if len(cpus) > MAX_CPU_LIST_MEMBERS:
+                        return set()
         except ValueError:
             continue
     return cpus

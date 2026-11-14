@@ -10,11 +10,12 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS Gaming"
-    color: "#08090d"
+    property var themeColors: leos.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedIndex: -1
     property string selectedTitle: ""
     property string selectedPlatform: ""
@@ -27,7 +28,7 @@ ApplicationWindow {
     property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
-    property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
+    property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Émulation", "Favoris", "Récemment joués"]
     property int selectedCategoryIndex: 0
     property string navigationArea: "categories"
     property string pendingPowerProfile: ""
@@ -45,7 +46,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = leosTheme.desktopIntroUrl
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
@@ -419,7 +420,7 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: leosTheme.gamingLogoUrl
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
@@ -1125,7 +1126,7 @@ ApplicationWindow {
                                     id: launchSelectedGameButton
                                     Layout.fillWidth: true
                                     enabled: window.selectedIndex >= 0
-                                    text: "JOUER"
+                                    text: window.selectedSource === "Fichiers locaux" ? "OUVRIR AVEC UN ÉMULATEUR" : "JOUER"
                                     onActiveFocusChanged: {
                                         if (activeFocus) {
                                             window.navigationArea = "details"

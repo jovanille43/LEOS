@@ -13,6 +13,8 @@ from desktop.kde_colors import (
     MANAGED_BY,
     THEME_NAMES,
     build_colorscheme,
+    build_custom_colorscheme,
+    custom_scheme_id,
 )
 
 
@@ -63,6 +65,59 @@ class KdeColorSchemeTests(unittest.TestCase):
             self.assertIn("BackgroundNormal", parser[group])
             self.assertIn("ForegroundNormal", parser[group])
             self.assertIn("DecorationFocus", parser[group])
+
+    def test_builds_custom_gradient_kde_scheme(self):
+        content = build_custom_colorscheme("#00ffff", "#ff8800")
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
+        parser.read_string(content)
+        self.assertEqual(custom_scheme_id("#00ffff", "#ff8800"), "LEOS-00FFFF-FF8800")
+        self.assertEqual(parser["General"]["ColorScheme"], "LEOS-00FFFF-FF8800")
+        self.assertEqual(parser["General"]["AccentColor"], "0,255,255")
+        self.assertEqual(parser["Colors:Selection"]["BackgroundNormal"], "0,255,255")
+        self.assertEqual(parser["Colors:Selection"]["DecorationHover"], "255,136,0")
+        self.assertEqual(parser["LEOS"]["ThemeId"], "custom")
+
+    def test_custom_kde_scheme_is_applied_after_user_confirmation(self):
+        message = self.manager.apply_custom_theme("#00FFFF", "#FF8800")
+        args, kwargs = self.runner.calls[0]
+        self.assertEqual(args, ["/usr/bin/plasma-apply-colorscheme", "LEOS-00FFFF-FF8800"])
+        self.assertFalse(kwargs["shell"])
+        self.assertIn("LEOS personnalisé", message)
+        self.assertTrue(self.manager.can_restore())
+        self.assertTrue(
+            (self.data / "color-schemes" / "LEOS-00FFFF-FF8800.colors").is_file()
+        )
+
+    def test_custom_selection_foreground_meets_wcag_aa(self):
+        for color_a, color_b in (
+            ("#00FFFF", "#FF8800"),
+            ("#FF00AA", "#00FF33"),
+            ("#808080", "#FFFFFF"),
+            ("#010101", "#FEFEFE"),
+        ):
+            content = build_custom_colorscheme(color_a, color_b)
+            parser = configparser.ConfigParser(interpolation=None)
+            parser.optionxform = str
+            parser.read_string(content)
+            foreground = parser["Colors:Selection"]["ForegroundNormal"]
+            background = parser["Colors:Selection"]["BackgroundNormal"]
+            def luminance(rgb):
+                values = [int(component) / 255 for component in rgb.split(",")]
+                linear = [
+                    value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+                    for value in values
+                ]
+                return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+            first, second = luminance(foreground), luminance(background)
+            contrast = (max(first, second) + 0.05) / (min(first, second) + 0.05)
+            with self.subTest(color_a=color_a, color_b=color_b):
+                self.assertGreaterEqual(contrast, 4.5)
+
+    def test_custom_scheme_rejects_invalid_hex_colors(self):
+        for first, second in (("cyan", "#FF8800"), ("#00FFFF", "#FFF"), ("", "#FF8800")):
+            with self.subTest(first=first, second=second), self.assertRaises(ValueError):
+                build_custom_colorscheme(first, second)
 
     def test_generates_all_five_palettes(self):
         for theme in THEME_NAMES:

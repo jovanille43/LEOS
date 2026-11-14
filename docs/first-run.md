@@ -7,9 +7,16 @@ Lors de la première ouverture du sélecteur, LEOS affiche un guide non bloquant
 - Desktop Mode est l'environnement KDE destiné au quotidien.
 - Gaming Mode est l'interface plein écran dédiée à la bibliothèque et à la navigation au clavier ou à la manette.
 - Les deux modes appartiennent au même système et les applications ouvertes ne sont pas fermées automatiquement lors d'un changement de mode.
-- Le guide ne change aucun thème, panneau, fond d'écran, réglage KDE ou logiciel.
+- L'utilisateur peut choisir les deux couleurs A et B de l'identité LEOS. Un aperçu montre le dégradé avant de continuer ; les couleurs peuvent aussi être conservées par défaut et modifiées plus tard dans le Centre de contrôle.
+- Ce choix personnalise les interfaces, emblèmes, fonds et introductions LEOS. Il ne change pas automatiquement le schéma KDE, les panneaux, les widgets, la disposition des écrans ni les logiciels installés.
 
 Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/settings.json`, via la préférence `onboarding_complete`. Choisir directement Desktop ou Gaming mémorise également cette étape. Si l'enregistrement échoue, le démarrage continue et le guide pourra réapparaître à la prochaine ouverture.
+
+## Couleurs de l'identité LEOS
+
+Les boutons **A** et **B** ouvrent chacun un sélecteur de couleur. La paire complète est validée et enregistrée en une seule opération dans `~/.config/leos/settings.json` (`theme_color_a` et `theme_color_b`). Le dégradé des composants LEOS se met à jour immédiatement. Les emblèmes, aperçus de fonds et introductions vidéo sont régénérés en arrière-plan dans le cache utilisateur ; les médias officiels restent inchangés et servent de solution de repli si une conversion échoue.
+
+La sélection n'est pas obligatoire : cliquer sur **Compris**, ou choisir directement Desktop/Gaming, permet de conserver les couleurs courantes. Le même réglage A/B reste accessible ensuite dans le Centre de contrôle LEOS.
 
 ## Applications facultatives
 
@@ -30,6 +37,10 @@ Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une p
 
 Aucun service indépendant ne présente une seconde fenêtre de bienvenue au démarrage de session. Le lanceur orchestre le parcours après le choix de mode.
 
+## Dossier de téléchargement des jeux
+
+Sur un profil neuf, si le dossier de téléchargement XDG pointe encore vers le dossier standard \`~/Downloads\` ou \`~/Téléchargements\`, le service de session LEOS le définit sur \`~/Jeux\`. Un chemin XDG personnalisé est conservé et surveillé à la place. Les fichiers de jeux reconnus sont triés après stabilisation du téléchargement ; les formats ambigus et les archives contenant plusieurs jeux restent dans le dossier d'arrivée pour un choix manuel. LEOS ne télécharge aucun jeu, BIOS, firmware ni clé.
+
 ## Ce que LEOS ne fait pas automatiquement
 
 Le premier démarrage ne modifie pas :
@@ -44,10 +55,14 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 ## Validation avant publication
 
 - [ ] Le guide apparaît quand `onboarding_complete` est faux.
-- [ ] **Compris** masque le guide et mémorise le choix.
+- [ ] Les sélecteurs A et B affichent les couleurs actuellement enregistrées.
+- [ ] Choisir A ou B met à jour le dégradé partagé et conserve l'autre extrémité.
+- [ ] Une paire invalide n'écrase pas les couleurs précédentes.
+- [ ] **Compris** masque le guide et mémorise le choix sans imposer une sélection de couleurs.
 - [ ] Choisir Desktop ou Gaming mémorise également la lecture du guide.
 - [ ] Un problème d'écriture des préférences ne bloque pas le démarrage d'un mode.
 - [ ] La proposition d'applications apparaît uniquement après l'entrée dans Desktop.
+- [ ] Le dossier XDG standard devient `~/Jeux` sur un profil neuf, sans écraser un dossier de téléchargement personnalisé.
 - [ ] Choisir Non n'ajoute pas Flathub et ne lance aucun Flatpak.
 - [ ] Choisir Oui installe seulement les applications manquantes après confirmation.
 - [ ] Une erreur sur une application n'empêche pas les autres installations ; le parcours reste réessayable sans doublonner les applications déjà présentes.
