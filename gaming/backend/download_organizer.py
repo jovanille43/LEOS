@@ -303,7 +303,7 @@ def _collision_free_path(directory: Path, filename: str) -> Path:
 def _extract_single_game_zip(
     archive_path: Path,
     root: Path,
-    expected_signature: tuple[int, int],
+    expected_signature: tuple[int, int, int, int, int],
 ) -> dict[str, str] | None:
     """Extract one unambiguous ROM from a stable ZIP without trusting its paths."""
     temporary_path: Path | None = None
@@ -314,7 +314,7 @@ def _extract_single_game_zip(
         if (
             not stat.S_ISREG(archive_info.st_mode)
             or archive_info.st_size > MAX_ARCHIVE_FILE_BYTES
-            or (archive_info.st_size, archive_info.st_mtime_ns) != expected_signature
+            or _file_signature(archive_info) != expected_signature
         ):
             return None
         with zipfile.ZipFile(archive_path, "r") as archive:
@@ -393,7 +393,7 @@ def _extract_single_game_zip(
         current = archive_path.stat(follow_symlinks=False)
         if (
             not stat.S_ISREG(current.st_mode)
-            or (current.st_size, current.st_mtime_ns) != expected_signature
+            or _file_signature(current) != expected_signature
         ):
             raise ValueError("Archive changed while being processed")
 
@@ -459,7 +459,7 @@ class DownloadOrganizer:
         self.emulation_root = Path(emulation_root) if emulation_root is not None else self.home / "Emulation" / "ROMs"
         self.stability_seconds = max(0.0, float(stability_seconds))
         self.max_entries = max(1, min(int(max_entries), MAX_DOWNLOAD_SCAN_ENTRIES))
-        self._observed: dict[str, tuple[int, int, int]] = {}
+        self._observed: dict[str, tuple[int, int, int, int, int, int]] = {}
 
     def poll(self, *, now: float | None = None) -> list[dict[str, str]]:
         """Move stable, recognized files; return a record for each successful move."""
@@ -535,14 +535,14 @@ class DownloadOrganizer:
 
                 key = str(path)
                 active.add(key)
-                signature = (info.st_size, info.st_mtime_ns)
+                signature = _file_signature(info)
                 previous = self._observed.get(key)
-                if previous is None or previous[:2] != signature:
-                    self._observed[key] = (signature[0], signature[1], 0)
+                if previous is None or previous[:5] != signature:
+                    self._observed[key] = (*signature, 0)
                     continue
 
-                stable_rechecks = previous[2] + 1
-                self._observed[key] = (signature[0], signature[1], stable_rechecks)
+                stable_rechecks = previous[5] + 1
+                self._observed[key] = (*signature, stable_rechecks)
                 if (
                     stable_rechecks < REQUIRED_STABLE_RECHECKS
                     or current_time - info.st_mtime < self.stability_seconds
