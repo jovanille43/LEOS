@@ -46,6 +46,27 @@ class GamingPowerProfileIntegrationTests(unittest.TestCase):
         self.assertIn('self._power_profile_message = "Changement du profil d\'énergie en cours…"', controller)
         self.assertIn("self.messageChanged.emit(self._message)", controller)
 
+    def test_late_power_profile_results_are_ignored_after_shutdown(self):
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        refresh = controller[
+            controller.index("def refreshPowerProfiles"):
+            controller.index("@Slot(object, bool, str)")
+        ]
+        completed = controller[
+            controller.index("def _on_power_profile_task_completed"):
+            controller.index("@Slot(str, result=bool)")
+        ]
+        shutdown = controller[
+            controller.index("def shutdown(self)"):
+            controller.index("@Slot()", controller.index("def shutdown(self)"))
+        ]
+
+        self.assertIn("if self._shutting_down or self._power_profile_task is not None", refresh)
+        self.assertIn("if self._shutting_down or self._power_profile_task is not None", refresh)
+        self.assertIn("if self._shutting_down:", completed)
+        self.assertIn("self._shutting_down = True", shutdown)
+        self.assertIn("if self._shutting_down:", shutdown)
+
     def test_profile_backend_uses_only_native_powerprofilesctl(self):
         module = (ROOT / "gaming/backend/power_profiles.py").read_text(encoding="utf-8")
         self.assertIn('[executable, "get"]', module)
