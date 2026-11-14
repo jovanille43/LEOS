@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
-from controller_center.input_state import ControllerInputState
+from controller_center.input_state import ControllerInputState, normalize_axis_value
 from controller_center.profiles import (
     ControllerProfileStore,
     detect_controller_profile,
@@ -44,6 +44,7 @@ class ControllerCenterController(QObject):
         self.axes_text = "Aucun axe détecté pour le moment."
         self._profile = "auto"
         self._deadzone = 8
+        self._axis_centers: dict[str, int] = {}
 
         self.poll_timer = QTimer(self)
         self.poll_timer.setInterval(35)
@@ -112,6 +113,42 @@ class ControllerCenterController(QObject):
     def deadzone(self) -> int:
         return self._deadzone
 
+    @Property(bool, notify=changed)
+    def leftStickAvailable(self) -> bool:
+        return any(name in self.backend.axis_ranges for name in ("ABS_X", "ABS_Y"))
+
+    @Property(bool, notify=changed)
+    def rightStickAvailable(self) -> bool:
+        return any(name in self.backend.axis_ranges for name in ("ABS_RX", "ABS_RY"))
+
+    def _normalized_axis(self, name: str) -> int:
+        if name not in self.backend.axes:
+            return 0
+        limits = self.backend.axis_ranges.get(name, {})
+        return normalize_axis_value(
+            self.backend.axes[name],
+            limits.get("minimum"),
+            limits.get("maximum"),
+            self._axis_centers.get(name),
+            self._deadzone,
+        )
+
+    @Property(int, notify=changed)
+    def leftStickX(self) -> int:
+        return self._normalized_axis("ABS_X")
+
+    @Property(int, notify=changed)
+    def leftStickY(self) -> int:
+        return self._normalized_axis("ABS_Y")
+
+    @Property(int, notify=changed)
+    def rightStickX(self) -> int:
+        return self._normalized_axis("ABS_RX")
+
+    @Property(int, notify=changed)
+    def rightStickY(self) -> int:
+        return self._normalized_axis("ABS_RY")
+
     @Slot()
     def refreshDevices(self) -> None:
         previous = self.selected_id
@@ -162,6 +199,8 @@ class ControllerCenterController(QObject):
         record = self.store.get(self.selected_id)
         self._profile = record["profile"]
         self._deadzone = record["deadzone"]
+        centers = record.get("axis_centers", {})
+        self._axis_centers = dict(centers) if isinstance(centers, dict) else {}
         self.axes_text = ", ".join(item["axes"]) or "Aucun axe analogique"
         if open_device:
             try:
@@ -198,14 +237,24 @@ class ControllerCenterController(QObject):
         key = profile if profile in PROFILE_LABELS else reverse.get(profile, "")
         if not key or not self.selected_id:
             return
+        previous = self._profile
         self._profile = key
-        self._save_preferences()
+        try:
+            self._save_preferences()
+        except (OSError, ValueError) as error:
+            self._profile = previous
+            self.status = f"Profil non enregistré : {error}"
         self.changed.emit()
 
     @Slot(int)
     def setDeadzone(self, value: int) -> None:
+        previous = self._deadzone
         self._deadzone = max(0, min(40, int(value)))
-        self._save_preferences()
+        try:
+            self._save_preferences()
+        except (OSError, ValueError) as error:
+            self._deadzone = previous
+            self.status = f"Zone morte non enregistrée : {error}"
         self.changed.emit()
 
     @Slot()
@@ -214,10 +263,14 @@ class ControllerCenterController(QObject):
             self.status = "Déplace les sticks ou sélectionne une manette avant le calibrage."
             self.changed.emit()
             return
-        self.store.update(
-            self.selected_id,
-            axis_centers={name: int(value) for name, value in self.backend.axes.items()},
-        )
+        centers = {name: int(value) for name, value in self.backend.axes.items()}
+        try:
+            self.store.update(self.selected_id, axis_centers=centers)
+        except (OSError, ValueError) as error:
+            self.status = f"Calibrage non enregistré : {error}"
+            self.changed.emit()
+            return
+        self._axis_centers = centers
         self.status = "Position neutre enregistrée dans ton profil LEOS."
         self.changed.emit()
 
@@ -234,6 +287,7 @@ class ControllerCenterController(QObject):
         self.backend.close()
         self.input_state.clear()
         self.buttons_text = self.input_state.buttons_text
+        self._axis_centers = {}
 
     def shutdown(self) -> None:
         self.refresh_timer.stop()
