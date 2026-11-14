@@ -94,6 +94,37 @@ class SettingsStoreTests(unittest.TestCase):
             settings.set("onboarding_complete", True)
             self.assertTrue(SettingsStore(path).get("onboarding_complete"))
 
+    def test_validate_current_file_accepts_a_missing_first_run_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.validate_current_file()
+            self.assertFalse(path.exists())
+
+    def test_validate_current_file_rejects_corrupt_existing_json(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.parent.mkdir(parents=True)
+            corrupt = b"{broken json"
+            path.write_bytes(corrupt)
+            with self.assertRaises((ValueError, json.JSONDecodeError)):
+                SettingsStore(path).validate_current_file()
+            self.assertEqual(path.read_bytes(), corrupt)
+
+    def test_validate_current_file_rejects_symlinked_preferences(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "settings.json"
+            target = root / "target.json"
+            target.write_text("{}", encoding="utf-8")
+            try:
+                path.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            with self.assertRaises(OSError):
+                SettingsStore(path).validate_current_file()
+            self.assertEqual(target.read_text(encoding="utf-8"), "{}")
+
     def test_values_persist_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
