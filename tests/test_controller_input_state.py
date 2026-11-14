@@ -113,5 +113,34 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertEqual(self.state.buttons_text, "Aucun bouton maintenu.")
 
 
+    def test_controller_center_exposes_calibrated_live_stick_preview(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "controller_center/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("def leftStickX(self)", controller)
+        self.assertIn("def leftStickY(self)", controller)
+        self.assertIn("def rightStickX(self)", controller)
+        self.assertIn("def rightStickY(self)", controller)
+        self.assertIn("self._axis_centers = dict(centers)", controller)
+        self.assertIn("normalize_axis_value(", controller)
+        self.assertIn("STICK GAUCHE", qml)
+        self.assertIn("STICK DROIT", qml)
+        self.assertIn("controllerCenter.leftStickX", qml)
+        self.assertIn("controllerCenter.rightStickY", qml)
+        self.assertIn("Aperçu uniquement", qml)
+
+    def test_controller_preference_write_failures_are_reported_to_the_ui(self):
+        from pathlib import Path
+
+        source = (
+            Path(__file__).resolve().parents[1] / "controller_center/controller.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Profil non enregistré", source)
+        self.assertIn("Zone morte non enregistrée", source)
+        self.assertIn("Calibrage non enregistré", source)
+
+
 if __name__ == "__main__":
     unittest.main()
