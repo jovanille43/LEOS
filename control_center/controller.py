@@ -921,6 +921,25 @@ class ControlCenterController(QObject):
         post_notification("Sauvegarde LEOS exportée", message, "success")
         return message
 
+    @Slot(str, result=str)
+    def importSettingsBackup(self, manifest_path: str) -> str:
+        """Import an externally stored backup after validating its matching data file."""
+        try:
+            backup_id = self.settingsBackups.import_backup(manifest_path)
+        except FileExistsError:
+            return "Cette sauvegarde existe déjà dans LEOS ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = (
+                "L'import a échoué. Sélectionne le manifeste .json d'une sauvegarde LEOS "
+                "et conserve son fichier .bak dans le même dossier."
+            )
+            post_notification("Import LEOS impossible", message, "warning")
+            return message
+        self._refresh_settings_backup_snapshot()
+        message = f"Sauvegarde LEOS importée et vérifiée ({backup_id[:8]})."
+        post_notification("Sauvegarde LEOS importée", message, "success")
+        return message
+
     @Slot(str, bool, result=str)
     def restoreSettingsBackup(self, backup_id: str, confirmed: bool) -> str:
         """Restore a selected verified preference snapshot after UI confirmation."""
