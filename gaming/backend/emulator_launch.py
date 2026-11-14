@@ -7,7 +7,9 @@ an emulator, downloads game data, or executes a ROM as a program.
 
 from __future__ import annotations
 
+import configparser
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -32,6 +34,76 @@ EMULATOR_BY_EXTENSION: dict[str, str] = {
     ".zso": "org.ppsspp.PPSSPP",
 }
 
+MAX_INSTALLATION_CONFIGS = 64
+MAX_INSTALLATION_CONFIG_BYTES = 32 * 1024
+_INSTALLATION_SECTION = re.compile(r'^Installation "([A-Za-z0-9_-]{1,64})"$')
+
+
+def _custom_flatpak_installations(config_dir: Path) -> list[tuple[Path, str]]:
+    """Read bounded system Flatpak installation definitions without following symlinks."""
+    if config_dir.is_symlink() or not config_dir.is_dir():
+        return []
+
+    try:
+        config_files = sorted(config_dir.glob("*.conf"))[:MAX_INSTALLATION_CONFIGS]
+    except OSError:
+        return []
+
+    installations: list[tuple[Path, str]] = []
+    for config_file in config_files:
+        try:
+            if config_file.is_symlink() or not config_file.is_file():
+                continue
+            if config_file.stat().st_size > MAX_INSTALLATION_CONFIG_BYTES:
+                continue
+            content = config_file.read_text(encoding="utf-8")
+            if len(content.encode("utf-8")) > MAX_INSTALLATION_CONFIG_BYTES:
+                continue
+            parser = configparser.ConfigParser(interpolation=None, strict=True)
+            parser.read_string(content)
+        except (OSError, UnicodeError, configparser.Error, ValueError):
+            continue
+
+        for section in parser.sections():
+            match = _INSTALLATION_SECTION.fullmatch(section)
+            if match is None:
+                continue
+            configured_path = parser.get(section, "Path", fallback="").strip()
+            if not configured_path:
+                continue
+            root = Path(configured_path).expanduser()
+            if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+                continue
+            installations.append((root, match.group(1)))
+
+    return installations
+
+
+def _installed_emulator_selector(
+    app_id: str,
+    *,
+    data_root: Path,
+    system_installations_config_dir: Path,
+) -> str | None | bool:
+    """Return a named-installation selector, None for default installs, or False."""
+    default_roots = (
+        data_root / "flatpak",
+        Path("/var/lib/flatpak"),
+    )
+    for root in default_roots:
+        app_path = root / "app" / app_id
+        if not root.is_symlink() and app_path.is_dir() and not app_path.is_symlink():
+            return None
+
+    for root, installation_name in _custom_flatpak_installations(
+        system_installations_config_dir
+    ):
+        app_path = root / "app" / app_id
+        if app_path.is_dir() and not app_path.is_symlink():
+            return f"--installation={installation_name}"
+
+    return False
+
 
 def build_emulator_launch_command(
     game_path: str | Path,
@@ -39,6 +111,7 @@ def build_emulator_launch_command(
     home: Path | None = None,
     data_home: Path | None = None,
     flatpak_executable: str | None = None,
+    system_installations_config_dir: Path | None = None,
 ) -> tuple[list[str] | None, str]:
     """Return a Flatpak document-portal launch command or a safe French error."""
     if not isinstance(game_path, (str, Path)):
@@ -86,11 +159,28 @@ def build_emulator_launch_command(
         data_root = Path(data_home).expanduser()
     if not data_root.is_absolute():
         data_root = base / ".local/share"
-    installed_roots = (data_root / "flatpak/app", Path("/var/lib/flatpak/app"))
-    if not any((root / app_id).is_dir() for root in installed_roots):
+
+    config_dir = (
+        Path(system_installations_config_dir)
+        if system_installations_config_dir is not None
+        else Path("/etc/flatpak/installations.d")
+    )
+    selector = _installed_emulator_selector(
+        app_id,
+        data_root=data_root,
+        system_installations_config_dir=config_dir,
+    )
+    if selector is False:
         return None, f"L'émulateur requis ({app_id}) n'est pas installé."
+
+    # Named installations must be selected explicitly so Flatpak opens the
+    # existing deployment on an external/custom installation rather than
+    # reporting that the app is absent from the default installation.
+    prefix = [executable]
+    if isinstance(selector, str):
+        prefix.append(selector)
 
     # Flatpak's document portal grants the app access to this one selected file.
     return [
-        executable, "run", "--file-forwarding", app_id, "@@", str(resolved), "@@"
+        *prefix, "run", "--file-forwarding", app_id, "@@", str(resolved), "@@"
     ], ""
