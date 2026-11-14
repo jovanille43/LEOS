@@ -68,6 +68,7 @@ class GamingController(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shutting_down = False
         self.library = GameLibraryModel()
         self._launcher_statuses = self.library.launcherStatuses()
         self._launcher_refresh_timer = QTimer(self)
@@ -162,11 +163,13 @@ class GamingController(QObject):
 
     @Slot()
     def refreshPowerProfiles(self) -> None:
-        if self._power_profile_task is not None:
+        if self._shutting_down or self._power_profile_task is not None:
             return
         self._start_power_profile_task(None)
 
     def _start_power_profile_task(self, profile: str | None) -> None:
+        if self._shutting_down or self._power_profile_task is not None:
+            return
         task = _PowerProfileTask(profile)
         task.signals.completed.connect(self._on_power_profile_task_completed)
         self._power_profile_task = task
@@ -177,6 +180,8 @@ class GamingController(QObject):
         self, state: PowerProfileState, success: bool, message: str
     ) -> None:
         self._power_profile_task = None
+        if self._shutting_down:
+            return
         self._power_profiles = state
         self._power_profile_message = message or state.message
         self._message = self._power_profile_message
@@ -185,6 +190,8 @@ class GamingController(QObject):
 
     @Slot(str, result=bool)
     def applyPowerProfile(self, profile: str) -> bool:
+        if self._shutting_down:
+            return False
         if not isinstance(profile, str) or profile not in self._power_profiles.profiles:
             self._power_profile_message = "Ce profil n'est pas proposé par le système."
             self.powerProfilesChanged.emit()
@@ -382,6 +389,9 @@ class GamingController(QObject):
         return launched
 
     def shutdown(self) -> None:
+        if self._shutting_down:
+            return
+        self._shutting_down = True
         self.monitor.stop()
         self._notification_refresh_timer.stop()
         self._theme_sync_timer.stop()
