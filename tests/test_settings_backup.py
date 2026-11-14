@@ -315,6 +315,29 @@ class SettingsBackupTests(unittest.TestCase):
             self.manager.import_backup(export_dir / f"{backup_id}.json")
         self.assertEqual((self.backup_dir / f"{backup_id}.bak").read_bytes(), original)
 
+    def test_import_preserves_external_restore_point_when_local_retention_is_full(self) -> None:
+        from leos_core.settings_backup import MAX_RETAINED_BACKUPS
+
+        external_id = self.manager.create_backup()
+        external_dir = Path(self.temporary.name) / "external-drive"
+        external_dir.mkdir()
+        self.manager.export_backup(external_id, external_dir)
+
+        local_path = Path(self.temporary.name) / "full-local-state"
+        local_manager = SettingsBackupManager(
+            SettingsStore(Path(self.temporary.name) / "full-local-config" / "settings.json"),
+            local_path,
+        )
+        for index in range(MAX_RETAINED_BACKUPS):
+            local_manager.settings.set("theme_color_a", f"#{index + 100:06X}")
+            local_manager.create_backup()
+
+        imported = local_manager.import_backup(external_dir / f"{external_id}.json")
+
+        self.assertEqual(imported, external_id)
+        self.assertIsNotNone(local_manager._verified_backup(external_id))
+        self.assertEqual(len(local_manager.list_backups()), MAX_RETAINED_BACKUPS)
+
     def test_backup_scan_is_bounded(self) -> None:
         from unittest.mock import patch
 
