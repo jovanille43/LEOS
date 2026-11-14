@@ -25,7 +25,7 @@ class ControllerInputStateTests(unittest.TestCase):
     def test_axis_preview_rejects_invalid_ranges_and_types(self):
         self.assertEqual(normalize_axis_value(10, 5, 5), 0)
         self.assertEqual(normalize_axis_value("10", -100, 100), 0)
-        self.assertEqual(normalize_axis_value(50, -100, 100, center=500), 0)
+        self.assertEqual(normalize_axis_value(200, 0, 400, center=500), 0)
 
     def test_pressed_buttons_are_reported_until_they_are_released(self):
         self.assertEqual(
