@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import tempfile
@@ -351,8 +352,6 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertFalse(restored.get("sounds_enabled"))
 
     def test_import_rejects_a_tampered_external_pair_without_copying_files(self) -> None:
-        import hashlib
-
         backup_id = self.manager.create_backup()
         export_dir = Path(self.temporary.name) / "external-drive"
         export_dir.mkdir()
