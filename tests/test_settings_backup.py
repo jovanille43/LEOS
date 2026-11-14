@@ -76,11 +76,47 @@ class SettingsBackupTests(unittest.TestCase):
     def test_verified_backup_can_recover_a_corrupt_settings_file(self) -> None:
         self.settings.set("theme_color_a", "#123456")
         backup_id = self.manager.create_backup()
-        self.settings_path.write_text("{broken json", encoding="utf-8")
+        corrupt_bytes = b"{broken json"
+        self.settings_path.write_bytes(corrupt_bytes)
+
         self.manager.restore_backup(backup_id, confirmed=True)
+
         restored = SettingsStore(self.settings_path)
         self.assertEqual(restored.get("theme_color_a"), "#123456")
-        self.assertNotEqual(self.settings_path.read_text(encoding="utf-8"), "{broken json")
+        self.assertNotEqual(self.settings_path.read_bytes(), corrupt_bytes)
+        quarantine_files = list(self.backup_dir.glob("corrupt-settings-*.bin"))
+        self.assertEqual(len(quarantine_files), 1)
+        self.assertEqual(quarantine_files[0].read_bytes(), corrupt_bytes)
+        metadata_path = quarantine_files[0].with_suffix(".meta")
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        self.assertEqual(metadata["size"], len(corrupt_bytes))
+        import hashlib
+        self.assertEqual(metadata["sha256"], hashlib.sha256(corrupt_bytes).hexdigest())
+
+    def test_create_backup_refuses_to_snapshot_defaults_from_corrupt_settings(self) -> None:
+        self.settings_path.parent.mkdir(parents=True, exist_ok=True)
+        corrupt_bytes = b"{not valid json"
+        self.settings_path.write_bytes(corrupt_bytes)
+
+        with self.assertRaises(ValueError):
+            self.manager.create_backup()
+
+        self.assertEqual(self.settings_path.read_bytes(), corrupt_bytes)
+        self.assertFalse(self.backup_dir.exists())
+
+    def test_restore_refuses_to_replace_oversized_corrupt_settings(self) -> None:
+        from leos_core.settings import MAX_SETTINGS_BYTES
+
+        self.settings.set("theme_color_a", "#123456")
+        backup_id = self.manager.create_backup()
+        oversized = b"x" * (MAX_SETTINGS_BYTES + 1)
+        self.settings_path.write_bytes(oversized)
+
+        with self.assertRaises(ValueError):
+            self.manager.restore_backup(backup_id, confirmed=True)
+
+        self.assertEqual(self.settings_path.read_bytes(), oversized)
+        self.assertIsNone(self.manager.latest_backup_id() if not self.backup_dir.exists() else None)
 
     def test_tampered_backup_is_rejected(self) -> None:
         backup_id = self.manager.create_backup()
