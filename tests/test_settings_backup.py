@@ -104,6 +104,35 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertEqual(self.settings_path.read_bytes(), corrupt_bytes)
         self.assertFalse(self.backup_dir.exists())
 
+    def test_restore_quarantines_empty_corrupt_settings_before_replacement(self) -> None:
+        self.settings.set("theme_color_a", "#112233")
+        backup_id = self.manager.create_backup()
+        self.settings_path.write_bytes(b"")
+
+        self.manager.restore_backup(backup_id, confirmed=True)
+
+        self.assertEqual(SettingsStore(self.settings_path).get("theme_color_a"), "#112233")
+        quarantine_files = list(self.backup_dir.glob("corrupt-settings-*.bin"))
+        self.assertEqual(len(quarantine_files), 1)
+        self.assertEqual(quarantine_files[0].read_bytes(), b"")
+
+    def test_restore_refuses_to_follow_a_symlinked_current_settings_file(self) -> None:
+        backup_id = self.manager.create_backup()
+        target = Path(self.temporary.name) / "outside-settings.json"
+        original = b'{"theme":"keep-outside"}'
+        target.write_bytes(original)
+        self.settings_path.unlink()
+        try:
+            self.settings_path.symlink_to(target)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+
+        with self.assertRaises(OSError):
+            self.manager.restore_backup(backup_id, confirmed=True)
+
+        self.assertTrue(self.settings_path.is_symlink())
+        self.assertEqual(target.read_bytes(), original)
+
     def test_restore_refuses_to_replace_oversized_corrupt_settings(self) -> None:
         from leos_core.settings import MAX_SETTINGS_BYTES
 
