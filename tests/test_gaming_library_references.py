@@ -1,6 +1,7 @@
 """Regression tests for persisted gaming-library references."""
 
 import unittest
+from pathlib import Path
 
 from gaming.backend.library_state import (
     filter_games,
@@ -55,6 +56,34 @@ class SavedLibraryReferenceTests(unittest.TestCase):
         self.assertEqual(len(recent), 50)
         self.assertEqual(recent[0], "steam:0")
         self.assertEqual(recent[-1], "steam:49")
+
+    def test_library_scanner_cannot_restart_or_update_after_shutdown(self):
+        root = Path(__file__).resolve().parents[1]
+        library = (root / "gaming/backend/library.py").read_text(encoding="utf-8")
+        controller = (root / "gaming/backend/controller.py").read_text(encoding="utf-8")
+
+        refresh = library[
+            library.index("def refresh(self)"):
+            library.index("def _on_library_scan_completed")
+        ]
+        completed = library[
+            library.index("def _on_library_scan_completed"):
+            library.index("def _collect_library_snapshot")
+        ]
+        shutdown = library[
+            library.index("def shutdown(self)"):
+            library.index("def roleNames")
+        ]
+        gaming_shutdown = controller[
+            controller.index("def shutdown(self)"):
+            controller.index("@Slot()", controller.index("def shutdown(self)"))
+        ]
+
+        self.assertIn("if self._closed:", refresh)
+        self.assertIn("if self._closed:", completed)
+        self.assertIn("self._closed = True", shutdown)
+        self.assertIn("self._refresh_pending = False", shutdown)
+        self.assertIn("self.library.shutdown()", gaming_shutdown)
 
     def test_non_list_persistence_is_treated_as_empty(self):
         self.assertEqual(
