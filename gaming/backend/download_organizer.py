@@ -8,6 +8,7 @@ overwrites an existing destination.
 from __future__ import annotations
 
 import os
+from itertools import islice
 import re
 import shlex
 import stat
@@ -150,18 +151,25 @@ class DownloadOrganizer:
                 return []
             downloads_resolved.relative_to(self.home)
             root_resolved.relative_to(self.home)
-            # Avoid scanning or moving a destination that is inside Downloads.
+        except (OSError, ValueError):
+            return []
+
+        # The two trees must be disjoint; otherwise the organizer could loop
+        # over its own destination or move files into the watched Downloads tree.
+        try:
             root_resolved.relative_to(downloads_resolved)
             return []
         except ValueError:
-            # The normal layout has sibling Downloads and Emulation directories.
             pass
-        except OSError:
+        try:
+            downloads_resolved.relative_to(root_resolved)
             return []
+        except ValueError:
+            pass
 
         try:
             with os.scandir(downloads_resolved) as entries:
-                candidates = list(entries)[: self.max_entries]
+                candidates = list(islice(entries, self.max_entries))
         except OSError:
             return []
 
@@ -202,9 +210,11 @@ class DownloadOrganizer:
                 system, console = destination
                 target_directory = root_resolved / system / console
                 target_directory.mkdir(parents=True, exist_ok=True)
+                real_target_directory = target_directory.resolve(strict=True)
+                real_target_directory.relative_to(root_resolved)
                 if target_directory.is_symlink():
                     continue
-                target = _collision_free_path(target_directory, entry.name)
+                target = _collision_free_path(real_target_directory, entry.name)
                 # rename is atomic on the usual single-filesystem home layout.
                 # It is never used with an existing destination.
                 if target.exists():
