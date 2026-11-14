@@ -191,6 +191,74 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertEqual(self.manager.latest_backup_id(), created[-1])
         self.assertNotIn(created[0], [entry["backup_id"] for entry in entries])
 
+    def test_export_copies_verified_backup_pair_to_external_directory(self) -> None:
+        import hashlib
+
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        backup_source = self.backup_dir / f"{backup_id}.bak"
+        manifest_source = self.backup_dir / f"{backup_id}.json"
+
+        exported_backup, exported_manifest = self.manager.export_backup(backup_id, export_dir)
+
+        self.assertEqual(exported_backup, export_dir / f"{backup_id}.bak")
+        self.assertEqual(exported_manifest, export_dir / f"{backup_id}.json")
+        self.assertEqual(exported_backup.read_bytes(), backup_source.read_bytes())
+        self.assertEqual(exported_manifest.read_bytes(), manifest_source.read_bytes())
+        manifest = json.loads(exported_manifest.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["sha256"], hashlib.sha256(exported_backup.read_bytes()).hexdigest())
+        if os.name == "posix":
+            self.assertEqual(exported_backup.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(exported_manifest.stat().st_mode & 0o777, 0o600)
+
+    def test_export_refuses_to_overwrite_an_existing_backup_pair(self) -> None:
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        existing = export_dir / f"{backup_id}.json"
+        existing.write_text("keep this file", encoding="utf-8")
+        with self.assertRaises(FileExistsError):
+            self.manager.export_backup(backup_id, export_dir)
+        self.assertEqual(existing.read_text(encoding="utf-8"), "keep this file")
+        self.assertFalse((export_dir / f"{backup_id}.bak").exists())
+
+    def test_export_rejects_relative_or_symlinked_destinations(self) -> None:
+        backup_id = self.manager.create_backup()
+        with self.assertRaises(ValueError):
+            self.manager.export_backup(backup_id, Path("relative-folder"))
+        root = Path(self.temporary.name)
+        target = root / "external"
+        target.mkdir()
+        linked = root / "linked-external"
+        try:
+            linked.symlink_to(target, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        with self.assertRaises(ValueError):
+            self.manager.export_backup(backup_id, linked)
+
+    def test_failed_second_export_file_removes_first_partial_file(self) -> None:
+        from unittest.mock import patch
+
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        original = self.manager._write_new_export_file
+        calls = 0
+
+        def fail_second(directory: Path, filename: str, data: bytes) -> Path:
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise OSError("simulated removable-drive error")
+            return original(directory, filename, data)
+
+        with patch.object(self.manager, "_write_new_export_file", side_effect=fail_second):
+            with self.assertRaises(OSError):
+                self.manager.export_backup(backup_id, export_dir)
+        self.assertEqual(list(export_dir.iterdir()), [])
+
     def test_backup_scan_is_bounded(self) -> None:
         from unittest.mock import patch
 
