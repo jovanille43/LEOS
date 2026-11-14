@@ -234,8 +234,13 @@ class SettingsBackupManager:
         manifest_data = _read_regular_file(manifest_path, MAX_BACKUP_MANIFEST_BYTES)
         backup_data = _read_regular_file(backup_path, MAX_SETTINGS_BYTES)
         manifest, values = verified
+        try:
+            exported_manifest = json.loads(manifest_data.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError, RecursionError):
+            raise ValueError("LEOS settings manifest changed during export") from None
         if (
-            len(backup_data) != manifest["size"]
+            exported_manifest != manifest
+            or len(backup_data) != manifest["size"]
             or hashlib.sha256(backup_data).hexdigest() != manifest["sha256"]
             or values is None
         ):
