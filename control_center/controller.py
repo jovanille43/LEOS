@@ -266,6 +266,8 @@ class ControlCenterController(QObject):
             "count": len(entries),
             "latestCreatedUtc": str(latest.get("created_utc", "")),
             "latestId": str(latest.get("backup_id", "")),
+            # Detect replacement of an older entry when retention stays at 20.
+            "backupIds": tuple(str(entry["backup_id"]) for entry in entries),
         }
 
     def _refresh_settings_backup_snapshot(self) -> None:
