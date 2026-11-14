@@ -1232,6 +1232,15 @@ ApplicationWindow {
         onTriggered: window.finishDesktopReturn()
     }
 
+    // This application-wide shortcut is enabled only during the Desktop
+    // return transition; Escape keeps its normal navigation meaning otherwise.
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        enabled: window.returningToDesktop
+        onActivated: window.finishDesktopReturn()
+    }
+
     Rectangle {
         id: desktopIntroOverlay
         anchors.fill: parent
@@ -1243,9 +1252,28 @@ ApplicationWindow {
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
         }
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 42
+            radius: 18
+            color: "#B8000000"
+            border.color: "#55FFFFFF"
+            width: skipIntroLabel.implicitWidth + 34
+            height: skipIntroLabel.implicitHeight + 22
+            Label {
+                id: skipIntroLabel
+                anchors.centerIn: parent
+                text: "ÉCHAP OU CLIC POUR PASSER"
+                color: "white"
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+            }
+        }
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
+            onClicked: window.finishDesktopReturn()
         }
     }
 
