@@ -62,6 +62,7 @@ class StoreController(QObject):
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
+        self._shutting_down = False
         self._stdout = bytearray()
         self._stderr = bytearray()
         self._output_overflowed = False
@@ -93,6 +94,8 @@ class StoreController(QObject):
             self.busyChanged.emit(value)
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
+        if self._shutting_down:
+            return
         if self._busy:
             if action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Une autre opération Flatpak est déjà en cours ; la vérification est annulée.")
@@ -343,6 +346,27 @@ class StoreController(QObject):
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
+
+    @Slot()
+    def shutdown(self) -> None:
+        """Stop Flatpak work cleanly when the Store window is closing."""
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        self._timeout_timer.stop()
+        was_running = self._busy
+        self._set_busy(False)
+        self._action = ""
+        self._target = ""
+        self._verified_source_url = ""
+        if self._process.state() != QProcess.ProcessState.NotRunning:
+            self._process.kill()
+            self._process.waitForFinished(1000)
+        if was_running:
+            self._set_status(
+                "Opération interrompue à la fermeture de la boutique. "
+                "Actualise l'inventaire Flatpak avant toute nouvelle tentative."
+            )
 
     def _append_output(self, buffer: bytearray, chunk: bytes) -> None:
         remaining = MAX_PROCESS_OUTPUT_BYTES - len(buffer)
