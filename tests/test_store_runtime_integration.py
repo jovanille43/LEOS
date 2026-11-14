@@ -85,6 +85,27 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("self._process.kill()", timeout)
         self.assertIn("vérifié dans l'inventaire", timeout)
 
+    def test_flatpak_timeout_keeps_controller_locked_until_process_finishes(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        timeout = source[source.index("def _on_timeout"):source.index("def _on_error")]
+        finished = source[source.index("def _on_finished"):source.index("def _on_timeout")]
+        error = source[source.index("def _on_error"):source.index("def shutdown")]
+
+        self.assertIn("self._timeout_pending = True", timeout)
+        self.assertIn("self._process.kill()", timeout)
+        self.assertNotIn("self._set_busy(False)", timeout)
+        self.assertNotIn('self._action = ""', timeout)
+        self.assertIn("if self._timeout_pending:", finished)
+        self.assertIn("self._set_busy(False)", finished)
+        self.assertIn("self._timeout_pending", error)
+        self.assertIn("QProcess.ProcessError.FailedToStart", error)
+
+    def test_store_refuses_to_start_while_qprocess_is_still_running(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        start = source[source.index("def _start"):source.index("def refreshInstalled")]
+        self.assertIn("self._process.state() != QProcess.ProcessState.NotRunning", start)
+        self.assertIn("self._timeout_pending = False", start)
+
     def test_flatpak_crash_exit_is_never_reported_as_success(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         finished = source[source.index("def _on_finished"):source.index("def _on_timeout")]
