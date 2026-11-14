@@ -74,10 +74,12 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertTrue(recovery["settings"]["sounds_enabled"])
 
     def test_verified_backup_can_recover_a_corrupt_settings_file(self) -> None:
+        self.settings.set("theme_color_a", "#123456")
         backup_id = self.manager.create_backup()
         self.settings_path.write_text("{broken json", encoding="utf-8")
         self.manager.restore_backup(backup_id, confirmed=True)
-        self.assertEqual(SettingsStore(self.settings_path).get("last_mode"), "desktop")
+        restored = SettingsStore(self.settings_path)
+        self.assertEqual(restored.get("theme_color_a"), "#123456")
         self.assertNotEqual(self.settings_path.read_text(encoding="utf-8"), "{broken json")
 
     def test_tampered_backup_is_rejected(self) -> None:
