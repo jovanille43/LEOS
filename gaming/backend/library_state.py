@@ -145,6 +145,36 @@ def _matches_source_filter(game: dict[str, Any], source_filter: str) -> bool:
     return matches.get(source_filter, True)
 
 
+
+def retain_saved_library_references(
+    favorite_ids: object, recent_ids: object
+) -> tuple[set[str], list[str]]:
+    """Keep valid saved references even while a source drive is unavailable.
+
+    Visibility is decided later by filter_games(); discovery must not delete
+    references merely because a Steam library or ROM disk is temporarily absent.
+    """
+    def clean(values: object) -> list[str]:
+        if not isinstance(values, (list, tuple)):
+            return []
+        result: list[str] = []
+        seen: set[str] = set()
+        for item in values[:5000]:
+            if (
+                not isinstance(item, str)
+                or not 0 < len(item.strip()) <= 512
+                or "\\x00" in item
+            ):
+                continue
+            value = item.strip()
+            if value not in seen:
+                seen.add(value)
+                result.append(value)
+        return result
+
+    return set(clean(favorite_ids)), clean(recent_ids)[:50]
+
+
 def filter_games(
     games: list[dict[str, Any]],
     category: str,
