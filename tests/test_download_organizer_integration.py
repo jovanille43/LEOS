@@ -38,14 +38,14 @@ class DownloadOrganizerIntegrationTests(unittest.TestCase):
         self.assertIn("organizer.poll()", source)
         self.assertIn("time.sleep(POLL_INTERVAL_SECONDS)", source)
 
-    def test_download_organizer_does_not_auto_extract_or_execute_downloads(self):
+    def test_download_organizer_never_executes_or_overwrites_downloads(self):
         source = (ROOT / "gaming/backend/download_organizer.py").read_text(
             encoding="utf-8"
         )
         self.assertNotIn("subprocess", source)
         self.assertIn("zipfile.ZipFile", source)
         self.assertIn("len(candidates) != 1", source)
-        self.assertIn("path.rename(target)", source)
+        self.assertIn("_move_without_overwrite(path, target)", source)
         self.assertIn('".wua": ("Nintendo", "Wii U")', source)
 
 
