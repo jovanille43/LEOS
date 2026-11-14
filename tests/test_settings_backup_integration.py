@@ -28,6 +28,7 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
     def test_control_center_has_a_separate_preferences_recovery_page(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('{ label: "Sauvegardes", page: 10 }', qml)
+        self.assertIn("ScrollBar.vertical.policy: ScrollBar.AsNeeded", qml)
         self.assertIn('text: "SAUVEGARDES ET RÉCUPÉRATION"', qml)
         self.assertIn("controlCenter.createSettingsBackup()", qml)
         self.assertIn("controlCenter.restoreLatestSettingsBackup(true)", qml)
