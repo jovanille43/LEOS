@@ -97,12 +97,12 @@ class FlatpakInventoryTests(unittest.TestCase):
 
     def test_inventory_details_separate_custom_installations(self):
         user, system, custom = parse_flatpak_inventory_details(
-            "Application Installation\\n"
-            "org.example.User user\\n"
-            "org.example.System system\\n"
-            "org.example.Custom external-games\\n"
-            "org.example.Default default\\n"
-            "org.example.Path /srv/flatpak\\n"
+            "Application Installation\n"
+            "org.example.User user\n"
+            "org.example.System system\n"
+            "org.example.Custom external-games\n"
+            "org.example.Default default\n"
+            "org.example.Path /srv/flatpak\n"
         )
         self.assertEqual(user, {"org.example.User"})
         self.assertEqual(system, {"org.example.System", "org.example.Default"})
