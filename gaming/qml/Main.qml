@@ -28,7 +28,7 @@ ApplicationWindow {
     property bool selectedArtworkFailed: false
     property string selectedCategory: "Accueil"
     property bool selectedIsFavorite: false
-    property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Favoris", "Récemment joués"]
+    property var categoryNames: ["Accueil", "PC Gaming", "Nintendo", "PlayStation", "SEGA", "Arcade", "Émulation", "Favoris", "Récemment joués"]
     property int selectedCategoryIndex: 0
     property string navigationArea: "categories"
     property string pendingPowerProfile: ""
