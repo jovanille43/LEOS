@@ -69,6 +69,7 @@ jobs:
           owner="${OWNER,,}"
           echo "ref=ghcr.io/$owner/$image_name:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
+          echo "provenance=LEOS-$VARIANT-$IMAGE_TAG.iso.json" >> "$GITHUB_OUTPUT"
 
       - name: Authenticate to GitHub Container Registry
         env:
@@ -99,11 +100,39 @@ jobs:
         env:
           IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
+          MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
+          VARIANT: ${{ inputs.variant }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           set -euo pipefail
           sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --iso-name "$ISO_NAME" image "$IMAGE_REF"
           test -s "$ISO_NAME"
-          sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
+          iso_sha256="$(sha256sum "$ISO_NAME" | cut -d ' ' -f 1)"
+          printf '%s  %s\n' "$iso_sha256" "$ISO_NAME" > "$ISO_NAME.sha256"
+          sha256sum --check "$ISO_NAME.sha256"
+          export ISO_SHA256="$iso_sha256"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          metadata = {
+              "schema_version": 1,
+              "product": "LEOS",
+              "variant": os.environ["VARIANT"],
+              "image_tag": os.environ["IMAGE_TAG"],
+              "source_image": os.environ["IMAGE_REF"],
+              "source_commit": os.environ["GITHUB_SHA"],
+              "workflow_repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "iso_file": os.environ["ISO_NAME"],
+              "iso_sha256": os.environ["ISO_SHA256"],
+          }
+          with Path(os.environ["MANIFEST_NAME"]).open("x", encoding="utf-8") as stream:
+              json.dump(metadata, stream, indent=2, sort_keys=True)
+              stream.write("\n")
+          PY
 
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@v4
@@ -112,6 +141,7 @@ jobs:
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
+            ${{ steps.image.outputs.provenance }}
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
