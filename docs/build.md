@@ -24,12 +24,28 @@ Le Bluetooth est un prérequis fonctionnel pour LEOS, dans les deux modes. La st
 
 BlueBuild attend la clé privée cosign dans le secret GitHub `SIGNING_SECRET`. La clé privée ne doit jamais être commitée dans le dépôt.
 
-Préparation à effectuer depuis un poste de confiance disposant de cosign :
+Préparation à effectuer depuis un poste de confiance disposant de cosign, dans un clone local du dépôt :
 
-1. Générer une paire de clés cosign sans phrase secrète, selon la procédure officielle BlueBuild.
-2. Copier le contenu de `cosign.key` dans le secret Actions `SIGNING_SECRET` du dépôt GitHub.
-3. Ajouter uniquement `cosign.pub` à la racine du dépôt.
-4. Conserver la clé privée hors du dépôt et en lieu sûr.
+1. À la racine du dépôt, générer la paire :
+   ```bash
+   umask 077
+   cosign generate-key-pair
+   ```
+   Cosign crée `cosign.key` et `cosign.pub`. Lorsque Cosign demande un mot de passe, laisser le champ vide et appuyer deux fois sur Entrée : BlueBuild précise que la clé destinée à son workflow GitHub Actions ne doit pas être chiffrée par une phrase secrète.
+2. Vérifier que les deux fichiers existent, puis enregistrer le contenu de `cosign.key` dans le secret Actions nommé exactement `SIGNING_SECRET` :
+   ```bash
+   test -s cosign.key && test -s cosign.pub
+   gh secret set SIGNING_SECRET < cosign.key
+   ```
+   Sans GitHub CLI, ouvrir **Settings → Secrets and variables → Actions → New repository secret** et coller le contenu de `cosign.key` dans la valeur du secret.
+3. Ajouter uniquement la clé publique à la racine du dépôt :
+   ```bash
+   git add cosign.pub
+   git commit -m "chore(signing): add LEOS verification key"
+   ```
+4. Garder la clé privée `cosign.key` hors du dépôt, avec des permissions locales restrictives, et en conserver une sauvegarde dans un coffre sécurisé. Ne jamais la coller dans une conversation, une issue, un ticket ou un journal CI.
+
+Le workflow LEOS vérifie ensuite cryptographiquement que le secret et `cosign.pub` forment bien une paire avant d'autoriser la publication. Ne jamais afficher le secret pour tenter de le vérifier manuellement.
 
 Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image. Avant la compilation, le workflow installe Cosign, signe un petit fichier temporaire avec la clé privée fournie par le secret, puis vérifie cette signature avec `cosign.pub`. Cette vérification confirme que les deux clés forment bien une paire. Le fichier privé temporaire est limité aux permissions utilisateur et supprimé à la fin de l'étape ; la clé privée n'est jamais écrite dans le dépôt ni affichée volontairement dans les logs.
 
