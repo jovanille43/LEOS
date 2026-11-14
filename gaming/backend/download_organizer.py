@@ -369,7 +369,7 @@ def _extract_single_game_zip(
 
 
 class DownloadOrganizer:
-    """Poll a downloads folder and move only completed, known game files."""
+    """Poll the dedicated ~/Jeux inbox and file completed, known game files."""
 
     def __init__(
         self,
@@ -381,7 +381,7 @@ class DownloadOrganizer:
         max_entries: int = MAX_DOWNLOAD_SCAN_ENTRIES,
     ) -> None:
         self.home = Path(home or Path.home()).expanduser().resolve()
-        self.downloads_dir = Path(downloads_dir) if downloads_dir is not None else resolve_download_directory(self.home)
+        self.downloads_dir = Path(downloads_dir) if downloads_dir is not None else self.home / "Jeux"
         self.emulation_root = Path(emulation_root) if emulation_root is not None else self.home / "Emulation" / "ROMs"
         self.stability_seconds = max(0.0, float(stability_seconds))
         self.max_entries = max(1, min(int(max_entries), MAX_DOWNLOAD_SCAN_ENTRIES))
