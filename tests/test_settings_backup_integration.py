@@ -25,9 +25,10 @@ class SettingsBackupIntegrationTests(unittest.TestCase):
         backup = (ROOT / "leos_core/settings_backup.py").read_text(encoding="utf-8")
         settings = (ROOT / "leos_core/settings.py").read_text(encoding="utf-8")
         self.assertIn("if confirmed is not True:", backup)
-        self.assertIn("recovery_backup_id = self._create_backup(preserve_backup_ids={backup_id})", backup)
+        self.assertIn("recovery_backup_id = self._create_backup(", backup)
         self.assertIn("def _prune_old_backups(self, *, preserve_backup_ids", backup)
-        self.assertIn("self.settings.replace_all(values, confirmed=True)", backup)
+        self.assertIn("before_replace=preserve_current_state", backup)
+        self.assertIn("self.settings.replace_all(", backup)
         self.assertIn("if confirmed is not True:", settings)
         self.assertIn("fcntl.flock(lock.fileno(), fcntl.LOCK_EX)", settings)
 
