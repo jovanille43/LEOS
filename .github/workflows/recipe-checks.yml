@@ -2,7 +2,6 @@ name: BlueBuild recipe checks
 
 on:
   push:
-    branches: [main]
     paths:
       - "recipes/**"
       - "packaging/**"
