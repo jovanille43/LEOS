@@ -333,7 +333,7 @@ class SettingsBackupManager:
                 except OSError:
                     pass
             raise
-        self._prune_old_backups()
+        self._prune_old_backups(preserve_backup_ids={backup_id})
         return backup_id
 
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
