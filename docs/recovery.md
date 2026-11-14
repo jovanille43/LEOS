@@ -19,9 +19,11 @@ Pour restaurer :
 3. Lire la confirmation : seule la configuration LEOS est remplacée.
 4. Confirmer l'action. LEOS crée automatiquement une sauvegarde de l'état courant avant d'appliquer la copie vérifiée.
 
-La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par défaut `~/.config/leos/settings.json`). Elle ne modifie ni les données personnelles, ni les comptes, ni les jeux, ni les applications, ni les panneaux ou fichiers de configuration KDE. La validation des valeurs est rejouée avant écriture ; une sauvegarde invalide n'est jamais appliquée. Une restauration explicitement confirmée peut également remplacer un fichier de préférences LEOS devenu illisible.
+Pour exporter une copie hors du PC, sélectionner la sauvegarde voulue puis choisir **Exporter la sélection**. Choisir un dossier sur un support externe monté. LEOS y copie ensemble le fichier `.bak` et son manifeste `.json`, sans écraser des fichiers existants. Conserver les deux fichiers ayant le même identifiant : le manifeste permet de contrôler l'intégrité de la copie avant restauration.
 
-**Important :** ces sauvegardes sont locales au disque. Elles ne protègent pas contre la panne ou la perte de ce disque. Pour une protection externe, copie le dossier `settings-backups` sur un support distinct et conserve ensemble les fichiers `.bak` et `.json` ayant le même identifiant. Elles ne remplacent pas une sauvegarde des documents et données personnelles.
+La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par défaut `~/.config/leos/settings.json`). Elle ne modifie ni les données personnelles, ni les comptes, ni les jeux, ni les applications, ni les panneaux ou fichiers de configuration KDE. Les préférences de disposition dans `desktop-layout.json` et la configuration de Plasma ne sont pas incluses dans cette sauvegarde ; elles disposent de mécanismes distincts. La validation des valeurs est rejouée avant écriture ; une sauvegarde invalide n'est jamais appliquée. Une restauration explicitement confirmée peut également remplacer un fichier de préférences LEOS devenu illisible.
+
+**Important :** la sauvegarde automatique reste locale au disque et ne protège pas contre la panne ou la perte de ce disque. Utilise l'export vers un support distinct pour conserver une copie externe. Ces snapshots ne remplacent pas une sauvegarde des documents et données personnelles.
 
 ## Avant une mise à jour
 
