@@ -28,6 +28,7 @@ class DownloadOrganizerIntegrationTests(unittest.TestCase):
         self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
         self.assertIn("src: gaming", recipe)
         self.assertIn("dest: /usr/share/leos/", recipe)
+        self.assertIn("- xdg-user-dirs", recipe)
 
     def test_service_imports_from_installed_share_tree_and_uses_single_instance_lock(self):
         source = (ROOT / "gaming/download_organizer_service.py").read_text(
