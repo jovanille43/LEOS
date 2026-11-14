@@ -98,6 +98,31 @@ class DownloadOrganizerTests(unittest.TestCase):
             downloads.mkdir()
             self.assertEqual(resolve_download_directory(home), downloads)
 
+    def test_moves_completed_switch_nsp_and_xci_into_switch_folder(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            downloads = home / "Jeux"
+            downloads.mkdir()
+            names = ("Mario Kart.nsp", "Zelda.xci")
+            modified = {}
+            for name in names:
+                path = downloads / name
+                path.write_bytes(b"mock switch game data")
+                modified[name] = path.stat().st_mtime
+            organizer = DownloadOrganizer(
+                downloads, home / "Emulation" / "ROMs", home=home,
+                stability_seconds=0,
+            )
+            moved = []
+            latest_mtime = max(modified.values())
+            for offset in (1, 2, 3):
+                moved.extend(organizer.poll(now=latest_mtime + offset))
+            self.assertEqual(len(moved), 2)
+            for name in names:
+                self.assertTrue(
+                    (home / "Emulation" / "ROMs" / "Nintendo" / "Switch" / name).is_file()
+                )
+
     def test_moves_completed_wii_u_game_after_stability_checks(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
