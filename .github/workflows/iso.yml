@@ -78,9 +78,18 @@ jobs:
           sudo mkdir -p /root/.docker
           printf '%s' "$GH_TOKEN" | sudo podman login --authfile /root/.docker/config.json ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      - name: Verify published LEOS image signature
+      - name: Resolve and pin the published image digest
+        id: pinned-image
         env:
           IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          sudo env PODMAN_BIN=podman GITHUB_OUTPUT="$GITHUB_OUTPUT" \
+            bash .github/scripts/pin-image-digest.sh "$IMAGE_REF" /root/.docker/config.json
+
+      - name: Verify published LEOS image signature
+        env:
+          IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
         run: |
           set -euo pipefail
           test -s cosign.pub
@@ -88,7 +97,7 @@ jobs:
 
       - name: Generate bootable installer ISO
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
         run: |
           set -euo pipefail
