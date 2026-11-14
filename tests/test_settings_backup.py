@@ -160,6 +160,25 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertEqual(recovery[1]["theme_color_a"], "#445566")
         self.assertIsNotNone(self.manager._verified_backup(newer_backup))
 
+    def test_restore_preserves_selected_old_backup_when_retention_is_full(self) -> None:
+        from leos_core.settings_backup import MAX_RETAINED_BACKUPS
+
+        backup_ids = []
+        for index in range(MAX_RETAINED_BACKUPS):
+            self.settings.set("theme_color_a", f"#{index + 1:06X}")
+            backup_ids.append(self.manager.create_backup())
+        selected_backup = backup_ids[0]
+        newest_colour = f"#{MAX_RETAINED_BACKUPS:06X}"
+
+        recovery_backup = self.manager.restore_backup(selected_backup, confirmed=True)
+
+        self.assertEqual(SettingsStore(self.settings_path).get("theme_color_a"), "#000001")
+        self.assertIsNotNone(self.manager._verified_backup(selected_backup))
+        recovery = self.manager._verified_backup(recovery_backup)
+        self.assertIsNotNone(recovery)
+        self.assertEqual(recovery[1]["theme_color_a"], newest_colour)
+        self.assertEqual(len(self.manager.list_backups()), MAX_RETAINED_BACKUPS)
+
     def test_backup_retention_keeps_only_the_most_recent_verified_copies(self) -> None:
         from leos_core.settings_backup import MAX_RETAINED_BACKUPS
 
