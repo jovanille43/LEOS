@@ -8,7 +8,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from leos_core.settings import SettingsStore
+from leos_core.settings import DEFAULTS, SettingsStore
 
 
 class SettingsStoreTests(unittest.TestCase):
