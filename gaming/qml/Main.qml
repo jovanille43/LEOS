@@ -163,11 +163,13 @@ ApplicationWindow {
     }
 
     function focusToolbar(index) {
-        toolbarFocusIndex = Math.max(0, Math.min(2, index))
+        toolbarFocusIndex = Math.max(0, Math.min(3, index))
         navigationArea = "toolbar"
         if (toolbarFocusIndex === 0)
             searchField.forceActiveFocus()
         else if (toolbarFocusIndex === 1)
+            sourceFilterBox.forceActiveFocus()
+        else if (toolbarFocusIndex === 2)
             refreshLibraryButton.forceActiveFocus()
         else
             addGameButton.forceActiveFocus()
@@ -188,6 +190,8 @@ ApplicationWindow {
         if (toolbarFocusIndex === 0) {
             searchField.forceActiveFocus()
         } else if (toolbarFocusIndex === 1) {
+            sourceFilterBox.forceActiveFocus()
+        } else if (toolbarFocusIndex === 2) {
             clearSelection()
             leos.refreshLibrary()
             navigationArea = "games"
@@ -798,6 +802,44 @@ ApplicationWindow {
                                 window.toolbarFocusIndex = 0
                             }
                         }
+                        ComboBox {
+                            id: sourceFilterBox
+                            Layout.preferredWidth: 158
+                            model: [
+                                "Toutes les sources",
+                                "Steam",
+                                "Heroic",
+                                "Lutris",
+                                "RetroArch",
+                                "Fichiers locaux",
+                                "Ajout manuel"
+                            ]
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 1
+                                }
+                            }
+                            onActivated: {
+                                gameLibrary.setSourceFilter(currentText)
+                                window.clearSelection()
+                            }
+                            background: Rectangle {
+                                radius: 8
+                                color: "#121822"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
+                            }
+                            contentItem: Label {
+                                text: sourceFilterBox.currentText
+                                color: "white"
+                                font.pixelSize: 10
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 9
+                                rightPadding: 6
+                                elide: Text.ElideRight
+                            }
+                        }
                         Button {
                             id: refreshLibraryButton
                             text: "ACTUALISER"
@@ -816,8 +858,8 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 8
                                 color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.accentSurface(window.cyan, 0.20) : "#151a24"
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
                             }
                             contentItem: Label {
                                 text: refreshLibraryButton.text
@@ -844,8 +886,8 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 9
                                 color: window.accentSurface(window.cyan, 0.24)
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.cyan
                             }
                             contentItem: Label {
                                 text: addGameButton.text
