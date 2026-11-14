@@ -49,23 +49,66 @@ def main() -> int:
         instance_lock.release()
 
 
+def _report_startup_failure() -> None:
+    """Tell the user Gaming failed while keeping the KDE desktop available."""
+    post_notification(
+        "LEOS Gaming n'a pas pu démarrer",
+        (
+            "L'interface Gaming n'a pas pu être chargée. "
+            "Le bureau KDE reste disponible ; consulte les journaux système "
+            "pour identifier la cause."
+        ),
+        "error",
+    )
+
+
+def _cleanup_failed_startup(
+    controller: GamingController | None,
+    theme: ThemeController | None,
+) -> None:
+    """Stop whichever components were initialized before a startup failure."""
+    if controller is not None:
+        try:
+            controller.shutdown()
+        except Exception:
+            # Preserve the original startup failure; cleanup is best-effort.
+            import traceback
+            traceback.print_exc()
+    if theme is not None:
+        try:
+            theme.shutdown()
+        except Exception:
+            import traceback
+            traceback.print_exc()
+
+
 def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
-    controller = GamingController()
-    theme = ThemeController()
-    controller.desktopRequested.connect(app.quit)
+    controller: GamingController | None = None
+    theme: ThemeController | None = None
+    try:
+        controller = GamingController()
+        theme = ThemeController()
+        controller.desktopRequested.connect(app.quit)
 
-    engine = QQmlApplicationEngine()
-    context = engine.rootContext()
-    context.setContextProperty("leos", controller)
-    context.setContextProperty("leosTheme", theme)
-    context.setContextProperty("gameLibrary", controller.library)
-    context.setContextProperty("systemMonitor", controller.monitor)
+        engine = QQmlApplicationEngine()
+        context = engine.rootContext()
+        context.setContextProperty("leos", controller)
+        context.setContextProperty("leosTheme", theme)
+        context.setContextProperty("gameLibrary", controller.library)
+        context.setContextProperty("systemMonitor", controller.monitor)
 
-    qml_file = Path(__file__).parent / "qml" / "Main.qml"
-    engine.load(QUrl.fromLocalFile(str(qml_file)))
+        qml_file = Path(__file__).parent / "qml" / "Main.qml"
+        engine.load(QUrl.fromLocalFile(str(qml_file)))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        _cleanup_failed_startup(controller, theme)
+        _report_startup_failure()
+        return 1
+
     if not engine.rootObjects():
-        controller.shutdown()
-        theme.shutdown()
+        _cleanup_failed_startup(controller, theme)
+        _report_startup_failure()
         return 1
 
     # Persist Gaming only after its QML window loaded successfully. A
