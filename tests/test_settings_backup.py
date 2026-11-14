@@ -145,6 +145,21 @@ class SettingsBackupTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.manager.restore_backup(backup_id, confirmed=True)
 
+    def test_older_verified_backup_can_be_restored_without_losing_current_state(self) -> None:
+        self.settings.set("theme_color_a", "#112233")
+        older_backup = self.manager.create_backup()
+        self.settings.set("theme_color_a", "#445566")
+        newer_backup = self.manager.create_backup()
+
+        recovery_backup = self.manager.restore_backup(older_backup, confirmed=True)
+
+        self.assertEqual(SettingsStore(self.settings_path).get("theme_color_a"), "#112233")
+        self.assertNotEqual(older_backup, newer_backup)
+        recovery = self.manager._verified_backup(recovery_backup)
+        self.assertIsNotNone(recovery)
+        self.assertEqual(recovery[1]["theme_color_a"], "#445566")
+        self.assertIsNotNone(self.manager._verified_backup(newer_backup))
+
     def test_backup_retention_keeps_only_the_most_recent_verified_copies(self) -> None:
         from leos_core.settings_backup import MAX_RETAINED_BACKUPS
 
