@@ -1,5 +1,4 @@
 """Tests for verified, private LEOS desktop layout backups."""
-import os
 import tempfile
 import unittest
 from pathlib import Path
