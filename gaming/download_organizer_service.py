@@ -14,10 +14,54 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from gaming.backend.download_organizer import DownloadOrganizer
+from gaming.backend.download_organizer import (
+    DownloadOrganizer,
+    resolve_download_directory,
+)
 
 
 POLL_INTERVAL_SECONDS = 10
+
+
+def resolve_leos_download_inbox(
+    home: Path | None = None,
+    config_home: Path | None = None,
+) -> Path:
+    """Use ~/Jeux by default while respecting an existing custom XDG folder."""
+    base = Path(home or Path.home()).expanduser().resolve()
+    if config_home is None:
+        configured_home = os.environ.get("XDG_CONFIG_HOME", "")
+        candidate_config = (
+            Path(configured_home).expanduser()
+            if configured_home
+            else base / ".config"
+        )
+        config = candidate_config if candidate_config.is_absolute() else base / ".config"
+    else:
+        config = Path(config_home).expanduser()
+        if not config.is_absolute():
+            config = base / ".config"
+
+    current = resolve_download_directory(base, config)
+    inbox = base / "Jeux"
+    standard_folders = {base / "Downloads", base / "Téléchargements"}
+    if current == inbox or current not in standard_folders:
+        return current
+
+    updater = shutil.which("xdg-user-dirs-update")
+    if not updater:
+        return current
+    try:
+        result = subprocess.run(
+            [updater, "--set", "DOWNLOAD", str(inbox)],
+            check=False,
+            timeout=5,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return current
+    return inbox if result.returncode == 0 else current
 
 
 def _acquire_lock():
@@ -80,14 +124,15 @@ def main() -> int:
         # Another session instance is already supervising Downloads, or the
         # per-user runtime directory is unavailable.
         return 0
-    inbox = Path.home() / "Jeux"
+    home = Path.home().expanduser().resolve()
+    inbox = resolve_leos_download_inbox(home)
     try:
         if inbox.is_symlink():
             return 0
         inbox.mkdir(mode=0o700, parents=True, exist_ok=True)
     except OSError:
         return 1
-    organizer = DownloadOrganizer(downloads_dir=inbox)
+    organizer = DownloadOrganizer(downloads_dir=inbox, home=home)
     try:
         while True:
             try:
