@@ -1,13 +1,17 @@
 """Tests for safe, automatic filing of completed game downloads."""
 
+import errno
+import os
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 from pathlib import Path
 
 from gaming.backend.download_organizer import (
     DownloadOrganizer,
     resolve_download_directory,
+    _move_without_overwrite,
 )
 
 
@@ -35,6 +39,51 @@ class DownloadOrganizerTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(resolve_download_directory(home, config), home / "Downloads")
+
+
+    def test_allows_an_explicit_absolute_download_directory_outside_home(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            home = root / "home"
+            external_downloads = root / "mounted-downloads"
+            home.mkdir()
+            external_downloads.mkdir()
+            config = home / ".config"
+            config.mkdir()
+            (config / "user-dirs.dirs").write_text(
+                f'XDG_DOWNLOAD_DIR="{external_downloads}"\\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                resolve_download_directory(home, config),
+                external_downloads,
+            )
+
+    def test_cross_filesystem_move_uses_verified_copy_without_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            source_dir = home / "Downloads"
+            destination_dir = home / "Emulation"
+            source_dir.mkdir()
+            destination_dir.mkdir()
+            source = source_dir / "Game.gba"
+            destination = destination_dir / "Game.gba"
+            source.write_bytes(b"verified game contents")
+            real_link = os.link
+
+            def simulate_cross_device(src, dst, **kwargs):
+                if Path(src) == source and Path(dst) == destination:
+                    raise OSError(errno.EXDEV, "cross-device link")
+                return real_link(src, dst, **kwargs)
+
+            with patch(
+                "gaming.backend.download_organizer.os.link",
+                side_effect=simulate_cross_device,
+            ):
+                _move_without_overwrite(source, destination)
+
+            self.assertFalse(source.exists())
+            self.assertEqual(destination.read_bytes(), b"verified game contents")
 
     def test_uses_existing_french_downloads_folder_as_fallback(self):
         with tempfile.TemporaryDirectory() as directory:
