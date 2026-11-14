@@ -141,11 +141,12 @@ def _same_inode(left: os.stat_result, right: os.stat_result) -> bool:
 
 
 def _same_link_version(left: os.stat_result, right: os.stat_result) -> bool:
-    """Compare a linked inode without ctime, which changes when link count changes."""
+    """Compare one linked inode after its link-count change has settled."""
     return (
         _same_inode(left, right)
         and left.st_size == right.st_size
         and left.st_mtime_ns == right.st_mtime_ns
+        and left.st_ctime_ns == right.st_ctime_ns
     )
 
 
@@ -184,16 +185,18 @@ def _move_without_overwrite(
         current = source.stat(follow_symlinks=False)
         if (
             not stat.S_ISREG(current.st_mode)
-            or not _same_link_version(before, linked)
-            or not _same_link_version(before, current)
+            or not _same_inode(before, linked)
+            or before.st_size != linked.st_size
+            or before.st_mtime_ns != linked.st_mtime_ns
+            or not _same_link_version(linked, current)
         ):
             _unlink_if_same_inode(destination, linked)
             raise OSError(errno.ESTALE, "Download changed while being moved")
-        # Re-check the source entry immediately before unlinking it. In
-        # particular, do not remove a replacement file with the same size and
-        # timestamp but a different inode.
+        # Re-check the source entry immediately before unlinking it. Once the
+        # new link exists, ctime must remain exactly as it was on that linked
+        # inode; this catches same-size writes even if mtime is restored.
         current = source.stat(follow_symlinks=False)
-        if not _same_link_version(before, current):
+        if not _same_link_version(linked, current):
             _unlink_if_same_inode(destination, linked)
             raise OSError(errno.ESTALE, "Download source was replaced during the move")
         try:
