@@ -78,5 +78,11 @@ def post_notification(
     except (OSError, ValueError):
         return None
     if native:
-        _show_native_notification(title.strip(), body, level)
+        try:
+            _show_native_notification(title.strip(), body, level)
+        except Exception:
+            # Native notifications are optional feedback. A broken desktop
+            # bus or settings backend must never interrupt the LEOS action
+            # that emitted the notification.
+            pass
     return identifier
