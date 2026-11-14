@@ -1,176 +1,292 @@
 # LEOS 🦁
 
-**LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
+**LEOS est un projet de distribution Linux fondé sur Bazzite KDE.** Il réunit un bureau KDE adapté à l’usage quotidien et une interface Gaming plein écran, dans une seule installation et une seule session système.
 
-> **État du projet :** prototype en développement. Le dépôt contient les applications sources (Gaming, sélecteur de modes, Centre de contrôle, Centre des manettes et boutique), les ressources visuelles officielles et les introductions vidéo. Les applications doivent encore être validées sur une session Bazzite réelle et intégrées dans une image installable.
+> **Statut : prototype en développement.** Le dépôt contient les applications LEOS, les ressources graphiques, les recettes BlueBuild et les workflows de validation. Les tests automatisés et la génération des fichiers de construction passent sur GitHub Actions. En revanche, aucune image LEOS publiée ni ISO installable n’est encore disponible ; le démarrage et les usages doivent toujours être validés sur des machines réelles.
 
-## Vision
+[![Python checks](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml)
+[![BlueBuild recipe checks](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml)
 
-LEOS propose deux expériences au sein d'une seule installation :
+---
 
-- **Desktop Mode** — bureau KDE personnalisé, avec l'emblème LEOS représentant le lion seul.
-- **Gaming Mode** — application LEOS plein écran au-dessus de KDE, pensée pour la manette, avec l'emblème du lion tenant une manette.
+## Sommaire
 
-Les deux modes partagent le même système, les mêmes fichiers, applications, pilotes et services. Le passage d'un mode à l'autre se fait sans redémarrage. À chaque transition vers Gaming ou retour vers Desktop, LEOS demande une confirmation ; les applications ouvertes restent en arrière-plan et ne sont jamais fermées automatiquement.
+- [Le principe](#le-principe)
+- [Identité visuelle et thèmes](#identité-visuelle-et-thèmes)
+- [Desktop Mode](#desktop-mode)
+- [Gaming Mode](#gaming-mode)
+- [Applications et boutique](#applications-et-boutique)
+- [Compatibilité matérielle](#compatibilité-matérielle)
+- [Architecture technique](#architecture-technique)
+- [Validation et état du projet](#validation-et-état-du-projet)
+- [Construction de l’image et de l’ISO](#construction-de-limage-et-de-liso)
+- [Documentation](#documentation)
+- [Structure du dépôt](#structure-du-dépôt)
 
-## Identité visuelle
+## Le principe
 
-L'identité LEOS repose sur un lion métallique, une typographie dédiée, un fond noir et un dégradé personnalisable défini par deux couleurs A et B. Le cyan et le magenta sont les couleurs de départ, pas une palette imposée.
+LEOS propose deux expériences complémentaires :
 
-- Desktop : emblème officiel du lion seul.
-- Gaming : emblème officiel du lion avec manette.
-- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés. Les emblèmes, fonds SVG et vidéos d'introduction disposent maintenant de variantes recolorées à partir de A/B dans le cache utilisateur ; les fichiers officiels d'origine ne sont jamais modifiés. Si un codec vidéo ou une ressource manque, LEOS revient automatiquement à l'original.
-
-Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
-
-## Base technique
-
-| Élément | Choix |
+| Mode | Expérience |
 | --- | --- |
-| Système de base | Bazzite KDE Desktop |
-| Construction de l'image | BlueBuild |
-| Interface Gaming | Qt 6 / QML avec logique applicative PySide6 |
-| Interface Desktop | KDE Plasma personnalisé |
-| Gestion des manettes | Linux evdev via python3-evdev |
-| Dépôt | GitHub |
-| Distribution visée | Image LEOS dédiée, puis ISO installable |
+| **Desktop Mode** | Bureau KDE Plasma pour le travail, la navigation et les applications du quotidien. |
+| **Gaming Mode** | Interface LEOS plein écran, conçue pour parcourir une bibliothèque de jeux à la manette, au clavier ou à la souris. |
 
-LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants spécifiques au projet complètent cette base sans créer de gestionnaires concurrents ni contourner le modèle immuable de Bazzite.
+Les deux modes utilisent la même installation Linux, les mêmes fichiers, les mêmes applications, les mêmes pilotes et les mêmes services. Le passage de l’un à l’autre ne nécessite pas de redémarrage du système.
 
-### Compatibilité matérielle
+Chaque transition demande une confirmation. Les applications ouvertes restent en arrière-plan : LEOS ne les ferme pas automatiquement lorsqu’on change de mode.
 
-LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel), `leos-nvidia` pour NVIDIA Maxwell/Pascal/Volta et `leos-nvidia-open` pour NVIDIA Turing et plus récent. Ce sont des variantes matérielles d'un même système, pas des éditions distinctes. Elles doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
+## Identité visuelle et thèmes
 
-### Composants source présents dans le dépôt
+L’identité LEOS s’appuie sur un lion métallique, un fond sombre et les emblèmes propres à chaque interface :
 
-- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
-- **Cohérence de bibliothèque** : titres nettoyés sans réécriture de leur capitalisation, recherche tolérante aux accents et aux espaces répétés, signalement prudent des titres identiques entre sources. Les entrées ne sont jamais fusionnées ou supprimées automatiquement.
-- **Métadonnées de jeu** : source, identifiant de catalogue, jaquette locale lorsqu'elle existe et état d'installation vérifié. Les chemins privés et commandes de lancement ne sont pas exposés dans la fiche QML.
-- **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
-- **Sélecteur Desktop/Gaming** : modes au sein d'une seule session KDE, dernier mode mémorisé et navigation par clavier/manette ; les transitions doivent encore être validées en session réelle.
-- **Centre de contrôle LEOS** : pages matériel et connexions, diagnostic système avec rapport de support expurgé, nettoyage avec aperçu, mises à jour, notifications et réseau. Les inventaires matériels et diagnostics sont en lecture seule ; les réglages système s'appuient sur les outils natifs.
-- **Centre des notifications LEOS** : historique local des événements émis par les composants LEOS. Les notifications système natives et leur historique restent gérés par Plasma ; les événements LEOS en Gaming sont conservés silencieusement pour ne pas interrompre une partie.
-- **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
-- **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
-- **Premier démarrage** : un guide non bloquant explique Desktop et Gaming dans le sélecteur de mode. Après le choix de Desktop, LEOS peut proposer Brave, LibreOffice et VLC en Flatpak utilisateur ; aucune application n'est installée sans confirmation.
-  Détails : [guide du premier démarrage](docs/first-run.md).
-- **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
+- **Desktop** utilise l’emblème du lion seul.
+- **Gaming** utilise l’emblème du lion tenant une manette.
 
-Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
+Le joueur peut choisir librement deux couleurs :
 
-## Gaming Mode
+- **Couleur A** : première extrémité du dégradé ;
+- **Couleur B** : seconde extrémité du dégradé.
 
-- Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
-- Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade ; une catégorie Émulation regroupe les entrées RetroArch, les fichiers de jeux détectés dans les dossiers utilisateur Jeux/Games/ROMs/Emulation et les ajouts manuels explicitement classés comme émulation. La boutique propose RetroArch, Dolphin, PCSX2, PPSSPP, DuckStation, Cemu (Wii U) et Eden (Nintendo Switch) via Flathub après confirmation. LEOS détecte maintenant les fichiers de jeux locaux dans les dossiers utilisateur Jeux, Games, ROMs, Roms et Emulation (scan borné, sans suivre les liens symboliques ni lire le contenu des ROM). Sur un profil neuf, le service configure `~/Jeux` comme dossier de téléchargement XDG par défaut lorsque le chemin standard `~/Downloads` ou `~/Téléchargements` est utilisé ; un dossier de téléchargement personnalisé est conservé et surveillé. Le service de session KDE classe automatiquement les téléchargements terminés aux formats non ambigus vers `~/Emulation/ROMs/<système>/<console>/` (dont Wii U/Cemu et Switch/Eden aux formats `.nsp` et `.xci`), après vérification de stabilité du fichier ; une notification récapitule les déplacements. Les ZIP contenant exactement un jeu reconnu sont extraits de façon bornée et leur archive originale est conservée dans `~/Emulation/.archives`. Les ISO, formats ambigus, archives 7z/RAR et ZIP contenant plusieurs jeux restent intacts dans le dossier de téléchargement surveillé pour éviter un classement ou une extraction hasardeux. Les fichiers détectés sont visibles dans la bibliothèque. Le lancement direct est maintenant relié à Dolphin (GameCube/Wii), Cemu (Wii U), Eden (Switch 1) et PPSSPP pour un ensemble limité de formats non ambigus, uniquement si l'émulateur Flatpak est déjà installé ; LEOS transmet le fichier via le portail de documents Flatpak, sans installer de paquet ni exécuter le fichier directement. Les formats ambigus ou non couverts restent visibles mais nécessitent une association manuelle. LEOS ne télécharge aucun jeu, BIOS ou cœur et n'installe rien automatiquement.
-- Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
-- Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
-- Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
-- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement.
-- Jaquettes recherchées dans les caches locaux Steam/Lutris et les fichiers explicitement référencés par Heroic. Aucune image distante n'est téléchargée.
-- Fiche de jeu : titre, plateforme, source, statut des fichiers locaux et identifiant catalogue ; chemins privés et arguments de lancement restent masqués.
-- Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
-- Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
-- MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge ; Dolphin, PCSX2, PPSSPP et DuckStation peuvent être installés depuis la boutique, puis ajoutés à la bibliothèque via leurs raccourcis ou l'ajout manuel. La découverte des fichiers locaux, le tri prudent des téléchargements et le lancement sécurisé des formats pris en charge depuis Gaming sont intégrés au code ; leur validation en session KDE réelle reste à effectuer.
+Le moteur de thème partage cette paire entre les interfaces LEOS : sélecteur de mode, Desktop, Gaming, menu, Centre de contrôle, notifications, Centre des manettes et boutique. Les couleurs d’accent et les dégradés sont recalculés, tandis que le fond sombre et les reflets neutres du lion sont préservés. Le cyan et le magenta ne sont pas imposés : ce ne sont que des valeurs de départ.
+
+Les emblèmes, fonds d’écran et vidéos d’introduction disposent de variantes recolorées dans le cache du compte utilisateur. Les ressources officielles ne sont pas écrasées. Si une conversion ou une lecture vidéo échoue, LEOS conserve un chemin de repli vers la ressource d’origine.
+
+Le thème LEOS ne change pas silencieusement le thème global de KDE. L’application d’un schéma de couleurs KDE est une action séparée, avec confirmation et possibilité de restaurer le schéma précédent.
 
 ## Desktop Mode
 
-- Bureau KDE personnalisé avec l'identité LEOS.
-- Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les profils de dock peuvent être appliqués au panneau Plasma après sauvegarde et confirmation ; les favoris ordonnés du menu LEOS sont synchronisés aux lanceurs du gestionnaire de tâches, et les configurations multi-panneaux restent protégées.
-- Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
-- Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Dégradé LEOS personnalisé à deux couleurs (A/B), partagé par les interfaces Desktop et Gaming et mémorisé dans le profil utilisateur ; le schéma de couleurs KDE correspondant peut être appliqué séparément après confirmation. Les anciennes palettes nommées restent compatibles avec les réglages et fichiers KDE déjà présents. Les fonds d'écran Desktop et Gaming 4K sont présents, leurs aperçus sont accessibles dans le Centre de contrôle et le choix passe par les paramètres natifs KDE. Le rendu des SVG avec JPEG liés et leur application restent à valider sur une session Bazzite réelle. Les animations Desktop/Gaming sont raccordées ; leur lecture vidéo et audio reste également à valider sur Bazzite.
+Desktop Mode conserve **KDE Plasma** comme environnement de bureau. LEOS y ajoute ses applications et ses réglages sans remplacer les composants natifs de Bazzite.
 
-## Compatibilité matérielle et philosophie universelle
+Le code du mode Desktop comprend notamment :
 
-LEOS est conçu pour être installé sur une large gamme de PC modernes compatibles, et non pour une configuration matérielle de référence. Aucun modèle de processeur, de carte graphique, de carte mère, de quantité de RAM ou de SSD précis ne doit être imposé par le projet.
+- **Menu LEOS** : recherche d’applications installées, catégories, favoris ordonnés et applications récemment utilisées.
+- **Centre de contrôle** : réglages LEOS, informations matérielles, connexions, notifications, mises à jour et outils de diagnostic.
+- **Centre des manettes** : détection des contrôleurs, test des boutons et des axes, profils de navigation et calibration utilisés par l’interface LEOS.
+- **Boutique LEOS** : catalogue d’applications et gestion des applications Flatpak avec confirmation.
+- **Personnalisation Plasma** : aperçu des fonds d’écran LEOS, profils de disposition et préparation d’un dock. L’application d’une disposition de panneau exige une sauvegarde et une confirmation ; les configurations multi-panneaux non prises en charge sont refusées sans modification.
 
-Principes obligatoires :
-- Cibler les PC x86_64 modernes compatibles avec la base Bazzite et son processus d'installation ; ne pas promettre la prise en charge de machines qui ne satisfont pas ses prérequis.
-- Prendre en charge les plateformes AMD et Intel, ainsi que les GPU AMD, Intel et NVIDIA via les variantes d'image et pilotes adaptés de la base Bazzite lorsque cela est nécessaire.
-- Ne jamais coder en dur un modèle de CPU/GPU, une résolution, un nombre d'écrans, un chemin de périphérique ou une quantité de mémoire.
-- Détecter les capacités réellement disponibles à l'exécution ; masquer ou désactiver proprement une fonction indisponible sans empêcher le démarrage du bureau.
-- Conserver des solutions de repli pour les fonctions optionnelles (télémétrie GPU, MangoHud, Bluetooth, manettes, accélération graphique et effets visuels).
-- Ne pas exiger de GPU dédié pour Desktop Mode. Les performances de Gaming Mode dépendent naturellement du matériel et des pilotes présents.
-- Garder les applications LEOS indépendantes des outils propriétaires et des interfaces spécifiques à un seul fabricant, sauf intégration facultative et vérifiée.
+Les fonds d’écran Desktop et Gaming au format SVG 4K sont inclus dans les ressources. Leur sélection passe par les paramètres KDE ; ils ne remplacent pas automatiquement le fond d’écran personnel.
 
-La compatibilité sera validée progressivement sur une matrice de machines physiques et virtuelles : graphiques intégrés Intel/AMD, GPU AMD dédié, GPU NVIDIA avec sa variante Bazzite adaptée, portables hybrides, écrans simples et multiples, Wi-Fi/Bluetooth et différentes générations de contrôleurs. Une validation sur un PC ne sera jamais présentée comme une garantie universelle.
+Le menu LEOS et les réglages propres au projet sont disponibles dans le code source. Le dock, les widgets et les personnalisations Plasma avancées ne doivent pas être considérés comme activés par défaut : leur application réelle reste soumise aux contrôles prévus et à une validation sur une session KDE/Bazzite.
 
-**Objectif produit :** un seul LEOS, une même expérience Desktop/Gaming, avec une image de base et des variantes matérielles clairement documentées si la prise en charge des pilotes l'exige. Aucun PC de référence unique ne définit les prérequis de LEOS.
+## Gaming Mode
 
-## Bluetooth
+Gaming Mode est une application Qt 6 / QML avec logique applicative PySide6. Elle s’affiche en plein écran au-dessus de KDE, qui reste actif en arrière-plan.
 
-Le Bluetooth est pris en charge comme fonctionnalité attendue dans Desktop Mode et Gaming Mode : manettes, casques, écouteurs, enceintes, claviers et souris compatibles. LEOS réutilise la pile BlueZ, les paramètres KDE et PipeWire de Bazzite ; il ne lance pas de gestionnaire parallèle. Le Centre de contrôle offrira un accès rapide, tandis que l'association et le dépannage complets resteront accessibles dans KDE. Le Gaming Mode ne désactivera pas le Bluetooth lors d'un changement de mode. La validation sur matériel réel reste à effectuer ; voir [docs/bluetooth.md](docs/bluetooth.md).
+### Bibliothèque de jeux
 
-## Centre des manettes
+La bibliothèque rassemble les jeux trouvés dans les catalogues locaux des lanceurs pris en charge :
 
-Le Centre des manettes propose une vue des contrôleurs détectés par Linux, un test des boutons et axes analogiques, la détection automatique des profils Xbox/PlayStation/Nintendo lorsqu'elle est fiable, le choix manuel d'un profil, le réglage d'une zone morte et l'enregistrement de la position neutre des axes.
+- **Steam** : bibliothèques principales et secondaires.
+- **Heroic** : catalogues locaux Epic Games, GOG et Amazon Games.
+- **Lutris** : bibliothèque locale.
+- **RetroArch** : playlists locales au format JSON `.lpl`.
+- **Ajout manuel** : possibilité d’enregistrer un jeu et sa commande de lancement.
 
-Les préférences sont enregistrées dans le compte Linux de l'utilisateur et appliquées à la navigation de l'interface Gaming LEOS (profil, zone morte et calibration des sticks). Le prototype ne modifie pas les mappings du système ou des jeux externes : les configurations Steam et des lanceurs restent prioritaires.
+La navigation propose des catégories PC Gaming, Nintendo, PlayStation, SEGA, Arcade et Émulation. Les recherches par titre, plateforme ou source tolèrent les différences de casse, d’accents et les espaces répétés. Les favoris et les jeux récemment lancés sont conservés dans le profil utilisateur.
 
-## Applications fournies et boutique LEOS
+Les doublons potentiels sont signalés, mais les entrées ne sont jamais fusionnées ou supprimées automatiquement. Les différentes éditions d’un jeu restent distinctes. Les jaquettes sont recherchées dans les caches locaux ou dans les fichiers explicitement référencés par les catalogues ; LEOS ne télécharge pas automatiquement d’images distantes.
 
-Après la sélection de Desktop Mode, le lanceur peut proposer Brave, LibreOffice et VLC dans une fenêtre de consentement KDE. Rien n'est installé sans acceptation explicite. L'offre est mémorisée après acceptation complète ou refus ; en cas d'échec partiel, seules les applications manquantes pourront être retentées. Une désinstallation ultérieure depuis la boutique n'entraîne pas de réinstallation automatique. Steam est déjà fourni par la base Bazzite Desktop. La boutique distingue les applications utilisateur et système : les deux peuvent être désinstallées depuis la boutique après confirmation ; les applications système peuvent demander une authentification administrateur. Les composants RPM/OSTree constitutifs de Bazzite restent gérés par les outils système.
+### Émulateurs et lancement des jeux locaux
 
-La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
+La boutique référence les émulateurs suivants via Flathub :
 
-**Toute installation ou désinstallation exige une confirmation explicite.** Chaque fiche doit préciser le contenu de l'opération, sa source, sa compatibilité et ses éventuelles dépendances.
+| Émulateur | Plateforme |
+| --- | --- |
+| RetroArch | Plusieurs systèmes via les cœurs compatibles |
+| Dolphin | GameCube et Wii |
+| PCSX2 | PlayStation 2 |
+| PPSSPP | PlayStation Portable |
+| DuckStation | PlayStation |
+| Cemu | Wii U |
+| Eden | Nintendo Switch 1 |
 
-## Principes de sécurité et de fiabilité
+La présence d’une fiche dans la boutique ne signifie pas que le lancement automatique de tous les formats est déjà intégré. À ce stade, l’association automatique par extension couvre uniquement un ensemble limité et non ambigu :
 
-- Aucune installation ou désinstallation sans confirmation.
-- Aucune fermeture d'application sans choix explicite de l'utilisateur lors d'une transition.
-- Les mises à jour utilisent les mécanismes natifs de Bazzite ; l'utilisateur décide de leur installation.
-- Les opérations de nettoyage, suppression ou modification système demandent une confirmation.
-- Les limites de compatibilité matérielle et logicielle sont indiquées clairement.
+| Formats reconnus | Émulateur associé |
+| --- | --- |
+| `.gcm`, `.wbfs`, `.rvz` | Dolphin |
+| `.wua`, `.wuhb`, `.wud`, `.wux` | Cemu |
+| `.nsp`, `.xci` | Eden |
+| `.cso`, `.zso` | PPSSPP |
+
+L’émulateur doit déjà être installé. LEOS peut détecter les installations Flatpak utilisateur, système et certaines installations système nommées déclarées dans `/etc/flatpak/installations.d/`. Pour les installations nommées reconnues, LEOS transmet explicitement le nom d’installation à Flatpak.
+
+Le lancement transmet le fichier sélectionné à l’application via `flatpak run --file-forwarding` et le portail de documents. LEOS ne lance pas directement les fichiers de jeu, n’installe pas d’émulateur à la volée et n’essaie pas de deviner les formats ambigus. Les formats non couverts — par exemple ISO, CHD, CUE/BIN ou PBP — restent visibles mais nécessitent une association manuelle.
+
+### Dossier de jeux et tri automatique
+
+Le service de session surveille le dossier de téléchargement XDG. Sur un profil neuf, si ce dossier pointe encore vers `~/Downloads` ou `~/Téléchargements`, LEOS le configure sur `~/Jeux`. Un dossier de téléchargement personnalisé est conservé et surveillé à la place.
+
+Après stabilisation d’un téléchargement, les formats reconnus sont rangés dans une arborescence de ce type :
+
+```text
+~/Jeux/                         # Dossier de téléchargement
+~/Emulation/ROMs/
+├── Nintendo/
+│   ├── GameCube/
+│   ├── Wii/
+│   ├── Wii U/
+│   └── Switch/
+├── PlayStation/
+├── SEGA/
+└── ...
+```
+
+Le tri est volontairement prudent :
+
+- les fichiers reconnus sont déplacés vers le dossier de leur système ;
+- les ZIP contenant exactement un jeu reconnu peuvent être extraits ; l’archive d’origine est conservée dans `~/Emulation/.archives` ;
+- les archives contenant plusieurs jeux, les formats inconnus et les formats ambigus restent dans le dossier d’arrivée ;
+- les liens symboliques ne sont pas suivis et le contenu des ROM n’est pas analysé pour décider de leur système.
+
+LEOS ne fournit ni jeux, ni BIOS, ni firmware, ni clés cryptographiques, ni cœurs RetroArch. L’utilisateur doit posséder les fichiers et les droits nécessaires à leur utilisation.
+
+### Manettes, performances et profils d’énergie
+
+Gaming Mode accepte la navigation au clavier, à la souris et avec les manettes compatibles détectées par Linux. Le mapping utilisé concerne la navigation LEOS ; il ne remplace pas les configurations Steam ou celles des jeux externes.
+
+Le panneau rapide donne accès aux fonctions LEOS disponibles, dont les profils d’énergie natifs lorsqu’ils sont exposés par le système et l’ouverture du Centre des manettes. Les changements de profil d’énergie demandent une confirmation.
+
+Les mesures CPU/RAM et les mesures GPU/VRAM/température ne sont affichées que lorsque les interfaces du système ou du pilote les fournissent. MangoHud peut être utilisé pour l’overlay FPS lorsqu’il est installé et activé. LEOS n’invente pas de valeurs lorsqu’une télémétrie n’est pas disponible.
+
+## Applications et boutique
+
+La boutique LEOS s’appuie principalement sur Flatpak/Flathub et les mécanismes natifs de Bazzite.
+
+- Les installations et désinstallations demandent une confirmation explicite.
+- La boutique distingue les applications Flatpak utilisateur et système.
+- La source et les informations de compatibilité disponibles sont affichées avant l’opération.
+- Le dépôt Flathub est vérifié avant une installation utilisateur.
+- Les composants du système de base restent gérés par Bazzite et ses outils natifs.
+
+Après le choix de Desktop Mode au premier démarrage, LEOS peut proposer Brave, LibreOffice et VLC. Cette proposition est facultative : aucune de ces applications n’est installée sans accord explicite.
+
+## Compatibilité matérielle
+
+La cible actuelle est un PC **x86_64 démarrant en UEFI**. LEOS n’est pas lié à un modèle précis de processeur, de carte graphique, de carte mère, de mémoire ou de stockage. La compatibilité dépend toutefois des limites de Bazzite, du noyau Linux, des pilotes et des périphériques de chaque ordinateur. LEOS ne peut donc pas garantir le fonctionnement sur « tous les ordinateurs ».
+
+Trois recettes BlueBuild partagent les mêmes composants LEOS :
+
+| Variante | Base | Cible graphique |
+| --- | --- | --- |
+| `leos` | Bazzite standard | AMD et Intel |
+| `leos-nvidia` | Bazzite NVIDIA | NVIDIA Maxwell, Pascal et Volta |
+| `leos-nvidia-open` | Bazzite NVIDIA open | NVIDIA Turing et générations plus récentes |
+
+Il s’agit de variantes matérielles d’un même système, pas d’éditions fonctionnelles différentes. Le choix de la variante doit correspondre au GPU principal. Les PC portables hybrides, les GPU de générations différentes et les périphériques spécifiques devront être testés individuellement.
+
+Pour Gaming, les repères matériels publiés par Bazzite sont notamment 8 Go de RAM, un processeur quadricœur à 2 GHz, un GPU compatible Vulkan 1.3 ou supérieur et 50 Go libres sur SSD interne (120 Go recommandés). Ces valeurs sont des références pour l’usage Gaming, pas une promesse de performances ni une certification LEOS. Desktop peut rester utilisable sur une machine qui ne répond pas à ces repères.
+
+Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d’installation](docs/installation.md).
+
+## Architecture technique
+
+| Élément | Technologie |
+| --- | --- |
+| Système de base | Bazzite KDE Desktop |
+| Construction de l’image | BlueBuild |
+| Interface Gaming | Qt 6, QML et PySide6 |
+| Interface Desktop | KDE Plasma |
+| Préférences partagées | Modules Python LEOS et stockage utilisateur XDG |
+| Manettes | Linux evdev / `python3-evdev` |
+| Applications supplémentaires | Flatpak / Flathub |
+| Automatisation | GitHub Actions |
+
+LEOS réutilise les services natifs de Bazzite, KDE et Linux : gestion des sessions, réseau, Bluetooth, audio, énergie, notifications, Flatpak et mises à jour. Le projet évite de créer des services concurrents lorsqu’une interface système existe déjà.
+
+## Validation et état du projet
+
+Le dépôt comprend des tests unitaires Python, des contrôles d’intégration des interfaces QML et des vérifications des recettes de construction.
+
+Les workflows [Python checks](.github/workflows/python-checks.yml) et [BlueBuild recipe checks](.github/workflows/recipe-checks.yml) vérifient notamment :
+
+- la compilation des sources Python ;
+- l’exécution de la suite de tests ;
+- le lint des fichiers QML avec Qt 6 ;
+- les ressources graphiques, SVG et vidéos ;
+- les recettes BlueBuild et la génération des Containerfiles.
+
+Un workflow de construction manuelle de l’image existe également. Il exécute les tests et contrôles préalables, vérifie la paire de clés Cosign, puis prévoit la publication des trois variantes dans GitHub Container Registry.
+
+**Ces contrôles ne sont pas des essais sur un ordinateur physique.** Ils ne valident pas encore l’installation, le rendu exact de KDE, le comportement des pilotes, les transitions de session, la lecture vidéo sur le matériel cible ou les performances des jeux.
+
+### État des livrables
+
+| Livrable | État |
+| --- | --- |
+| Sources des applications LEOS | Présentes dans le dépôt |
+| Thème partagé à deux couleurs A/B | Implémenté dans le code |
+| Bibliothèque Gaming et intégrations documentées | Implémentées en partie, selon les sources et formats |
+| Service de tri des téléchargements | Présent et référencé au démarrage de session KDE |
+| Tests Python et lint QML | Automatisés par GitHub Actions |
+| Recettes BlueBuild standard et NVIDIA | Présentes ; validation automatisée disponible |
+| Image LEOS publiée et signée | Pas encore disponible |
+| ISO installable | Pas encore disponible |
+| Validation sur plusieurs PC physiques | À effectuer |
+
+## Construction de l’image et de l’ISO
+
+La construction est volontairement séparée de la génération de l’ISO.
+
+### 1. Préparer la signature
+
+Le workflow de construction exige deux éléments correspondants :
+
+- le fichier public `cosign.pub` à la racine du dépôt ;
+- le secret GitHub `SIGNING_SECRET`, contenant la clé privée associée.
+
+Le workflow vérifie que les deux clés correspondent avant d’autoriser la publication. Ne place jamais la clé privée dans le dépôt.
+
+### 2. Construire et publier l’image
+
+Le workflow GitHub Actions **Build LEOS** est déclenché manuellement. Il lance les contrôles préalables, puis construit les variantes standard, NVIDIA legacy et NVIDIA open. Les images publiées sont destinées à GitHub Container Registry.
+
+### 3. Générer l’ISO
+
+Après publication et vérification de la signature de l’image, le workflow **Generate LEOS installer ISO** peut être déclenché manuellement. Il faut choisir :
+
+- la variante matérielle ;
+- le tag de l’image publiée.
+
+Le workflow vérifie la signature Cosign, génère l’ISO d’installation et produit un fichier de somme SHA-256. L’ISO et son empreinte sont fournis comme artefacts GitHub Actions.
+
+**Aucune de ces étapes ne signifie que LEOS est déjà publié :** la première image doit encore être construite avec une signature configurée, puis l’ISO doit être générée et testée avant toute installation.
+
+Ne tente pas d’installer une recette BlueBuild directement sur un ordinateur principal. Consulte le [guide d’installation](docs/installation.md) et le [guide de récupération](docs/recovery.md) avant les premiers essais.
+
+## Documentation
+
+- [Architecture générale](docs/architecture.md)
+- [Premier démarrage](docs/first-run.md)
+- [Compatibilité matérielle](docs/hardware-compatibility.md)
+- [Matrice de validation matérielle](docs/hardware-validation.md)
+- [Bluetooth](docs/bluetooth.md)
+- [Construction et signature](docs/build.md)
+- [Packaging](docs/packaging.md)
+- [Installation](docs/installation.md)
+- [Récupération et retour arrière](docs/recovery.md)
 
 ## Structure du dépôt
 
 ```text
 LEOS/
-├── .github/workflows/   # Automatisation et vérifications
-├── branding/            # Logos, animations, sons et ressources
-├── config/              # Configuration partagée de LEOS
-├── controller_center/   # Gestion et test des manettes
-├── control_center/      # Paramètres LEOS
-├── desktop/             # Personnalisation du Desktop Mode
-├── docs/                # Architecture et documentation
-├── gaming/              # Application Gaming LEOS
-├── shop/                # Boutique LEOS et opérations Flatpak confirmées
-├── recipes/             # Recette BlueBuild
-└── README.md
+├── .github/workflows/   # Tests, validation, construction et génération ISO
+├── branding/            # Emblèmes, fonds d’écran, vidéos et sons
+├── config/              # Configuration partagée
+├── controller_center/   # Centre des manettes
+├── control_center/      # Centre de contrôle LEOS
+├── desktop/             # Thèmes, menu, notifications et intégration KDE
+├── docs/                # Architecture, compatibilité, installation et guides
+├── gaming/              # Interface Gaming et bibliothèque
+├── launcher/            # Sélecteur de modes et transitions
+├── leos_core/           # Préférences et fonctions communes
+├── recipes/             # Recettes BlueBuild
+├── shop/                # Catalogue et gestion Flatpak
+└── tests/               # Tests Python et contrats d’intégration
 ```
-
-## Prochaines étapes
-
-1. **Finaliser Desktop Mode** — valider le dock LEOS et le rendu des fonds d'écran sur une session Bazzite, puis ajouter les raccourcis globaux KDE.
-2. **Finaliser Gaming Mode** — poursuivre les intégrations d'émulateurs et contrôler les profils de manettes ainsi que le comportement sur plusieurs matériels.
-3. **Verrouiller le packaging** — vérifier les dépendances de l'image, préparer les éléments publics/privés Cosign et garder les opérations de publication manuelles.
-4. **Première image signée** — lancer le workflow uniquement après préparation de la signature et d'une machine de test ; résoudre les éventuelles incompatibilités du build.
-5. **Validation matérielle** — tester le premier démarrage, les transitions Desktop/Gaming, la vidéo et l'audio, les manettes, le Bluetooth, le GPU, la boutique, les mises à jour et le rollback.
-6. **ISO installable** — choisir et valider le processus ISO après stabilisation de l'image bootable.
-
-## État actuel
-
-- [x] Architecture commune Bazzite KDE / BlueBuild et deux modes au sein d'une seule session.
-- [x] Prototypes source du sélecteur, Gaming, Desktop, Centre de contrôle, Centre des manettes, boutique et notifications.
-- [x] Imports de bibliothèque Steam, Heroic et Lutris, ajout manuel, favoris, récents et navigation manette.
-- [x] Trois emblèmes JPEG présents dans le dépôt et identiques aux originaux reçus ; trois vidéos hébergées, contrôlées et décodables (leurs empreintes diffèrent des vidéos sources transmises).
-- [x] Transitions vidéo via Qt Multimedia avec piste audio configurable et repli en cas d'erreur.
-- [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
-- [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
-- [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
-- [x] Catalogue boutique d'émulateurs RetroArch, Dolphin, PCSX2, PPSSPP et DuckStation ; catégorie Émulation dans Gaming.
-- [x] Associer automatiquement les formats locaux non ambigus aux émulateurs correspondants et permettre leur lancement sécurisé depuis Gaming lorsque l'émulateur est déjà installé.
-- [ ] Ajouter un traitement assisté des formats de disque ambigus (ISO, CHD, CUE/BIN, etc.) avec aperçu et choix de console.
-- [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
-- [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
-- [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
-- [ ] Préparer une ISO installable après validation de l'image.
-
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
 
 ---
 
-*LEOS — One system. Two experiences.*
+**LEOS — One system. Two experiences.**
