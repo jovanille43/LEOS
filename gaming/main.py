@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import traceback
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -51,15 +52,20 @@ def main() -> int:
 
 def _report_startup_failure() -> None:
     """Tell the user Gaming failed while keeping the KDE desktop available."""
-    post_notification(
-        "LEOS Gaming n'a pas pu démarrer",
-        (
-            "L'interface Gaming n'a pas pu être chargée. "
-            "Le bureau KDE reste disponible ; consulte les journaux système "
-            "pour identifier la cause."
-        ),
-        "error",
-    )
+    try:
+        post_notification(
+            "LEOS Gaming n'a pas pu démarrer",
+            (
+                "L'interface Gaming n'a pas pu être chargée. "
+                "Le bureau KDE reste disponible ; consulte les journaux système "
+                "pour identifier la cause."
+            ),
+            "error",
+        )
+    except Exception:
+        # A broken notification service must not turn a handled startup
+        # failure into a second crash or prevent the session lock being freed.
+        traceback.print_exc()
 
 
 def _cleanup_failed_startup(
@@ -72,13 +78,11 @@ def _cleanup_failed_startup(
             controller.shutdown()
         except Exception:
             # Preserve the original startup failure; cleanup is best-effort.
-            import traceback
             traceback.print_exc()
     if theme is not None:
         try:
             theme.shutdown()
         except Exception:
-            import traceback
             traceback.print_exc()
 
 
@@ -100,7 +104,6 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         qml_file = Path(__file__).parent / "qml" / "Main.qml"
         engine.load(QUrl.fromLocalFile(str(qml_file)))
     except Exception:
-        import traceback
         traceback.print_exc()
         _cleanup_failed_startup(controller, theme)
         _report_startup_failure()
