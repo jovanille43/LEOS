@@ -306,7 +306,7 @@ class SessionFlowTests(unittest.TestCase):
         mouse_start = qml.index("MouseArea {", overlay_start)
         overlay_end = qml.index("\n    }", mouse_start)
         overlay = qml[overlay_start:overlay_end]
-        self.assertIn("ÉCHAP OU CLIC POUR PASSER", overlay)
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", overlay)
         self.assertIn("onClicked: window.finishDesktopReturn()", overlay)
         self.assertIn("function requestDesktopReturn()", qml)
         self.assertIn("function finishDesktopReturn()", qml)
