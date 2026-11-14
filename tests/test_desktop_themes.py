@@ -152,6 +152,9 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("GradientStop", qml)
         self.assertIn("themeColorAField.text = controlCenter.themeColorA", qml)
         self.assertIn("themeColorBField.text = controlCenter.themeColorB", qml)
+        self.assertEqual(qml.count('placeholderText: "#RRGGBB"'), 2)
+        self.assertNotIn('placeholderText: "#00D9FF"', qml)
+        self.assertNotIn('placeholderText: "#E33BFF"', qml)
 
     def test_all_leos_qml_applications_use_the_shared_gradient(self):
         root = Path(__file__).resolve().parents[1]
