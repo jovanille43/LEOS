@@ -259,6 +259,62 @@ class SettingsBackupTests(unittest.TestCase):
                 self.manager.export_backup(backup_id, export_dir)
         self.assertEqual(list(export_dir.iterdir()), [])
 
+    def test_external_backup_pair_can_be_imported_and_restored(self) -> None:
+        self.settings.set_many({
+            "theme_color_a": "#123456",
+            "theme_color_b": "#ABCDEF",
+            "sounds_enabled": False,
+        })
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        self.manager.export_backup(backup_id, export_dir)
+
+        imported_config = Path(self.temporary.name) / "imported-config" / "settings.json"
+        imported_settings = SettingsStore(imported_config)
+        imported_manager = SettingsBackupManager(
+            imported_settings,
+            Path(self.temporary.name) / "imported-state" / "settings-backups",
+        )
+        imported_id = imported_manager.import_backup(export_dir / f"{backup_id}.json")
+
+        self.assertEqual(imported_id, backup_id)
+        self.assertEqual(imported_manager.latest_backup_id(), backup_id)
+        imported_manager.restore_backup(imported_id, confirmed=True)
+        restored = SettingsStore(imported_config)
+        self.assertEqual(restored.get("theme_color_a"), "#123456")
+        self.assertEqual(restored.get("theme_color_b"), "#ABCDEF")
+        self.assertFalse(restored.get("sounds_enabled"))
+
+    def test_import_rejects_a_tampered_external_pair_without_copying_files(self) -> None:
+        import hashlib
+
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        self.manager.export_backup(backup_id, export_dir)
+        backup_path = export_dir / f"{backup_id}.bak"
+        backup_path.write_bytes(backup_path.read_bytes() + b"tamper")
+
+        imported_manager = SettingsBackupManager(
+            SettingsStore(Path(self.temporary.name) / "imported.json"),
+            Path(self.temporary.name) / "imported-backups",
+        )
+        with self.assertRaises(ValueError):
+            imported_manager.import_backup(export_dir / f"{backup_id}.json")
+        self.assertFalse((imported_manager.backup_dir / f"{backup_id}.bak").exists())
+        self.assertFalse((imported_manager.backup_dir / f"{backup_id}.json").exists())
+
+    def test_import_refuses_to_overwrite_an_existing_local_backup(self) -> None:
+        backup_id = self.manager.create_backup()
+        export_dir = Path(self.temporary.name) / "external-drive"
+        export_dir.mkdir()
+        self.manager.export_backup(backup_id, export_dir)
+        original = (self.backup_dir / f"{backup_id}.bak").read_bytes()
+        with self.assertRaises(FileExistsError):
+            self.manager.import_backup(export_dir / f"{backup_id}.json")
+        self.assertEqual((self.backup_dir / f"{backup_id}.bak").read_bytes(), original)
+
     def test_backup_scan_is_bounded(self) -> None:
         from unittest.mock import patch
 
