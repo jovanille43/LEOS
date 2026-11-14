@@ -39,7 +39,7 @@ for _ambiguous in (".iso", ".cue", ".bin", ".zip", ".7z", ".m3u"):
 def default_scan_roots(home: Path | None = None) -> tuple[Path, ...]:
     """Return conventional user game folders; no system-wide locations."""
     base = home if home is not None else Path.home()
-    return tuple(base / name for name in ("Games", "ROMs", "Roms", "Emulation"))
+    return tuple(base / name for name in ("Jeux", "Games", "ROMs", "Roms", "Emulation"))
 
 
 def _is_within(path: Path, root: Path) -> bool:
