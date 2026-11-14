@@ -32,7 +32,7 @@ class EmulationDiscoveryTests(unittest.TestCase):
             )
             by_title = {game["title"]: game for game in games}
             self.assertEqual(by_title["Gran Turismo"]["platform"], "PlayStation")
-            self.assertEqual(by_title["Super Metroid"]["platform"], "Émulation")
+            self.assertEqual(by_title["Super Metroid"]["platform"], "Nintendo")
             self.assertEqual(by_title["Gran Turismo"]["source"], "Fichiers locaux")
             self.assertTrue(by_title["Gran Turismo"]["id"].startswith("emulator:"))
             self.assertEqual(by_title["Gran Turismo"]["path"], str((root / "Gran Turismo.chd").resolve()))
