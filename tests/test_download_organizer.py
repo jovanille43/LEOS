@@ -85,9 +85,10 @@ class DownloadOrganizerTests(unittest.TestCase):
                 downloads, home / "Emulation" / "ROMs", home=home,
                 stability_seconds=0,
             )
-            for filename in files:
-                organizer.poll(now=modified[filename] + 1)
-            moved = organizer.poll(now=max(modified.values()) + 2)
+            moved = []
+            latest_mtime = max(modified.values())
+            for offset in (1, 2, 3):
+                moved.extend(organizer.poll(now=latest_mtime + offset))
             self.assertEqual(len(moved), len(files))
             for filename, (system, console) in files.items():
                 target = home / "Emulation" / "ROMs" / system / console / filename
