@@ -75,6 +75,15 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertEqual(result, "notification-id")
         store.return_value.add.assert_called_once_with("LEOS", "Test", "info")
 
+    def test_notification_persistence_failure_never_interrupts_the_calling_action(self):
+        with patch(
+            "desktop.notifications.NotificationStore",
+            side_effect=RuntimeError("notification storage unavailable"),
+        ):
+            result = post_notification("LEOS", "Test", "info", native=False)
+
+        self.assertIsNone(result)
+
     def test_mode_notification_does_not_use_native_popup_command(self):
         source = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
         self.assertNotIn("notify-send", source)
