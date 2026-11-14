@@ -6,7 +6,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 
 - `main.py` : initialise Qt Quick et connecte les services backend.
 - `qml/Main.qml` : interface plein écran avec bibliothèque par catégories, recherche, favoris, jeux récents, fiche détaillée, panneau rapide et ajout manuel. Les jaquettes manquantes ou devenues illisibles ont un visuel de remplacement à monogramme ; les sélections changent avec une transition douce.
-- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic, Lutris et des listes RetroArch, ajout manuel, favoris et historique récent.
+- `backend/library.py` : bibliothèque unifiée, détection locale des jeux Steam, Heroic, Lutris et des listes RetroArch, ajout manuel, favoris et historique récent.\n- `backend/download_organizer.py` et `download_organizer_service.py` : surveillance des téléchargements terminés et rangement prudent des ROM aux formats reconnus dans `~/Emulation/ROMs`, actif dès l'ouverture de la session KDE.
 - `backend/system_monitor.py` : CPU/RAM, températures CPU/GPU et télémétrie GPU/VRAM via DRM/hwmon ; un repli facultatif sur `nvidia-smi` couvre les pilotes NVIDIA propriétaires. Les données non fournies par le pilote ou l'outil restent indisponibles.
 - `backend/power_profiles.py` : découverte des profils réellement proposés par `power-profiles-daemon` et application via `powerprofilesctl`, uniquement après confirmation explicite dans l'interface.
 - `backend/mangohud.py` : détection facultative de MangoHud et ajout du wrapper uniquement aux commandes de lancement direct lorsque l'utilisateur active l'overlay. Aucun paquet n'est installé et aucune configuration globale n'est modifiée.
@@ -16,7 +16,7 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 
 Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell.
 
-Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
+Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Le service de rangement utilise le dossier indiqué par `XDG_DOWNLOAD_DIR` dans `user-dirs.dirs` et classe les téléchargements terminés non ambigus dans `~/Emulation/ROMs/<système>/<console>/`; il tourne en arrière-plan dans la session KDE, y compris lorsque Gaming Mode est fermé. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
 
 ## Développement local
 
