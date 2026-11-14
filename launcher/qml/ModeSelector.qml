@@ -76,8 +76,11 @@ ApplicationWindow {
     }
 
     function handleGamepadAction(action) {
-        if (transitionInProgress)
+        if (transitionInProgress) {
+            if (action === "back")
+                finishModeTransition()
             return
+        }
         if (transitionDialog.visible) {
             if (action === "confirm") {
                 transitionDialog.close()
@@ -496,6 +499,14 @@ ApplicationWindow {
         onTriggered: window.finishModeTransition()
     }
 
+    // Escape only skips a mode intro while the transition is active.
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        enabled: window.transitionInProgress
+        onActivated: window.finishModeTransition()
+    }
+
     Rectangle {
         id: introOverlay
         anchors.fill: parent
@@ -507,9 +518,28 @@ ApplicationWindow {
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
         }
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 42
+            radius: 18
+            color: "#B8000000"
+            border.color: "#55FFFFFF"
+            width: skipModeIntroLabel.implicitWidth + 34
+            height: skipModeIntroLabel.implicitHeight + 22
+            Label {
+                id: skipModeIntroLabel
+                anchors.centerIn: parent
+                text: "ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER"
+                color: "white"
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+            }
+        }
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
+            onClicked: window.finishModeTransition()
         }
     }
 
