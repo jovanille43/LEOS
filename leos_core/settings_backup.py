@@ -28,7 +28,7 @@ def _backup_root() -> Path:
     return xdg_state_home() / "leos" / "settings-backups"
 
 
-def _read_regular_file(path: Path, maximum: int) -> bytes:
+def _read_regular_file(path: Path, maximum: int, *, allow_empty: bool = False) -> bytes:
     """Read one bounded regular file without following a final symlink."""
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
     flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
@@ -37,7 +37,7 @@ def _read_regular_file(path: Path, maximum: int) -> bytes:
         before = os.fstat(descriptor)
         if not stat.S_ISREG(before.st_mode):
             raise OSError("Expected a regular backup file")
-        if before.st_size <= 0 or before.st_size > maximum:
+        if (before.st_size <= 0 and not allow_empty) or before.st_size > maximum:
             raise ValueError("Backup file has an unsupported size")
         chunks: list[bytes] = []
         remaining = maximum + 1
@@ -135,6 +135,9 @@ class SettingsBackupManager:
         os.chmod(self.backup_dir, 0o700)
 
     def create_backup(self) -> str:
+        # SettingsStore.load() deliberately falls back to defaults on unreadable
+        # input. Never turn those fallback values into a misleading backup.
+        self.settings.validate_current_file()
         return self._create_backup()
 
     def _create_backup(self, *, preserve_backup_ids: set[str] | None = None) -> str:
@@ -336,6 +339,31 @@ class SettingsBackupManager:
         self._prune_old_backups(preserve_backup_ids={backup_id})
         return backup_id
 
+    def _quarantine_corrupt_settings(self, raw_settings: bytes) -> str:
+        """Preserve bounded unreadable settings bytes before an explicit recovery."""
+        self._ensure_backup_directory()
+        quarantine_id = uuid.uuid4().hex
+        data_name = f"corrupt-settings-{quarantine_id}.bin"
+        metadata_name = f"corrupt-settings-{quarantine_id}.meta"
+        data_path = self.backup_dir / data_name
+        metadata_path = self.backup_dir / metadata_name
+        _atomic_write(data_path, raw_settings)
+        metadata = {
+            "schema_version": 1,
+            "kind": "unreadable-leos-settings",
+            "quarantine_id": quarantine_id,
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "size": len(raw_settings),
+            "sha256": hashlib.sha256(raw_settings).hexdigest(),
+        }
+        try:
+            encoded = (json.dumps(metadata, sort_keys=True) + "\n").encode("utf-8")
+            _atomic_write(metadata_path, encoded)
+        except Exception:
+            data_path.unlink(missing_ok=True)
+            raise
+        return quarantine_id
+
     def _verified_backup(self, backup_id: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
         if not isinstance(backup_id, str) or not _BACKUP_ID.fullmatch(backup_id):
             return None
@@ -401,6 +429,20 @@ class SettingsBackupManager:
         if verified is None:
             raise ValueError("LEOS settings backup is missing, unsafe or invalid")
         _manifest, values = verified
-        recovery_backup_id = self._create_backup(preserve_backup_ids={backup_id})
+
+        # Preserve the live settings before replacing them. A valid file gets a
+        # normal restorable snapshot; unreadable bytes are quarantined verbatim.
+        try:
+            self.settings.validate_current_file()
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError, RecursionError):
+            raw_settings = _read_regular_file(
+                self.settings.path,
+                MAX_SETTINGS_BYTES,
+                allow_empty=True,
+            )
+            recovery_backup_id = self._quarantine_corrupt_settings(raw_settings)
+        else:
+            recovery_backup_id = self._create_backup(preserve_backup_ids={backup_id})
+
         self.settings.replace_all(values, confirmed=True)
         return recovery_backup_id
