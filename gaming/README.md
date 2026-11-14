@@ -15,9 +15,9 @@ Application Gaming plein écran construite avec **Qt 6 / QML** et **PySide6**, a
 - `backend/instance_lock.py` : empêche l'ouverture de plusieurs fenêtres Gaming dans la même session utilisateur. Le verrou non bloquant utilise flock dans le répertoire d'exécution utilisateur ; le noyau le libère à la fermeture ou au crash du processus. Il ne termine aucun autre processus.
 - `requirements.txt` : dépendances du prototype.
 
-Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell. Les fichiers locaux utilisent une association prudente par extension : Dolphin (GCM/WBFS/RVZ), Cemu (WUA/WUHB/WUD/WUX), Eden (NSP/XCI) et PPSSPP (CSO/ZSO). Le fichier est transmis à Flatpak via `--file-forwarding` et le portail de documents ; l'émulateur doit déjà être installé. Les formats ambigus (ISO, CHD, CUE, BIN, PBP, etc.) ne sont jamais devinés.
+Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionnaire de protocole est installé. Les jeux ajoutés manuellement sont lancés avec une liste d'arguments, sans shell. Les fichiers locaux utilisent une association prudente par extension : Dolphin (GCM/WBFS/RVZ), Cemu (WUA/WUHB/WUD/WUX), Eden (NSP/XCI) et PPSSPP (CSO/ZSO). Le fichier est transmis à Flatpak via `--file-forwarding` et le portail de documents ; l'émulateur doit déjà être installé dans une installation Flatpak utilisateur, système ou nommée connue du système. Pour une installation nommée définie dans `/etc/flatpak/installations.d/*.conf`, LEOS transmet explicitement `--installation=<nom>` à Flatpak. Le lancement ne déclenche jamais d'installation. Les formats ambigus (ISO, CHD, CUE, BIN, PBP, etc.) ne sont jamais devinés.
 
-Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Sur un profil neuf, si `XDG_DOWNLOAD_DIR` pointe vers le dossier standard `~/Downloads` ou `~/Téléchargements`, le service configure `~/Jeux` comme dossier de téléchargement par défaut avec `xdg-user-dirs-update`. Un dossier XDG personnalisé est conservé et surveillé tel quel. Le service classe les téléchargements terminés non ambigus dans `~/Emulation/ROMs/<système>/<console>/`; il tourne en arrière-plan dans la session KDE, y compris lorsque Gaming Mode est fermé. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
+Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Sur un profil neuf, si `XDG_DOWNLOAD_DIR` pointe encore vers le dossier standard `~/Downloads` ou `~/Téléchargements`, le service configure `~/Jeux` comme dossier de téléchargement par défaut avec `xdg-user-dirs-update`. Un dossier XDG personnalisé est conservé et surveillé tel quel. Le service classe les téléchargements terminés non ambigus dans `~/Emulation/ROMs/<système>/<console>/`; il tourne en arrière-plan dans la session KDE, y compris lorsque Gaming Mode est fermé. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
 
 ## Développement local
 
@@ -43,11 +43,9 @@ Le code nécessite les modules Qt Quick et Qt Quick Controls de Qt 6 sur l'hôte
 - Les tests automatisés vérifient les fonctions Python et les contrats d'intégration QML ; l'exécution réelle de l'interface et la validation matérielle sur Bazzite restent à effectuer.
 Ne pas présenter ces fonctions comme opérationnelles avant les tests correspondants.
 
-
 ### Fiches de jeux
 
 La fiche d'un jeu affiche les métadonnées vérifiées par la bibliothèque : titre, plateforme, source, état des fichiers locaux et identifiant du catalogue lorsqu'il est disponible. Pour Steam, Heroic et Lutris, LEOS vérifie le dossier d'installation (et, pour Lutris, l'exécutable déclaré lorsqu'il est absolu). Une entrée conservée dans un catalogue mais dont le dossier n'est plus accessible est signalée « Fichiers absents » ; cela permet notamment d'identifier un disque externe déconnecté. Si le catalogue ne fournit aucun chemin exploitable, l'état reste « État inconnu » plutôt que d'affirmer à tort que le jeu est installé. Les entrées manuelles restent identifiées comme telles. Aucun chemin privé complet ni argument de lancement n'est exposé dans l'interface.
-
 
 ### Lancement et retours d'état
 
@@ -59,13 +57,11 @@ Le panneau rapide indique la disponibilité de Steam, Heroic, Lutris et RetroArc
 
 La disponibilité des lanceurs est réévaluée périodiquement pendant Gaming Mode (toutes les 15 secondes) ; l'interface n'affiche un changement que si l'état détecté diffère. En cas d'échec de lancement, la notification reprend le motif précis présenté dans l'interface, plutôt qu'un message générique. La recherche accepte aussi l'App ID Steam et l'identifiant stable d'une entrée importée.
 
-
 ### Cohérence des catalogues et chemins
 
 Les titres sont normalisés à l'affichage en supprimant uniquement les espaces de début/fin et les répétitions d'espaces ; la casse et la ponctuation du nom d'origine sont conservées. La recherche ignore les différences de casse et d'accents et tolère les espaces répétés. LEOS signale les titres strictement identiques entre plusieurs entrées comme « doublons potentiels » en indiquant les sources concernées, sans les fusionner ni les supprimer. Les marqueurs d'édition (Deluxe, GOTY, Remastered, etc.) sont conservés dans la comparaison afin de ne pas confondre des versions distinctes. Cet indicateur est un indice, pas une preuve que deux entrées correspondent au même produit.
 
 Les manifestes Steam ne peuvent fournir un chemin d'installation que si le nom de dossier est un simple composant sûr (sans séparateur ni référence au dossier parent). Les entrées Heroic dont le chemin est absent restent visibles avec un état « État inconnu ». LEOS ne fusionne pas deux entrées provenant de lanceurs différents sur la seule base d'un titre identique : des éditions ou installations distinctes peuvent porter le même nom. Les doublons d'identifiant au sein d'une même source sont, eux, neutralisés par l'identifiant stable du catalogue. Le chargement de chaque fournisseur est isolé : une erreur d'accès à un catalogue ou à une jaquette ne bloque pas l'import des autres lanceurs. Une jaquette indisponible est simplement omise ; les entrées de jeu valides continuent d'être affichées.
-
 
 ## Fonds d'écran de référence
 
