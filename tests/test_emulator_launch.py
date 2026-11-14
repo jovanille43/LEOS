@@ -46,7 +46,7 @@ class EmulatorLaunchTests(unittest.TestCase):
             with self.subTest(suffix=suffix):
                 home, game, _ = self._setup(suffix=suffix)
                 app = home / ".local/share/flatpak/app" / app_id
-                app.mkdir(parents=True)
+                app.mkdir(parents=True, exist_ok=True)
                 command, error = build_emulator_launch_command(
                     game, home=home, data_home=home / ".local/share",
                     flatpak_executable="flatpak",
