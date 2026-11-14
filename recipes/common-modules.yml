@@ -50,9 +50,10 @@ modules:
     src: aurorae/leos
     dest: /usr/share/aurorae/themes/leos/
 
-  - type: copy
-    src: config
-    dest: /usr/share/leos/
+  - type: files
+    files:
+      - source: leos-config
+        destination: /usr/share/leos
 
   - type: copy
     src: packaging/leos-default-apps-setup
