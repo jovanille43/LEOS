@@ -8,7 +8,7 @@ import tempfile
 from gaming.backend.library_state import (
     filter_games, read_bounded_json, validate_manual_game_input,
     MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH, MAX_MANUAL_COMMAND_LENGTH,
-    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_TITLE_LENGTH,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_TITLE_LENGTH, SOURCE_FILTERS,
 )
 
 
@@ -209,6 +209,46 @@ class LibraryStateTests(unittest.TestCase):
             self.games, "Nintendo", set(), [], "racer"
         )
         self.assertEqual(result, [])
+
+    def test_source_filters_use_provider_ids_and_metadata(self):
+        games = [
+            {"id": "steam:1", "title": "Steam Game", "platform": "PC", "source": "Steam"},
+            {"id": "heroic:epic:2", "title": "Epic Game", "platform": "PC", "source": "Epic Games · Heroic"},
+            {"id": "lutris:3", "title": "Lutris Game", "platform": "PC", "source": "Lutris · wine"},
+            {"id": "retroarch:4", "title": "Retro Game", "platform": "Nintendo", "source": "RetroArch · SNES"},
+            {"id": "emulator:5", "title": "Local ROM", "platform": "PlayStation", "source": "Fichiers locaux"},
+            {"id": "manual:6", "title": "Manual Game", "platform": "PC", "source": "Ajout manuel"},
+        ]
+        expected = {
+            "Steam": "steam:1",
+            "Heroic": "heroic:epic:2",
+            "Lutris": "lutris:3",
+            "RetroArch": "retroarch:4",
+            "Fichiers locaux": "emulator:5",
+            "Ajout manuel": "manual:6",
+        }
+        for source, game_id in expected.items():
+            with self.subTest(source=source):
+                result = filter_games(
+                    games, "Accueil", set(), [], source_filter=source
+                )
+                self.assertEqual([game["id"] for game in result], [game_id])
+
+    def test_source_filter_composes_with_category_and_search(self):
+        games = [
+            {"id": "steam:1", "title": "Racing One", "platform": "PC", "source": "Steam"},
+            {"id": "steam:2", "title": "Puzzle Two", "platform": "PC", "source": "Steam"},
+            {"id": "heroic:3", "title": "Racing Three", "platform": "PC", "source": "Heroic"},
+        ]
+        result = filter_games(
+            games, "PC Gaming", set(), [], "racing", source_filter="Steam"
+        )
+        self.assertEqual([game["id"] for game in result], ["steam:1"])
+        self.assertEqual(
+            len(filter_games(games, "Accueil", set(), [], source_filter="Toutes les sources")),
+            3,
+        )
+        self.assertEqual(SOURCE_FILTERS[0], "Toutes les sources")
 
     def test_unknown_category_falls_back_to_all_games(self):
         self.assertEqual(len(filter_games(self.games, "Unknown", set(), [])), 5)
