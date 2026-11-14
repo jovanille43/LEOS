@@ -150,6 +150,7 @@ class ControlCenterController(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shutting_down = False
         self.settings = SettingsStore()
         self.settingsBackups = SettingsBackupManager(self.settings)
         self._settings_backup_snapshot = self._read_settings_backup_snapshot()
@@ -370,6 +371,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_hardware_scan_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._hardware_task = None
         if snapshot.get("_scan_error"):
             return
@@ -399,6 +402,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_network_scan_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._network_task = None
         if snapshot.get("_scan_error"):
             return
@@ -429,6 +434,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_cleanup_preview_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._cleanup_task = None
         if snapshot.get("_scan_error"):
             return
@@ -452,6 +459,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_diagnostics_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._diagnostics_task = None
         if snapshot.get("_scan_error"):
             return
@@ -1154,6 +1163,8 @@ class ControlCenterController(QObject):
     ) -> None:
         """Report asynchronous D-Bus completion without overstating panel state."""
         self._plasma_layout_tasks.pop(backup_id, None)
+        if self._shutting_down:
+            return
         if succeeded:
             message = (
                 f"{result_message} Sauvegarde conservée ({backup_id[:8]}). "
@@ -1182,6 +1193,29 @@ class ControlCenterController(QObject):
     def openAdvancedSettings(self) -> bool:
         """Open the complete KDE System Settings application."""
         return self._start_detached(general_settings_command())
+
+    @Slot()
+    def shutdown(self) -> None:
+        """Stop periodic work and read-only helper processes before the UI exits."""
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        for timer in (
+            self._settings_sync_timer,
+            self._hardware_timer,
+            self._network_timer,
+            self._diagnostics_timer,
+            self._cleanup_timer,
+            self._system_update_timeout,
+            self._deployment_timeout,
+            self._deployment_timer,
+        ):
+            timer.stop()
+        for process in (self._system_update_process, self._deployment_process):
+            if process.state() != QProcess.ProcessState.NotRunning:
+                process.kill()
+                process.waitForFinished(1000)
+        self.monitor.stop()
 
     @staticmethod
     def _start_detached(command: list[str] | None) -> bool:
