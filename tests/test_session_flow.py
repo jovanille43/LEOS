@@ -293,9 +293,6 @@ class SessionFlowTests(unittest.TestCase):
         self.assertGreaterEqual(qml.count("window.accentSurface(window.cyan"), 6)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
     def test_desktop_return_intro_can_be_skipped_without_changing_normal_navigation(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         shortcut_start = qml.index("Shortcut {", qml.index("function finishDesktopReturn"))
@@ -306,9 +303,15 @@ if __name__ == "__main__":
         self.assertIn("enabled: window.returningToDesktop", shortcut)
         self.assertIn("onActivated: window.finishDesktopReturn()", shortcut)
         overlay_start = qml.index("id: desktopIntroOverlay")
-        overlay_end = qml.index("\n    }", qml.index("MouseArea {", overlay_start))
+        mouse_start = qml.index("MouseArea {", overlay_start)
+        overlay_end = qml.index("\n    }", mouse_start)
         overlay = qml[overlay_start:overlay_end]
         self.assertIn("ÉCHAP OU CLIC POUR PASSER", overlay)
         self.assertIn("onClicked: window.finishDesktopReturn()", overlay)
         self.assertIn("function requestDesktopReturn()", qml)
         self.assertIn("function finishDesktopReturn()", qml)
+
+
+
+if __name__ == "__main__":
+    unittest.main()
