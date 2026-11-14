@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from itertools import islice
 import os
 import re
@@ -20,7 +19,7 @@ from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
     MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
-    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS,
     validate_manual_game_input, write_bounded_json,
 )
 from .steam_artwork import find_steam_artwork
