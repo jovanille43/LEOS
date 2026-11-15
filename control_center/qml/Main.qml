@@ -1920,7 +1920,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Label {
                                             text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
-                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.colorB : window.colorA
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.colorBText : window.colorAText
                                             font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                         }
@@ -2286,7 +2286,7 @@ ApplicationWindow {
                                             Item { Layout.fillWidth: true }
                                             Label {
                                                 text: modelData.state + (modelData.isDefault === "true" ? " · PRINCIPALE" : "")
-                                                color: modelData.state === "Connectée" ? window.colorA : window.muted
+                                                color: modelData.state === "Connectée" ? window.colorAText : window.muted
                                                 font.pixelSize: 9
                                             }
                                         }
