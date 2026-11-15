@@ -11,7 +11,7 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home, data_home as xdg_data_home
 
-from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QByteArray, QModelIndex, Qt, Signal, Slot, QUrl, QThreadPool
+from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QByteArray, QModelIndex, Qt, Signal, Slot, Property, QUrl, QThreadPool
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
 
