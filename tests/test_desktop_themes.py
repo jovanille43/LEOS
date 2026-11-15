@@ -190,6 +190,9 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("window.contrastTextForColor(controlCenter.themeColorB)", qml)
         self.assertIn("function contrastTextForGradient(colorA, colorB)", qml)
         self.assertIn("window.contrastTextForGradient(modelData.a, modelData.b)", qml)
+        self.assertIn("for (let sample = 0; sample <= 16; sample++)", qml)
+        self.assertIn("Qt.rgba(", qml)
+        self.assertIn("window.relativeLuminance(interpolated)", qml)
         self.assertIn("desktopWallpaperUrl", qml)
         self.assertIn("gamingWallpaperUrl", qml)
 
