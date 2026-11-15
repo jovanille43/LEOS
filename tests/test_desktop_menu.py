@@ -50,6 +50,8 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("Impossible de lire le catalogue des applications.", source)
         self.assertIn("applicationCatalog.scanError.length > 0", qml)
         self.assertIn("applicationCatalog.scanError", qml)
+        self.assertIn("function onScanErrorChanged()", qml)
+        self.assertIn('status.text = applicationCatalog.scanError', qml)
 
     def test_menu_empty_state_uses_a_real_qml_newline(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
