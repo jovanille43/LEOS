@@ -14,6 +14,8 @@ ApplicationWindow {
     color: themeColors.background
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
 
     ColumnLayout {
@@ -26,7 +28,7 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: "white"; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -38,7 +40,7 @@ ApplicationWindow {
                 Label {
                     anchors.centerIn: parent
                     text: notificationModel.unreadCount + " non lues"
-                    color: window.colorA
+                    color: window.colorAText
                     font.pixelSize: 11
                 }
             }
@@ -101,13 +103,13 @@ ApplicationWindow {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.colorA; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.colorAText; font.pixelSize: 17 }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.colorB; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.colorBText; font.pixelSize: 18 }
                             }
                         }
                     }
