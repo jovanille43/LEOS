@@ -16,8 +16,19 @@ ApplicationWindow {
     property color cyan: themeColors.accent_primary
     property color magenta: themeColors.accent_secondary
     property color muted: themeColors.muted_text
-    property color panel: "#121720"
-    property color line: "#293342"
+    property color panel: themeColors.surface
+    property color line: themeColors.border
+
+    function accentSurface(accentColor, strength) {
+        const base = Qt.color(themeColors.surface)
+        const amount = Math.max(0.0, Math.min(1.0, strength))
+        return Qt.rgba(
+            base.r * (1.0 - amount) + accentColor.r * amount,
+            base.g * (1.0 - amount) + accentColor.g * amount,
+            base.b * (1.0 - amount) + accentColor.b * amount,
+            1.0
+        )
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -34,7 +45,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 28
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -70,7 +81,7 @@ ApplicationWindow {
                         Layout.preferredWidth: 54
                         Layout.preferredHeight: 54
                         radius: 14
-                        color: "#17303b"
+                        color: window.accentSurface(window.cyan, 0.16)
                         border.color: window.cyan
                         Label {
                             anchors.centerIn: parent
@@ -84,7 +95,7 @@ ApplicationWindow {
                         spacing: 5
                         Label {
                             text: controllerCenter.selectedDeviceName
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 17
                             font.weight: Font.DemiBold
                         }
@@ -180,7 +191,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "Zone morte des sticks"
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                             }
                             Slider {
@@ -233,8 +244,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 104
                                 radius: 10
-                                color: "#0b1119"
-                                border.color: "#263543"
+                                color: window.themeColors.background
+                                border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 14
@@ -248,7 +259,7 @@ ApplicationWindow {
                                     Label {
                                         Layout.fillWidth: true
                                         text: controllerCenter.lastEventText
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: 16
                                         wrapMode: Text.WordWrap
                                     }
@@ -263,7 +274,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.buttonsText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 13
                                 wrapMode: Text.WordWrap
                             }
@@ -281,7 +292,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.axesText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }
@@ -306,7 +317,7 @@ ApplicationWindow {
                                         Rectangle {
                                             anchors.fill: parent
                                             radius: width / 2
-                                            color: "#0b1119"
+                                            color: window.themeColors.background
                                             border.color: controllerCenter.leftStickAvailable ? window.cyan : window.line
                                             opacity: controllerCenter.leftStickAvailable ? 1.0 : 0.45
                                         }
@@ -314,13 +325,13 @@ ApplicationWindow {
                                             width: 1
                                             height: parent.height - 16
                                             anchors.centerIn: parent
-                                            color: "#344052"
+                                            color: window.themeColors.border
                                         }
                                         Rectangle {
                                             width: parent.width - 16
                                             height: 1
                                             anchors.centerIn: parent
-                                            color: "#344052"
+                                            color: window.themeColors.border
                                         }
                                         Rectangle {
                                             width: 12
@@ -330,7 +341,7 @@ ApplicationWindow {
                                             x: parent.width / 2 - width / 2 + controllerCenter.leftStickX * 0.38
                                             y: parent.height / 2 - height / 2 - controllerCenter.leftStickY * 0.38
                                             color: window.cyan
-                                            border.color: "white"
+                                            border.color: window.themeColors.text
                                             border.width: 1
                                         }
                                     }
@@ -361,7 +372,7 @@ ApplicationWindow {
                                         Rectangle {
                                             anchors.fill: parent
                                             radius: width / 2
-                                            color: "#0b1119"
+                                            color: window.themeColors.background
                                             border.color: controllerCenter.rightStickAvailable ? window.magenta : window.line
                                             opacity: controllerCenter.rightStickAvailable ? 1.0 : 0.45
                                         }
@@ -369,13 +380,13 @@ ApplicationWindow {
                                             width: 1
                                             height: parent.height - 16
                                             anchors.centerIn: parent
-                                            color: "#344052"
+                                            color: window.themeColors.border
                                         }
                                         Rectangle {
                                             width: parent.width - 16
                                             height: 1
                                             anchors.centerIn: parent
-                                            color: "#344052"
+                                            color: window.themeColors.border
                                         }
                                         Rectangle {
                                             width: 12
@@ -385,7 +396,7 @@ ApplicationWindow {
                                             x: parent.width / 2 - width / 2 + controllerCenter.rightStickX * 0.38
                                             y: parent.height / 2 - height / 2 - controllerCenter.rightStickY * 0.38
                                             color: window.magenta
-                                            border.color: "white"
+                                            border.color: window.themeColors.text
                                             border.width: 1
                                         }
                                     }
@@ -423,7 +434,7 @@ ApplicationWindow {
             Label {
                 Layout.fillWidth: true
                 text: "LEOS · Les périphériques sont surveillés en lecture seule ; aucune règle système ni commande de jeu n'est modifiée."
-                color: "#657184"
+                color: window.themeColors.muted_text
                 font.pixelSize: 10
                 horizontalAlignment: Text.AlignHCenter
             }
