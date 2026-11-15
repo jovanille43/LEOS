@@ -6,7 +6,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
 - `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
-- `config/desktop-defaults.json` : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
+- `files/leos-config/config/desktop-defaults.json` : profil déclaratif LEOS Original (fond sombre, couleurs A/B initiales, dock inférieur, applications épinglées indicatives et widgets facultatifs).
 
 ## Direction visuelle Desktop
 
@@ -20,14 +20,14 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 ## Règles de personnalisation
 
-Le profil JSON est une référence de conception, pas une configuration Plasma directement applicable. Il ne doit pas être présenté comme un thème déjà installé ou actif. L'application future devra sauvegarder les réglages KDE existants, vérifier les applications disponibles et demander le consentement avant toute modification du profil personnel.
+Le profil JSON décrit les valeurs de départ et ne s'applique pas automatiquement. Les préférences de disposition sont conservées séparément ; l'application du dock est une opération du Centre de contrôle, après inspection, sauvegarde privée et confirmation explicite. Les éléments Plasma non pris en charge ne sont jamais modifiés silencieusement.
 
 Aucune configuration Plasma existante ne sera écrasée silencieusement.
 
 ## À finaliser
 
 - Valider le rendu du fond d'écran SVG et son lien vers l'emblème dans une session Bazzite ; proposer ensuite son application explicite depuis le Centre de contrôle.
-- Application automatique des profils de disposition au véritable panneau Plasma (l'adaptateur de panneau existe mais reste inactif) ; dock et widgets encore non intégrés.
+- Validation sur Bazzite réelle de l'application du dock pris en charge (position, alignement, hauteur, masquage et favoris). Les widgets de bureau ne sont pas appliqués et la suppression du panneau LEOS n'est pas proposée.
 - Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).
 - Tests de session sur une vraie installation Bazzite KDE.
@@ -117,9 +117,7 @@ et restaurer une sauvegarde. Les copies et manifestes sont privés (répertoire
 
 La restauration exige un indicateur de confirmation explicite fourni par
 l'interface appelante. Avant de restaurer, le module sauvegarde également la
-configuration courante afin de permettre un retour arrière. Aucun changement
-n'est appliqué automatiquement à Plasma ; cette brique prépare la future
-intégration du dock et des dispositions LEOS.
+configuration courante afin de permettre un retour arrière. La sauvegarde préalable est utilisée par le flux d'application du dock du Centre de contrôle. La restauration reste une action distincte, soumise à confirmation ; aucune modification de Plasma n'est effectuée sans action explicite.
 
 
 ## Inspection Plasma et aperçu de disposition
@@ -217,9 +215,7 @@ La commande native de KDE est appelée sans shell ; aucun fichier système ou
 
 **Limites alpha :** les trois SVG sont des premières formes originales et ne
 constituent pas encore un habillage exhaustif. Les icônes, boutons et contrôles
-Qt continuent d'utiliser leurs styles existants. L'emblème officiel du lion
-n'est pas encore intégré, car les ressources graphiques originales ne sont
-pas présentes dans le dépôt. Le style est installé mais n'est pas sélectionné
+Qt continuent d'utiliser leurs styles existants. Le Plasma Style ne réutilise pas encore l'emblème officiel du lion dans ses propres éléments SVG ; les ressources de marque sont toutefois présentes dans le dossier `branding/`. Le style est installé mais n'est pas sélectionné
 automatiquement. Son rendu doit encore être contrôlé sur une vraie session
 Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
 
@@ -235,12 +231,10 @@ Le module `desktop/dock_favourites.py` ajoute un stockage local des applications
 des identifiants de fichiers `.desktop`, jamais des commandes arbitraires ou
 des chemins d'exécution. Les favoris peuvent être ajoutés, retirés et réordonnés.
 La liste est bornée à 32 entrées, validée, écrite atomiquement et protégée en
-permissions privées. Les identifiants ne sont pas encore résolus en icônes ni
-appliqués au panneau Plasma : cette étape attend l'intégration visuelle et les
-tests sur une session Bazzite KDE.
+permissions privées. Les identifiants sont résolus à l'application du dock à partir des applications installées. Le Centre de contrôle transmet les favoris ordonnés au gestionnaire de tâches Plasma après sauvegarde et confirmation ; les favoris indisponibles sont ignorés et une liste vide ne vide pas les lanceurs existants. La validation sur une session Bazzite réelle reste nécessaire.
 
 
-## Menu principal LEOS — première alpha
+## Menu principal LEOS
 
 `menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une
 première interface de recherche et de lancement d'applications. Le catalogue
@@ -251,14 +245,13 @@ Les commandes non résolues et les entrées invalides sont refusées. Les codes 
 accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
 cyan/bleu/violet/magenta.
 
-Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
-du menu Plasma ni un dock intégré. La catégorie Favoris affiche les applications épinglées dans leur ordre personnalisé et conserve la recherche accent-insensible. La catégorie « Récemment utilisées » repose sur les lancements enregistrés localement. Les favoris ne sont pas encore appliqués au panneau Plasma ; les raccourcis globaux KDE restent à raccorder. Le rendu et le lancement doivent encore être validés sur une session Bazzite KDE réelle.
+Le menu LEOS est une application de lancement autonome : il ne remplace pas le menu Plasma. Les catégories Favoris et « Récemment utilisées » conservent leur ordre et leur historique local. Les favoris peuvent être synchronisés avec le gestionnaire de tâches quand l'utilisateur applique un profil de dock depuis le Centre de contrôle ; ils ne modifient jamais Plasma à chaque clic. Les raccourcis globaux KDE restent à raccorder et le rendu doit être validé sur une session Bazzite réelle.
 
 ### Menu LEOS — favoris connectés au dock
 
 Le catalogue du menu utilise désormais le stockage `DockFavourites` : chaque carte d'application propose une étoile pour épingler ou retirer l'application des favoris. Le choix est conservé dans le fichier local privé du dock ; le menu ne modifie toujours pas la configuration Plasma. Les commandes de lancement restent séparées des identifiants favoris et sont exécutées sans shell. Le raccourci `leos-menu.desktop` est inclus dans la recette BlueBuild et apparaît dans le menu d'applications KDE.
 
-L'intégration graphique au véritable panneau Plasma reste une étape distincte. Elle nécessitera une sauvegarde de la disposition existante, une confirmation explicite et une validation sur Bazzite KDE avant activation.
+L'intégration au panneau Plasma est une action distincte du menu : le Centre de contrôle inspecte la disposition, crée une sauvegarde privée et exige une confirmation avant de transmettre les favoris au gestionnaire de tâches. Les applications absentes sont ignorées ; si aucune entrée n'est résolue, les lanceurs existants sont préservés. Le résultat doit encore être validé sur Bazzite KDE.
 
 ## Centre de notifications LEOS — première alpha
 
