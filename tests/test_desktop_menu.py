@@ -40,6 +40,22 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("applicationCatalog.loading", qml)
         self.assertIn("Chargement des applications…", qml)
 
+    def test_catalog_scan_failure_is_not_misreported_as_an_empty_library(self):
+        source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("scanErrorChanged = Signal()", source)
+        self.assertIn("@Property(str, notify=scanErrorChanged)", source)
+        self.assertIn("def scanError(self) -> str:", source)
+        self.assertIn('if snapshot is None:', source)
+        self.assertIn("Impossible de lire le catalogue des applications.", source)
+        self.assertIn("applicationCatalog.scanError.length > 0", qml)
+        self.assertIn("applicationCatalog.scanError", qml)
+
+    def test_menu_empty_state_uses_a_real_qml_newline(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn(r'"Aucune application trouvée.\nEssaie', qml)
+        self.assertNotIn(r'"Aucune application trouvée.\\nEssaie', qml)
+
     def test_menu_category_repeater_observes_async_catalog_updates(self):
         source = (ROOT / "desktop/menu_controller.py").read_text(encoding="utf-8")
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
