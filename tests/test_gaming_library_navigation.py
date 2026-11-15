@@ -91,6 +91,9 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("Impossible de lire la bibliothèque de jeux.", source)
         self.assertIn("gameLibrary.scanError.length > 0", self.qml)
         self.assertIn("gameLibrary.scanError", self.qml)
+        self.assertIn("function onScanErrorChanged()", self.qml)
+        self.assertIn("statusText.text = gameLibrary.scanError", self.qml)
+        self.assertIn("color: gameLibrary.scanError.length > 0 ? window.colorBText : window.muted", self.qml)
 
     def test_gaming_empty_state_uses_single_qml_newline_escapes(self):
         self.assertIn(r'Aucun jeu détecté dans cette catégorie.\n\nInstalle', self.qml)
