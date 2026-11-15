@@ -63,6 +63,11 @@ un schéma KDE `.colors` correspondant exactement à la paire A/B dans
 `plasma-apply-colorscheme` sans shell. Le schéma actif précédent est conservé
 pour pouvoir être restauré.
 
+Les rôles KDE de texte actif, de lien et de lien visité utilisent eux aussi les
+variantes A/B contrastées. Dans les listes sélectionnées, le fond et son fond
+alternatif restent identiques afin de préserver le contraste du texte même
+lorsque les deux couleurs choisies sont très opposées.
+
 L'export KDE ne remplace pas le Plasma Style, les icônes, les curseurs, le fond
 d'écran, les panneaux ni les écrans de connexion. Le système immuable Bazzite
 n'est pas modifié.
