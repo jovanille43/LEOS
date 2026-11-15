@@ -16,20 +16,6 @@ from desktop.themes import (
 )
 
 
-def _relative_luminance(color: str) -> float:
-    channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
-    linear = [
-        value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
-        for value in channels
-    ]
-    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
-
-
-def _contrast_ratio(foreground: str, background: str) -> float:
-    first = _relative_luminance(foreground)
-    second = _relative_luminance(background)
-    return (max(first, second) + 0.05) / (min(first, second) + 0.05)
-
 
 def _relative_luminance(color: str) -> float:
     channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
@@ -72,7 +58,7 @@ class DesktopThemeTests(unittest.TestCase):
             ("#000000", "#000000"),
         ):
             palette = palette_for_colors(color_a, color_b)
-            for text_token in ("text", "muted_text"):
+            for text_token in ("text", "muted_text", "accent_primary_text", "accent_secondary_text"):
                 for surface_token in ("background", "surface", "surface_elevated"):
                     with self.subTest(
                         color_a=color_a,
@@ -90,6 +76,21 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertEqual(palette["accent_primary"], DEFAULT_COLOR_A)
         self.assertEqual(palette["accent_secondary"], DEFAULT_COLOR_B)
 
+    def test_custom_accent_text_is_contrast_safe_without_changing_gradient_colors(self):
+        palette = palette_for_colors("#000000", "#0055CC")
+        self.assertEqual(palette["accent_primary"], "#000000")
+        self.assertEqual(palette["accent_secondary"], "#0055CC")
+        self.assertEqual(palette["accent_primary_text"], palette["text"])
+        self.assertEqual(palette["accent_secondary_text"], palette["text"])
+
+        default_palette = palette_for_colors()
+        self.assertEqual(default_palette["accent_primary_text"], DEFAULT_COLOR_A)
+        self.assertEqual(default_palette["accent_secondary_text"], DEFAULT_COLOR_B)
+
+        for token in ("accent_primary_text", "accent_secondary_text"):
+            for surface in ("background", "surface", "surface_elevated"):
+                self.assertGreaterEqual(_contrast_ratio(palette[token], palette[surface]), 4.5)
+
     def test_text_contrast_remains_wcag_aa_on_all_dark_and_light_surfaces(self):
         palettes = list(THEME_PALETTES.values()) + [
             palette_for_colors("#00FFFF", "#FF8800"),
@@ -97,7 +98,7 @@ class DesktopThemeTests(unittest.TestCase):
             palette_for_colors("#808080", "#FFFFFF"),
         ]
         for palette in palettes:
-            for foreground in ("text", "muted_text"):
+            for foreground in ("text", "muted_text", "accent_primary_text", "accent_secondary_text"):
                 for background in ("background", "surface", "surface_elevated"):
                     with self.subTest(foreground=foreground, background=background, palette=palette):
                         self.assertGreaterEqual(
@@ -148,6 +149,7 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
         self.assertIn("property color colorA: themeColors.accent_primary", qml)
+        self.assertIn("property color colorAText: themeColors.accent_primary_text", qml)
         self.assertIn("ColorDialog", qml)
         self.assertIn("controlCenter.setThemeColors", qml)
         self.assertIn("function colorToHex(color)", qml)
@@ -204,6 +206,8 @@ class DesktopThemeTests(unittest.TestCase):
                 self.assertIn("themeColors.accent_secondary", source)
                 self.assertIn("property color colorA: themeColors.accent_primary", source)
                 self.assertIn("property color colorB: themeColors.accent_secondary", source)
+                self.assertIn("property color colorAText: themeColors.accent_primary_text", source)
+                self.assertIn("property color colorBText: themeColors.accent_secondary_text", source)
 
     def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
         root = Path(__file__).resolve().parents[1]
@@ -253,6 +257,7 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property var themeColors: leos.themePalette", qml)
         self.assertIn("property color colorA: themeColors.accent_primary", qml)
         self.assertIn("property color colorB: themeColors.accent_secondary", qml)
+        self.assertIn("property color colorBText: themeColors.accent_secondary_text", qml)
         self.assertIn("def refreshSharedTheme(self)", controller)
         self.assertIn("palette_for_colors(", controller)
 
