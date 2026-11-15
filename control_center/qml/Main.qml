@@ -16,6 +16,8 @@ ApplicationWindow {
 
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
@@ -253,7 +255,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DE CONTRÔLE"
-                        color: window.colorA
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -378,7 +380,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "UTILISATION CPU"
-                                            color: window.colorA
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -409,7 +411,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "MÉMOIRE"
-                                            color: window.colorA
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -440,7 +442,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "TEMPÉRATURE CPU"
-                                            color: window.colorA
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -475,7 +477,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "STOCKAGE SYSTÈME"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -506,7 +508,7 @@ ApplicationWindow {
                                     spacing: 8
                                     Label {
                                         text: "RÉSEAU"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -539,7 +541,7 @@ ApplicationWindow {
                                     spacing: 7
                                     Label {
                                         text: "SURVEILLANCE LEOS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -577,7 +579,7 @@ ApplicationWindow {
 
                                     Label {
                                         text: "LEOS STUDIO · IDENTITÉ VISUELLE"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -752,7 +754,7 @@ ApplicationWindow {
 
                                     Label {
                                         text: "FONDS D'ÉCRAN LEOS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -872,7 +874,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "THÈME KDE PLASMA"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -934,7 +936,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "STYLE DE BUREAU LEOS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -998,7 +1000,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "EXPÉRIENCE"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1033,7 +1035,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "BUREAU & DOCK"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1137,7 +1139,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "SAUVEGARDE DES DISPOSITIONS LEOS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1212,7 +1214,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "SAUVEGARDE PLASMA"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1250,7 +1252,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "INSPECTION DU BUREAU KDE"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1419,7 +1421,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.colorA
+                                                color: window.colorAText
                                                 font.pixelSize: 10
                                                 font.letterSpacing: 1
                                             }
@@ -1498,7 +1500,7 @@ ApplicationWindow {
                             Label {
                                 text: window.launchNotice
                                 visible: text.length > 0
-                                color: window.colorB
+                                color: window.colorBText
                                 font.pixelSize: 11
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
@@ -1524,7 +1526,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "PROFIL DE PERFORMANCES"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1600,7 +1602,7 @@ ApplicationWindow {
                         Label {
                             text: window.launchNotice
                             visible: text.length > 0
-                            color: window.colorB
+                            color: window.colorBText
                             font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -1638,7 +1640,7 @@ ApplicationWindow {
                                     spacing: 14
                                     Label {
                                         text: "ÉTAT DU SYSTÈME"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1678,7 +1680,7 @@ ApplicationWindow {
                                     spacing: 12
                                     Label {
                                         text: "INSTALLATION MANUELLE"
-                                        color: window.colorB
+                                        color: window.colorBText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1722,7 +1724,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "ÉTAT DES DÉPLOIEMENTS OSTREE"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1814,7 +1816,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.colorA; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.colorAText; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationDurationBox
                                         Layout.fillWidth: true
@@ -1833,7 +1835,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.colorA; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.colorAText; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationPriorityBox
                                         Layout.fillWidth: true
@@ -1987,7 +1989,7 @@ ApplicationWindow {
                                             anchors.fill: parent
                                             anchors.margins: 14
                                             spacing: 6
-                                            Label { text: modelData.title; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 1 }
+                                            Label { text: modelData.title; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1 }
                                             Label {
                                                 text: modelData.value || "Indisponible"
                                                 color: window.themeColors.text
@@ -2009,7 +2011,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "POINTS À VÉRIFIER"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -2036,7 +2038,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "PROCESSUS LES PLUS ACTIFS"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -2112,7 +2114,7 @@ ApplicationWindow {
                                     anchors.margins: 18
                                     ColumnLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "ESPACE REPÉRÉ"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 1.5 }
+                                        Label { text: "ESPACE REPÉRÉ"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1.5 }
                                         Label {
                                             text: controlCenter.cleanupPreview.totalSize || "Analyse en cours…"
                                             color: window.themeColors.text
@@ -2151,7 +2153,7 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         anchors.margins: 16
                                         spacing: 7
-                                        Label { text: modelData.title; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 1.2 }
+                                        Label { text: modelData.title; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1.2 }
                                         Label {
                                             text: modelData.data.size || "Non disponible"
                                             color: window.themeColors.text
@@ -2202,7 +2204,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Label {
                                     text: controlCenter.networkSnapshot.status || "Analyse en cours…"
-                                    color: window.colorA
+                                    color: window.colorAText
                                     font.pixelSize: 14
                                     font.weight: Font.DemiBold
                                 }
@@ -2238,7 +2240,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.colorA
+                                                color: window.colorAText
                                                 font.pixelSize: 9
                                                 font.letterSpacing: 1
                                             }
@@ -2256,7 +2258,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "INTERFACES DÉTECTÉES"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -2343,7 +2345,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "PRÉFÉRENCES LEOS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 1.8
                                     }
@@ -2433,7 +2435,7 @@ ApplicationWindow {
                                     spacing: 7
                                     Label {
                                         text: "CE QUI EST INCLUS — ET CE QUI NE L'EST PAS"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1.2
                                     }
