@@ -13,6 +13,8 @@ ApplicationWindow {
 
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property int selectedRow: -1
 
@@ -67,7 +69,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "BOUTIQUE"
-                        color: window.colorA
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 4
                     }
@@ -147,7 +149,7 @@ ApplicationWindow {
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
-                                        color: window.colorA
+                                        color: window.colorAText
                                         font.pixelSize: 20
                                         font.weight: Font.Bold
                                     }
@@ -204,7 +206,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 20
                         spacing: 12
-                        Label { text: "FICHE APPLICATION"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "FICHE APPLICATION"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
                             color: window.themeColors.text
@@ -220,9 +222,9 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
-                        Label { text: "SOURCE"; color: window.colorA; font.pixelSize: 9 }
+                        Label { text: "SOURCE"; color: window.colorAText; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
-                        Label { text: "COMPATIBILITÉ"; color: window.colorA; font.pixelSize: 9 }
+                        Label { text: "COMPATIBILITÉ"; color: window.colorAText; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
                             color: window.muted
@@ -240,7 +242,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
                             text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
-                            color: window.colorA
+                            color: window.colorAText
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
@@ -248,7 +250,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "other"
                             text: "Cette application est installée dans une installation Flatpak personnalisée. LEOS la détecte, mais ne la modifie pas pour éviter de cibler la mauvaise installation."
-                            color: window.colorA
+                            color: window.colorAText
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
