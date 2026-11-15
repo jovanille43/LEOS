@@ -90,20 +90,22 @@ def _color_set(
     muted: str,
     primary: str,
     secondary: str,
+    primary_text: str,
+    secondary_text: str,
 ) -> dict[str, str]:
     return {
         "BackgroundAlternate": _rgb(alternate),
         "BackgroundNormal": _rgb(background),
         "DecorationFocus": _rgb(primary),
         "DecorationHover": _rgb(secondary),
-        "ForegroundActive": _rgb(primary),
+        "ForegroundActive": _rgb(primary_text),
         "ForegroundInactive": _rgb(muted),
-        "ForegroundLink": _rgb(primary),
+        "ForegroundLink": _rgb(primary_text),
         "ForegroundNegative": NEGATIVE,
         "ForegroundNeutral": NEUTRAL,
         "ForegroundNormal": _rgb(foreground),
         "ForegroundPositive": POSITIVE,
-        "ForegroundVisited": _rgb(secondary),
+        "ForegroundVisited": _rgb(secondary_text),
     }
 
 
@@ -118,16 +120,20 @@ def _build_colorscheme(palette: dict[str, str], scheme_id: str, name: str, theme
     muted = palette["muted_text"]
     primary = palette["accent_primary"]
     secondary = palette["accent_secondary"]
+    primary_text = palette["accent_primary_text"]
+    secondary_text = palette["accent_secondary_text"]
     selected_text = _contrast_text(primary)
 
     groups = {
-        "Colors:Window": _color_set(background, surface, text, muted, primary, secondary),
-        "Colors:View": _color_set(surface, elevated, text, muted, primary, secondary),
-        "Colors:Button": _color_set(surface, elevated, text, muted, primary, secondary),
-        "Colors:Selection": _color_set(primary, secondary, selected_text, selected_text, primary, secondary),
-        "Colors:Tooltip": _color_set(elevated, surface, text, muted, primary, secondary),
-        "Colors:Complementary": _color_set(background, surface, text, muted, primary, secondary),
-        "Colors:Header": _color_set(elevated, surface, text, muted, primary, secondary),
+        "Colors:Window": _color_set(background, surface, text, muted, primary, secondary, primary_text, secondary_text),
+        "Colors:View": _color_set(surface, elevated, text, muted, primary, secondary, primary_text, secondary_text),
+        "Colors:Button": _color_set(surface, elevated, text, muted, primary, secondary, primary_text, secondary_text),
+        # Keep both selection surfaces at A so one high-contrast foreground
+        # remains readable even when the user's B endpoint is the opposite extreme.
+        "Colors:Selection": _color_set(primary, primary, selected_text, selected_text, primary, secondary, selected_text, selected_text),
+        "Colors:Tooltip": _color_set(elevated, surface, text, muted, primary, secondary, primary_text, secondary_text),
+        "Colors:Complementary": _color_set(background, surface, text, muted, primary, secondary, primary_text, secondary_text),
+        "Colors:Header": _color_set(elevated, surface, text, muted, primary, secondary, primary_text, secondary_text),
     }
     lines = [
         "# LEOS-managed KDE Plasma color scheme.",
