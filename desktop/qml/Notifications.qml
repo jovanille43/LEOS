@@ -12,8 +12,8 @@ ApplicationWindow {
     title: "LEOS — Notifications"
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
 
     ColumnLayout {
@@ -26,7 +26,7 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: "white"; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -38,7 +38,7 @@ ApplicationWindow {
                 Label {
                     anchors.centerIn: parent
                     text: notificationModel.unreadCount + " non lues"
-                    color: window.cyan
+                    color: window.colorA
                     font.pixelSize: 11
                 }
             }
@@ -77,7 +77,7 @@ ApplicationWindow {
                     radius: 11
                     color: isRead ? "#141B25" : "#172330"
                     border.width: isRead ? 1 : 2
-                    border.color: isRead ? "#2B3544" : window.cyan
+                    border.color: isRead ? "#2B3544" : window.colorA
                     RowLayout {
                         id: content
                         anchors.fill: parent
@@ -87,7 +87,7 @@ ApplicationWindow {
                             Layout.preferredWidth: 3
                             Layout.fillHeight: true
                             radius: 2
-                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.cyan : window.magenta
+                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.colorA : window.colorB
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
@@ -101,13 +101,13 @@ ApplicationWindow {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.cyan; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.colorA; font.pixelSize: 17 }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.magenta; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.colorB; font.pixelSize: 18 }
                             }
                         }
                     }
