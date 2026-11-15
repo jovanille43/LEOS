@@ -11,8 +11,8 @@ ApplicationWindow {
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
     property int selectedRow: -1
 
@@ -67,7 +67,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "BOUTIQUE"
-                        color: window.cyan
+                        color: window.colorA
                         font.pixelSize: 10
                         font.letterSpacing: 4
                     }
@@ -133,8 +133,8 @@ ApplicationWindow {
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
-                            color: window.selectedRow === index ? window.accentSurface(window.cyan, 0.16) : window.themeColors.surface_elevated
-                            border.color: window.selectedRow === index ? window.cyan : window.themeColors.border
+                            color: window.selectedRow === index ? window.accentSurface(window.colorA, 0.16) : window.themeColors.surface_elevated
+                            border.color: window.selectedRow === index ? window.colorA : window.themeColors.border
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 12
@@ -147,7 +147,7 @@ ApplicationWindow {
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
-                                        color: window.cyan
+                                        color: window.colorA
                                         font.pixelSize: 20
                                         font.weight: Font.Bold
                                     }
@@ -160,7 +160,7 @@ ApplicationWindow {
                                 }
                                 Label {
                                     text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME") : installed ? "INSTALLÉE" : "DISPONIBLE"
-                                    color: installed ? window.cyan : window.muted
+                                    color: installed ? window.colorA : window.muted
                                     font.pixelSize: 9
                                 }
                             }
@@ -204,7 +204,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 20
                         spacing: 12
-                        Label { text: "FICHE APPLICATION"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "FICHE APPLICATION"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
                             color: window.themeColors.text
@@ -220,9 +220,9 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
-                        Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
+                        Label { text: "SOURCE"; color: window.colorA; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
-                        Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
+                        Label { text: "COMPATIBILITÉ"; color: window.colorA; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
                             color: window.muted
@@ -240,7 +240,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
                             text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
-                            color: window.cyan
+                            color: window.colorA
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
@@ -248,7 +248,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "other"
                             text: "Cette application est installée dans une installation Flatpak personnalisée. LEOS la détecte, mais ne la modifie pas pour éviter de cibler la mauvaise installation."
-                            color: window.cyan
+                            color: window.colorA
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
@@ -262,7 +262,7 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 8
                                 color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? "#33202a" : "#12313b"
-                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
+                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.colorB : window.colorA
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
