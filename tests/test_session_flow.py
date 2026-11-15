@@ -30,6 +30,7 @@ class SessionFlowTests(unittest.TestCase):
 
     def test_first_run_mode_selector_offers_a_b_theme_customization(self):
         selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("import QtQuick.Dialogs", selector)
         controller = (ROOT / "desktop/theme_controller.py").read_text(encoding="utf-8")
         self.assertIn("visible: !modeSelectorController.onboardingComplete", selector)
         self.assertIn("initialColorADialog", selector)
