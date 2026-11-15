@@ -306,5 +306,12 @@ ApplicationWindow {
     Connections {
         target: applicationCatalog
         function onLaunchFailed(message) { status.text = message }
+        function onScanErrorChanged() {
+            if (applicationCatalog.scanError.length > 0) {
+                status.text = applicationCatalog.scanError
+            } else if (status.text.indexOf("Impossible de lire le catalogue des applications.") === 0) {
+                status.text = ""
+            }
+        }
     }
 }
