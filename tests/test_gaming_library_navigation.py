@@ -85,6 +85,7 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
             Path(__file__).resolve().parents[1] / "gaming/backend/library.py"
         ).read_text(encoding="utf-8")
         self.assertIn("scanErrorChanged = Signal()", source)
+        self.assertIn("Property, QUrl, QThreadPool", source)
         self.assertIn("@Property(str, notify=scanErrorChanged)", source)
         self.assertIn("def scanError(self) -> str:", source)
         self.assertIn("self._set_scan_error(", source)
