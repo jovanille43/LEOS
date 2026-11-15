@@ -15,6 +15,8 @@ ApplicationWindow {
 
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property int selectedIndex: -1
     property string selectedTitle: ""
@@ -472,7 +474,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "GAMING MODE"
-                        color: window.colorA
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -522,7 +524,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
-                        color: leos.silentNotificationsInGaming ? window.colorA : "white"
+                        color: leos.silentNotificationsInGaming ? window.colorAText : window.themeColors.text
                         font.pixelSize: 10
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -568,7 +570,7 @@ ApplicationWindow {
                     spacing: 22
 
                     ColumnLayout {
-                        Label { text: "PERFORMANCES"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PERFORMANCES"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: window.themeColors.text; font.pixelSize: 15 }
                         Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: window.themeColors.text; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: window.themeColors.text; font.pixelSize: 15 }
@@ -577,13 +579,13 @@ ApplicationWindow {
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
-                        Label { text: "TEMPÉRATURE"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "TEMPÉRATURE"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: window.themeColors.text; font.pixelSize: 15 }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: window.themeColors.text; font.pixelSize: 15 }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
-                        Label { text: "JEUX"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "JEUX"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
                         CheckBox {
                             text: "Overlay FPS · MangoHud"
                             checked: leos.mangoHudEnabled
@@ -618,7 +620,7 @@ ApplicationWindow {
                             delegate: Label {
                                 required property string modelData
                                 text: modelData
-                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.colorA : window.muted
+                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.colorAText : window.muted
                                 font.pixelSize: 9
                             }
                         }
@@ -626,7 +628,7 @@ ApplicationWindow {
                     ColumnLayout {
                         Layout.preferredWidth: 220
                         spacing: 6
-                        Label { text: "PROFIL ÉNERGIE"; color: window.colorA; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "PROFIL ÉNERGIE"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: leos.powerProfileStatus
                             color: window.muted
@@ -986,7 +988,7 @@ ApplicationWindow {
                                                 Label {
                                                     anchors.horizontalCenter: parent.horizontalCenter
                                                     text: "LEOS"
-                                                    color: window.colorA
+                                                    color: window.colorAText
                                                     font.pixelSize: 7
                                                     font.letterSpacing: 2
                                                 }
@@ -1021,7 +1023,7 @@ ApplicationWindow {
                                             }
                                             Label {
                                                 text: gameCard.favorite ? "★ FAVORI" : ""
-                                                color: window.colorB
+                                                color: window.colorBText
                                                 font.pixelSize: 9
                                                 font.weight: Font.Bold
                                             }
@@ -1067,7 +1069,7 @@ ApplicationWindow {
 
                                 Label {
                                     text: "JEU SÉLECTIONNÉ"
-                                    color: window.colorA
+                                    color: window.colorAText
                                     font.pixelSize: 10
                                     font.letterSpacing: 2
                                 }
@@ -1145,8 +1147,8 @@ ApplicationWindow {
                                     Item { Layout.fillWidth: true }
                                     Label {
                                         text: window.selectedInstallStatus || "—"
-                                        color: window.selectedInstallStatus === "Installé" ? window.colorA :
-                                               window.selectedInstallStatus === "Fichiers absents" ? window.colorB : "white"
+                                        color: window.selectedInstallStatus === "Installé" ? window.colorAText :
+                                               window.selectedInstallStatus === "Fichiers absents" ? window.colorBText : window.themeColors.text
                                         font.pixelSize: 10
                                         font.weight: Font.DemiBold
                                     }
