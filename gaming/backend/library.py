@@ -67,6 +67,8 @@ class _LibraryScanTask(QRunnable):
 
 
 class GameLibraryModel(QAbstractListModel):
+    scanErrorChanged = Signal()
+
     TitleRole = int(Qt.ItemDataRole.UserRole) + 1
     PlatformRole = TitleRole + 1
     SourceRole = TitleRole + 2
@@ -90,6 +92,7 @@ class GameLibraryModel(QAbstractListModel):
         self._source_filter = "Toutes les sources"
         self._search_query = ""
         self._last_launch_status = "Sélectionne un jeu à lancer."
+        self._scan_error = ""
         self._scan_task: _LibraryScanTask | None = None
         self._refresh_pending = False
         self._closed = False
@@ -337,12 +340,23 @@ class GameLibraryModel(QAbstractListModel):
         self._scan_task = task
         QThreadPool.globalInstance().start(task)
 
+    @Property(str, notify=scanErrorChanged)
+    def scanError(self) -> str:
+        return self._scan_error
+
+    def _set_scan_error(self, message: str) -> None:
+        message = str(message)
+        if self._scan_error != message:
+            self._scan_error = message
+            self.scanErrorChanged.emit()
+
     @Slot(object)
     def _on_library_scan_completed(self, snapshot: object) -> None:
         self._scan_task = None
         if self._closed:
             return
-        if isinstance(snapshot, tuple) and len(snapshot) == 4:
+        succeeded = isinstance(snapshot, tuple) and len(snapshot) == 4
+        if succeeded:
             games, duplicate_metadata, favorites, recent = snapshot
             self._games = games
             self._duplicate_metadata = duplicate_metadata
@@ -352,6 +366,13 @@ class GameLibraryModel(QAbstractListModel):
         if self._refresh_pending:
             self._refresh_pending = False
             self.refresh()
+            return
+        if succeeded:
+            self._set_scan_error("")
+        else:
+            self._set_scan_error(
+                "Impossible de lire la bibliothèque de jeux. Vérifie l'accès aux catalogues locaux, puis actualise."
+            )
 
     def _collect_library_snapshot(
         self,
