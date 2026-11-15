@@ -12,7 +12,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
 - Fond d'écran 4K disponible dans `branding/wallpapers/desktop-leos.svg`, avec l'emblème officiel du lion seul, fond noir et halos cyan/magenta. Il est empaqueté sous `/usr/share/leos/branding/wallpapers/desktop-leos.svg` et peut être sélectionné manuellement ; il n'est pas imposé au profil KDE existant.
-- Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
+- Fond sombre LEOS, couleurs d'accent A/B librement choisies, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
@@ -46,7 +46,12 @@ choisit librement deux couleurs opaques au format `#RRGGBB` :
 Les deux valeurs sont enregistrées ensemble dans le profil utilisateur par
 `leos_core.SettingsStore`. Le fond sombre, les surfaces, les bordures et les
 contrastes de l'interface restent cohérents ; seules les couleurs d'accent et
-les arrêts du dégradé sont remplacés. Les interfaces LEOS Desktop, Gaming,
+les arrêts du dégradé sont remplacés.
+
+Les accents utilisés dans les textes disposent d'une variante contrastée calculée
+à partir des surfaces LEOS. Une couleur A ou B trop sombre est conservée pour les
+logos, dégradés et effets, mais n'est pas utilisée directement comme couleur de
+texte si elle ne respecte pas un contraste de 4,5:1 sur les surfaces sombres. Les interfaces LEOS Desktop, Gaming,
 le sélecteur de mode, le menu, les notifications, le Centre des manettes et la
 Boutique lisent le même réglage et se rafraîchissent lorsqu'il change.
 
