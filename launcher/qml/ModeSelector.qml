@@ -15,6 +15,8 @@ ApplicationWindow {
 
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property date currentDate: new Date()
     property string pendingMode: ""
@@ -190,7 +192,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.colorA
+                    color: window.colorAText
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -218,7 +220,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.colorA
+                            color: window.colorAText
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -433,7 +435,7 @@ ApplicationWindow {
 
             Label {
                 text: modeManager.status
-                color: window.colorB
+                color: window.colorBText
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
