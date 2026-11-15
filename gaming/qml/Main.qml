@@ -808,7 +808,7 @@ ApplicationWindow {
                                 radius: 8
                                 color: window.themeColors.surface
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.cyan : window.themeColors.border
                             }
                             onTextChanged: {
                                 gameLibrary.setSearchQuery(text)
@@ -843,7 +843,7 @@ ApplicationWindow {
                                 radius: 8
                                 color: window.themeColors.surface
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.cyan : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: sourceFilterBox.currentText
@@ -874,7 +874,7 @@ ApplicationWindow {
                                 radius: 8
                                 color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.accentSurface(window.cyan, 0.20) : window.themeColors.surface_elevated
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: refreshLibraryButton.text
@@ -944,7 +944,7 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.selectedIndex === gameCard.index ? window.accentSurface(window.cyan, 0.20) : window.themeColors.surface_elevated
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
-                                    border.color: window.selectedIndex === gameCard.index ? window.cyan : "#2a3444"
+                                    border.color: window.selectedIndex === gameCard.index ? window.cyan : window.themeColors.border
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     Behavior on border.color { ColorAnimation { duration: 150 } }
                                 }
@@ -1058,7 +1058,7 @@ ApplicationWindow {
                             Layout.fillHeight: true
                             radius: 16
                             color: window.themeColors.surface
-                            border.color: "#293342"
+                            border.color: window.themeColors.border
 
                             ColumnLayout {
                                 anchors.fill: parent
