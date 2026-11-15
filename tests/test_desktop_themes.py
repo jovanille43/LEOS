@@ -254,6 +254,11 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("theme_color_b", source)
         self.assertIn("def refresh(self)", source)
         self.assertIn("self.themeChanged.emit()", source)
+        self.assertIn("return palette_for_colors(*self._snapshot)", source)
+        self.assertIn("return self._snapshot[0]", source)
+        self.assertIn("return self._snapshot[1]", source)
+        self.assertNotIn('self.settings.get("theme_color_a"', source)
+        self.assertNotIn('self.settings.get("theme_color_b"', source)
 
     def test_theme_controller_exposes_cached_logo_wallpaper_and_intro_variants(self):
         root = Path(__file__).resolve().parents[1]
