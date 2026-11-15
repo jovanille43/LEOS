@@ -13,8 +13,8 @@ ApplicationWindow {
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
     property date currentDate: new Date()
     property string pendingMode: ""
@@ -140,12 +140,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: window.cyan; opacity: 0.12
+            color: window.colorA; opacity: 0.12
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: window.magenta; opacity: 0.10
+            color: window.colorB; opacity: 0.10
         }
 
         ColumnLayout {
@@ -190,7 +190,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.cyan
+                    color: window.colorA
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -204,7 +204,7 @@ ApplicationWindow {
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: window.themeColors.surface_elevated
-                border.color: window.accentSurface(window.cyan, 0.30)
+                border.color: window.accentSurface(window.colorA, 0.30)
 
                 RowLayout {
                     anchors.fill: parent
@@ -218,7 +218,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.cyan
+                            color: window.colorA
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -313,8 +313,8 @@ ApplicationWindow {
                         onClicked: modeSelectorController.completeOnboarding()
                         background: Rectangle {
                             radius: 8
-                            color: window.accentSurface(window.cyan, 0.24)
-                            border.color: window.cyan
+                            color: window.accentSurface(window.colorA, 0.24)
+                            border.color: window.colorA
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -341,9 +341,9 @@ ApplicationWindow {
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? window.accentSurface(window.cyan, 0.24) : window.themeColors.surface
+                        color: desktopCard.down ? window.accentSurface(window.colorA, 0.24) : window.themeColors.surface
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : window.accentSurface(window.cyan, 0.24)
+                        border.color: desktopCard.activeFocus ? window.colorA : window.accentSurface(window.colorA, 0.24)
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -389,9 +389,9 @@ ApplicationWindow {
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? window.accentSurface(window.magenta, 0.24) : window.themeColors.surface
+                        color: gamingCard.down ? window.accentSurface(window.colorB, 0.24) : window.themeColors.surface
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : window.accentSurface(window.magenta, 0.24)
+                        border.color: gamingCard.activeFocus ? window.colorB : window.accentSurface(window.colorB, 0.24)
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -433,7 +433,7 @@ ApplicationWindow {
 
             Label {
                 text: modeManager.status
-                color: window.magenta
+                color: window.colorB
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -575,7 +575,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: window.accentSurface(window.cyan, 0.24); border.color: window.cyan }
+                background: Rectangle { radius: 9; color: window.accentSurface(window.colorA, 0.24); border.color: window.colorA }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: window.themeColors.text
