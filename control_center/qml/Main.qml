@@ -30,14 +30,6 @@ ApplicationWindow {
     property string desktopLayoutBackupNotice: ""
     property string pendingDesktopLayoutBackupId: ""
 
-    function colorToHex(value) {
-        function channel(component) {
-            const hex = Math.round(component * 255).toString(16).toUpperCase()
-            return ("0" + hex).slice(-2)
-        }
-        return "#" + channel(value.r) + channel(value.g) + channel(value.b)
-    }
-
     function colorToHex(color) {
         function byteHex(value) {
             const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
