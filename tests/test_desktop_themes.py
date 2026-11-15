@@ -185,6 +185,11 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("window.commitThemeColors(modelData.a, modelData.b)", qml)
         self.assertIn("colorADialog.open()", qml)
         self.assertIn("colorBDialog.open()", qml)
+        self.assertIn("function contrastTextForColor(colorValue)", qml)
+        self.assertIn("window.contrastTextForColor(controlCenter.themeColorA)", qml)
+        self.assertIn("window.contrastTextForColor(controlCenter.themeColorB)", qml)
+        self.assertIn("function contrastTextForGradient(colorA, colorB)", qml)
+        self.assertIn("window.contrastTextForGradient(modelData.a, modelData.b)", qml)
         self.assertIn("desktopWallpaperUrl", qml)
         self.assertIn("gamingWallpaperUrl", qml)
 
