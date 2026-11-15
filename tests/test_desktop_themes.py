@@ -217,6 +217,18 @@ class DesktopThemeTests(unittest.TestCase):
                 self.assertIn("property color colorAText: themeColors.accent_primary_text", source)
                 self.assertIn("property color colorBText: themeColors.accent_secondary_text", source)
 
+    def test_desktop_menu_and_notifications_use_shared_neutral_tokens(self):
+        root = Path(__file__).resolve().parents[1]
+        for relative in ("desktop/qml/Menu.qml", "desktop/qml/Notifications.qml"):
+            qml = (root / relative).read_text(encoding="utf-8")
+            with self.subTest(qml=relative):
+                self.assertIn("themeColors.surface", qml)
+                self.assertIn("themeColors.border", qml)
+                self.assertIn("themeColors.text", qml)
+                self.assertIn("themeColors.muted_text", qml)
+        menu = (root / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertNotIn('"#596678"', menu)
+
     def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
         root = Path(__file__).resolve().parents[1]
         entry_points = (
