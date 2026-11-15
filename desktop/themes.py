@@ -21,9 +21,43 @@ _BASE_PALETTE: dict[str, str] = {
     "muted_text": "#909AAC",
 }
 
+
+
+def _relative_luminance(color: str) -> float:
+    channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
+    linear = [
+        value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+        for value in channels
+    ]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(first: str, second: str) -> float:
+    first_luminance = _relative_luminance(first)
+    second_luminance = _relative_luminance(second)
+    return (max(first_luminance, second_luminance) + 0.05) / (
+        min(first_luminance, second_luminance) + 0.05
+    )
+
+
+def _accent_text_color(accent: str, palette: dict[str, str]) -> str:
+    """Keep an accent as text only when it meets WCAG AA on every LEOS surface."""
+    surfaces = ("background", "surface", "surface_elevated")
+    if all(_contrast_ratio(accent, palette[surface]) >= 4.5 for surface in surfaces):
+        return accent
+    return palette["text"]
+
+
+def _with_accent_text_tokens(palette: dict[str, str]) -> dict[str, str]:
+    """Add readable text variants without changing the visual A/B endpoints."""
+    result = dict(palette)
+    result["accent_primary_text"] = _accent_text_color(result["accent_primary"], result)
+    result["accent_secondary_text"] = _accent_text_color(result["accent_secondary"], result)
+    return result
+
 # Legacy named palettes remain readable for existing KDE scheme files and old
 # preferences, but the interface no longer asks users to choose among them.
-THEME_PALETTES: dict[str, dict[str, str]] = {
+_LEGACY_THEME_PALETTES: dict[str, dict[str, str]] = {
     "leos-original": {**_BASE_PALETTE, "accent_primary": DEFAULT_COLOR_A, "accent_secondary": DEFAULT_COLOR_B},
     "light": {
         "background": "#F3F6FA", "surface": "#FFFFFF", "surface_elevated": "#E8EEF5",
@@ -47,9 +81,15 @@ THEME_PALETTES: dict[str, dict[str, str]] = {
     },
 }
 
+THEME_PALETTES: dict[str, dict[str, str]] = {
+    name: _with_accent_text_tokens(palette)
+    for name, palette in _LEGACY_THEME_PALETTES.items()
+}
+
 REQUIRED_TOKENS = frozenset({
     "background", "surface", "surface_elevated", "border",
     "text", "muted_text", "accent_primary", "accent_secondary",
+    "accent_primary_text", "accent_secondary_text",
 })
 _COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
@@ -63,11 +103,12 @@ def normalize_color(value: object) -> str:
 
 def palette_for_colors(color_a: str = DEFAULT_COLOR_A, color_b: str = DEFAULT_COLOR_B) -> dict[str, str]:
     """Build the shared dark LEOS palette using the selected gradient endpoints."""
-    return {
+    palette = {
         **_BASE_PALETTE,
         "accent_primary": normalize_color(color_a),
         "accent_secondary": normalize_color(color_b),
     }
+    return _with_accent_text_tokens(palette)
 
 
 def palette_for_theme(theme: str) -> dict[str, str]:
