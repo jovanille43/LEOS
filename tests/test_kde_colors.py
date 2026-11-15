@@ -113,6 +113,40 @@ class KdeColorSchemeTests(unittest.TestCase):
             with self.subTest(color_a=color_a, color_b=color_b):
                 self.assertGreaterEqual(contrast, 4.5)
 
+    def test_custom_kde_accent_text_roles_use_contrast_safe_tokens(self):
+        content = build_custom_colorscheme("#000000", "#0055CC")
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
+        parser.read_string(content)
+
+        def luminance(rgb):
+            values = [int(component) / 255 for component in rgb.split(",")]
+            linear = [
+                value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+                for value in values
+            ]
+            return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+        def assert_contrast(foreground, background):
+            first, second = luminance(foreground), luminance(background)
+            contrast = (max(first, second) + 0.05) / (min(first, second) + 0.05)
+            self.assertGreaterEqual(contrast, 4.5)
+
+        for group in (
+            "Colors:Window", "Colors:View", "Colors:Button",
+            "Colors:Tooltip", "Colors:Complementary", "Colors:Header",
+        ):
+            for role in ("ForegroundActive", "ForegroundLink", "ForegroundVisited"):
+                for surface in ("BackgroundNormal", "BackgroundAlternate"):
+                    with self.subTest(group=group, role=role, surface=surface):
+                        assert_contrast(parser[group][role], parser[group][surface])
+
+        selection = parser["Colors:Selection"]
+        self.assertEqual(selection["BackgroundNormal"], selection["BackgroundAlternate"])
+        for role in ("ForegroundNormal", "ForegroundInactive", "ForegroundActive", "ForegroundLink", "ForegroundVisited"):
+            with self.subTest(group="Colors:Selection", role=role):
+                assert_contrast(selection[role], selection["BackgroundNormal"])
+
     def test_custom_scheme_rejects_invalid_hex_colors(self):
         for first, second in (("cyan", "#FF8800"), ("#00FFFF", "#FFF"), ("", "#FF8800")):
             with self.subTest(first=first, second=second), self.assertRaises(ValueError):
