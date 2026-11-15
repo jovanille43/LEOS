@@ -12,8 +12,8 @@ ApplicationWindow {
     title: "LEOS — Applications"
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
@@ -35,8 +35,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: window.cyan; opacity: 0.09 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: window.magenta; opacity: 0.08 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: window.colorA; opacity: 0.09 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: window.colorB; opacity: 0.08 }
     }
 
     ColumnLayout {
@@ -70,7 +70,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "APPLICATIONS"
-                        color: window.cyan
+                        color: window.colorA
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -111,7 +111,7 @@ ApplicationWindow {
             font.pixelSize: 16
             color: "white"
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: "#141B25"; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : "#303A49" }
+            background: Rectangle { radius: 12; color: "#141B25"; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.colorA : "#303A49" }
         }
 
         RowLayout {
@@ -137,7 +137,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
+                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.colorA : "transparent" }
                             contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
                         }
                     }
@@ -206,7 +206,7 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 radius: 11
                                 color: appMouse.containsMouse ? "#1B2633" : "#151B25"
-                                border.color: appMouse.containsMouse ? window.cyan : "#2B3544"
+                                border.color: appMouse.containsMouse ? window.colorA : "#2B3544"
                             }
                             MouseArea {
                                 id: appMouse
@@ -239,7 +239,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorA : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
@@ -250,7 +250,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorA : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
@@ -264,7 +264,7 @@ ApplicationWindow {
                                             else
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
-                                        contentItem: Label { text: favouritePinButton.text; color: window.magenta; font.pixelSize: 18 }
+                                        contentItem: Label { text: favouritePinButton.text; color: window.colorB; font.pixelSize: 18 }
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
@@ -282,7 +282,7 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
-                    Label { id: status; Layout.fillWidth: true; color: window.magenta; font.pixelSize: 10; elide: Text.ElideRight }
+                    Label { id: status; Layout.fillWidth: true; color: window.colorB; font.pixelSize: 10; elide: Text.ElideRight }
                 }
             }
         }
