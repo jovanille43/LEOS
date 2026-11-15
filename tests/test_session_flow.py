@@ -271,8 +271,8 @@ class SessionFlowTests(unittest.TestCase):
     def test_mode_selector_pressed_surfaces_follow_the_selected_a_b_colors(self):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
         self.assertIn("function accentSurface(accentColor, strength)", qml)
-        self.assertIn("window.accentSurface(window.cyan, 0.24)", qml)
-        self.assertIn("window.accentSurface(window.magenta, 0.24)", qml)
+        self.assertIn("window.accentSurface(window.colorA, 0.24)", qml)
+        self.assertIn("window.accentSurface(window.colorB, 0.24)", qml)
         self.assertNotIn('"#1a2630"', qml.lower())
         self.assertNotIn('"#25172a"', qml.lower())
         self.assertNotIn('"#17313d"', qml.lower())
@@ -280,15 +280,15 @@ class SessionFlowTests(unittest.TestCase):
     def test_gaming_accent_surfaces_follow_the_shared_a_b_theme_colors(self):
         qml = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("function accentSurface(accentColor, strength)", qml)
-        self.assertIn("color: window.cyan; opacity: 0.12", qml)
-        self.assertIn("color: window.magenta; opacity: 0.10", qml)
+        self.assertIn("color: window.colorA; opacity: 0.12", qml)
+        self.assertIn("color: window.colorB; opacity: 0.10", qml)
         for legacy_color in (
             '"#102331"', '"#2a1232"', '"#123847"', '"#1a2c38"',
             '"#17313d"', '"#123b4b"', '"#103847"',
         ):
             with self.subTest(color=legacy_color):
                 self.assertNotIn(legacy_color, qml.lower())
-        self.assertGreaterEqual(qml.count("window.accentSurface(window.cyan"), 6)
+        self.assertGreaterEqual(qml.count("window.accentSurface(window.colorA"), 6)
 
 
     def test_desktop_return_intro_can_be_skipped_without_changing_normal_navigation(self):
