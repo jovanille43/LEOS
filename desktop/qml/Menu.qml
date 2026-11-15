@@ -252,7 +252,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorAText : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorAText : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
@@ -263,7 +263,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorAText : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorAText : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
