@@ -162,7 +162,7 @@ ApplicationWindow {
                                 }
                                 Label {
                                     text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME") : installed ? "INSTALLÉE" : "DISPONIBLE"
-                                    color: installed ? window.colorA : window.muted
+                                    color: installed ? window.colorAText : window.muted
                                     font.pixelSize: 9
                                 }
                             }
