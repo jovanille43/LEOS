@@ -80,6 +80,22 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn('window.detailsActionIndex = 0', self.qml)
         self.assertIn('window.detailsActionIndex = 1', self.qml)
 
+    def test_library_scan_errors_are_distinct_from_an_empty_game_library(self):
+        source = (
+            Path(__file__).resolve().parents[1] / "gaming/backend/library.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("scanErrorChanged = Signal()", source)
+        self.assertIn("@Property(str, notify=scanErrorChanged)", source)
+        self.assertIn("def scanError(self) -> str:", source)
+        self.assertIn("self._set_scan_error(", source)
+        self.assertIn("Impossible de lire la bibliothèque de jeux.", source)
+        self.assertIn("gameLibrary.scanError.length > 0", self.qml)
+        self.assertIn("gameLibrary.scanError", self.qml)
+
+    def test_gaming_empty_state_uses_single_qml_newline_escapes(self):
+        self.assertIn(r'Aucun jeu détecté dans cette catégorie.\n\nInstalle', self.qml)
+        self.assertNotIn(r'Aucun jeu détecté dans cette catégorie.\\n\\nInstalle', self.qml)
+
     def test_manual_game_loader_rejects_actual_nul_characters(self):
         source = (
             Path(__file__).resolve().parents[1] / "gaming/backend/library.py"
