@@ -1031,7 +1031,8 @@ ApplicationWindow {
                                     }
                                     Label {
                                         text: gameCard.platform + "  •  " + gameCard.source
-                                        color: window.muted
+                                        color: gameLibrary.scanError.length > 0 ? window.colorBText : window.muted
+                                font.pixelSize: 14
                                         font.pixelSize: 10
                                     }
                                 }
@@ -1466,6 +1467,17 @@ ApplicationWindow {
         onRejected: {
             gameName.clear()
             launchCommand.clear()
+        }
+    }
+
+    Connections {
+        target: gameLibrary
+        function onScanErrorChanged() {
+            if (gameLibrary.scanError.length > 0) {
+                statusText.text = gameLibrary.scanError
+            } else if (statusText.text.indexOf("Impossible de lire la bibliothèque de jeux.") === 0) {
+                statusText.text = ""
+            }
         }
     }
 
