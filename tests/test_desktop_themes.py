@@ -155,7 +155,12 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("function colorToHex(color)", qml)
         self.assertIn("window.colorToHex(selectedColor)", qml)
         self.assertIn("def themePalette(self)", controller)
-        self.assertIn("palette_for_colors(self.themeColorA, self.themeColorB)", controller)
+        self.assertIn("def _theme_color_pair(self)", controller)
+        self.assertIn("snapshot = self._shared_settings_snapshot", controller)
+        self.assertIn("return palette_for_colors(*self._theme_color_pair())", controller)
+        self.assertIn("self._shared_settings_snapshot = self._read_shared_settings_snapshot()", controller)
+        self.assertNotIn('self.settings.get("theme_color_a"', controller)
+        self.assertNotIn('self.settings.get("theme_color_b"', controller)
         self.assertNotIn("themeBox", qml)
 
     def test_control_center_exposes_two_editable_color_endpoints(self):
