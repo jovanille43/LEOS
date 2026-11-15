@@ -65,16 +65,29 @@ ApplicationWindow {
     }
 
     function contrastTextForGradient(colorA, colorB) {
-        const first = window.relativeLuminance(colorA)
-        const second = window.relativeLuminance(colorB)
-        const blackContrast = Math.min(
-            window.contrastAgainstBlack(first),
-            window.contrastAgainstBlack(second)
-        )
-        const whiteContrast = Math.min(
-            window.contrastAgainstWhite(first),
-            window.contrastAgainstWhite(second)
-        )
+        const start = Qt.color(colorA)
+        const end = Qt.color(colorB)
+        let blackContrast = Number.POSITIVE_INFINITY
+        let whiteContrast = Number.POSITIVE_INFINITY
+        // Check the full A/B transition, not only its endpoints.
+        for (let sample = 0; sample <= 16; sample++) {
+            const amount = sample / 16
+            const interpolated = Qt.rgba(
+                start.r + (end.r - start.r) * amount,
+                start.g + (end.g - start.g) * amount,
+                start.b + (end.b - start.b) * amount,
+                1.0
+            )
+            const luminance = window.relativeLuminance(interpolated)
+            blackContrast = Math.min(
+                blackContrast,
+                window.contrastAgainstBlack(luminance)
+            )
+            whiteContrast = Math.min(
+                whiteContrast,
+                window.contrastAgainstWhite(luminance)
+            )
+        }
         return blackContrast >= whiteContrast ? "#000000" : "#FFFFFF"
     }
 
