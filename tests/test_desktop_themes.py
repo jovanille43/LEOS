@@ -147,7 +147,7 @@ class DesktopThemeTests(unittest.TestCase):
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
-        self.assertIn("property color cyan: themeColors.accent_primary", qml)
+        self.assertIn("property color colorA: themeColors.accent_primary", qml)
         self.assertIn("ColorDialog", qml)
         self.assertIn("controlCenter.setThemeColors", qml)
         self.assertIn("function colorToHex(color)", qml)
@@ -202,8 +202,8 @@ class DesktopThemeTests(unittest.TestCase):
             with self.subTest(qml=relative):
                 self.assertIn("themeColors.accent_primary", source)
                 self.assertIn("themeColors.accent_secondary", source)
-                self.assertIn("property color cyan: themeColors.accent_primary", source)
-                self.assertIn("property color magenta: themeColors.accent_secondary", source)
+                self.assertIn("property color colorA: themeColors.accent_primary", source)
+                self.assertIn("property color colorB: themeColors.accent_secondary", source)
 
     def test_all_desktop_qml_entry_points_inject_the_live_theme_controller(self):
         root = Path(__file__).resolve().parents[1]
@@ -251,8 +251,8 @@ class DesktopThemeTests(unittest.TestCase):
         qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
         controller = (root / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
         self.assertIn("property var themeColors: leos.themePalette", qml)
-        self.assertIn("property color cyan: themeColors.accent_primary", qml)
-        self.assertIn("property color magenta: themeColors.accent_secondary", qml)
+        self.assertIn("property color colorA: themeColors.accent_primary", qml)
+        self.assertIn("property color colorB: themeColors.accent_secondary", qml)
         self.assertIn("def refreshSharedTheme(self)", controller)
         self.assertIn("palette_for_colors(", controller)
 
