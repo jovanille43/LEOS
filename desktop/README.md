@@ -241,14 +241,11 @@ permissions privées. Les identifiants sont résolus à l'application du dock à
 
 ## Menu principal LEOS
 
-`menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une
-première interface de recherche et de lancement d'applications. Le catalogue
+`menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une application autonome de recherche et de lancement d'applications. Le catalogue
 lit les fichiers `.desktop` système et utilisateur, filtre sans distinction de casse
 ou d'accents par nom, identifiant, description et catégorie, et lance le programme
 sans shell via `QProcess.startDetached`.
-Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est
-accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
-cyan/bleu/violet/magenta.
+Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est accessible depuis l'entrée **LEOS — Applications**. Son en-tête utilise l'emblème du lion recoloré selon les couleurs A/B sélectionnées, avec un titre textuel de repli si l'image n'est pas disponible.
 
 Le menu LEOS est une application de lancement autonome : il ne remplace pas le menu Plasma. Les catégories Favoris et « Récemment utilisées » conservent leur ordre et leur historique local. Les favoris peuvent être synchronisés avec le gestionnaire de tâches quand l'utilisateur applique un profil de dock depuis le Centre de contrôle ; ils ne modifient jamais Plasma à chaque clic. Les raccourcis globaux KDE restent à raccorder et le rendu doit être validé sur une session Bazzite réelle.
 
@@ -258,7 +255,7 @@ Le catalogue du menu utilise désormais le stockage `DockFavourites` : chaque ca
 
 L'intégration au panneau Plasma est une action distincte du menu : le Centre de contrôle inspecte la disposition, crée une sauvegarde privée et exige une confirmation avant de transmettre les favoris au gestionnaire de tâches. Les applications absentes sont ignorées ; si aucune entrée n'est résolue, les lanceurs existants sont préservés. Le résultat doit encore être validé sur Bazzite KDE.
 
-## Centre de notifications LEOS — première alpha
+## Centre de notifications LEOS
 
 `notification_store.py` conserve un historique local privé, borné à 100 événements, avec niveaux info/succès/avertissement/erreur, état lu/non lu, suppression individuelle et effacement global. Les données sont validées, écrites atomiquement et protégées en permissions 0700/0600. `notification_model.py`, `qml/Notifications.qml` et `notifications_main.py` fournissent une interface Qt Quick autonome, installée dans le menu d'applications KDE par `leos-notifications.desktop`.
 
@@ -318,6 +315,4 @@ Dans la catégorie Favoris, les commandes haut/bas déplacent une entrée d'une
 position à la fois. Elles sont masquées hors de cette catégorie et désactivées
 pendant une recherche pour éviter un ordre ambigu. L'étoile capture l'état
 précédent avant la mise à jour du modèle afin d'afficher le bon retour
-« ajouté » ou « retiré ». Le menu se ferme après un lancement accepté et avec
-Échap ; un lancement refusé laisse le menu ouvert et conserve l'erreur précise
-du backend.
+« ajouté » ou « retiré ». Le menu se ferme après un lancement accepté et avec Échap ; un lancement refusé laisse le menu ouvert et conserve l'erreur précise du backend. Une erreur d'analyse du catalogue est également affichée sans être confondue avec une bibliothèque vide ; si une liste valide avait déjà été chargée, elle reste visible pendant l'échec.
