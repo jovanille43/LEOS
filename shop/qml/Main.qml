@@ -16,6 +16,17 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
     property int selectedRow: -1
 
+    function accentSurface(accentColor, strength) {
+        const base = Qt.color(themeColors.surface)
+        const amount = Math.max(0.0, Math.min(1.0, strength))
+        return Qt.rgba(
+            base.r * (1.0 - amount) + accentColor.r * amount,
+            base.g * (1.0 - amount) + accentColor.g * amount,
+            base.b * (1.0 - amount) + accentColor.b * amount,
+            1.0
+        )
+    }
+
     function normalizedSearchText(value) {
         return String(value || "")
             .normalize("NFKD")
@@ -49,7 +60,7 @@ ApplicationWindow {
                     spacing: 3
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 30
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -76,7 +87,7 @@ ApplicationWindow {
                     id: searchField
                     Layout.fillWidth: true
                     placeholderText: "Rechercher une application…"
-                    color: "white"
+                    color: window.themeColors.text
                     enabled: !store.busy
                 }
                 ComboBox {
@@ -95,8 +106,8 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
                     ListView {
                         id: appList
                         anchors.fill: parent
@@ -122,8 +133,8 @@ ApplicationWindow {
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
-                            color: window.selectedRow === index ? "#182a36" : "#151b25"
-                            border.color: window.selectedRow === index ? window.cyan : "#28313e"
+                            color: window.selectedRow === index ? window.accentSurface(window.cyan, 0.16) : window.themeColors.surface_elevated
+                            border.color: window.selectedRow === index ? window.cyan : window.themeColors.border
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 12
@@ -132,7 +143,7 @@ ApplicationWindow {
                                     Layout.preferredWidth: 42
                                     Layout.preferredHeight: 42
                                     radius: 10
-                                    color: "#202c3b"
+                                    color: window.themeColors.surface_elevated
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
@@ -144,7 +155,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 3
-                                    Label { text: name; color: "white"; font.pixelSize: 14; font.weight: Font.DemiBold }
+                                    Label { text: name; color: window.themeColors.text; font.pixelSize: 14; font.weight: Font.DemiBold }
                                     Label { text: category + "  •  " + source; color: window.muted; font.pixelSize: 10 }
                                 }
                                 Label {
@@ -186,8 +197,8 @@ ApplicationWindow {
                     Layout.preferredWidth: 360
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
 
                     ColumnLayout {
                         anchors.fill: parent
@@ -196,7 +207,7 @@ ApplicationWindow {
                         Label { text: "FICHE APPLICATION"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 22
                             font.weight: Font.Bold
                             wrapMode: Text.WordWrap
@@ -208,9 +219,9 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
                         Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
-                        Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
+                        Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
                         Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
@@ -255,7 +266,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.weight: Font.Bold
                                 horizontalAlignment: Text.AlignHCenter
                             }
@@ -292,7 +303,7 @@ ApplicationWindow {
             Label {
                 text: (detailsPane.isInstalled ? "Tu vas désinstaller " : "Tu vas installer ")
                       + detailsPane.appName + "."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -353,7 +364,7 @@ ApplicationWindow {
             width: parent.width
             Label {
                 text: "Flathub confirme que " + detailsPane.appName + " est disponible. Confirmer maintenant son installation ?"
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
