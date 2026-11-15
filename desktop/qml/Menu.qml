@@ -14,6 +14,8 @@ ApplicationWindow {
     color: themeColors.background
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
@@ -70,7 +72,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "APPLICATIONS"
-                        color: window.colorA
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -239,7 +241,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorA : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorAText : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
@@ -250,7 +252,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorA : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorAText : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
@@ -264,7 +266,7 @@ ApplicationWindow {
                                             else
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
-                                        contentItem: Label { text: favouritePinButton.text; color: window.colorB; font.pixelSize: 18 }
+                                        contentItem: Label { text: favouritePinButton.text; color: window.colorBText; font.pixelSize: 18 }
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
@@ -282,7 +284,7 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
-                    Label { id: status; Layout.fillWidth: true; color: window.colorB; font.pixelSize: 10; elide: Text.ElideRight }
+                    Label { id: status; Layout.fillWidth: true; color: window.colorBText; font.pixelSize: 10; elide: Text.ElideRight }
                 }
             }
         }
