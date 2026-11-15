@@ -40,6 +40,44 @@ ApplicationWindow {
         return "#" + byteHex(color.r) + byteHex(color.g) + byteHex(color.b)
     }
 
+    function relativeLuminance(colorValue) {
+        const color = Qt.color(colorValue)
+        function linear(channel) {
+            return channel <= 0.04045
+                ? channel / 12.92
+                : Math.pow((channel + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b)
+    }
+
+    function contrastAgainstBlack(luminance) {
+        return (luminance + 0.05) / 0.05
+    }
+
+    function contrastAgainstWhite(luminance) {
+        return 1.05 / (luminance + 0.05)
+    }
+
+    function contrastTextForColor(colorValue) {
+        const luminance = window.relativeLuminance(colorValue)
+        return window.contrastAgainstBlack(luminance) >= window.contrastAgainstWhite(luminance)
+            ? "#000000" : "#FFFFFF"
+    }
+
+    function contrastTextForGradient(colorA, colorB) {
+        const first = window.relativeLuminance(colorA)
+        const second = window.relativeLuminance(colorB)
+        const blackContrast = Math.min(
+            window.contrastAgainstBlack(first),
+            window.contrastAgainstBlack(second)
+        )
+        const whiteContrast = Math.min(
+            window.contrastAgainstWhite(first),
+            window.contrastAgainstWhite(second)
+        )
+        return blackContrast >= whiteContrast ? "#000000" : "#FFFFFF"
+    }
+
     function commitThemeColors(colorA, colorB) {
         const validColor = /^#[0-9a-fA-F]{6}$/
         if (!validColor.test(colorA) || !validColor.test(colorB)) {
@@ -624,7 +662,7 @@ ApplicationWindow {
                                                     }
                                                     contentItem: Label {
                                                         text: "●"
-                                                        color: "white"
+                                                        color: window.contrastTextForColor(controlCenter.themeColorA)
                                                         horizontalAlignment: Text.AlignHCenter
                                                         verticalAlignment: Text.AlignVCenter
                                                     }
@@ -662,7 +700,7 @@ ApplicationWindow {
                                                     }
                                                     contentItem: Label {
                                                         text: "●"
-                                                        color: "white"
+                                                        color: window.contrastTextForColor(controlCenter.themeColorB)
                                                         horizontalAlignment: Text.AlignHCenter
                                                         verticalAlignment: Text.AlignVCenter
                                                     }
@@ -708,7 +746,7 @@ ApplicationWindow {
                                                 }
                                                 contentItem: Label {
                                                     text: modelData.label
-                                                    color: "white"
+                                                    color: window.contrastTextForGradient(modelData.a, modelData.b)
                                                     font.pixelSize: 9
                                                     font.weight: Font.DemiBold
                                                     horizontalAlignment: Text.AlignHCenter
