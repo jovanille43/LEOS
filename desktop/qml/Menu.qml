@@ -290,7 +290,9 @@ ApplicationWindow {
                             visible: appGrid.count === 0
                             text: applicationCatalog.loading
                                 ? "Chargement des applications…"
-                                : "Aucune application trouvée.\\nEssaie une autre recherche ou actualise la liste."
+                                : applicationCatalog.scanError.length > 0
+                                    ? applicationCatalog.scanError
+                                    : "Aucune application trouvée.\nEssaie une autre recherche ou actualise la liste."
                             color: window.muted
                             horizontalAlignment: Text.AlignHCenter
                         }
