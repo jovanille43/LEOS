@@ -1031,8 +1031,7 @@ ApplicationWindow {
                                     }
                                     Label {
                                         text: gameCard.platform + "  •  " + gameCard.source
-                                        color: gameLibrary.scanError.length > 0 ? window.colorBText : window.muted
-                                font.pixelSize: 14
+                                        color: window.muted
                                         font.pixelSize: 10
                                     }
                                 }
@@ -1053,7 +1052,7 @@ ApplicationWindow {
                                             : window.selectedCategory === "Récemment joués"
                                                 ? "Aucun jeu lancé récemment."
                                                 : "Aucun jeu détecté dans cette catégorie.\n\nInstalle un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
-                                color: window.muted
+                                color: gameLibrary.scanError.length > 0 ? window.colorBText : window.muted
                                 font.pixelSize: 14
                             }
                         }
