@@ -159,7 +159,7 @@ ApplicationWindow {
 
                 Label {
                     text: "LEOS"
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 39
                     font.weight: Font.Black
                     font.letterSpacing: 9
@@ -174,7 +174,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: window.currentDate.toLocaleTimeString(Qt.locale("fr_FR"), "HH:mm")
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 48
                     font.weight: Font.Light
                     font.letterSpacing: 2
@@ -203,7 +203,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 154
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
-                color: "#101923"
+                color: window.themeColors.surface_elevated
                 border.color: window.accentSurface(window.cyan, 0.30)
 
                 RowLayout {
@@ -225,7 +225,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Un seul système, deux expériences : Desktop pour le quotidien et Gaming pour jouer."
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 13
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -260,12 +260,12 @@ ApplicationWindow {
                                 onClicked: initialColorADialog.open()
                                 background: Rectangle {
                                     radius: 8
-                                    color: "#151B25"
+                                    color: window.themeColors.surface
                                     border.color: leosTheme.themeColorA
                                 }
                                 contentItem: Label {
                                     text: parent.text
-                                    color: "white"
+                                    color: window.themeColors.text
                                     font.pixelSize: 10
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -277,12 +277,12 @@ ApplicationWindow {
                                 onClicked: initialColorBDialog.open()
                                 background: Rectangle {
                                     radius: 8
-                                    color: "#151B25"
+                                    color: window.themeColors.surface
                                     border.color: leosTheme.themeColorB
                                 }
                                 contentItem: Label {
                                     text: parent.text
-                                    color: "white"
+                                    color: window.themeColors.text
                                     font.pixelSize: 10
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -318,7 +318,7 @@ ApplicationWindow {
                         }
                         contentItem: Label {
                             text: "COMPRIS"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 10
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignHCenter
@@ -341,7 +341,7 @@ ApplicationWindow {
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? window.accentSurface(window.cyan, 0.24) : "#111720"
+                        color: desktopCard.down ? window.accentSurface(window.cyan, 0.24) : window.themeColors.surface
                         border.width: desktopCard.activeFocus ? 2 : 1
                         border.color: desktopCard.activeFocus ? window.cyan : window.accentSurface(window.cyan, 0.24)
                     }
@@ -360,7 +360,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS DESKTOP"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -374,7 +374,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Une expérience KDE personnalisée"
-                            color: "#687487"
+                            color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -389,7 +389,7 @@ ApplicationWindow {
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? window.accentSurface(window.magenta, 0.24) : "#15121d"
+                        color: gamingCard.down ? window.accentSurface(window.magenta, 0.24) : window.themeColors.surface
                         border.width: gamingCard.activeFocus ? 2 : 1
                         border.color: gamingCard.activeFocus ? window.magenta : window.accentSurface(window.magenta, 0.24)
                     }
@@ -408,7 +408,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS GAMING"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -422,7 +422,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Vos jeux et lanceurs réunis au même endroit"
-                            color: "#687487"
+                            color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -439,13 +439,13 @@ ApplicationWindow {
             }
             Label {
                 text: "Bazzite KDE · Une seule session · Aucune application ne sera fermée automatiquement"
-                color: "#667184"
+                color: window.themeColors.muted_text
                 font.pixelSize: 10
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
                 text: modeSelectorController.gamepadStatus
-                color: "#596779"
+                color: window.themeColors.muted_text
                 font.pixelSize: 9
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -531,7 +531,7 @@ ApplicationWindow {
                 id: skipModeIntroLabel
                 anchors.centerIn: parent
                 text: "ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER"
-                color: "white"
+                color: window.themeColors.text
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
             }
@@ -563,7 +563,7 @@ ApplicationWindow {
             spacing: 14
             Label {
                 text: "Les applications actuellement ouvertes resteront en arrière-plan. Aucune application ne sera fermée automatiquement."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -578,7 +578,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.accentSurface(window.cyan, 0.24); border.color: window.cyan }
                 contentItem: Label {
                     text: continueGamingButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
