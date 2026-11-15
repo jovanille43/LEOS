@@ -69,18 +69,17 @@ class ThemeController(QObject):
 
     @Property("QVariantMap", notify=themeChanged)
     def themePalette(self) -> dict[str, str]:
-        return palette_for_colors(
-            str(self.settings.get("theme_color_a", DEFAULT_COLOR_A)),
-            str(self.settings.get("theme_color_b", DEFAULT_COLOR_B)),
-        )
+        # All exposed colors must come from one atomic read. Calling get() twice
+        # could observe opposite sides of another process's A/B update.
+        return palette_for_colors(*self._snapshot)
 
     @Property(str, notify=themeChanged)
     def themeColorA(self) -> str:
-        return str(self.settings.get("theme_color_a", DEFAULT_COLOR_A))
+        return self._snapshot[0]
 
     @Property(str, notify=themeChanged)
     def themeColorB(self) -> str:
-        return str(self.settings.get("theme_color_b", DEFAULT_COLOR_B))
+        return self._snapshot[1]
 
     @Slot(str, str, result=str)
     def setThemeColors(self, color_a: str, color_b: str) -> str:
