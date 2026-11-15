@@ -703,18 +703,27 @@ class ControlCenterController(QObject):
     def theme(self) -> str:
         return str(self.settings.get("theme"))
 
+    def _theme_color_pair(self) -> tuple[str, str]:
+        # Read both endpoints from the same SettingsStore snapshot. Separate
+        # get() calls could expose a mixed pair during another process update.
+        snapshot = self._shared_settings_snapshot
+        return (
+            str(snapshot[2] or DEFAULT_COLOR_A),
+            str(snapshot[3] or DEFAULT_COLOR_B),
+        )
+
     @Property(str, notify=settingsChanged)
     def themeColorA(self) -> str:
-        return str(self.settings.get("theme_color_a", DEFAULT_COLOR_A))
+        return self._theme_color_pair()[0]
 
     @Property(str, notify=settingsChanged)
     def themeColorB(self) -> str:
-        return str(self.settings.get("theme_color_b", DEFAULT_COLOR_B))
+        return self._theme_color_pair()[1]
 
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
         """Expose the shared custom gradient to LEOS-owned QML without changing KDE."""
-        return palette_for_colors(self.themeColorA, self.themeColorB)
+        return palette_for_colors(*self._theme_color_pair())
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -832,6 +841,7 @@ class ControlCenterController(QObject):
             self.settings.set_many({"theme_color_a": normalized_a, "theme_color_b": normalized_b})
         except (OSError, ValueError, TypeError, KeyError):
             return "Les couleurs n'ont pas pu être enregistrées. Vérifie le format #RRGGBB."
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
         self.settingsChanged.emit()
         return "Dégradé LEOS mis à jour."
 
