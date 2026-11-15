@@ -15,6 +15,8 @@ ApplicationWindow {
 
     property color colorA: themeColors.accent_primary
     property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property color panel: themeColors.surface
     property color line: themeColors.border
@@ -52,7 +54,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DES MANETTES"
-                        color: window.colorA
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -86,7 +88,7 @@ ApplicationWindow {
                         Label {
                             anchors.centerIn: parent
                             text: "⌘"
-                            color: window.colorA
+                            color: window.colorAText
                             font.pixelSize: 28
                         }
                     }
@@ -135,7 +137,7 @@ ApplicationWindow {
                             spacing: 11
                             Label {
                                 text: "MANETTE"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -150,7 +152,7 @@ ApplicationWindow {
                                 text: controllerCenter.backendAvailable
                                     ? "Détection Linux active"
                                     : "Backend evdev non installé"
-                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.colorB
+                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.colorBText
                                 font.pixelSize: 11
                             }
                         }
@@ -168,7 +170,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "PROFIL LEOS"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -205,7 +207,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: Math.round(deadzoneSlider.value) + " %"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 13
                             }
                             Item { Layout.fillHeight: true }
@@ -236,7 +238,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "TEST DES COMMANDES"
-                                color: window.colorA
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
