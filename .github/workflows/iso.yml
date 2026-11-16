@@ -123,6 +123,7 @@ jobs:
       - name: Generate bootable installer ISO
         env:
           IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+          IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
           MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
           VARIANT: ${{ inputs.variant }}
@@ -135,8 +136,24 @@ jobs:
             echo "::error::ISO output directory is not empty; refusing to mix artifacts from different runs."
             exit 1
           fi
+          expected_digest="${IMAGE_REF##*@}"
+          sudo podman pull --authfile /root/.docker/config.json "$IMAGE_TAG_REF"
+          before_digest="$(sudo podman image inspect --format '{{.Digest}}' "$IMAGE_TAG_REF")"
+          if [[ "$before_digest" != "$expected_digest" ]]; then
+            echo "::error::The published image tag no longer resolves to the signed digest."
+            exit 1
+          fi
+          # BlueBuild 0.9.42's ISO wrapper passes IMAGE_TAG to build-container-installer,
+          # which cannot consume a digest-only reference. Use the exact build tag, guarded
+          # by digest checks immediately before and after generation.
           sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json \
-            "$RUNNER_TEMP/bluebuild" generate-iso --output-dir "$ISO_OUTPUT_DIR" --iso-name "$ISO_NAME" image "$IMAGE_REF"
+            "$RUNNER_TEMP/bluebuild" generate-iso --output-dir "$ISO_OUTPUT_DIR" --iso-name "$ISO_NAME" image "$IMAGE_TAG_REF"
+          sudo podman pull --authfile /root/.docker/config.json "$IMAGE_TAG_REF"
+          after_digest="$(sudo podman image inspect --format '{{.Digest}}' "$IMAGE_TAG_REF")"
+          if [[ "$after_digest" != "$expected_digest" ]]; then
+            echo "::error::The image tag changed during ISO generation; refusing to sign or publish this ISO."
+            exit 1
+          fi
           iso_path="$ISO_OUTPUT_DIR/$ISO_NAME"
           test -s "$iso_path"
           (
@@ -157,6 +174,7 @@ jobs:
               "variant": os.environ["VARIANT"],
               "image_tag": os.environ["IMAGE_TAG"],
               "source_image": os.environ["IMAGE_REF"],
+              "source_image_tag": os.environ["IMAGE_TAG_REF"],
               "workflow_commit": os.environ["GITHUB_SHA"],
               "workflow_repository": os.environ["GITHUB_REPOSITORY"],
               "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
