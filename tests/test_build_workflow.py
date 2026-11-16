@@ -412,7 +412,10 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Validate branding video and audio streams", source)
         self.assertIn("ffprobe -v error -select_streams v:0", source)
         self.assertIn("ffprobe -v error -select_streams a:0", source)
-        self.assertIn('ffmpeg -v error -i "${video}" -f null -', source)
+        self.assertIn("if ! command -v ffmpeg", source)
+        self.assertIn("sudo apt-get install -y --no-install-recommends ffmpeg", source)
+        self.assertIn("timeout 120 ffmpeg -v error -xerror -threads 2 -i", source)
+        self.assertIn("-map 0:v:0 -map 0:a:0 -f null -", source)
         for path in (
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
