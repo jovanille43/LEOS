@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import subprocess
+import unicodedata
 from pathlib import Path
 from typing import Sequence
 
@@ -261,7 +262,14 @@ def _safe_report_value(value: object, limit: int = 240) -> str:
     """Flatten and bound a value before including it in a shareable report."""
     if not isinstance(value, (str, int, float, bool)):
         return ""
-    text = re.sub(r"[\x00-\x1f\x7f]+", " ", str(value))
+    raw_text = str(value)
+    # Formatting controls can visually reorder or disguise untrusted names.
+    # Preserve ZWNJ/ZWJ because some writing systems rely on them for shaping.
+    raw_text = "".join(
+        character for character in raw_text
+        if unicodedata.category(character) != "Cf" or character in {"\u200c", "\u200d"}
+    )
+    text = re.sub(r"[\x00-\x1f\x7f-\x9f]+", " ", raw_text)
     text = " ".join(text.split())
     return text[:limit]
 
