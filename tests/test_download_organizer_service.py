@@ -1,11 +1,13 @@
 """Tests for the KDE-session download organizer startup and XDG folder policy."""
 
+import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gaming.download_organizer_service import resolve_leos_download_inbox
+from gaming.download_organizer_service import _acquire_lock, resolve_leos_download_inbox
 
 
 class DownloadOrganizerServiceTests(unittest.TestCase):
@@ -123,6 +125,87 @@ class DownloadOrganizerServiceTests(unittest.TestCase):
                     home / "Jeux",
                 )
                 which.assert_not_called()
+
+
+    def test_runtime_lock_is_private_and_prevents_a_second_instance(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary) / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o700)
+            with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime)}):
+                descriptor = _acquire_lock()
+                self.assertIsNotNone(descriptor)
+                try:
+                    self.assertEqual(stat.S_IMODE(os.fstat(descriptor).st_mode), 0o600)
+                    self.assertIsNone(_acquire_lock())
+                finally:
+                    os.close(descriptor)
+
+    def test_runtime_lock_rejects_relative_runtime_directory(self):
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": "relative/runtime"}):
+            self.assertIsNone(_acquire_lock())
+
+    def test_runtime_lock_rejects_group_or_world_accessible_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary) / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o755)
+            with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime)}):
+                self.assertIsNone(_acquire_lock())
+            self.assertFalse((runtime / "leos-download-organizer.lock").exists())
+
+    def test_runtime_lock_rejects_symlinked_runtime_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o700)
+            link = root / "runtime-link"
+            link.symlink_to(runtime, target_is_directory=True)
+            with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(link)}):
+                self.assertIsNone(_acquire_lock())
+            self.assertFalse((runtime / "leos-download-organizer.lock").exists())
+
+    def test_runtime_lock_rejects_symlinked_lock_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o700)
+            target = root / "target"
+            target.write_text("do not modify", encoding="utf-8")
+            (runtime / "leos-download-organizer.lock").symlink_to(target)
+            with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime)}):
+                self.assertIsNone(_acquire_lock())
+            self.assertEqual(target.read_text(encoding="utf-8"), "do not modify")
+
+    def test_runtime_lock_rejects_hardlinked_lock_file_without_chmodding_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o700)
+            target = root / "target"
+            target.write_text("do not modify", encoding="utf-8")
+            target.chmod(0o640)
+            (runtime / "leos-download-organizer.lock").hardlink_to(target)
+            with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime)}):
+                self.assertIsNone(_acquire_lock())
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o640)
+            self.assertEqual(target.read_text(encoding="utf-8"), "do not modify")
+
+    def test_runtime_lock_requires_the_current_user_to_own_the_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary) / "runtime"
+            runtime.mkdir(mode=0o700)
+            runtime.chmod(0o700)
+            current_uid = os.getuid()
+            with (
+                patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime)}),
+                patch("gaming.download_organizer_service.os.getuid", return_value=current_uid + 1),
+            ):
+                self.assertIsNone(_acquire_lock())
+            self.assertFalse((runtime / "leos-download-organizer.lock").exists())
 
 
 if __name__ == "__main__":
