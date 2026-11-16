@@ -38,7 +38,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn('nvidia-legacy) image_name="leos-nvidia"', source)
         self.assertIn('nvidia-modern) image_name="leos-nvidia-open"', source)
         verify = source.index("cosign verify --key cosign.pub")
-        generate = source.index("generate-iso --iso-name")
+        generate = source.index('generate-iso --output-dir "$ISO_OUTPUT_DIR"')
         self.assertLess(verify, generate)
         self.assertIn("sha256sum", source)
 
@@ -73,7 +73,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("MANIFEST_NAME:", source)
         self.assertIn('"source_image": os.environ["IMAGE_REF"]', source)
         self.assertIn('"iso_sha256": os.environ["ISO_SHA256"]', source)
-        self.assertIn('"source_commit": os.environ["GITHUB_SHA"]', source)
+        self.assertIn('"workflow_commit": os.environ["GITHUB_SHA"]', source)
         self.assertIn('"workflow_run_id": int(os.environ["GITHUB_RUN_ID"])', source)
         self.assertIn('sha256sum --check "$ISO_NAME.sha256"', source)
         self.assertIn("steps.image.outputs.provenance", source)
