@@ -138,7 +138,7 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertGreaterEqual(self.source.count("data-themeable-logo"), 2)
         script = (ROOT / "script.js").read_text(encoding="utf-8")
         self.assertIn("function recolorBrandingLogos()", script)
-        self.assertIn("preserve", script.lower())
+        self.assertIn("source lightness", script.lower())
 
 
 
