@@ -55,6 +55,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("bash .github/scripts/pin-image-digest.sh", source[pin:verify])
         self.assertIn("IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}", source[verify:generate])
         self.assertIn("IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}", source[generate:])
+        self.assertIn("IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}", source[generate:])
         self.assertNotIn("steps.image.outputs.ref", source[verify:])
 
     def test_iso_digest_pinning_helper_validates_and_emits_sha256_reference(self):
