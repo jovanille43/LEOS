@@ -33,6 +33,8 @@ class SignIsoArtifactsTests(unittest.TestCase):
             'printf "%s\\n" "$*" >> "$COSIGN_CALL_LOG"\n'
             'command="$1"; shift\n'
             'if [[ "$command" == sign-blob ]]; then\n'
+            '  [[ "$1" == --yes ]]\n'
+            '  shift\n'
             '  [[ "$1" == --key && "$3" == --output-signature ]]\n'
             '  key="$2"; signature="$4"; file="$5"\n'
             '  [[ "$(stat -c %a "$key")" == 600 ]]\n'
