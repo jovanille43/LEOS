@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gaming.download_organizer_service import _acquire_lock, resolve_leos_download_inbox
+from gaming.download_organizer_service import _acquire_lock, _poll_once, resolve_leos_download_inbox
 
 
 class DownloadOrganizerServiceTests(unittest.TestCase):
@@ -126,6 +126,27 @@ class DownloadOrganizerServiceTests(unittest.TestCase):
                 )
                 which.assert_not_called()
 
+
+    def test_poll_failure_is_logged_without_exposing_download_paths(self):
+        class BrokenOrganizer:
+            def poll(self):
+                raise OSError("/home/private-user/Jeux/secret-game.rom")
+
+        with self.assertLogs("leos.download-organizer", level="WARNING") as captured:
+            self.assertEqual(_poll_once(BrokenOrganizer()), [])
+        self.assertIn("OSError", captured.output[0])
+        self.assertNotIn("secret-game.rom", captured.output[0])
+        self.assertNotIn("private-user", captured.output[0])
+
+    def test_successful_poll_notifies_and_returns_moved_items(self):
+        item = {"system": "Nintendo", "console": "NES", "archive": ""}
+        class WorkingOrganizer:
+            def poll(self):
+                return [item]
+
+        with patch("gaming.download_organizer_service._notify") as notify:
+            self.assertEqual(_poll_once(WorkingOrganizer()), [item])
+        notify.assert_called_once_with([item])
 
     def test_runtime_lock_is_private_and_prevents_a_second_instance(self):
         with tempfile.TemporaryDirectory() as temporary:
