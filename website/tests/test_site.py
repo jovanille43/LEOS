@@ -145,6 +145,17 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertIn('root.style.setProperty("--a-text"', script)
         self.assertIn('root.style.setProperty("--b-text"', script)
         self.assertIn("--gradient-text", styles)
+    def test_favicon_tracks_the_selected_theme(self) -> None:
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        favicon = (ROOT / "assets" / "favicon.svg").read_text(encoding="utf-8")
+        self.assertIn("function updateFavicon(appearance)", script)
+        start = script.index("function updateFavicon")
+        end = script.index("function applyPreferences")
+        self.assertIn("preferences.colorA", script[start:end])
+        self.assertIn("preferences.colorB", script[start:end])
+        self.assertIn("#00D9FF", favicon)
+        self.assertIn("#E33BFF", favicon)
+
 
 if __name__ == "__main__":
     unittest.main()
