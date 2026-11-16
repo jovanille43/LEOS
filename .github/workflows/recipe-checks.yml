@@ -83,8 +83,10 @@ jobs:
       - name: Check LEOS first-run shell script
         run: bash -n packaging/leos-default-apps-setup
 
-      - name: Check ISO image pinning script syntax
-        run: bash -n .github/scripts/pin-image-digest.sh
+      - name: Check ISO image pinning and signing script syntax
+        run: |
+          bash -n .github/scripts/pin-image-digest.sh
+          bash -n .github/scripts/sign-iso-artifacts.sh
 
       - name: Validate branding video and audio streams
         run: |
