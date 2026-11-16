@@ -1,6 +1,9 @@
 name: Generate LEOS installer ISO
 
 on:
+  push:
+    branches:
+      - feature/custom-two-color-themes
   workflow_dispatch:
     inputs:
       variant:
@@ -21,12 +24,13 @@ permissions:
   packages: read
 
 concurrency:
-  group: leos-iso-${{ github.ref }}-${{ inputs.variant }}
+  group: leos-iso-${{ github.ref }}-${{ inputs.variant || 'standard' }}
   cancel-in-progress: false
 
 jobs:
   generate-iso:
-    name: Generate LEOS installer (${{ inputs.variant }})
+    name: Generate LEOS installer (${{ inputs.variant || 'standard' }})
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-iso]'))
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -75,8 +79,8 @@ jobs:
       - name: Select published image
         id: image
         env:
-          VARIANT: ${{ inputs.variant }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          VARIANT: ${{ inputs.variant || 'standard' }}
+          IMAGE_TAG: ${{ inputs.image_tag || '7794179-45' }}
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
@@ -125,8 +129,8 @@ jobs:
           IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
           MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
-          VARIANT: ${{ inputs.variant }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          VARIANT: ${{ inputs.variant || 'standard' }}
+          IMAGE_TAG: ${{ inputs.image_tag || '7794179-45' }}
           ISO_OUTPUT_DIR: ${{ github.workspace }}/dist/iso
         run: |
           set -euo pipefail
@@ -184,7 +188,7 @@ jobs:
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@v7
         with:
-          name: LEOS-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
+          name: LEOS-installer-${{ inputs.variant || 'standard' }}-${{ inputs.image_tag || '7794179-45' }}
           path: |
             dist/iso/${{ steps.image.outputs.filename }}
             dist/iso/${{ steps.image.outputs.filename }}.sha256
