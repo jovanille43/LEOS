@@ -109,6 +109,19 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertEqual(existing_bundle.read_text(encoding="utf-8"), "keep-me\n")
         self.assertFalse(self.call_log.exists())
 
+    def test_iso_workflow_checks_signing_keys_before_image_download(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        preflight = workflow.index("Check signing prerequisites and verify Cosign key pair")
+        podman = workflow.index("Install Podman and BlueBuild CLI")
+        generate = workflow.index("Generate bootable installer ISO")
+        self.assertLess(preflight, podman)
+        self.assertLess(preflight, generate)
+        self.assertIn("SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}", workflow[preflight:podman])
+        self.assertIn('[[ -z "${SIGNING_SECRET}" ]]', workflow[preflight:podman])
+        self.assertIn("cosign sign-blob --yes", workflow[preflight:podman])
+        self.assertIn("cosign verify-blob --key cosign.pub --bundle", workflow[preflight:podman])
+        self.assertIn("unset SIGNING_SECRET", workflow[preflight:podman])
+
     def test_iso_workflow_uploads_both_sigstore_bundles_before_download(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         sign = workflow.index("Sign and verify LEOS ISO and provenance artifacts")
