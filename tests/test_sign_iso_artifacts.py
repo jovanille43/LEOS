@@ -175,6 +175,18 @@ class SignIsoArtifactsTests(unittest.TestCase):
             workflow,
         )
 
+    def test_iso_generator_uses_exact_tag_and_guards_digest_before_and_after(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        generate = workflow.index("Generate bootable installer ISO")
+        sign = workflow.index("Sign and verify LEOS ISO and provenance artifacts")
+        section = workflow[generate:sign]
+        self.assertIn('IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}', section)
+        self.assertIn('before_digest="$(sudo podman image inspect', section)
+        self.assertIn('image "$IMAGE_TAG_REF"', section)
+        self.assertIn('after_digest="$(sudo podman image inspect', section)
+        self.assertIn('refusing to sign or publish this ISO', section)
+        self.assertIn('"source_image_tag": os.environ["IMAGE_TAG_REF"]', section)
+
 
 if __name__ == "__main__":
     unittest.main()
