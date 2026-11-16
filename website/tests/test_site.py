@@ -136,3 +136,10 @@ class WebsiteSmokeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_logos_are_recolored_from_the_selected_pair(self) -> None:
+        self.assertGreaterEqual(self.source.count("data-themeable-logo"), 2)
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        self.assertIn("function recolorBrandingLogos()", script)
+        self.assertIn("preserve", script.lower())
