@@ -134,6 +134,15 @@ jobs:
               stream.write("\n")
           PY
 
+      - name: Sign and verify LEOS ISO and provenance artifacts
+        env:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/sign-iso-artifacts.sh "$ISO_NAME" "$MANIFEST_NAME" cosign.pub
+
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@v4
         with:
@@ -141,7 +150,9 @@ jobs:
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
+            ${{ steps.image.outputs.filename }}.sig
             ${{ steps.image.outputs.provenance }}
+            ${{ steps.image.outputs.provenance }}.sig
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
