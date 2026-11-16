@@ -234,7 +234,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Label {
-                            text: "Personnalise ton dégradé et ton apparence dès maintenant, ou retrouve ces réglages dans le Centre de contrôle."
+                            text: "Personnalise ton dégradé maintenant ou plus tard dans le Centre de contrôle, et choisis aussi ton apparence."
                             color: window.muted
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
