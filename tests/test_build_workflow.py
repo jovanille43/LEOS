@@ -168,8 +168,8 @@ class BuildWorkflowTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("Verify private and public signing keys match", source)
-        self.assertIn('cosign sign-blob --yes --key "$workdir/cosign.key"', source)
-        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertIn('cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json"', source)
+        self.assertIn('cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json"', source)
         self.assertLess(
             source.index("Verify private and public signing keys match"),
             source.index("Build and publish LEOS"),
