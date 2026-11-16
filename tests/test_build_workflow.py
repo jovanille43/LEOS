@@ -292,9 +292,9 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_iso_workflow_uses_published_image_and_generates_checksum(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("generate-iso --iso-name", source)
+        self.assertIn('generate-iso --output-dir "$ISO_OUTPUT_DIR" --iso-name', source)
         self.assertIn('image "$IMAGE_REF"', source)
-        self.assertIn('sha256sum "$ISO_NAME"', source)
+        self.assertIn('sha256sum -- "$ISO_NAME"', source)
         self.assertIn("actions/upload-artifact@v7", source)
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
