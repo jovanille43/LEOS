@@ -293,3 +293,8 @@ LEOS/
 ---
 
 **LEOS — One system. Two experiences.**
+
+
+## Site officiel
+
+Le site vitrine et le futur centre de téléchargement sont préparés dans [`website/`](website/README.md). Le site reste en pré-lancement tant que les images LEOS n'ont pas été construites et validées ; aucun ISO n'est publié à ce stade.
