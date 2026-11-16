@@ -37,10 +37,10 @@ La procédure détaillée de retour arrière et de récupération est disponible
 
 1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
 2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag de l'image publiée.
-3. Récupérer l'ISO, son fichier SHA-256, le manifeste JSON de provenance et les deux signatures `.sig` dans les artefacts du workflow. Vérifier la somme avec `sha256sum --check LEOS-standard-latest.iso.sha256`, puis vérifier l'authenticité de l'ISO et du manifeste avec Cosign et la clé publique `cosign.pub` publiée dans le dépôt :
+3. Récupérer l'ISO, son fichier SHA-256, le manifeste JSON de provenance et les deux bundles `.sigstore.json` dans les artefacts du workflow. Vérifier la somme avec `sha256sum --check LEOS-standard-latest.iso.sha256`, puis vérifier l'authenticité de l'ISO et du manifeste avec Cosign et la clé publique `cosign.pub` publiée dans le dépôt :
    ```bash
-   cosign verify-blob --key cosign.pub --signature LEOS-standard-latest.iso.sig LEOS-standard-latest.iso
-   cosign verify-blob --key cosign.pub --signature LEOS-standard-latest.iso.json.sig LEOS-standard-latest.iso.json
+   cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.sigstore.json LEOS-standard-latest.iso
+   cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.json.sigstore.json LEOS-standard-latest.iso.json
    ```
    Adapter les noms des fichiers à la variante et au tag téléchargés. Ne pas utiliser une ISO si l'une des vérifications échoue.
 4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer ; l'écriture de l'image efface le contenu de la clé choisie.
