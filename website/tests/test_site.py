@@ -18,7 +18,6 @@ class SiteParser(HTMLParser):
         self.local_paths: list[str] = []
         self.images_without_alt: list[str] = []
         self.download_links: list[str] = []
-        self._inside_image = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -72,6 +71,14 @@ class WebsiteSmokeTests(unittest.TestCase):
             "telechargement",
         }
         self.assertTrue(expected.issubset(set(self.parser.ids)))
+
+    def test_ids_are_unique(self) -> None:
+        self.assertEqual(len(self.parser.ids), len(set(self.parser.ids)))
+
+    def test_document_has_language_and_metadata(self) -> None:
+        self.assertIn('<html lang="fr">', self.source)
+        self.assertIn('<meta name="viewport"', self.source)
+        self.assertIn('<meta name="description"', self.source)
 
     def test_fragment_links_resolve(self) -> None:
         missing = sorted(set(self.parser.fragments) - set(self.parser.ids))
