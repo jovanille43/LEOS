@@ -45,6 +45,7 @@ provenance_signature_tmp="$workdir/provenance.sig"
 
 printf '%s' "$SIGNING_SECRET" > "$private_key"
 chmod 600 "$private_key"
+unset SIGNING_SECRET
 
 cosign sign-blob \
   --yes \
