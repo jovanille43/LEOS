@@ -295,9 +295,36 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("generate-iso --iso-name", source)
         self.assertIn('image "$IMAGE_REF"', source)
         self.assertIn('sha256sum "$ISO_NAME"', source)
-        self.assertIn("actions/upload-artifact@v4", source)
+        self.assertIn("actions/upload-artifact@v7", source)
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
+
+    def test_github_workflows_use_node24_compatible_first_party_actions(self):
+        workflow_paths = (
+            ".github/workflows/python-checks.yml",
+            ".github/workflows/recipe-checks.yml",
+            ".github/workflows/build.yml",
+            ".github/workflows/iso.yml",
+        )
+        for relative in workflow_paths:
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(workflow=relative):
+                self.assertIn("actions/checkout@v7", source)
+                self.assertNotIn("actions/checkout@v4", source)
+
+        for relative in (
+            ".github/workflows/python-checks.yml",
+            ".github/workflows/recipe-checks.yml",
+            ".github/workflows/build.yml",
+        ):
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(workflow=relative):
+                self.assertIn("actions/setup-python@v7", source)
+                self.assertNotIn("actions/setup-python@v5", source)
+
+        iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("actions/upload-artifact@v7", iso)
+        self.assertNotIn("actions/upload-artifact@v4", iso)
 
     def test_iso_workflow_validates_image_tag_before_building(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
