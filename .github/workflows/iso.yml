@@ -55,7 +55,7 @@ jobs:
           printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
           chmod 600 "$workdir/cosign.key"
           unset SIGNING_SECRET
-          printf 'LEOS ISO signing-key preflight\\n' > "$workdir/challenge.txt"
+          printf 'LEOS ISO signing-key preflight\n' > "$workdir/challenge.txt"
           cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
           cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
 
