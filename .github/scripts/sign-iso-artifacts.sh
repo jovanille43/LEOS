@@ -29,7 +29,7 @@ if ! command -v cosign >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -e "$iso_bundle" || -e "$provenance_bundle" ]]; then
+if [[ -e "$iso_bundle" || -L "$iso_bundle" || -e "$provenance_bundle" || -L "$provenance_bundle" ]]; then
   echo "::error::Refusing to overwrite an existing Cosign bundle." >&2
   exit 1
 fi
