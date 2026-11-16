@@ -63,7 +63,8 @@ class IsoImagePinningTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             self.output_file.read_text(encoding="utf-8"),
-            f"ref=ghcr.io/leos-owner/leos@{VALID_DIGEST}\n",
+            f"ref=ghcr.io/leos-owner/leos@{VALID_DIGEST}\n"
+            f"tag_ref={VALID_IMAGE}\n",
         )
         calls = self.call_log.read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(calls), 2)
