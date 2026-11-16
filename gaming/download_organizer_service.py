@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fcntl
+import logging
 import os
 from pathlib import Path
 import shutil
@@ -164,6 +165,21 @@ def _notify(moved: list[dict[str, str]]) -> None:
         pass
 
 
+def _poll_once(organizer: DownloadOrganizer) -> list[dict[str, str]]:
+    """Run one scan without letting a transient filesystem error kill the service."""
+    try:
+        moved = organizer.poll()
+    except Exception as error:
+        # KDE autostart has no attached terminal. Emit a concise user-journal
+        # entry without logging game filenames or other private path details.
+        logging.getLogger("leos.download-organizer").warning(
+            "Scan interrompu temporairement (%s)", type(error).__name__
+        )
+        return []
+    _notify(moved)
+    return moved
+
+
 def main() -> int:
     lock = _acquire_lock()
     if lock is None:
@@ -181,13 +197,7 @@ def main() -> int:
     organizer = DownloadOrganizer(downloads_dir=inbox, home=home)
     try:
         while True:
-            try:
-                moved = organizer.poll()
-                _notify(moved)
-            except Exception:
-                # A temporary filesystem or metadata error must not terminate
-                # the per-user service or interfere with the downloaded file.
-                pass
+            _poll_once(organizer)
             time.sleep(POLL_INTERVAL_SECONDS)
     except KeyboardInterrupt:
         return 0
