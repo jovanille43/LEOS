@@ -30,6 +30,7 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.fake_cosign.write_text(
             "#!/usr/bin/env bash\n"
             "set -euo pipefail\n"
+            '[[ -z "${SIGNING_SECRET:-}" ]]\n'
             'printf "%s\\n" "$*" >> "$COSIGN_CALL_LOG"\n'
             'command="$1"; shift\n'
             'if [[ "$command" == sign-blob ]]; then\n'
