@@ -2,7 +2,7 @@
 
 ## État actuel
 
-LEOS est encore en développement. **Aucune image installable ni ISO LEOS n'est publiée à ce stade.** Ne tente pas d'installer les recettes de construction directement sur un ordinateur principal. La première image devra être construite, signée et testée sur une machine de test avant toute diffusion.
+LEOS est encore en développement. Les premières variantes d'image sont en cours de construction/publication automatisée ; **aucune ISO installateur LEOS n'a encore été générée ni validée**. Ne tente pas d'installer une image de développement sur un ordinateur principal. Un démarrage live et une installation de test sur matériel dédié devront précéder toute diffusion.
 
 ## Matériel et choix de l'image
 
