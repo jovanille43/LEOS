@@ -12,9 +12,8 @@ on:
           - nvidia-legacy
           - nvidia-modern
       image_tag:
-        description: Published LEOS container image tag
+        description: Exact tag from a successful LEOS image build (for example 7794179-45)
         required: true
-        default: latest
         type: string
 
 permissions:
@@ -70,6 +69,8 @@ jobs:
           docker cp bluebuild-cli:/out/bluebuild "$RUNNER_TEMP/bluebuild"
           docker rm bluebuild-cli
           chmod +x "$RUNNER_TEMP/bluebuild"
+          "$RUNNER_TEMP/bluebuild" --version
+          "$RUNNER_TEMP/bluebuild" generate-iso --help
 
       - name: Select published image
         id: image
@@ -126,35 +127,47 @@ jobs:
           MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
           VARIANT: ${{ inputs.variant }}
           IMAGE_TAG: ${{ inputs.image_tag }}
+          ISO_OUTPUT_DIR: ${{ github.workspace }}/dist/iso
         run: |
           set -euo pipefail
-          sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --iso-name "$ISO_NAME" image "$IMAGE_REF"
-          test -s "$ISO_NAME"
-          iso_sha256="$(sha256sum "$ISO_NAME" | cut -d ' ' -f 1)"
-          printf '%s  %s\n' "$iso_sha256" "$ISO_NAME" > "$ISO_NAME.sha256"
-          sha256sum --check "$ISO_NAME.sha256"
-          export ISO_SHA256="$iso_sha256"
+          mkdir -p "$ISO_OUTPUT_DIR"
+          if [[ -n "$(find "$ISO_OUTPUT_DIR" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+            echo "::error::ISO output directory is not empty; refusing to mix artifacts from different runs."
+            exit 1
+          fi
+          sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json \
+            "$RUNNER_TEMP/bluebuild" generate-iso --output-dir "$ISO_OUTPUT_DIR" --iso-name "$ISO_NAME" image "$IMAGE_REF"
+          iso_path="$ISO_OUTPUT_DIR/$ISO_NAME"
+          test -s "$iso_path"
+          (
+            cd "$ISO_OUTPUT_DIR"
+            sha256sum -- "$ISO_NAME" > "$ISO_NAME.sha256"
+            sha256sum --check "$ISO_NAME.sha256"
+          )
+          export ISO_SHA256="$(sha256sum "$iso_path" | cut -d ' ' -f 1)"
           python3 - <<'PY'
           import json
           import os
           from pathlib import Path
 
+          output_dir = Path(os.environ["ISO_OUTPUT_DIR"])
           metadata = {
               "schema_version": 1,
               "product": "LEOS",
               "variant": os.environ["VARIANT"],
               "image_tag": os.environ["IMAGE_TAG"],
               "source_image": os.environ["IMAGE_REF"],
-              "source_commit": os.environ["GITHUB_SHA"],
+              "workflow_commit": os.environ["GITHUB_SHA"],
               "workflow_repository": os.environ["GITHUB_REPOSITORY"],
               "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
               "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
               "iso_file": os.environ["ISO_NAME"],
               "iso_sha256": os.environ["ISO_SHA256"],
           }
-          with Path(os.environ["MANIFEST_NAME"]).open("x", encoding="utf-8") as stream:
+          manifest_path = output_dir / os.environ["MANIFEST_NAME"]
+          with manifest_path.open("x", encoding="utf-8") as stream:
               json.dump(metadata, stream, indent=2, sort_keys=True)
-              stream.write("\n")
+              stream.write("\\n")
           PY
 
       - name: Sign and verify LEOS ISO and provenance artifacts
@@ -162,20 +175,22 @@ jobs:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
           MANIFEST_NAME: ${{ steps.image.outputs.provenance }}
+          ISO_OUTPUT_DIR: ${{ github.workspace }}/dist/iso
         run: |
           set -euo pipefail
-          bash .github/scripts/sign-iso-artifacts.sh "$ISO_NAME" "$MANIFEST_NAME" cosign.pub
+          bash .github/scripts/sign-iso-artifacts.sh \
+            "$ISO_OUTPUT_DIR/$ISO_NAME" "$ISO_OUTPUT_DIR/$MANIFEST_NAME" "$GITHUB_WORKSPACE/cosign.pub"
 
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@v7
         with:
           name: LEOS-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
           path: |
-            ${{ steps.image.outputs.filename }}
-            ${{ steps.image.outputs.filename }}.sha256
-            ${{ steps.image.outputs.filename }}.sigstore.json
-            ${{ steps.image.outputs.provenance }}
-            ${{ steps.image.outputs.provenance }}.sigstore.json
+            dist/iso/${{ steps.image.outputs.filename }}
+            dist/iso/${{ steps.image.outputs.filename }}.sha256
+            dist/iso/${{ steps.image.outputs.filename }}.sigstore.json
+            dist/iso/${{ steps.image.outputs.provenance }}
+            dist/iso/${{ steps.image.outputs.provenance }}.sigstore.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
