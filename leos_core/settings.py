@@ -65,6 +65,7 @@ DEFAULTS: dict[str, Any] = {
     "theme": "leos-original",
     "theme_color_a": "#00D9FF",
     "theme_color_b": "#E33BFF",
+    "appearance_mode": "dark",
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
@@ -82,6 +83,7 @@ DEFAULTS: dict[str, Any] = {
 ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
     "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "appearance_mode": {"dark", "light", "auto"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
     "notification_minimum_priority": {"all", "important", "critical"},
