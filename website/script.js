@@ -210,6 +210,21 @@
     return whiteScore >= darkScore ? "#FFFFFF" : "#071015";
   }
 
+  function updateFavicon(appearance) {
+    const faviconLink = document.querySelector('link[rel="icon"]');
+    if (!faviconLink) return;
+    const background = appearance === "light" ? "#F4F6FA" : "#090B10";
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop stop-color="' + preferences.colorA + '"/>' +
+      '<stop offset="1" stop-color="' + preferences.colorB + '"/>' +
+      '</linearGradient></defs>' +
+      '<rect width="64" height="64" rx="15" fill="' + background + '"/>' +
+      '<path d="M16 13h32v8H25v10h19v8H25v4h23v8H16z" fill="url(#g)"/>' +
+      '<path d="M11 9h42v46H11z" fill="none" stroke="url(#g)" stroke-opacity=".35" stroke-width="1.5" rx="12"/>' +
+      '</svg>';
+    faviconLink.href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
   function applyPreferences() {
     const appearance = resolveAppearance();
     root.dataset.appearance = appearance;
@@ -222,6 +237,7 @@
     root.style.setProperty("--gradient", "linear-gradient(112deg, " + preferences.colorA + " 0%, " + preferences.colorB + " 100%)");
     root.style.setProperty("--gradient-ink", chooseGradientTextColor());
     if (themeColorMeta) themeColorMeta.setAttribute("content", appearance === "light" ? "#F4F6FA" : "#090B10");
+    updateFavicon(appearance);
     modeButtons.forEach(button => {
       button.setAttribute("aria-pressed", String(button.dataset.themeMode === preferences.mode));
     });
