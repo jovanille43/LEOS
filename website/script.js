@@ -24,6 +24,8 @@
 
   let preferences = { ...DEFAULTS };
   let appearanceTimer = null;
+  let logoRenderToken = 0;
+  const logoCache = new Map();
 
   function normalizeColor(value, fallback) {
     return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim())
@@ -77,6 +79,107 @@
     return (Math.max(luminance, other) + 0.05) / (Math.min(luminance, other) + 0.05);
   }
 
+
+  function hexToRgb(hex) {
+    return [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16));
+  }
+
+  function rgbToHsl(red, green, blue) {
+    const r = red / 255, g = green / 255, b = blue / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const delta = max - min;
+    let hue = 0;
+    let saturation = 0;
+    const lightness = (max + min) / 2;
+    if (delta !== 0) {
+      saturation = delta / (1 - Math.abs(2 * lightness - 1));
+      if (max === r) hue = ((g - b) / delta) % 6;
+      else if (max === g) hue = (b - r) / delta + 2;
+      else hue = (r - g) / delta + 4;
+      hue *= 60;
+      if (hue < 0) hue += 360;
+    }
+    return [hue, saturation, lightness];
+  }
+
+  function hslToRgb(hue, saturation, lightness) {
+    const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    const segment = hue / 60;
+    const second = chroma * (1 - Math.abs((segment % 2) - 1));
+    let rgb;
+    if (segment < 1) rgb = [chroma, second, 0];
+    else if (segment < 2) rgb = [second, chroma, 0];
+    else if (segment < 3) rgb = [0, chroma, second];
+    else if (segment < 4) rgb = [0, second, chroma];
+    else if (segment < 5) rgb = [second, 0, chroma];
+    else rgb = [chroma, 0, second];
+    const offset = lightness - chroma / 2;
+    return rgb.map(value => Math.round((value + offset) * 255));
+  }
+
+  function recolorBrandingLogos() {
+    const logos = [...document.querySelectorAll("[data-themeable-logo]")];
+    if (!logos.length) return;
+    const cacheKey = preferences.colorA + ":" + preferences.colorB;
+    const cached = logoCache.get(cacheKey);
+    if (cached) {
+      logos.forEach(logo => { logo.src = cached; });
+      return;
+    }
+
+    const token = ++logoRenderToken;
+    const originalSource = logos[0].getAttribute("src");
+    if (!originalSource) return;
+    const sourceImage = new Image();
+    sourceImage.onload = () => {
+      if (token !== logoRenderToken) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = sourceImage.naturalWidth;
+        canvas.height = sourceImage.naturalHeight;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) return;
+        context.drawImage(sourceImage, 0, 0);
+        const image = context.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = image.data;
+        const start = hexToRgb(preferences.colorA);
+        const end = hexToRgb(preferences.colorB);
+
+        // Re-map only chromatic parts of the official cyan-to-magenta artwork.
+        // Source lightness and low-saturation metallic highlights stay intact.
+        for (let index = 0; index < pixels.length; index += 4) {
+          if (pixels[index + 3] === 0) continue;
+          const [hue, saturation, lightness] = rgbToHsl(
+            pixels[index], pixels[index + 1], pixels[index + 2]
+          );
+          if (saturation < 0.16 || lightness < 0.055 || lightness > 0.94) continue;
+          const position = Math.max(0, Math.min(1, (hue - 180) / 120));
+          const targetRgb = start.map((channel, channelIndex) =>
+            channel + (end[channelIndex] - channel) * position
+          );
+          const [targetHue, targetSaturation] = rgbToHsl(...targetRgb);
+          const recolored = hslToRgb(targetHue, Math.max(0.18, targetSaturation), lightness);
+          pixels[index] = recolored[0];
+          pixels[index + 1] = recolored[1];
+          pixels[index + 2] = recolored[2];
+        }
+
+        context.putImageData(image, 0, 0);
+        const themedUrl = canvas.toDataURL("image/png");
+        if (token !== logoRenderToken) return;
+        if (logoCache.size > 8) logoCache.clear();
+        logoCache.set(cacheKey, themedUrl);
+        logos.forEach(logo => { logo.src = themedUrl; });
+      } catch {
+        // Keep the official source image if the browser blocks canvas access.
+      }
+    };
+    sourceImage.onerror = () => {
+      // The original image remains visible when canvas processing is unavailable.
+    };
+    sourceImage.src = originalSource;
+  }
+
   function chooseGradientTextColor() {
     const whiteScore = Math.min(contrastRatio(preferences.colorA, "#FFFFFF"), contrastRatio(preferences.colorB, "#FFFFFF"));
     const darkScore = Math.min(contrastRatio(preferences.colorA, "#071015"), contrastRatio(preferences.colorB, "#071015"));
@@ -96,6 +199,7 @@
       button.setAttribute("aria-pressed", String(button.dataset.themeMode === preferences.mode));
     });
     syncColorControls();
+    recolorBrandingLogos();
     scheduleAppearanceUpdate();
   }
 
@@ -130,14 +234,14 @@
     savePreferences();
   }
 
-  function setPanelOpen(open) {
+  function setPanelOpen(open, restoreFocus = false) {
     if (!themePanel || !themeToggle) return;
     themePanel.hidden = !open;
     themeToggle.setAttribute("aria-expanded", String(open));
     if (open) {
       const firstControl = themePanel.querySelector("[data-theme-mode]");
       if (firstControl) firstControl.focus();
-    } else {
+    } else if (restoreFocus) {
       themeToggle.focus();
     }
   }
@@ -148,7 +252,7 @@
   if (themeToggle && themePanel) {
     themeToggle.addEventListener("click", () => setPanelOpen(themePanel.hidden));
   }
-  if (themeClose) themeClose.addEventListener("click", () => setPanelOpen(false));
+  if (themeClose) themeClose.addEventListener("click", () => setPanelOpen(false, true));
 
   modeButtons.forEach(button => {
     button.addEventListener("click", () => {
@@ -178,7 +282,7 @@
   });
 
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && themePanel && !themePanel.hidden) setPanelOpen(false);
+    if (event.key === "Escape" && themePanel && !themePanel.hidden) setPanelOpen(false, true);
   });
 
   document.addEventListener("visibilitychange", () => {
