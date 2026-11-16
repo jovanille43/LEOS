@@ -25,6 +25,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check website JavaScript syntax
+        run: node --check website/script.js
+
       - name: Compile Python sources
         run: python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
 
