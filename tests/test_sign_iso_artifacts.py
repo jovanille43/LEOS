@@ -78,9 +78,9 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertEqual(manifest_signature.read_text(encoding="utf-8"), "fake-signature\n")
         calls = self.call_log.read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(calls), 4)
-        self.assertTrue(calls[0].startswith("sign-blob --key "))
+        self.assertTrue(calls[0].startswith("sign-blob --yes --key "))
         self.assertTrue(calls[1].startswith("verify-blob --key "))
-        self.assertTrue(calls[2].startswith("sign-blob --key "))
+        self.assertTrue(calls[2].startswith("sign-blob --yes --key "))
         self.assertTrue(calls[3].startswith("verify-blob --key "))
         self.assertNotIn("test-private-key", "\n".join(calls))
 
