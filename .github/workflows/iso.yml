@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s cosign.pub
-          sudo env DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "$IMAGE_REF"
+          sudo env PATH="$PATH" DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "$IMAGE_REF"
 
       - name: Generate bootable installer ISO
         env:
