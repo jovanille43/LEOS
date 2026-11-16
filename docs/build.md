@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Le workflow manuel de construction/publication a été lancé sur la branche `feature/custom-two-color-themes` (exécution GitHub Actions du 16 novembre 2026). Les contrôles préalables — tests Python, lint Qt 6/QML, validation des ressources de marque et vérifications Cosign — ont réussi. Les étapes de construction AMD/Intel et NVIDIA legacy sont terminées avec succès ; la variante NVIDIA moderne était encore en cours lors du dernier contrôle. La construction complète des trois variantes et leur validation sur GPU réels restent nécessaires. Aucune ISO installateur n'a encore été générée.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Le workflow manuel de construction/publication a terminé avec succès sur la branche `feature/custom-two-color-themes` le 16 novembre 2026 (exécution GitHub Actions `43918930331`, commit applicatif `7794179`). Les tests Python, le lint Qt 6/QML, la validation des ressources de marque, les contrôles Cosign et les trois publications AMD/Intel, NVIDIA legacy et NVIDIA moderne ont tous réussi. Le tag de build commun aux trois images est `7794179-45` ; le tag de branche `br-feature_custom-two-color-themes-45` est également publié. Les images sont donc prêtes à servir de source au générateur ISO. Aucune ISO installateur n'a toutefois encore été générée ni testée sur machine.
 
 ## Base retenue
 
@@ -65,7 +65,7 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 
 - La clé publique `cosign.pub` est présente dans le dépôt ; le workflow a confirmé que le secret Actions `SIGNING_SECRET` lui correspond, sans exposer la clé privée.
 - Les tests automatisés, le lint QML, les contrôles des ressources de marque et les précontrôles de signature ont réussi sur l'exécution de construction du 16 novembre 2026.
-- Les trois images doivent toutes terminer leur construction avant de lancer la génération ISO correspondante.
+- Les trois images AMD/Intel, NVIDIA legacy et NVIDIA moderne ont été construites et publiées avec succès le 16 novembre 2026. Le tag vérifié pour les trois variantes est `7794179-45` (run GitHub Actions `43918930331`). Les validations sur GPU réels restent à effectuer.
 - Les logos, vidéos et fonds d'écran sont contrôlés automatiquement, mais leur rendu réel, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite.
 - Un démarrage live en machine virtuelle UEFI puis sur matériel physique reste indispensable pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions.
 
@@ -77,16 +77,18 @@ La checklist détaillée du premier démarrage, des transitions, du Bluetooth, d
 
 ## Construction ISO
 
-Le workflow manuel `.github/workflows/iso.yml` prépare cette étape à partir d'une image LEOS déjà publiée dans GHCR. Il demande explicitement la variante matérielle (standard, NVIDIA legacy ou NVIDIA moderne) et le tag de l'image, vérifie d'abord la présence de `SIGNING_SECRET` et la correspondance cryptographique avec `cosign.pub`, puis seulement valide le tag, télécharge l'image et prépare la génération. Une mauvaise configuration des clés est ainsi détectée avant les étapes coûteuses. Avant toute vérification de signature, il tire l'image avec Podman et résout son empreinte SHA-256 ; les étapes Cosign et BlueBuild utilisent ensuite toutes deux cette référence immuable `ghcr.io/...@sha256:...`, jamais le tag mutable. Cela évite qu'un tag déplacé entre la vérification et la génération fasse produire une ISO à partir d'une image différente de celle qui a été vérifiée.
+Le workflow manuel `.github/workflows/iso.yml` prépare cette étape à partir d'une image LEOS déjà publiée dans GHCR. Il demande explicitement la variante matérielle (standard, NVIDIA legacy ou NVIDIA moderne) et le tag exact de l'image ; aucun tag `latest` n'est supposé. C'est important car le workflow BlueBuild publie des tags propres à chaque exécution. Pour les trois images produites le 16 novembre 2026, le tag commun vérifié est `7794179-45`. Le workflow vérifie d'abord la présence de `SIGNING_SECRET` et la correspondance cryptographique avec `cosign.pub`, puis valide le tag, télécharge l'image et prépare la génération. Avant toute vérification de signature, il tire l'image avec Podman et résout son empreinte SHA-256 ; les étapes Cosign et BlueBuild utilisent ensuite toutes deux cette référence immuable `ghcr.io/...@sha256:...`, jamais le tag mutable. Cela évite qu'un tag déplacé entre la vérification et la génération fasse produire une ISO à partir d'une image différente de celle qui a été vérifiée.
 
-Après la génération, le workflow signe l'ISO et le manifeste JSON de provenance avec la clé privée du secret Actions `SIGNING_SECRET`. Le script `.github/scripts/sign-iso-artifacts.sh` utilise une copie temporaire de la clé, limitée aux permissions `0600`, vérifie immédiatement les deux bundles avec `cosign.pub`, puis supprime son répertoire temporaire. Les bundles `.sigstore.json` de l'ISO et du manifeste sont ajoutés aux artefacts avec l'ISO, sa somme SHA-256 et le manifeste. Les artefacts GitHub Actions sont conservés pendant 14 jours. Le manifeste consigne la référence immuable de l'image source, la variante, le tag demandé, le commit, l'exécution GitHub Actions et l'empreinte SHA-256 de l'ISO ; sa propre signature protège ces informations contre une modification après génération.
+La génération utilise explicitement le dossier `dist/iso` et s'arrête si ce dossier contient déjà des fichiers, afin de ne pas mélanger les résultats de plusieurs générations. Le workflow contrôle que l'ISO existe et n'est pas vide, produit puis vérifie sa somme SHA-256, et écrit le manifeste JSON de provenance dans le même dossier. Le manifeste distingue le commit du workflow ISO (`workflow_commit`) de l'image exacte utilisée (`source_image`, c'est-à-dire sa référence immuable avec digest), sans prétendre que le commit du workflow est nécessairement celui de l'image source.
 
-Après téléchargement, vérifier les fichiers depuis le dossier qui contient l'ISO, le manifeste, les deux bundles Sigstore et le fichier SHA-256. Pour l'exemple de la variante standard avec le tag `latest` :
+Après la génération, le workflow signe l'ISO et le manifeste JSON de provenance avec la clé privée du secret Actions `SIGNING_SECRET`. Le script `.github/scripts/sign-iso-artifacts.sh` utilise une copie temporaire de la clé, limitée aux permissions `0600`, vérifie immédiatement les deux bundles avec `cosign.pub`, puis supprime son répertoire temporaire. Les bundles `.sigstore.json` de l'ISO et du manifeste sont ajoutés aux artefacts avec l'ISO, sa somme SHA-256 et le manifeste. Les artefacts GitHub Actions sont conservés pendant 14 jours.
+
+Après téléchargement, vérifier les fichiers depuis le dossier qui contient l'ISO, le manifeste, les deux bundles Sigstore et le fichier SHA-256. Pour l'exemple de la variante standard avec le tag actuel `7794179-45` :
 
 ```bash
-sha256sum --check LEOS-standard-latest.iso.sha256
-cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.sigstore.json LEOS-standard-latest.iso
-cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.json.sigstore.json LEOS-standard-latest.iso.json
+sha256sum --check LEOS-standard-7794179-45.iso.sha256
+cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.sigstore.json LEOS-standard-7794179-45.iso
+cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.json.sigstore.json LEOS-standard-7794179-45.iso.json
 ```
 
 La somme SHA-256 contrôle l'intégrité du fichier ; la vérification Cosign établit que l'ISO et le manifeste ont été signés par la clé privée correspondant à la clé publique publiée dans le dépôt. Le secret `SIGNING_SECRET` doit donc être configuré pour le workflow ISO également. Ce workflow ne publie pas automatiquement une ISO et ne doit être lancé qu'après la réussite du build signé correspondant.
