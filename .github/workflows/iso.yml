@@ -150,9 +150,9 @@ jobs:
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
-            ${{ steps.image.outputs.filename }}.sig
+            ${{ steps.image.outputs.filename }}.sigstore.json
             ${{ steps.image.outputs.provenance }}
-            ${{ steps.image.outputs.provenance }}.sig
+            ${{ steps.image.outputs.provenance }}.sigstore.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
