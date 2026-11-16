@@ -168,6 +168,13 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertIn('"workflow_commit": os.environ["GITHUB_SHA"]', workflow)
         self.assertNotIn('"source_commit":', workflow)
 
+    def test_iso_workflow_preserves_runner_path_for_sudo_cosign_verification(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn(
+            'sudo env PATH="$PATH" DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "$IMAGE_REF"',
+            workflow,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
