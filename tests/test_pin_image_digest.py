@@ -76,7 +76,8 @@ class PinImageDigestTests(unittest.TestCase):
                 repository = image_ref.rsplit(":", 1)[0]
                 self.assertEqual(
                     self.output_file.read_text(encoding="utf-8"),
-                    f"ref={repository}@{VALID_DIGEST}\n",
+                    f"ref={repository}@{VALID_DIGEST}\n"
+                    f"tag_ref={image_ref}\n",
                 )
                 calls = self.call_log.read_text(encoding="utf-8").splitlines()
                 self.assertEqual(len(calls), 2)
