@@ -29,10 +29,44 @@
         <a href="#editions">Les éditions</a>
         <a href="#compatibilite">Compatibilité</a>
         <a href="#securite">Sécurité</a>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-expanded="false" aria-controls="theme-panel">
+          <span class="theme-toggle-icon" aria-hidden="true">◐</span><span>Thème</span>
+        </button>
         <a class="nav-cta" href="#telechargement">Télécharger <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
   </header>
+
+  <aside class="theme-panel" id="theme-panel" role="dialog" aria-labelledby="theme-panel-title" aria-modal="false" hidden>
+    <div class="theme-panel-heading">
+      <div><span class="section-kicker">PERSONNALISATION</span><h2 id="theme-panel-title">Votre thème LEOS</h2></div>
+      <button class="theme-close" id="theme-close" type="button" aria-label="Fermer les réglages du thème">×</button>
+    </div>
+    <div class="theme-mode-label">APPARENCE</div>
+    <div class="theme-mode-options" role="group" aria-label="Mode d'apparence">
+      <button type="button" data-theme-mode="dark" aria-pressed="true"><span aria-hidden="true">◐</span>Sombre</button>
+      <button type="button" data-theme-mode="light" aria-pressed="false"><span aria-hidden="true">☼</span>Clair</button>
+      <button type="button" data-theme-mode="auto" aria-pressed="false"><span aria-hidden="true">◷</span>Auto</button>
+    </div>
+    <p class="theme-auto-note">Automatique : clair de 07:00 à 18:59, sombre de 19:00 à 06:59 (heure locale).</p>
+    <div class="theme-divider"></div>
+    <div class="theme-mode-label">DÉGRADÉ PERSONNALISÉ</div>
+    <div class="theme-color-fields">
+      <label class="theme-color-field" for="theme-color-a">
+        <span class="theme-color-label"><span>Couleur A</span><output id="theme-color-a-value">#00D9FF</output></span>
+        <span class="theme-color-input-wrap"><input id="theme-color-a" type="color" value="#00D9FF" aria-label="Choisir la couleur A"><span class="theme-color-hint">Début du dégradé</span></span>
+      </label>
+      <label class="theme-color-field" for="theme-color-b">
+        <span class="theme-color-label"><span>Couleur B</span><output id="theme-color-b-value">#E33BFF</output></span>
+        <span class="theme-color-input-wrap"><input id="theme-color-b" type="color" value="#E33BFF" aria-label="Choisir la couleur B"><span class="theme-color-hint">Fin du dégradé</span></span>
+      </label>
+    </div>
+    <div class="theme-gradient-preview" aria-label="Aperçu du dégradé sélectionné"><span></span></div>
+    <div class="theme-panel-footer">
+      <span id="theme-status" role="status" aria-live="polite">Vos choix sont enregistrés dans ce navigateur.</span>
+      <button type="button" id="theme-reset">Réinitialiser</button>
+    </div>
+  </aside>
 
   <main id="contenu">
     <section class="hero section-shell" id="accueil">
