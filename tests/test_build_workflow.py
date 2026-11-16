@@ -175,6 +175,7 @@ class BuildWorkflowTests(unittest.TestCase):
             source.index("Build and publish LEOS"),
         )
         self.assertIn('chmod 600 "$workdir/cosign.key"', source)
+        self.assertIn("unset SIGNING_SECRET", source)
         self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
 
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
