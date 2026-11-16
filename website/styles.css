@@ -137,7 +137,7 @@ h2 { margin: 0; font-size: clamp(32px, 4vw, 47px); line-height: 1.15; letter-spa
 .custom-visual::before { content: ""; position: absolute; width: 380px; height: 380px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 30deg, color-mix(in srgb, var(--a) 12%, transparent), transparent 35%, color-mix(in srgb, var(--b) 12%, transparent), transparent 80%, color-mix(in srgb, var(--a) 12%, transparent)); filter: blur(25px); }
 .palette-panel { position: relative; max-width: 440px; margin: auto; border-radius: 12px; border: 1px solid var(--line-strong); background: linear-gradient(145deg, rgba(24,29,42,.96), rgba(9,11,18,.98)); box-shadow: 0 28px 75px rgba(0,0,0,.4); padding: 16px; }
 .palette-panel-head { display: flex; justify-content: space-between; color: #7e8ca0; font-size: 8px; }
-.palette-panel-head span:last-child { color: #87c5c8; }
+.palette-panel-head span:last-child { color: color-mix(in srgb, var(--a) 48%, var(--text)); }
 .palette-preview { height: 240px; margin: 14px 0; border-radius: 8px; display: grid; place-items: center; position: relative; overflow: hidden; background: radial-gradient(ellipse at 30% 30%, color-mix(in srgb, var(--a) 20%, transparent), transparent 50%), radial-gradient(ellipse at 72% 72%, color-mix(in srgb, var(--b) 19%, transparent), transparent 50%), #080b12; }
 .palette-preview::before { content: ""; position: absolute; inset: 0; opacity: .35; background-image: linear-gradient(rgba(180,200,220,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(180,200,220,.09) 1px, transparent 1px); background-size: 28px 28px; }
 .palette-ring { position: absolute; width: 170px; height: 170px; border-radius: 50%; border: 1px dashed rgba(194,211,238,.3); box-shadow: 0 0 40px color-mix(in srgb, var(--a) 10%, transparent), inset 0 0 35px color-mix(in srgb, var(--b) 7%, transparent); }
@@ -184,7 +184,7 @@ h2 { margin: 0; font-size: clamp(32px, 4vw, 47px); line-height: 1.15; letter-spa
 .compat-copy > p { color: var(--muted); font-size: 13px; line-height: 1.9; margin-bottom: 22px; }
 .spec-panel { border: 1px solid var(--line-strong); background: linear-gradient(145deg, #151a26, #0b0f17); border-radius: 10px; padding: 22px 25px; box-shadow: 0 20px 50px rgba(0,0,0,.18); }
 .spec-panel-header { display: flex; justify-content: space-between; color: #9daabd; margin-bottom: 16px; font-size: 8px; }
-.spec-label { color: #b5a3ce; }
+.spec-label { color: color-mix(in srgb, var(--b) 68%, var(--text)); }
 .spec-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 13px 0; border-top: 1px solid var(--line); font-size: 11px; }
 .spec-row > span { color: #8490a3; }
 .spec-row strong { color: #e3e9f2; font: 700 11px var(--display); text-align: right; }
@@ -194,7 +194,7 @@ h2 { margin: 0; font-size: clamp(32px, 4vw, 47px); line-height: 1.15; letter-spa
 .security-item { min-height: 205px; position: relative; padding: 23px; border: 1px solid var(--line); border-radius: 9px; background: linear-gradient(145deg, #111520, #0b0e15); }
 .security-number { position: absolute; top: 23px; right: 23px; color: #626d7f; font: 700 9px var(--display); letter-spacing: .1em; }
 .security-icon { width: 37px; height: 37px; margin-bottom: 20px; display: grid; place-items: center; color: var(--a); border-radius: 8px; border: 1px solid color-mix(in srgb, var(--a) 19%, transparent); background: color-mix(in srgb, var(--a) 7%, transparent); font: 700 19px var(--display); }
-.security-item:nth-child(2) .security-icon { color: #b78be0; border-color: rgba(183,139,224,.2); background: rgba(183,139,224,.08); }
+.security-item:nth-child(2) .security-icon { color: color-mix(in srgb, var(--b) 82%, white); border-color: color-mix(in srgb, var(--b) 20%, transparent); background: color-mix(in srgb, var(--b) 8%, transparent); }
 .security-item:nth-child(3) .security-icon { color: color-mix(in srgb, var(--b) 82%, white); border-color: color-mix(in srgb, var(--b) 19%, transparent); background: color-mix(in srgb, var(--b) 7%, transparent); }
 .security-item h3 { margin: 0 0 7px; font-size: 15px; }
 .security-item p { margin: 0; color: #8d98aa; font-size: 11px; line-height: 1.8; }
@@ -204,8 +204,8 @@ h2 { margin: 0; font-size: clamp(32px, 4vw, 47px); line-height: 1.15; letter-spa
 .download-orb-a { left: -160px; top: -220px; background: var(--a); }
 .download-orb-b { right: -130px; bottom: -250px; background: var(--b); }
 .download-content { position: relative; z-index: 1; }
-.download-status { display: inline-flex; align-items: center; gap: 10px; color: #c4adce; border: 1px solid color-mix(in srgb, var(--b) 20%, transparent); background: color-mix(in srgb, var(--b) 5%, transparent); border-radius: 100px; padding: 7px 10px; margin-bottom: 18px; font-size: 8px; }
-.download-status .status-pulse { background: #cf7ad8; box-shadow: 0 0 0 4px rgba(207,122,216,.1); }
+.download-status { display: inline-flex; align-items: center; gap: 10px; color: color-mix(in srgb, var(--b) 48%, var(--text)); border: 1px solid color-mix(in srgb, var(--b) 20%, transparent); background: color-mix(in srgb, var(--b) 5%, transparent); border-radius: 100px; padding: 7px 10px; margin-bottom: 18px; font-size: 8px; }
+.download-status .status-pulse { background: var(--b); box-shadow: 0 0 0 4px color-mix(in srgb, var(--b) 10%, transparent); }
 .download-content h2 { margin-bottom: 17px; font-size: clamp(32px, 3.8vw, 43px); }
 .download-content > p { max-width: 530px; color: #a3adbd; font-size: 12px; line-height: 1.9; margin-bottom: 21px; }
 .button-disabled { color: #7e8797; border: 1px solid rgba(170,184,207,.18); background: rgba(255,255,255,.035); cursor: not-allowed; }
@@ -420,7 +420,7 @@ h2 { margin: 0; font-size: clamp(32px, 4vw, 47px); line-height: 1.15; letter-spa
 :root[data-appearance="light"] .security-number { color: #687586; }
 :root[data-appearance="light"] .download-panel { background: linear-gradient(120deg, #FFFFFF, #EDF1F6 62%, #F3EDF7); border-color: #D3DCE7; }
 :root[data-appearance="light"] .download-content > p { color: #596575; }
-:root[data-appearance="light"] .download-status { color: #74477E; background: color-mix(in srgb, var(--b) 7%, white); }
+:root[data-appearance="light"] .download-status { color: color-mix(in srgb, var(--b) 62%, #1C2430); background: color-mix(in srgb, var(--b) 7%, white); }
 :root[data-appearance="light"] .download-footnote { color: #596575; }
 :root[data-appearance="light"] .button-disabled { color: #687586; border-color: #D3DCE7; background: #EDF1F6; }
 :root[data-appearance="light"] .release-preview { background: rgba(255,255,255,.78); border-color: #C7D1DE; }
