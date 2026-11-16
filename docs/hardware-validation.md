@@ -71,7 +71,8 @@ Masquer les noms d'utilisateur, chemins personnels, adresses IP publiques et ide
 - [ ] L'audio est audible sur la sortie sélectionnée et reste synchronisé avec la vidéo.
 - [ ] Le réglage des sons coupe uniquement l'audio des introductions.
 - [ ] Le réglage des animations désactive la vidéo et permet une transition immédiate.
-- [ ] Une vidéo manquante ou illisible ne bloque pas le changement de mode.\n- [ ] Pendant les transitions Desktop ↔ Gaming, Échap, le bouton retour de la manette ou un clic sur l'introduction permet de la passer immédiatement.
+- [ ] Une vidéo manquante ou illisible ne bloque pas le changement de mode.
+- [ ] Pendant les transitions Desktop ↔ Gaming, Échap, le bouton retour de la manette ou un clic sur l'introduction permet de la passer immédiatement.
 - [ ] L'interface reste réactive pendant et après chaque transition.
 
 Les vidéos actuellement hébergées ont passé le contrôle CI de présence des flux vidéo/audio et le décodage FFmpeg. Cela ne garantit pas à lui seul leur compatibilité avec le backend Qt Multimedia de la version Bazzite testée.
