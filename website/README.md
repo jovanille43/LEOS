@@ -1,26 +1,26 @@
 # Site officiel LEOS
 
-Site statique, sans framework ni dépendance de build. Le contenu est servi depuis le dossier \`website/\`.
+Site statique, sans framework ni dépendance de build. Le contenu est servi depuis le dossier `website/`.
 
 ## Prévisualiser localement
 
 Depuis la racine du dépôt :
 
-\`\`\`bash
+```bash
 python3 -m http.server 8080 --directory website
-\`\`\`
+```
 
 Puis ouvrir http://localhost:8080.
 
 ## Déployer avec GitHub Pages
 
-1. Fusionner les changements du site dans la branche \`main\`.
+1. Fusionner les changements du site dans la branche `main`.
 2. Dans GitHub, ouvrir **Settings → Pages**.
 3. Dans **Build and deployment → Source**, choisir **GitHub Actions**.
 4. Vérifier que les permissions Pages / Actions du dépôt autorisent le déploiement.
-5. Le workflow \`.github/workflows/deploy-website.yml\` publiera le contenu de \`website/\` à chaque modification de ce dossier sur \`main\`, ou via **Actions → Deploy LEOS website → Run workflow**.
+5. Le workflow `.github/workflows/deploy-website.yml` publiera le contenu de `website/` à chaque modification de ce dossier sur `main`, ou via **Actions → Deploy LEOS website → Run workflow**.
 
-Pour ce dépôt, l'URL GitHub Pages attendue est généralement \`https://jovanille43.github.io/LEOS/\`, sous réserve de l'activation effective de Pages et de l'état du déploiement. Aucun site n'est considéré comme publié tant que le workflow n'a pas réussi et que l'URL n'a pas été vérifiée.
+Pour ce dépôt, l'URL GitHub Pages attendue est généralement `https://jovanille43.github.io/LEOS/`, sous réserve de l'activation effective de Pages et de l'état du déploiement. Aucun site n'est considéré comme publié tant que le workflow n'a pas réussi et que l'URL n'a pas été vérifiée.
 
 ## Préparer une publication ISO
 
@@ -34,4 +34,4 @@ La section Téléchargements reste volontairement en mode pré-lancement. Ne pas
 
 ## Personnalisation de marque
 
-L'emblème utilisé est une copie du fichier officiel \`branding/gaming-logo.jpeg\`. Les accents cyan et magenta conservent le dégradé de marque historique ; les variables CSS \`--a\` et \`--b\` en haut de \`styles.css\` permettent de les adapter sans refaire la mise en page.
+L'emblème utilisé est une copie du fichier officiel `branding/gaming-logo.jpeg`. Les accents cyan et magenta conservent le dégradé de marque historique ; les variables CSS `--a` et `--b` en haut de `styles.css` permettent de les adapter sans refaire la mise en page.
