@@ -34,7 +34,7 @@ La section Téléchargements reste volontairement en mode pré-lancement. Ne pas
 
 ## Personnalisation de marque
 
-L'emblème utilisé est une copie du fichier officiel `branding/gaming-logo.jpeg`. Les accents cyan et magenta conservent le dégradé de marque historique ; les variables CSS `--a` et `--b` en haut de `styles.css` permettent de les adapter sans refaire la mise en page.
+L'emblème affiché est une copie du fichier officiel `branding/gaming-logo.jpeg`. Le navigateur recolore dynamiquement ses zones chromatiques selon les Couleurs A et B sélectionnées, tout en conservant les détails métalliques et les variations de luminosité. Le dégradé de l'interface et ses accents utilisent ces mêmes deux couleurs.
 
 
 ## Thème du site
@@ -42,6 +42,6 @@ L'emblème utilisé est une copie du fichier officiel `branding/gaming-logo.jpeg
 Le site reprend les réglages de la distribution LEOS :
 - **Sombre / Clair / Auto** ; Auto passe en clair de 07:00 à 18:59 et en sombre de 19:00 à 06:59, selon l'heure locale du navigateur.
 - **Couleur A et Couleur B** sont librement réglables ; le dégradé se met à jour en direct.
-- Les valeurs initiales sont identiques aux préférences LEOS : \`#00D9FF\` et \`#E33BFF\`.
+- Les valeurs initiales reprennent les valeurs par défaut de LEOS : `#00D9FF` et `#E33BFF`. Les couleurs choisies sur le site sont propres au navigateur et ne modifient pas les préférences d'une installation LEOS.
 
 Les préférences du site sont conservées dans le stockage local du navigateur. Un site web hébergé ne peut pas lire directement le fichier de préférences privé d'une installation LEOS : la sélection sur le site est donc indépendante de celle du système, tout en reprenant les mêmes règles et valeurs de départ.
