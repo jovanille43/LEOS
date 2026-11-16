@@ -140,6 +140,34 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertIn("sigstore.json", workflow[upload:])
         self.assertIn("steps.image.outputs.provenance", workflow[upload:])
 
+    def test_iso_workflow_requires_an_explicit_published_image_tag(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        image_tag_input = workflow.split("      image_tag:", 1)[1].split("\n\npermissions:", 1)[0]
+        self.assertIn("required: true", image_tag_input)
+        self.assertNotIn("default: latest", image_tag_input)
+        self.assertIn("7794179-45", image_tag_input)
+
+    def test_iso_workflow_stages_and_uploads_the_complete_artifact_set(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        generate = workflow.index("Generate bootable installer ISO")
+        sign = workflow.index("Sign and verify LEOS ISO and provenance artifacts")
+        upload = workflow.index("Upload installer ISO and checksum")
+        generation_section = workflow[generate:sign]
+        upload_section = workflow[upload:]
+        self.assertIn('ISO_OUTPUT_DIR: ${{ github.workspace }}/dist/iso', generation_section)
+        self.assertIn('generate-iso --output-dir "$ISO_OUTPUT_DIR"', generation_section)
+        self.assertIn('test -s "$iso_path"', generation_section)
+        self.assertIn('sha256sum --check "$ISO_NAME.sha256"', generation_section)
+        self.assertIn('"$ISO_OUTPUT_DIR/$ISO_NAME"', workflow[sign:upload])
+        self.assertIn("dist/iso/${{ steps.image.outputs.filename }}", upload_section)
+        self.assertIn("dist/iso/${{ steps.image.outputs.provenance }}.sigstore.json", upload_section)
+
+    def test_provenance_distinguishes_workflow_commit_from_image_digest(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn('"source_image": os.environ["IMAGE_REF"]', workflow)
+        self.assertIn('"workflow_commit": os.environ["GITHUB_SHA"]', workflow)
+        self.assertNotIn('"source_commit":', workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
