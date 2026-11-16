@@ -109,6 +109,14 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertEqual(existing_bundle.read_text(encoding="utf-8"), "keep-me\n")
         self.assertFalse(self.call_log.exists())
 
+    def test_refuses_to_follow_dangling_bundle_symlinks(self):
+        bundle = Path(f"{self.iso}.sigstore.json")
+        bundle.symlink_to(self.workdir / "missing-bundle-target")
+        result = self.run_signer()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(bundle.is_symlink())
+        self.assertFalse(self.call_log.exists())
+
     def test_iso_workflow_checks_signing_keys_before_image_download(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         preflight = workflow.index("Check signing prerequisites and verify Cosign key pair")
