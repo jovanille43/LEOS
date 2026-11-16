@@ -77,6 +77,26 @@ class KdeColorSchemeTests(unittest.TestCase):
         self.assertEqual(parser["Colors:Selection"]["DecorationHover"], "255,136,0")
         self.assertEqual(parser["LEOS"]["ThemeId"], "custom")
 
+    def test_custom_light_kde_scheme_preserves_ab_gradient_and_uses_light_surfaces(self):
+        content = build_custom_colorscheme("#00FFFF", "#FF8800", appearance="light")
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
+        parser.read_string(content)
+        self.assertEqual(parser["General"]["ColorScheme"], "LEOS-00FFFF-FF8800-LIGHT")
+        self.assertEqual(parser["General"]["AccentColor"], "0,255,255")
+        self.assertEqual(parser["Colors:Window"]["BackgroundNormal"], "244,246,250")
+        self.assertEqual(parser["Colors:Selection"]["BackgroundNormal"], "0,255,255")
+        self.assertEqual(parser["Colors:Selection"]["DecorationHover"], "255,136,0")
+        self.assertEqual(parser["LEOS"]["ThemeId"], "custom-light")
+
+    def test_custom_light_kde_scheme_is_applied_after_user_confirmation(self):
+        message = self.manager.apply_custom_theme("#00FFFF", "#FF8800", appearance="light")
+        args, kwargs = self.runner.calls[0]
+        self.assertEqual(args, ["/usr/bin/plasma-apply-colorscheme", "LEOS-00FFFF-FF8800-LIGHT"])
+        self.assertFalse(kwargs["shell"])
+        self.assertIn("clair", message)
+        self.assertTrue(self.manager.can_restore())
+
     def test_custom_kde_scheme_is_applied_after_user_confirmation(self):
         message = self.manager.apply_custom_theme("#00FFFF", "#FF8800")
         args, kwargs = self.runner.calls[0]

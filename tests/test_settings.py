@@ -18,6 +18,7 @@ class SettingsStoreTests(unittest.TestCase):
             settings = SettingsStore(path)
             self.assertEqual(settings.get("last_mode"), "desktop")
             self.assertEqual(settings.get("theme"), "leos-original")
+            self.assertEqual(settings.get("appearance_mode"), "dark")
             self.assertEqual(settings.get("performance_profile"), "balanced")
             self.assertTrue(settings.get("animations_enabled"))
             self.assertTrue(settings.get("notifications_enabled"))
@@ -26,6 +27,17 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(settings.get("transition_app_policy"), "ask")
             self.assertFalse(settings.get("onboarding_complete"))
             self.assertFalse(path.exists())
+
+    def test_appearance_mode_accepts_dark_light_and_auto_and_rejects_unknown_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            for mode in ("dark", "light", "auto"):
+                settings.set("appearance_mode", mode)
+                self.assertEqual(SettingsStore(settings.path).get("appearance_mode"), mode)
+            with self.assertRaises(ValueError):
+                settings.set("appearance_mode", "sepia")
+            with self.assertRaises(TypeError):
+                settings.set("appearance_mode", True)
 
     def test_custom_theme_colors_default_validate_and_persist(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

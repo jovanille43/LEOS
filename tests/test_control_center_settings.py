@@ -97,6 +97,27 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn('"wallpaper": "kcm_wallpaper"', modules)
         self.assertIn("rien n'est appliqué sans ton choix dans KDE", qml)
 
+    def test_light_dark_and_automatic_appearance_are_shared_first_run_and_settings_controls(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        selector = (root / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        theme_controller = (root / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        themes = (root / "desktop/themes.py").read_text(encoding="utf-8")
+        settings = (root / "leos_core/settings.py").read_text(encoding="utf-8")
+        self.assertIn('model: ["Sombre", "Clair", "Automatique"]', qml)
+        self.assertIn("controlCenter.setAppearanceMode", qml)
+        self.assertIn('model: ["Sombre", "Clair", "Automatique"]', selector)
+        self.assertIn("leosTheme.setAppearanceMode", selector)
+        self.assertIn("def appearanceMode(self)", controller)
+        self.assertIn("def effectiveAppearance(self)", controller)
+        self.assertIn("appearance=self.effectiveAppearance", controller)
+        self.assertIn("resolve_appearance_mode", theme_controller)
+        self.assertIn("AUTO_LIGHT_START_HOUR = 7", themes)
+        self.assertIn("AUTO_DARK_START_HOUR = 19", themes)
+        self.assertIn('"appearance_mode": "dark"', settings)
+        self.assertIn('"appearance_mode": {"dark", "light", "auto"}', settings)
+
     def test_animation_and_sound_preferences_are_exposed_as_shared_controls(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
