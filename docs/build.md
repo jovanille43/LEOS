@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des huit ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Le workflow manuel de construction/publication a été lancé sur la branche `feature/custom-two-color-themes` (exécution GitHub Actions du 16 novembre 2026). Les contrôles préalables — tests Python, lint Qt 6/QML, validation des ressources de marque et vérifications Cosign — ont réussi. Les étapes de construction AMD/Intel et NVIDIA legacy sont terminées avec succès ; la variante NVIDIA moderne était encore en cours lors du dernier contrôle. La construction complète des trois variantes et leur validation sur GPU réels restent nécessaires. Aucune ISO installateur n'a encore été générée.
 
 ## Base retenue
 
@@ -61,14 +61,15 @@ La documentation BlueBuild recommande de valider/générer la recette avec son C
 
 Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module systemd](https://blue-build.org/reference/modules/systemd/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
-## Prérequis encore bloquants
+## État des prérequis et validations restantes
 
-- Le dépôt ne contient pas encore le fichier public `cosign.pub`. Il faudra ajouter la clé publique correspondant au secret Actions `SIGNING_SECRET`.
-- L'existence et la validité du secret privé `SIGNING_SECRET` ne sont pas vérifiables depuis les fichiers du dépôt. La clé privée doit être créée et conservée sur un poste de confiance ; ne jamais la transmettre dans une conversation ni la committer.
-- Les logos officiels, les trois vidéos d'introduction/référence et les deux fonds d'écran 4K sont présents dans `branding/`. Le rendu des fonds SVG et JPEG liés, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite réelle.
-- Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
+- La clé publique `cosign.pub` est présente dans le dépôt ; le workflow a confirmé que le secret Actions `SIGNING_SECRET` lui correspond, sans exposer la clé privée.
+- Les tests automatisés, le lint QML, les contrôles des ressources de marque et les précontrôles de signature ont réussi sur l'exécution de construction du 16 novembre 2026.
+- Les trois images doivent toutes terminer leur construction avant de lancer la génération ISO correspondante.
+- Les logos, vidéos et fonds d'écran sont contrôlés automatiquement, mais leur rendu réel, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite.
+- Un démarrage live en machine virtuelle UEFI puis sur matériel physique reste indispensable pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six ressources d'origine (trois emblèmes et trois vidéos) et des deux fonds SVG, puis contrôle les huit empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
+Le workflow `.github/workflows/build.yml` reste manuel. Il vérifie la présence des ressources officielles et les huit empreintes de `branding/DEPLOYED_SHA256SUMS`, puis effectue les tests et contrôles de signature avant d'appeler BlueBuild. Ces contrôles CI ne remplacent pas une validation matérielle.
 
 ## Validation sur matériel réel
 
