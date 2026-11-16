@@ -99,7 +99,6 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertIn("Aucune version publiée", self.source)
         self.assertIn("disabled", self.source)
 
-
     def test_theme_controls_are_present(self) -> None:
         for marker in (
             'id="theme-toggle"',
@@ -132,15 +131,11 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertIn('root.style.setProperty("--b", preferences.colorB)', script)
         self.assertIn('localStorage.setItem(STORAGE_KEY', script)
 
-
-
     def test_logos_are_recolored_from_the_selected_pair(self) -> None:
         self.assertGreaterEqual(self.source.count("data-themeable-logo"), 2)
         script = (ROOT / "script.js").read_text(encoding="utf-8")
         self.assertIn("function recolorBrandingLogos()", script)
         self.assertIn("source lightness", script.lower())
-
-
 
     def test_accent_text_uses_distribution_contrast_rules(self) -> None:
         script = (ROOT / "script.js").read_text(encoding="utf-8")
@@ -150,7 +145,6 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertIn('root.style.setProperty("--a-text"', script)
         self.assertIn('root.style.setProperty("--b-text"', script)
         self.assertIn("--gradient-text", styles)
-
 
 if __name__ == "__main__":
     unittest.main()
