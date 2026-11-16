@@ -275,19 +275,25 @@ Ne tente pas d’installer une recette BlueBuild directement sur un ordinateur p
 
 ```text
 LEOS/
-├── .github/workflows/   # Tests, validation, construction et génération ISO
+├── .github/workflows/   # Tests, validation, construction, ISO et site
+├── aurorae/             # Décorations de fenêtres KDE
 ├── branding/            # Emblèmes, fonds d’écran, vidéos et sons
-├── config/              # Configuration partagée
-├── controller_center/   # Centre des manettes
+├── components/          # Composants partagés de l’interface
 ├── control_center/      # Centre de contrôle LEOS
+├── controller_center/   # Centre des manettes
 ├── desktop/             # Thèmes, menu, notifications et intégration KDE
 ├── docs/                # Architecture, compatibilité, installation et guides
+├── files/leos-config/   # Configuration système déployée dans l’image
 ├── gaming/              # Interface Gaming et bibliothèque
+├── icons/               # Icônes LEOS
 ├── launcher/            # Sélecteur de modes et transitions
 ├── leos_core/           # Préférences et fonctions communes
+├── packaging/           # Intégration et métadonnées de paquetage
+├── plasma-theme/        # Thème Plasma LEOS
 ├── recipes/             # Recettes BlueBuild
 ├── shop/                # Catalogue et gestion Flatpak
-└── tests/               # Tests Python et contrats d’intégration
+├── tests/               # Tests Python et contrats d’intégration
+└── website/             # Site officiel et centre de téléchargement
 ```
 
 ---
