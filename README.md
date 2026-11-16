@@ -48,11 +48,13 @@ Le joueur peut choisir librement deux couleurs :
 - **Couleur A** : première extrémité du dégradé ;
 - **Couleur B** : seconde extrémité du dégradé.
 
-Le moteur de thème partage cette paire entre les interfaces LEOS : sélecteur de mode, Desktop, Gaming, menu, Centre de contrôle, notifications, Centre des manettes et boutique. Les couleurs d’accent et les dégradés sont recalculés, tandis que le fond sombre et les reflets neutres du lion sont préservés. Le cyan et le magenta ne sont pas imposés : ce ne sont que des valeurs de départ.
+Le moteur de thème partage cette paire entre les interfaces LEOS : sélecteur de mode, Desktop, Gaming, menu, Centre de contrôle, notifications, Centre des manettes et boutique. Les couleurs d’accent et les dégradés sont recalculés, tandis que les reflets métalliques neutres du lion sont préservés. Le cyan et le magenta ne sont pas imposés : ce ne sont que des valeurs de départ.
+
+L’utilisateur choisit aussi l’apparence des interfaces LEOS : **Sombre**, **Claire** ou **Automatique**. Le mode automatique passe en clair de 07:00 à 18:59, puis en sombre de 19:00 à 06:59, selon l’heure locale. Ce réglage modifie les surfaces neutres et les couleurs de texte sans changer la paire A-B ni les dégradés de l’identité.
 
 Les emblèmes, fonds d’écran et vidéos d’introduction disposent de variantes recolorées dans le cache du compte utilisateur. Les ressources officielles ne sont pas écrasées. Si une conversion ou une lecture vidéo échoue, LEOS conserve un chemin de repli vers la ressource d’origine.
 
-Le thème LEOS ne change pas silencieusement le thème global de KDE. L’application d’un schéma de couleurs KDE est une action séparée, avec confirmation et possibilité de restaurer le schéma précédent.
+Le thème LEOS ne change pas silencieusement le thème global de KDE. L’application d’un schéma de couleurs KDE est une action séparée, avec confirmation et possibilité de restaurer le schéma précédent. Le basculement automatique horaire concerne les interfaces LEOS ; l’apparence des applications KDE et des composants Plasma reste synchronisée uniquement après une application explicite du schéma dans les Paramètres KDE.
 
 ## Desktop Mode
 
