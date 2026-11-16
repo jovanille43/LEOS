@@ -100,10 +100,6 @@ class WebsiteSmokeTests(unittest.TestCase):
         self.assertIn("disabled", self.source)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
     def test_theme_controls_are_present(self) -> None:
         for marker in (
             'id="theme-toggle"',
@@ -135,3 +131,8 @@ if __name__ == "__main__":
         self.assertIn('root.style.setProperty("--a", preferences.colorA)', script)
         self.assertIn('root.style.setProperty("--b", preferences.colorB)', script)
         self.assertIn('localStorage.setItem(STORAGE_KEY', script)
+
+
+
+if __name__ == "__main__":
+    unittest.main()
