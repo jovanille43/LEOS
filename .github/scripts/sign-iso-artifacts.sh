@@ -47,6 +47,7 @@ printf '%s' "$SIGNING_SECRET" > "$private_key"
 chmod 600 "$private_key"
 
 cosign sign-blob \
+  --yes \
   --key "$private_key" \
   --output-signature "$iso_signature_tmp" \
   "$iso_file"
@@ -57,6 +58,7 @@ cosign verify-blob \
   "$iso_file"
 
 cosign sign-blob \
+  --yes \
   --key "$private_key" \
   --output-signature "$provenance_signature_tmp" \
   "$provenance_file"
