@@ -6,7 +6,10 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors
+from desktop.themes import (
+    APPEARANCE_MODES, DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color,
+    palette_for_colors, resolve_appearance_mode,
+)
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -338,9 +341,10 @@ class ControlCenterController(QObject):
             "last_mode", "theme", "theme_color_a", "theme_color_b", "performance_profile", "animations_enabled",
             "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
             "notification_duration_seconds", "notification_minimum_priority",
-            "notification_sounds_enabled", "silent_notifications_in_gaming",
+            "notification_sounds_enabled", "silent_notifications_in_gaming", "appearance_mode",
         )
-        return self.settings.snapshot(keys)
+        snapshot = self.settings.snapshot(keys)
+        return (*snapshot, resolve_appearance_mode(str(snapshot[-1])))
 
     @Slot()
     def refreshSharedSettings(self) -> None:
@@ -720,10 +724,18 @@ class ControlCenterController(QObject):
     def themeColorB(self) -> str:
         return self._theme_color_pair()[1]
 
+    @Property(str, notify=settingsChanged)
+    def appearanceMode(self) -> str:
+        return str(self.settings.get("appearance_mode", "dark"))
+
+    @Property(str, notify=settingsChanged)
+    def effectiveAppearance(self) -> str:
+        return resolve_appearance_mode(self.appearanceMode)
+
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
-        """Expose the shared custom gradient to LEOS-owned QML without changing KDE."""
-        return palette_for_colors(*self._theme_color_pair())
+        """Expose the shared A/B gradient in the selected LEOS appearance."""
+        return palette_for_colors(*self._theme_color_pair(), appearance=self.effectiveAppearance)
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -846,6 +858,18 @@ class ControlCenterController(QObject):
         return "Dégradé LEOS mis à jour."
 
     @Slot(str)
+    def setAppearanceMode(self, mode: str) -> None:
+        """Persist dark, light or scheduled automatic appearance."""
+        if mode not in APPEARANCE_MODES:
+            return
+        try:
+            self.settings.set("appearance_mode", mode)
+        except (OSError, ValueError, TypeError, KeyError):
+            return
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self.settingsChanged.emit()
+
+    @Slot(str)
     def setTheme(self, theme: str) -> None:
         """Keep the legacy setting slot for older integrations."""
         self.settings.set("theme", theme)
@@ -855,7 +879,9 @@ class ControlCenterController(QObject):
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
         try:
-            message = self.kdeColorSchemes.apply_custom_theme(self.themeColorA, self.themeColorB)
+            message = self.kdeColorSchemes.apply_custom_theme(
+                self.themeColorA, self.themeColorB, self.effectiveAppearance
+            )
         except FileNotFoundError:
             message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
             post_notification("Thème KDE non appliqué", message, "error")

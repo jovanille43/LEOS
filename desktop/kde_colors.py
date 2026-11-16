@@ -179,22 +179,29 @@ def build_colorscheme(theme: str) -> str:
     )
 
 
-def custom_scheme_id(color_a: str, color_b: str) -> str:
-    """Return a deterministic, filesystem-safe ID for a custom A/B pair."""
+def custom_scheme_id(color_a: str, color_b: str, appearance: str = "dark") -> str:
+    """Return a deterministic ID for a custom A/B pair and appearance."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
-    return f"LEOS-{first[1:]}-{second[1:]}"
+    if appearance not in {"dark", "light"}:
+        raise ValueError("Appearance must be dark or light")
+    suffix = "-LIGHT" if appearance == "light" else ""
+    return f"LEOS-{first[1:]}-{second[1:]}{suffix}"
 
 
-def build_custom_colorscheme(color_a: str, color_b: str) -> str:
-    """Serialize the user's custom A/B gradient into a KDE color scheme."""
+def build_custom_colorscheme(color_a: str, color_b: str, appearance: str = "dark") -> str:
+    """Serialize the user's A/B gradient into a light or dark KDE color scheme."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
+    if appearance not in {"dark", "light"}:
+        raise ValueError("Appearance must be dark or light")
+    theme_id = "custom-light" if appearance == "light" else "custom"
+    display_name = "LEOS personnalisé clair" if appearance == "light" else "LEOS personnalisé"
     return _build_colorscheme(
-        palette_for_colors(first, second),
-        custom_scheme_id(first, second),
-        "LEOS personnalisé",
-        "custom",
+        palette_for_colors(first, second, appearance=appearance),
+        custom_scheme_id(first, second, appearance),
+        display_name,
+        theme_id,
     )
 
 
@@ -327,11 +334,11 @@ class KdeColorSchemeManager:
         scheme_id = self.scheme_id(theme)
         return self._install_payload(scheme_id, build_colorscheme(theme))
 
-    def install_custom_scheme(self, color_a: str, color_b: str) -> Path:
-        """Install the selected A/B pair in the current user's KDE data directory."""
-        scheme_id = custom_scheme_id(color_a, color_b)
+    def install_custom_scheme(self, color_a: str, color_b: str, appearance: str = "dark") -> Path:
+        """Install the selected A/B pair and appearance in the user's KDE data directory."""
+        scheme_id = custom_scheme_id(color_a, color_b, appearance)
         return self._install_payload(
-            scheme_id, build_custom_colorscheme(color_a, color_b)
+            scheme_id, build_custom_colorscheme(color_a, color_b, appearance)
         )
 
     def _write_state(self, state: dict[str, Any]) -> None:
@@ -432,14 +439,15 @@ class KdeColorSchemeManager:
             scheme_id, build_colorscheme(theme), THEME_NAMES[theme]
         )
 
-    def apply_custom_theme(self, color_a: str, color_b: str) -> str:
-        """Apply the user's A/B gradient after explicit confirmation in the UI."""
+    def apply_custom_theme(self, color_a: str, color_b: str, appearance: str = "dark") -> str:
+        """Apply the user's A/B gradient and appearance after explicit UI confirmation."""
         first = normalize_color(color_a)
         second = normalize_color(color_b)
+        display_name = "LEOS personnalisé clair" if appearance == "light" else "LEOS personnalisé"
         return self._apply_scheme(
-            custom_scheme_id(first, second),
-            build_custom_colorscheme(first, second),
-            "LEOS personnalisé",
+            custom_scheme_id(first, second, appearance),
+            build_custom_colorscheme(first, second, appearance),
+            display_name,
         )
 
     def restore_previous_theme(self) -> str:

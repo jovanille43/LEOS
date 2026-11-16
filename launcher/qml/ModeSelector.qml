@@ -203,7 +203,7 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 154
+                Layout.preferredHeight: 190
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
                 color: window.themeColors.surface_elevated
@@ -234,7 +234,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Label {
-                            text: "Personnalise ton dégradé maintenant ou plus tard dans le Centre de contrôle. Tes applications et réglages système restent intacts."
+                            text: "Personnalise ton dégradé et ton apparence dès maintenant, ou retrouve ces réglages dans le Centre de contrôle."
                             color: window.muted
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
@@ -300,6 +300,25 @@ ApplicationWindow {
                                 orientation: Gradient.Horizontal
                                 GradientStop { position: 0.0; color: Qt.color(leosTheme.themeColorA) }
                                 GradientStop { position: 1.0; color: Qt.color(leosTheme.themeColorB) }
+                            }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                text: "APPARENCE"
+                                color: window.themeColors.text
+                                font.pixelSize: 9
+                                font.letterSpacing: 1
+                            }
+                            Item { Layout.fillWidth: true }
+                            ComboBox {
+                                id: initialAppearanceBox
+                                Layout.preferredWidth: 170
+                                model: ["Sombre", "Clair", "Automatique"]
+                                currentIndex: Math.max(0, ["dark", "light", "auto"].indexOf(leosTheme.appearanceMode))
+                                onActivated: function(index) {
+                                    leosTheme.setAppearanceMode(["dark", "light", "auto"][index])
+                                }
                             }
                         }
                         Label {

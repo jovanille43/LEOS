@@ -1,6 +1,7 @@
 """Tests for the shared A/B LEOS gradient palette."""
 
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 from desktop.themes import (
@@ -12,6 +13,7 @@ from desktop.themes import (
     normalize_color,
     palette_for_colors,
     palette_for_theme,
+    resolve_appearance_mode,
     validate_palette,
 )
 
@@ -48,6 +50,27 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertEqual(second["accent_secondary"], "#AABBCC")
         for token in ("background", "surface", "surface_elevated", "border", "text", "muted_text"):
             self.assertEqual(first[token], second[token])
+
+    def test_light_palette_keeps_selected_ab_colors_and_uses_soft_neutral_surfaces(self):
+        palette = palette_for_colors("#00FFFF", "#FF8800", appearance="light")
+        self.assertEqual(palette["background"], "#F4F6FA")
+        self.assertEqual(palette["surface"], "#FFFFFF")
+        self.assertEqual(palette["surface_elevated"], "#E9EEF4")
+        self.assertEqual(palette["accent_primary"], "#00FFFF")
+        self.assertEqual(palette["accent_secondary"], "#FF8800")
+        for text_token in ("text", "muted_text", "accent_primary_text", "accent_secondary_text"):
+            for surface_token in ("background", "surface", "surface_elevated"):
+                self.assertGreaterEqual(_contrast_ratio(palette[text_token], palette[surface_token]), 4.5)
+
+    def test_automatic_appearance_uses_local_day_and_evening_hours(self):
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 1, 1, 6)), "dark")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 1, 1, 7)), "light")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 1, 1, 18, 59)), "light")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 1, 1, 19)), "dark")
+        self.assertEqual(resolve_appearance_mode("dark"), "dark")
+        self.assertEqual(resolve_appearance_mode("light"), "light")
+        with self.assertRaises(ValueError):
+            resolve_appearance_mode("sepia")
 
     def test_custom_gradient_keeps_text_contrast_wcag_aa(self):
         for color_a, color_b in (

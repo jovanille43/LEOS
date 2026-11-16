@@ -9,7 +9,10 @@ from desktop.branding_assets import (
     cached_themed_branding_asset_urls,
     source_asset_urls,
 )
-from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors
+from desktop.themes import (
+    APPEARANCE_MODES, DEFAULT_COLOR_A, DEFAULT_COLOR_B,
+    normalize_color, palette_for_colors, resolve_appearance_mode,
+)
 from leos_core.settings import SettingsStore
 
 
@@ -50,6 +53,8 @@ class ThemeController(QObject):
         super().__init__(parent)
         self.settings = settings or SettingsStore()
         self._snapshot = self._read_snapshot()
+        self._appearance_mode = self._read_appearance_mode()
+        self._effective_appearance = resolve_appearance_mode(self._appearance_mode)
         self._assets = cached_themed_branding_asset_urls(*self._snapshot)
         self._asset_task: _BrandingAssetTask | None = None
         self._asset_attempt_snapshot: tuple[str, str] | None = None
@@ -67,11 +72,34 @@ class ThemeController(QObject):
             str(values[1] or DEFAULT_COLOR_B),
         )
 
+    def _read_appearance_mode(self) -> str:
+        value = self.settings.snapshot(("appearance_mode",))[0]
+        return str(value or "dark")
+
     @Property("QVariantMap", notify=themeChanged)
     def themePalette(self) -> dict[str, str]:
-        # All exposed colors must come from one atomic read. Calling get() twice
-        # could observe opposite sides of another process's A/B update.
-        return palette_for_colors(*self._snapshot)
+        # The A/B pair remains atomic; only neutral surfaces follow appearance.
+        return palette_for_colors(*self._snapshot, appearance=self._effective_appearance)
+
+    @Property(str, notify=themeChanged)
+    def appearanceMode(self) -> str:
+        return self._appearance_mode
+
+    @Property(str, notify=themeChanged)
+    def effectiveAppearance(self) -> str:
+        return self._effective_appearance
+
+    @Slot(str, result=str)
+    def setAppearanceMode(self, mode: str) -> str:
+        """Persist the user's dark/light/automatic appearance preference."""
+        if mode not in APPEARANCE_MODES:
+            return "Mode d'apparence invalide."
+        try:
+            self.settings.set("appearance_mode", mode)
+        except (OSError, ValueError, TypeError, KeyError):
+            return "Le mode d'apparence n'a pas pu être enregistré."
+        self.refresh()
+        return "Apparence mise à jour."
 
     @Property(str, notify=themeChanged)
     def themeColorA(self) -> str:
@@ -145,11 +173,23 @@ class ThemeController(QObject):
     def refresh(self) -> None:
         """Reflect a gradient changed by Control Center or another LEOS process."""
         snapshot = self._read_snapshot()
+        appearance_mode = self._read_appearance_mode()
+        effective_appearance = resolve_appearance_mode(appearance_mode)
+        appearance_changed = (
+            appearance_mode != self._appearance_mode
+            or effective_appearance != self._effective_appearance
+        )
+        if appearance_changed:
+            self._appearance_mode = appearance_mode
+            self._effective_appearance = effective_appearance
+
         if snapshot != self._snapshot:
             self._snapshot = snapshot
             self._asset_attempt_snapshot = None
             self.themeChanged.emit()
             self._start_asset_generation()
+        elif appearance_changed:
+            self.themeChanged.emit()
 
         # Another LEOS process may own the generation lock. Adopt its derived
         # files on a later poll without repeatedly competing for that lock.

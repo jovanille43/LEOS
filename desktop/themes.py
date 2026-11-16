@@ -1,16 +1,20 @@
 """Shared, validated LEOS interface colors.
 
-The LEOS visual identity keeps one dark neutral foundation and one continuous
-A-to-B gradient. Users may choose any two opaque RGB colors; every LEOS-owned
-interface reads the same pair from the shared settings store.
+The LEOS visual identity supports light and dark neutral foundations while
+keeping one continuous A-to-B gradient across every LEOS-owned interface.
 """
 from __future__ import annotations
 
 import re
+from datetime import datetime
 
 DEFAULT_THEME = "leos-original"  # retained for older settings and KDE schemes
 DEFAULT_COLOR_A = "#00D9FF"
 DEFAULT_COLOR_B = "#E33BFF"
+DEFAULT_APPEARANCE = "dark"
+APPEARANCE_MODES = frozenset({"dark", "light", "auto"})
+AUTO_LIGHT_START_HOUR = 7
+AUTO_DARK_START_HOUR = 19
 
 _BASE_PALETTE: dict[str, str] = {
     "background": "#090B10",
@@ -21,6 +25,24 @@ _BASE_PALETTE: dict[str, str] = {
     "muted_text": "#909AAC",
 }
 
+_LIGHT_BASE_PALETTE: dict[str, str] = {
+    "background": "#F4F6FA",
+    "surface": "#FFFFFF",
+    "surface_elevated": "#E9EEF4",
+    "border": "#D3DCE7",
+    "text": "#1C2430",
+    "muted_text": "#596575",
+}
+
+
+def resolve_appearance_mode(mode: str = DEFAULT_APPEARANCE, now: datetime | None = None) -> str:
+    """Resolve dark/light/auto; automatic mode is light 07:00–18:59 local time."""
+    if mode not in APPEARANCE_MODES:
+        raise ValueError(f"Mode d'apparence inconnu : {mode}")
+    if mode != "auto":
+        return mode
+    local_time = now or datetime.now().astimezone()
+    return "light" if AUTO_LIGHT_START_HOUR <= local_time.hour < AUTO_DARK_START_HOUR else "dark"
 
 
 def _relative_luminance(color: str) -> float:
@@ -101,10 +123,16 @@ def normalize_color(value: object) -> str:
     return value.strip().upper()
 
 
-def palette_for_colors(color_a: str = DEFAULT_COLOR_A, color_b: str = DEFAULT_COLOR_B) -> dict[str, str]:
-    """Build the shared dark LEOS palette using the selected gradient endpoints."""
+def palette_for_colors(
+    color_a: str = DEFAULT_COLOR_A,
+    color_b: str = DEFAULT_COLOR_B,
+    appearance: str = DEFAULT_APPEARANCE,
+) -> dict[str, str]:
+    """Build the light or dark LEOS palette without changing the selected A/B colors."""
+    resolved_appearance = resolve_appearance_mode(appearance)
+    base_palette = _LIGHT_BASE_PALETTE if resolved_appearance == "light" else _BASE_PALETTE
     palette = {
-        **_BASE_PALETTE,
+        **base_palette,
         "accent_primary": normalize_color(color_a),
         "accent_secondary": normalize_color(color_b),
     }

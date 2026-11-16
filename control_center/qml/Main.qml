@@ -116,6 +116,9 @@ ApplicationWindow {
         function onSettingsChanged() {
             themeColorAField.text = controlCenter.themeColorA
             themeColorBField.text = controlCenter.themeColorB
+            appearanceModeBox.currentIndex = Math.max(
+                0, ["dark", "light", "auto"].indexOf(controlCenter.appearanceMode)
+            )
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -619,6 +622,59 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
+                                Layout.preferredHeight: 142
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 8
+                                    Label {
+                                        text: "APPARENCE LEOS"
+                                        color: window.colorAText
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Choisis une interface sombre, claire ou un changement automatique selon l'heure."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label {
+                                            text: "Mode visuel"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 12
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        ComboBox {
+                                            id: appearanceModeBox
+                                            Layout.preferredWidth: 250
+                                            model: ["Sombre", "Clair", "Automatique"]
+                                            currentIndex: Math.max(0, ["dark", "light", "auto"].indexOf(controlCenter.appearanceMode))
+                                            onActivated: function(index) {
+                                                controlCenter.setAppearanceMode(["dark", "light", "auto"][index])
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: controlCenter.appearanceMode === "auto"
+                                            ? "Automatique : clair de 07:00 à 18:59, sombre de 19:00 à 06:59."
+                                            : "Le dégradé, les logos et les animations conservent les couleurs A et B."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
                                 Layout.preferredHeight: 310
                                 radius: 15
                                 color: window.themeColors.surface
@@ -635,7 +691,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Compose librement le dégradé A/B ou pars d'un préréglage. La structure sombre reste intacte ; les interfaces, logos, fonds LEOS et intros animées suivent les couleurs choisies."
+                                        text: "Compose librement le dégradé A/B ou pars d'un préréglage. Les modes clair et sombre conservent la même identité ; les logos, fonds LEOS et intros animées suivent les couleurs choisies."
                                         color: window.muted
                                         font.pixelSize: 11
                                         wrapMode: Text.WordWrap
