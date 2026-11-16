@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install BlueBuild CLI
         run: |
@@ -70,7 +70,7 @@ jobs:
             '
 
       - name: Set up Python for source and unit tests
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

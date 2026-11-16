@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Check out LEOS public verification key
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
@@ -167,7 +167,7 @@ jobs:
           bash .github/scripts/sign-iso-artifacts.sh "$ISO_NAME" "$MANIFEST_NAME" cosign.pub
 
       - name: Upload installer ISO and checksum
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LEOS-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
           path: |
