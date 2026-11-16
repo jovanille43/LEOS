@@ -180,6 +180,30 @@
     sourceImage.src = originalSource;
   }
 
+
+  function relativeLuminance(hex) {
+    const channels = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255);
+    const linear = channels.map(value =>
+      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+    );
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  }
+
+  function contrastBetween(first, second) {
+    const firstLuminance = relativeLuminance(first);
+    const secondLuminance = relativeLuminance(second);
+    return (Math.max(firstLuminance, secondLuminance) + 0.05) /
+      (Math.min(firstLuminance, secondLuminance) + 0.05);
+  }
+
+  function resolveAccentTextColor(accent, appearance) {
+    const surfaces = appearance === "light"
+      ? ["#F4F6FA", "#FFFFFF", "#E9EEF4"]
+      : ["#090B10", "#121720", "#182732"];
+    if (surfaces.every(surface => contrastBetween(accent, surface) >= 4.5)) return accent;
+    return appearance === "light" ? "#1C2430" : "#F4F7FB";
+  }
+
   function chooseGradientTextColor() {
     const whiteScore = Math.min(contrastRatio(preferences.colorA, "#FFFFFF"), contrastRatio(preferences.colorB, "#FFFFFF"));
     const darkScore = Math.min(contrastRatio(preferences.colorA, "#071015"), contrastRatio(preferences.colorB, "#071015"));
@@ -192,6 +216,9 @@
     root.dataset.appearanceMode = preferences.mode;
     root.style.setProperty("--a", preferences.colorA);
     root.style.setProperty("--b", preferences.colorB);
+    root.style.setProperty("--a-text", resolveAccentTextColor(preferences.colorA, appearance));
+    root.style.setProperty("--b-text", resolveAccentTextColor(preferences.colorB, appearance));
+    root.style.setProperty("--gradient-text", "linear-gradient(112deg, " + resolveAccentTextColor(preferences.colorA, appearance) + " 0%, " + resolveAccentTextColor(preferences.colorB, appearance) + " 100%)");
     root.style.setProperty("--gradient", "linear-gradient(112deg, " + preferences.colorA + " 0%, " + preferences.colorB + " 100%)");
     root.style.setProperty("--gradient-ink", chooseGradientTextColor());
     if (themeColorMeta) themeColorMeta.setAttribute("content", appearance === "light" ? "#F4F6FA" : "#090B10");
