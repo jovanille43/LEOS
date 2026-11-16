@@ -6,6 +6,7 @@ import fcntl
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -65,22 +66,67 @@ def resolve_leos_download_inbox(
 
 
 def _acquire_lock():
-    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
-    if runtime.is_symlink() or not runtime.is_dir():
+    runtime_value = os.environ.get("XDG_RUNTIME_DIR", "")
+    runtime = Path(runtime_value) if runtime_value else Path(f"/run/user/{os.getuid()}")
+    if not runtime.is_absolute():
         return None
-    lock_path = runtime / "leos-download-organizer.lock"
-    flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
+
+    runtime_descriptor = None
+    descriptor = None
     try:
-        descriptor = os.open(lock_path, flags, 0o600)
+        directory_flags = (
+            os.O_RDONLY
+            | getattr(os, "O_DIRECTORY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+        )
+        runtime_descriptor = os.open(runtime, directory_flags)
+        runtime_info = os.fstat(runtime_descriptor)
+        if (
+            not stat.S_ISDIR(runtime_info.st_mode)
+            or runtime_info.st_uid != os.getuid()
+            or runtime_info.st_mode & 0o077
+        ):
+            return None
+
+        lock_flags = (
+            os.O_CREAT
+            | os.O_RDWR
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+        )
+        descriptor = os.open(
+            "leos-download-organizer.lock",
+            lock_flags,
+            0o600,
+            dir_fd=runtime_descriptor,
+        )
+        lock_info = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(lock_info.st_mode)
+            or lock_info.st_uid != os.getuid()
+            or lock_info.st_nlink != 1
+        ):
+            return None
+
         os.fchmod(descriptor, 0o600)
         fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return descriptor
-    except (OSError, BlockingIOError):
-        try:
-            os.close(descriptor)
-        except (OSError, UnboundLocalError):
-            pass
+        locked_descriptor = descriptor
+        descriptor = None
+        return locked_descriptor
+    except (OSError, ValueError, TypeError):
         return None
+    finally:
+        if runtime_descriptor is not None:
+            try:
+                os.close(runtime_descriptor)
+            except OSError:
+                pass
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
 
 
 def _notify(moved: list[dict[str, str]]) -> None:
