@@ -120,6 +120,7 @@
   function recolorBrandingLogos() {
     const logos = [...document.querySelectorAll("[data-themeable-logo]")];
     if (!logos.length) return;
+    const token = ++logoRenderToken;
     const cacheKey = preferences.colorA + ":" + preferences.colorB;
     const cached = logoCache.get(cacheKey);
     if (cached) {
@@ -127,8 +128,7 @@
       return;
     }
 
-    const token = ++logoRenderToken;
-    const originalSource = logos[0].getAttribute("src");
+    const originalSource = logos[0].dataset.logoSource || logos[0].getAttribute("src");
     if (!originalSource) return;
     const sourceImage = new Image();
     sourceImage.onload = () => {
