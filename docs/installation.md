@@ -2,7 +2,7 @@
 
 ## État actuel
 
-LEOS est encore en développement. Les premières variantes d'image sont en cours de construction/publication automatisée ; **aucune ISO installateur LEOS n'a encore été générée ni validée**. Ne tente pas d'installer une image de développement sur un ordinateur principal. Un démarrage live et une installation de test sur matériel dédié devront précéder toute diffusion.
+LEOS est encore en développement. Les trois premières images (AMD/Intel, NVIDIA legacy et NVIDIA moderne) ont été construites et publiées avec succès dans GHCR le 16 novembre 2026 ; **aucune ISO installateur LEOS n'a encore été générée ni validée**. Le tag commun de ce build est `7794179-45`. Ne tente pas d'installer une image de développement sur un ordinateur principal. Un démarrage live et une installation de test sur matériel dédié devront précéder toute diffusion.
 
 ## Matériel et choix de l'image
 
@@ -36,11 +36,11 @@ Le parcours du premier démarrage, y compris l'offre d'applications facultatives
 La procédure détaillée de retour arrière et de récupération est disponible dans [le guide de récupération](recovery.md). Lis-la avant le premier essai d'installation : LEOS repose sur les déploiements OSTree de Bazzite et ne fournit pas encore de mécanisme de réparation autonome.
 
 1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
-2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag de l'image publiée.
-3. Récupérer l'ISO, son fichier SHA-256, le manifeste JSON de provenance et les deux bundles `.sigstore.json` dans les artefacts du workflow. Vérifier la somme avec `sha256sum --check LEOS-standard-latest.iso.sha256`, puis vérifier l'authenticité de l'ISO et du manifeste avec Cosign et la clé publique `cosign.pub` publiée dans le dépôt :
+2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag exact de l'image publiée. Pour les trois images actuellement disponibles, saisir `7794179-45` ; pour une compilation ultérieure, reprendre le tag affiché dans les logs du build réussi.
+3. Récupérer l'ISO, son fichier SHA-256, le manifeste JSON de provenance et les deux bundles `.sigstore.json` dans les artefacts du workflow. Pour l'exemple AMD/Intel avec le tag actuel, vérifier la somme avec `sha256sum --check LEOS-standard-7794179-45.iso.sha256`, puis vérifier l'authenticité de l'ISO et du manifeste avec Cosign et la clé publique `cosign.pub` publiée dans le dépôt :
    ```bash
-   cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.sigstore.json LEOS-standard-latest.iso
-   cosign verify-blob --key cosign.pub --bundle LEOS-standard-latest.iso.json.sigstore.json LEOS-standard-latest.iso.json
+   cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.sigstore.json LEOS-standard-7794179-45.iso
+   cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.json.sigstore.json LEOS-standard-7794179-45.iso.json
    ```
    Adapter les noms des fichiers à la variante et au tag téléchargés. Ne pas utiliser une ISO si l'une des vérifications échoue.
 4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer ; l'écriture de l'image efface le contenu de la clé choisie.
