@@ -670,6 +670,13 @@ ApplicationWindow {
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
+                                    Label {
+                                        text: "Le changement automatique concerne les interfaces LEOS. Pour harmoniser aussi les applications KDE et Plasma, applique le schéma dans Paramètres KDE."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
                                 }
                             }
 
