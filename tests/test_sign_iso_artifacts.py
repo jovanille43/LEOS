@@ -99,5 +99,16 @@ class SignIsoArtifactsTests(unittest.TestCase):
         self.assertFalse(self.call_log.exists())
 
 
+    def test_iso_workflow_signs_both_files_before_uploading_signatures(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        sign = workflow.index("Sign and verify LEOS ISO and provenance artifacts")
+        upload = workflow.index("Upload installer ISO and checksum")
+        self.assertLess(sign, upload)
+        self.assertIn("SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}", workflow[sign:upload])
+        self.assertIn("bash .github/scripts/sign-iso-artifacts.sh", workflow[sign:upload])
+        self.assertIn("${{ steps.image.outputs.filename }}.sig", workflow[upload:])
+        self.assertIn("${{ steps.image.outputs.provenance }}.sig", workflow[upload:])
+
+
 if __name__ == "__main__":
     unittest.main()
