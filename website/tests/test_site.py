@@ -102,3 +102,36 @@ class WebsiteSmokeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_theme_controls_are_present(self) -> None:
+        for marker in (
+            'id="theme-toggle"',
+            'id="theme-panel"',
+            'data-theme-mode="dark"',
+            'data-theme-mode="light"',
+            'data-theme-mode="auto"',
+            'id="theme-color-a"',
+            'id="theme-color-b"',
+            'id="theme-reset"',
+        ):
+            self.assertIn(marker, self.source)
+
+    def test_site_uses_the_same_leos_default_colors(self) -> None:
+        self.assertIn('value="#00D9FF"', self.source)
+        self.assertIn('value="#E33BFF"', self.source)
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        self.assertIn('colorA: "#00D9FF"', script)
+        self.assertIn('colorB: "#E33BFF"', script)
+
+    def test_theme_auto_schedule_matches_leos(self) -> None:
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        self.assertIn('hour >= 7 && hour < 19', script)
+        self.assertIn('next.setHours(19, 0, 0, 0)', script)
+        self.assertIn('next.setHours(7, 0, 0, 0)', script)
+
+    def test_user_colors_drive_the_gradient(self) -> None:
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        self.assertIn('root.style.setProperty("--a", preferences.colorA)', script)
+        self.assertIn('root.style.setProperty("--b", preferences.colorB)', script)
+        self.assertIn('localStorage.setItem(STORAGE_KEY', script)
