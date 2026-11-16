@@ -41,4 +41,5 @@ fi
 
 image_repository="${image_ref%:*}"
 printf 'ref=%s@%s\n' "$image_repository" "$digest" >> "$output_file"
+printf 'tag_ref=%s\n' "$image_ref" >> "$output_file"
 echo "Pinned the selected LEOS image to immutable digest $digest."
