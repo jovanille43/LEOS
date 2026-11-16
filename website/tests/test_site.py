@@ -142,5 +142,15 @@ class WebsiteSmokeTests(unittest.TestCase):
 
 
 
+    def test_accent_text_uses_distribution_contrast_rules(self) -> None:
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        styles = (ROOT / "styles.css").read_text(encoding="utf-8")
+        self.assertIn("function resolveAccentTextColor", script)
+        self.assertIn("contrastBetween(accent, surface) >= 4.5", script)
+        self.assertIn('root.style.setProperty("--a-text"', script)
+        self.assertIn('root.style.setProperty("--b-text"', script)
+        self.assertIn("--gradient-text", styles)
+
+
 if __name__ == "__main__":
     unittest.main()
