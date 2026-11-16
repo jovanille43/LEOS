@@ -39,10 +39,16 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare deployable site
+        run: |
+          mkdir -p "$RUNNER_TEMP/leos-site/assets"
+          cp website/index.html website/styles.css website/script.js website/404.html "$RUNNER_TEMP/leos-site/"
+          cp website/assets/* "$RUNNER_TEMP/leos-site/assets/"
+
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: website
+          path: ${{ runner.temp }}/leos-site
 
       - name: Deploy website
         id: deployment
