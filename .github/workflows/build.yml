@@ -125,8 +125,8 @@ jobs:
           printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
           chmod 600 "$workdir/cosign.key"
           printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
-          cosign sign-blob --yes --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
-          cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+          cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
+          cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
 
       - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@v1
