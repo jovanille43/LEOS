@@ -1,8 +1,11 @@
 """Tests for the LEOS Gaming per-user single-instance lock."""
 
+import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gaming.backend.instance_lock import acquire_instance_lock
 
@@ -106,6 +109,82 @@ class GamingInstanceLockTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 acquire_instance_lock("gaming", directory)
             self.assertEqual(target.read_text(encoding="utf-8"), "do not follow")
+
+    def test_lock_directory_is_restricted_to_the_current_user(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "leos"
+            directory.mkdir(mode=0o755)
+            directory.chmod(0o755)
+            lock = acquire_instance_lock("gaming", directory)
+            self.assertIsNotNone(lock)
+            try:
+                self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
+            finally:
+                lock.release()
+
+    def test_lock_directory_rejects_a_different_owner(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "leos"
+            directory.mkdir(mode=0o700)
+            current_uid = os.getuid()
+            with patch("gaming.backend.instance_lock.os.getuid", return_value=current_uid + 1):
+                with self.assertRaisesRegex(OSError, "current user"):
+                    acquire_instance_lock("gaming", directory)
+
+    def test_lock_file_rejects_hardlinks_without_changing_the_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            directory = root / "leos"
+            directory.mkdir(mode=0o700)
+            directory.chmod(0o700)
+            target = root / "target"
+            target.write_text("keep unchanged", encoding="utf-8")
+            target.chmod(0o640)
+            (directory / "gaming.lock").hardlink_to(target)
+
+            with self.assertRaisesRegex(OSError, "owned, private regular file"):
+                acquire_instance_lock("gaming", directory)
+
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o640)
+            self.assertEqual(target.read_text(encoding="utf-8"), "keep unchanged")
+
+    def test_lock_file_rejects_a_different_owner_before_chmod(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "leos"
+            directory.mkdir(mode=0o700)
+            directory.chmod(0o700)
+            lock_path = directory / "gaming.lock"
+            lock_path.write_text("existing lock", encoding="utf-8")
+            lock_path.chmod(0o640)
+            current_uid = os.getuid()
+            with patch(
+                "gaming.backend.instance_lock.os.getuid",
+                side_effect=[current_uid, current_uid + 1],
+            ):
+                with self.assertRaisesRegex(OSError, "owned, private regular file"):
+                    acquire_instance_lock("gaming", directory)
+            self.assertEqual(stat.S_IMODE(lock_path.stat().st_mode), 0o640)
+
+    def test_relative_xdg_runtime_directory_falls_back_to_absolute_cache_home(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            cache_home = Path(temporary) / "cache"
+            with patch.dict(
+                os.environ,
+                {
+                    "XDG_RUNTIME_DIR": "relative/runtime",
+                    "XDG_CACHE_HOME": str(cache_home),
+                },
+            ):
+                lock = acquire_instance_lock("gaming")
+                self.assertIsNotNone(lock)
+                try:
+                    self.assertTrue((cache_home / "leos" / "gaming.lock").is_file())
+                finally:
+                    lock.release()
+
+    def test_explicit_relative_lock_directory_is_rejected(self):
+        with self.assertRaisesRegex(OSError, "absolute path"):
+            acquire_instance_lock("gaming", Path("relative/leos"))
 
     def test_kernel_releases_lock_after_owner_exits_abnormally(self):
         import subprocess

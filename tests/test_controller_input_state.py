@@ -2,12 +2,30 @@
 
 import unittest
 
-from controller_center.input_state import ControllerInputState
+from controller_center.input_state import ControllerInputState, normalize_axis_value
 
 
 class ControllerInputStateTests(unittest.TestCase):
     def setUp(self):
         self.state = ControllerInputState()
+
+    def test_axis_preview_normalizes_symmetric_and_asymmetric_ranges(self):
+        self.assertEqual(normalize_axis_value(0, -32768, 32767), 0)
+        self.assertEqual(normalize_axis_value(32767, -32768, 32767), 100)
+        self.assertEqual(normalize_axis_value(-32768, -32768, 32767), -100)
+        self.assertEqual(normalize_axis_value(300, 0, 400, center=100), 67)
+        self.assertEqual(normalize_axis_value(0, 0, 400, center=100), -100)
+
+    def test_axis_preview_applies_deadzone_only_to_display_value(self):
+        self.assertEqual(normalize_axis_value(5, -100, 100, deadzone=10), 0)
+        self.assertEqual(normalize_axis_value(-8, -100, 100, deadzone=10), 0)
+        self.assertEqual(normalize_axis_value(100, -100, 100, deadzone=10), 100)
+        self.assertEqual(normalize_axis_value(-100, -100, 100, deadzone=10), -100)
+
+    def test_axis_preview_rejects_invalid_ranges_and_types(self):
+        self.assertEqual(normalize_axis_value(10, 5, 5), 0)
+        self.assertEqual(normalize_axis_value("10", -100, 100), 0)
+        self.assertEqual(normalize_axis_value(200, 0, 400, center=500), 0)
 
     def test_pressed_buttons_are_reported_until_they_are_released(self):
         self.assertEqual(
@@ -93,6 +111,35 @@ class ControllerInputStateTests(unittest.TestCase):
         self.state.clear()
         self.assertEqual(self.state.pressed_buttons, ())
         self.assertEqual(self.state.buttons_text, "Aucun bouton maintenu.")
+
+
+    def test_controller_center_exposes_calibrated_live_stick_preview(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "controller_center/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
+        self.assertIn("def leftStickX(self)", controller)
+        self.assertIn("def leftStickY(self)", controller)
+        self.assertIn("def rightStickX(self)", controller)
+        self.assertIn("def rightStickY(self)", controller)
+        self.assertIn("self._axis_centers = dict(centers)", controller)
+        self.assertIn("normalize_axis_value(", controller)
+        self.assertIn("STICK GAUCHE", qml)
+        self.assertIn("STICK DROIT", qml)
+        self.assertIn("controllerCenter.leftStickX", qml)
+        self.assertIn("controllerCenter.rightStickY", qml)
+        self.assertIn("Aperçu uniquement", qml)
+
+    def test_controller_preference_write_failures_are_reported_to_the_ui(self):
+        from pathlib import Path
+
+        source = (
+            Path(__file__).resolve().parents[1] / "controller_center/controller.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Profil non enregistré", source)
+        self.assertIn("Zone morte non enregistrée", source)
+        self.assertIn("Calibrage non enregistré", source)
 
 
 if __name__ == "__main__":

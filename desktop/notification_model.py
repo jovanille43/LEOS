@@ -1,7 +1,7 @@
 """Qt model exposing the LEOS-owned notification inbox to QML."""
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal
+from PySide6.QtCore import Property, QAbstractListModel, QModelIndex, Qt, Signal, Slot
 
 from desktop.notification_store import NotificationStore
 

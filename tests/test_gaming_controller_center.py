@@ -16,6 +16,14 @@ class GamingControllerCenterTests(unittest.TestCase):
         self.assertNotIn("shell=True", method)
         self.assertNotIn("os.system", method)
 
+    def test_controller_center_cleans_up_on_qml_startup_failure(self):
+        main = (ROOT / "controller_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("import traceback", main)
+        self.assertIn("except Exception:", main)
+        self.assertIn("controller.shutdown()", main)
+        self.assertIn("theme.shutdown()", main)
+        self.assertIn("app.aboutToQuit.connect(controller.shutdown)", main)
+
     def test_controller_center_is_packaged_for_the_installed_image(self):
         desktop_entry = (ROOT / "desktop/applications/leos-controller-center.desktop").read_text(encoding="utf-8")
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")

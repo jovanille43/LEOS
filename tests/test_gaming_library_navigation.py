@@ -27,6 +27,20 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("leos.refreshLibrary()", self.qml)
         self.assertIn("addDialog.open()", self.qml)
 
+    def test_source_filter_is_reachable_from_keyboard_and_gamepad_toolbar(self):
+        self.assertIn("id: sourceFilterBox", self.qml)
+        self.assertIn("gameLibrary.setSourceFilter(currentText)", self.qml)
+        self.assertIn("sourceFilterBox.forceActiveFocus()", self.qml)
+        self.assertIn("Math.min(3, index)", self.qml)
+        self.assertIn("window.toolbarFocusIndex === 3", self.qml)
+
+    def test_gamepad_can_open_change_and_close_the_source_filter(self):
+        self.assertIn("sourceFilterBox.popup.open()", self.qml)
+        self.assertIn("if (sourceFilterBox.popup.visible)", self.qml)
+        self.assertIn("sourceFilterBox.currentIndex + delta", self.qml)
+        self.assertIn("sourceFilterBox.popup.close()", self.qml)
+        self.assertIn('action === "confirm" || action === "back"', self.qml)
+
     def test_grid_boundaries_enter_toolbar_and_game_details(self):
         self.assertIn("selectedIndex < columns", self.qml)
         self.assertIn("selectedIndex % columns === columns - 1", self.qml)
@@ -65,6 +79,26 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn('window.toolbarFocusIndex = 2', self.qml)
         self.assertIn('window.detailsActionIndex = 0', self.qml)
         self.assertIn('window.detailsActionIndex = 1', self.qml)
+
+    def test_library_scan_errors_are_distinct_from_an_empty_game_library(self):
+        source = (
+            Path(__file__).resolve().parents[1] / "gaming/backend/library.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("scanErrorChanged = Signal()", source)
+        self.assertIn("Property, QUrl, QThreadPool", source)
+        self.assertIn("@Property(str, notify=scanErrorChanged)", source)
+        self.assertIn("def scanError(self) -> str:", source)
+        self.assertIn("self._set_scan_error(", source)
+        self.assertIn("Impossible de lire la bibliothèque de jeux.", source)
+        self.assertIn("gameLibrary.scanError.length > 0", self.qml)
+        self.assertIn("gameLibrary.scanError", self.qml)
+        self.assertIn("function onScanErrorChanged()", self.qml)
+        self.assertIn("statusText.text = gameLibrary.scanError", self.qml)
+        self.assertIn("color: gameLibrary.scanError.length > 0 ? window.colorBText : window.muted", self.qml)
+
+    def test_gaming_empty_state_uses_single_qml_newline_escapes(self):
+        self.assertIn(r'Aucun jeu détecté dans cette catégorie.\n\nInstalle', self.qml)
+        self.assertNotIn(r'Aucun jeu détecté dans cette catégorie.\\n\\nInstalle', self.qml)
 
     def test_manual_game_loader_rejects_actual_nul_characters(self):
         source = (

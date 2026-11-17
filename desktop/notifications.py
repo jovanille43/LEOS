@@ -75,8 +75,16 @@ def post_notification(
     """Persist every LEOS event; user preferences govern only native popups."""
     try:
         identifier = NotificationStore().add(title, body, level)
-    except (OSError, ValueError):
+    except Exception:
+        # Notification persistence is best-effort too: a damaged local store
+        # must never interrupt a mode switch, install or other user action.
         return None
     if native:
-        _show_native_notification(title.strip(), body, level)
+        try:
+            _show_native_notification(title.strip(), body, level)
+        except Exception:
+            # Native notifications are optional feedback. A broken desktop
+            # bus or settings backend must never interrupt the LEOS action
+            # that emitted the notification.
+            pass
     return identifier

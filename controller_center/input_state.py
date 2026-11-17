@@ -5,6 +5,38 @@ from __future__ import annotations
 from typing import Any
 
 
+def normalize_axis_value(
+    value: object,
+    minimum: object,
+    maximum: object,
+    center: object | None = None,
+    deadzone: object = 0,
+) -> int:
+    """Map one raw evdev axis to a deadzone-adjusted -100..100 preview value."""
+    if any(type(item) is not int for item in (value, minimum, maximum)):
+        return 0
+    if maximum <= minimum:
+        return 0
+    midpoint = (minimum + maximum) // 2
+    calibrated_center = (
+        center if type(center) is int and minimum < center < maximum
+        else midpoint
+    )
+    if value >= calibrated_center:
+        span = maximum - calibrated_center
+        normalized = (value - calibrated_center) / span if span else 0.0
+    else:
+        span = calibrated_center - minimum
+        normalized = (value - calibrated_center) / span if span else 0.0
+    normalized = max(-1.0, min(1.0, normalized))
+    zone = max(0, min(40, deadzone if type(deadzone) is int else 0)) / 100.0
+    magnitude = abs(normalized)
+    if magnitude <= zone:
+        return 0
+    adjusted = (magnitude - zone) / (1.0 - zone) if zone < 1.0 else 0.0
+    return int(round((1 if normalized >= 0 else -1) * adjusted * 100))
+
+
 class ControllerInputState:
     """Track held buttons independently of the last event displayed by the UI."""
 

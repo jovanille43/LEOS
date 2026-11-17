@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=LEOS Game Download Organizer
+Comment=Classe automatiquement les jeux téléchargés dans les dossiers d’émulation LEOS
+Exec=/usr/bin/python3 /usr/share/leos/gaming/download_organizer_service.py
+Terminal=false
+NoDisplay=true
+X-KDE-autostart-phase=2

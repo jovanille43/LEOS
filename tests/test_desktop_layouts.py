@@ -2,6 +2,7 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from desktop.layouts import DesktopLayoutStore, DEFAULT_LAYOUT, PROFILES, validate_layout
@@ -144,6 +145,57 @@ class DesktopLayoutTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 store.apply_profile("minimal")
             self.assertEqual(target.read_text(encoding="utf-8"), "keep")
+
+    def test_validate_current_file_accepts_missing_first_run_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = DesktopLayoutStore(Path(directory) / "desktop-layout.json")
+            self.assertIsNone(store.validate_current_file())
+
+    def test_validate_current_file_rejects_corrupt_persisted_layout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            path.write_text("{broken", encoding="utf-8")
+            store = DesktopLayoutStore(path)
+            with self.assertRaises(ValueError):
+                store.validate_current_file()
+            self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
+
+    def test_failed_layout_write_rolls_back_the_in_memory_candidate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            store.apply_profile("minimal")
+            previous = path.read_text(encoding="utf-8")
+            previous_layout = store.get()
+            with patch.object(store, "save", side_effect=OSError("disk unavailable")):
+                with self.assertRaises(OSError):
+                    store.set_dock(position="right")
+            self.assertEqual(store.get(), previous_layout)
+            self.assertEqual(path.read_text(encoding="utf-8"), previous)
+
+    def test_replace_all_requires_explicit_confirmation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = DesktopLayoutStore(Path(directory) / "desktop-layout.json")
+            with self.assertRaises(PermissionError):
+                store.replace_all(DEFAULT_LAYOUT)
+
+    def test_replace_all_validates_before_replacing_saved_layout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            store.apply_profile("minimal")
+            before = path.read_text(encoding="utf-8")
+            with self.assertRaises(ValueError):
+                store.replace_all({"schema_version": 2}, confirmed=True)
+            self.assertEqual(path.read_text(encoding="utf-8"), before)
+            workspace = {
+                "schema_version": 1,
+                "profile": "workspace",
+                "dock": dict(PROFILES["workspace"]["dock"]),
+                "widgets_enabled": True,
+            }
+            store.replace_all(workspace, confirmed=True)
+            self.assertEqual(DesktopLayoutStore(path).get(), workspace)
 
     def test_all_presets_have_valid_layout_data(self):
         for name, preset in PROFILES.items():

@@ -204,6 +204,17 @@ class SystemDiagnosticsTests(unittest.TestCase):
         self.assertEqual(len(value), 240)
         self.assertEqual(diagnostics._safe_report_value({"unexpected": "value"}), "")
 
+    def test_report_formatter_removes_invisible_unicode_formatting_controls(self):
+        value = "GPU\u202e1\u202c \u2066AMD\u2069\u200b"
+        cleaned = diagnostics._safe_report_value(value)
+        self.assertEqual(cleaned, "GPU1 AMD")
+        self.assertEqual(diagnostics._safe_report_value("A\x85B"), "A B")
+        # Keep join controls used by some writing systems.
+        self.assertEqual(
+            diagnostics._safe_report_value("क्\u200dष"),
+            "क्\u200dष",
+        )
+
     def test_diagnostic_report_copy_is_exposed_in_control_center(self):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "control_center/controller.py").read_text(encoding="utf-8")

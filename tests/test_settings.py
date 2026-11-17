@@ -1,13 +1,14 @@
 """Tests for shared LEOS settings."""
 
 import json
+import fcntl
 import os
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from leos_core.settings import SettingsStore
+from leos_core.settings import DEFAULTS, SettingsStore
 
 
 class SettingsStoreTests(unittest.TestCase):
@@ -17,6 +18,7 @@ class SettingsStoreTests(unittest.TestCase):
             settings = SettingsStore(path)
             self.assertEqual(settings.get("last_mode"), "desktop")
             self.assertEqual(settings.get("theme"), "leos-original")
+            self.assertEqual(settings.get("appearance_mode"), "dark")
             self.assertEqual(settings.get("performance_profile"), "balanced")
             self.assertTrue(settings.get("animations_enabled"))
             self.assertTrue(settings.get("notifications_enabled"))
@@ -26,6 +28,77 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(settings.get("onboarding_complete"))
             self.assertFalse(path.exists())
 
+    def test_appearance_mode_accepts_dark_light_and_auto_and_rejects_unknown_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            for mode in ("dark", "light", "auto"):
+                settings.set("appearance_mode", mode)
+                self.assertEqual(SettingsStore(settings.path).get("appearance_mode"), mode)
+            with self.assertRaises(ValueError):
+                settings.set("appearance_mode", "sepia")
+            with self.assertRaises(TypeError):
+                settings.set("appearance_mode", True)
+
+    def test_custom_theme_colors_default_validate_and_persist(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme_color_a"), "#00D9FF")
+            self.assertEqual(settings.get("theme_color_b"), "#E33BFF")
+
+            settings.set("theme_color_a", "#00ff88")
+            settings.set("theme_color_b", " #AA11CC ")
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme_color_a"), "#00FF88")
+            self.assertEqual(reloaded.get("theme_color_b"), "#AA11CC")
+
+    def test_invalid_custom_theme_colors_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            for value in ("cyan", "#FFF", "#12345678", "123456", ""):
+                with self.subTest(value=value), self.assertRaises(ValueError):
+                    settings.set("theme_color_a", value)
+            with self.assertRaises(TypeError):
+                settings.set("theme_color_b", 123)
+
+    def test_invalid_colors_in_existing_settings_fall_back_to_safe_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                json.dumps({"theme_color_a": "magenta", "theme_color_b": "#12"}),
+                encoding="utf-8",
+            )
+            settings = SettingsStore(path)
+            self.assertEqual(settings.get("theme_color_a"), "#00D9FF")
+            self.assertEqual(settings.get("theme_color_b"), "#E33BFF")
+
+    def test_set_many_updates_related_theme_colors_atomically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set_many({
+                "theme_color_a": "#112233",
+                "theme_color_b": "#AABBCC",
+                "sounds_enabled": False,
+            })
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme_color_a"), "#112233")
+            self.assertEqual(reloaded.get("theme_color_b"), "#AABBCC")
+            self.assertFalse(reloaded.get("sounds_enabled"))
+
+    def test_set_many_validates_every_value_before_writing_any(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#010203")
+            before = path.read_text(encoding="utf-8")
+            with self.assertRaises(ValueError):
+                settings.set_many({
+                    "theme_color_a": "#AABBCC",
+                    "theme_color_b": "not-a-color",
+                })
+            self.assertEqual(path.read_text(encoding="utf-8"), before)
+
     def test_onboarding_completion_persists_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
@@ -33,6 +106,36 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(settings.get("onboarding_complete"))
             settings.set("onboarding_complete", True)
             self.assertTrue(SettingsStore(path).get("onboarding_complete"))
+
+    def test_validate_current_file_accepts_a_missing_first_run_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.validate_current_file()
+            self.assertFalse(path.exists())
+
+    def test_validate_current_file_rejects_corrupt_existing_json(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            corrupt = b"{broken json"
+            path.write_bytes(corrupt)
+            with self.assertRaises((ValueError, json.JSONDecodeError)):
+                SettingsStore(path).validate_current_file()
+            self.assertEqual(path.read_bytes(), corrupt)
+
+    def test_validate_current_file_rejects_symlinked_preferences(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "settings.json"
+            target = root / "target.json"
+            target.write_text("{}", encoding="utf-8")
+            try:
+                path.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("Symbolic links unavailable")
+            with self.assertRaises(OSError):
+                SettingsStore(path).validate_current_file()
+            self.assertEqual(target.read_text(encoding="utf-8"), "{}")
 
     def test_values_persist_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -116,8 +219,6 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(SettingsStore(path).get("transition_app_policy"), "ask")
 
     def test_legacy_automatic_transition_policy_falls_back_to_ask(self) -> None:
-        import json
-
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
             path.write_text(
@@ -239,6 +340,96 @@ class SettingsStoreTests(unittest.TestCase):
             SettingsStore(path).set("theme", "cyan")
             lock_path = path.with_name(path.name + ".lock")
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
+
+
+    def test_replace_all_requires_confirmation_and_a_complete_valid_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme", "magenta")
+            snapshot = {key: settings.get(key) for key in __import__(
+                "leos_core.settings", fromlist=["DEFAULTS"]
+            ).DEFAULTS}
+            snapshot["theme"] = "cyan"
+            with self.assertRaises(PermissionError):
+                settings.replace_all(snapshot)
+            incomplete = dict(snapshot)
+            incomplete.pop("theme_color_a")
+            with self.assertRaises(ValueError):
+                settings.replace_all(incomplete, confirmed=True)
+            self.assertEqual(settings.get("theme"), "magenta")
+
+            settings.replace_all(snapshot, confirmed=True)
+            self.assertEqual(SettingsStore(path).get("theme"), "cyan")
+
+    def test_replace_all_runs_recovery_callback_while_exclusive_lock_is_held(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#112233")
+            replacement = {key: settings.get(key) for key in DEFAULTS}
+            replacement["theme_color_a"] = "#AABBCC"
+            lock_path = path.with_name(path.name + ".lock")
+            observations: list[bool] = []
+
+            def preserve_before_replace() -> None:
+                with lock_path.open("a", encoding="utf-8") as competing_lock:
+                    try:
+                        fcntl.flock(
+                            competing_lock.fileno(),
+                            fcntl.LOCK_EX | fcntl.LOCK_NB,
+                        )
+                    except BlockingIOError:
+                        observations.append(True)
+                    else:
+                        fcntl.flock(competing_lock.fileno(), fcntl.LOCK_UN)
+                        observations.append(False)
+                current = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(current["theme_color_a"], "#112233")
+
+            settings.replace_all(
+                replacement,
+                confirmed=True,
+                before_replace=preserve_before_replace,
+            )
+
+            self.assertEqual(observations, [True])
+            self.assertEqual(SettingsStore(path).get("theme_color_a"), "#AABBCC")
+
+    def test_replace_all_rejects_non_callable_recovery_callback_without_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("theme_color_a", "#112233")
+            original = path.read_bytes()
+            replacement = {key: settings.get(key) for key in DEFAULTS}
+            replacement["theme_color_a"] = "#AABBCC"
+
+            with self.assertRaises(TypeError):
+                settings.replace_all(
+                    replacement,
+                    confirmed=True,
+                    before_replace="not-callable",
+                )
+
+            self.assertEqual(path.read_bytes(), original)
+
+    def test_replace_all_can_recover_corrupt_file_without_weakening_normal_writes(self) -> None:
+        from leos_core.settings import DEFAULTS
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text("{broken", encoding="utf-8")
+            settings = SettingsStore(path)
+            snapshot = dict(DEFAULTS)
+            snapshot["theme_color_a"] = "#112233"
+            with self.assertRaises(ValueError):
+                settings.set("theme", "cyan")
+            self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
+
+            settings.replace_all(snapshot, confirmed=True)
+            self.assertEqual(SettingsStore(path).get("theme_color_a"), "#112233")
+            self.assertTrue(path.read_text(encoding="utf-8").startswith("{"))
 
 
 if __name__ == "__main__":

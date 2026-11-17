@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python for pre-build tests
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -124,9 +124,10 @@ jobs:
           chmod 700 "$workdir"
           printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
           chmod 600 "$workdir/cosign.key"
+          unset SIGNING_SECRET
           printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
-          cosign sign-blob --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
-          cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+          cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
+          cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
 
       - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@v1

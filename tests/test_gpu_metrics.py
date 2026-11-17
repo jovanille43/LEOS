@@ -109,6 +109,50 @@ class GpuMetricsTests(unittest.TestCase):
         self.assertEqual(metrics["usage"], 45.0)
         self.assertEqual(metrics["temperature"], 61.0)
 
+    def test_gpu_metrics_normalizer_rejects_stale_or_invalid_values(self):
+        normalized = gpu_metrics.normalize_gpu_metrics({
+            "name": "  Radeon test  ",
+            "usage": float("nan"),
+            "temperature": 999,
+            "memory_used": 9000,
+            "memory_total": 8000,
+        })
+        self.assertEqual(normalized, {
+            "name": "Radeon test",
+            "usage": -1.0,
+            "temperature": -1.0,
+            "memory_used": -1,
+            "memory_total": 8000,
+        })
+
+    def test_gpu_metrics_normalizer_handles_missing_and_non_numeric_values(self):
+        self.assertEqual(
+            gpu_metrics.normalize_gpu_metrics({"name": "", "usage": "broken"}),
+            gpu_metrics.unavailable_gpu_metrics(),
+        )
+        self.assertEqual(
+            gpu_metrics.normalize_gpu_metrics(None),
+            gpu_metrics.unavailable_gpu_metrics(),
+        )
+
+    def test_gpu_metrics_normalizer_keeps_valid_zero_usage_and_memory(self):
+        self.assertEqual(
+            gpu_metrics.normalize_gpu_metrics({
+                "name": "Intel Graphics",
+                "usage": 0,
+                "temperature": 42.5,
+                "memory_used": 0,
+                "memory_total": 4096,
+            }),
+            {
+                "name": "Intel Graphics",
+                "usage": 0.0,
+                "temperature": 42.5,
+                "memory_used": 0,
+                "memory_total": 4096,
+            },
+        )
+
     def test_nvidia_smi_invalid_text_encoding_is_non_fatal(self):
         invalid_text = UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte")
         with patch.object(gpu_metrics.shutil, "which", return_value="/usr/bin/nvidia-smi"):

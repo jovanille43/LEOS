@@ -6,7 +6,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 - **Desktop Mode :** emblème du lion seul.
 - **Gaming Mode :** emblème du lion avec manette.
-- **Style :** lion métallique, accents cyan et magenta, typographie LEOS et fond noir.
+- **Style :** lion métallique, dégradé défini par Couleur A et Couleur B, typographie LEOS et fond noir. Cyan/magenta sont les couleurs par défaut historiques.
 
 ## Organisation
 
@@ -20,6 +20,8 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - `wallpapers/gaming-leos.svg` — fond Gaming 4K (3840 × 2160), avec l'emblème officiel référencé depuis `gaming-logo.jpeg` sans modification.
 - Les deux fonds sont des ressources sélectionnables ; aucun n'est appliqué automatiquement.
 - `icons/` — icônes et éléments graphiques.
+
+Les fichiers officiels restent des sources immuables. Le moteur LEOS crée des variantes dérivées dans le cache utilisateur lorsque A/B change : emblèmes PNG, fonds SVG liés à ces emblèmes et intros vidéo recolorées lorsque ffmpeg est disponible. La matrice commune conserve le gris neutre et les reflets métalliques ; si une conversion échoue, l'interface revient à la ressource officielle. Aucune variante ne remplace les fichiers JPEG, SVG ou vidéo d'origine.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
 

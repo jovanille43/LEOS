@@ -6,17 +6,22 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import (
+    APPEARANCE_MODES, DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color,
+    palette_for_colors, resolve_appearance_mode,
+)
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
 from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
+from desktop.layout_backup import DesktopLayoutBackupManager
 from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
+from leos_core.settings_backup import SettingsBackupManager
 from desktop.notifications import post_notification
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
@@ -144,16 +149,22 @@ class ControlCenterController(QObject):
     networkChanged = Signal()
     diagnosticsChanged = Signal()
     cleanupChanged = Signal()
+    settingsBackupChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
+        self._shutting_down = False
         self.settings = SettingsStore()
+        self.settingsBackups = SettingsBackupManager(self.settings)
+        self._settings_backup_snapshot = self._read_settings_backup_snapshot()
         self._shared_settings_snapshot = self._read_shared_settings_snapshot()
         self._settings_sync_timer = QTimer(self)
         self._settings_sync_timer.setInterval(1500)
         self._settings_sync_timer.timeout.connect(self.refreshSharedSettings)
         self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
+        self.desktopLayoutBackups = DesktopLayoutBackupManager(self.desktopLayout)
+        self._desktop_layout_backup_snapshot = self._read_desktop_layout_backup_snapshot()
         self.plasmaBackups = PlasmaBackupManager()
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
@@ -254,14 +265,86 @@ class ControlCenterController(QObject):
         self._deployment_timer.start()
         QTimer.singleShot(2500, self.refreshPendingSystemUpdate)
 
+    def _read_settings_backup_snapshot(self) -> dict[str, object]:
+        entries = self.settingsBackups.list_backups()
+        latest = entries[0] if entries else {}
+        return {
+            "available": bool(entries),
+            "count": len(entries),
+            "latestCreatedUtc": str(latest.get("created_utc", "")),
+            "latestId": str(latest.get("backup_id", "")),
+            # Detect replacement of an older entry when retention stays at 20.
+            "backupIds": tuple(str(entry["backup_id"]) for entry in entries),
+        }
+
+    def _refresh_settings_backup_snapshot(self) -> None:
+        snapshot = self._read_settings_backup_snapshot()
+        if snapshot != self._settings_backup_snapshot:
+            self._settings_backup_snapshot = snapshot
+            self.settingsBackupChanged.emit()
+
+    def _read_desktop_layout_backup_snapshot(self) -> dict[str, object]:
+        entries = self.desktopLayoutBackups.list_backups()
+        latest = entries[0] if entries else {}
+        return {
+            "available": bool(entries),
+            "count": len(entries),
+            "latestCreatedUtc": str(latest.get("created_utc", "")),
+            "latestId": str(latest.get("backup_id", "")),
+            "backupIds": tuple(str(entry["backup_id"]) for entry in entries),
+        }
+
+    def _refresh_desktop_layout_backup_snapshot(self) -> None:
+        snapshot = self._read_desktop_layout_backup_snapshot()
+        if snapshot != self._desktop_layout_backup_snapshot:
+            self._desktop_layout_backup_snapshot = snapshot
+            self.settingsBackupChanged.emit()
+
+    @Property("QVariantMap", notify=settingsBackupChanged)
+    def desktopLayoutBackupSnapshot(self) -> dict[str, object]:
+        return dict(self._desktop_layout_backup_snapshot)
+
+    @Property("QVariantList", notify=settingsBackupChanged)
+    def desktopLayoutBackupEntries(self) -> list[dict[str, str]]:
+        entries = self.desktopLayoutBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "createdUtc": str(entry["created_utc"]),
+                "label": str(entry["created_utc"])[:19].replace("T", " ") + " UTC",
+            }
+            for entry in entries
+        ]
+
+    @Property("QVariantMap", notify=settingsBackupChanged)
+    def settingsBackupSnapshot(self) -> dict[str, object]:
+        return dict(self._settings_backup_snapshot)
+
+    @Property("QVariantList", notify=settingsBackupChanged)
+    def settingsBackupEntries(self) -> list[dict[str, str]]:
+        entries = self.settingsBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "createdUtc": str(entry["created_utc"]),
+                "label": str(entry["created_utc"])[:19].replace("T", " ") + " UTC",
+            }
+            for entry in entries
+        ]
+
+    @Slot()
+    def refreshSettingsBackups(self) -> None:
+        self._refresh_settings_backup_snapshot()
+
     def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
         keys = (
-            "last_mode", "theme", "performance_profile", "animations_enabled",
+            "last_mode", "theme", "theme_color_a", "theme_color_b", "performance_profile", "animations_enabled",
             "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
             "notification_duration_seconds", "notification_minimum_priority",
-            "notification_sounds_enabled", "silent_notifications_in_gaming",
+            "notification_sounds_enabled", "silent_notifications_in_gaming", "appearance_mode",
         )
-        return self.settings.snapshot(keys)
+        snapshot = self.settings.snapshot(keys)
+        return (*snapshot, resolve_appearance_mode(str(snapshot[-1])))
 
     @Slot()
     def refreshSharedSettings(self) -> None:
@@ -292,6 +375,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_hardware_scan_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._hardware_task = None
         if snapshot.get("_scan_error"):
             return
@@ -321,6 +406,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_network_scan_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._network_task = None
         if snapshot.get("_scan_error"):
             return
@@ -351,6 +438,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_cleanup_preview_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._cleanup_task = None
         if snapshot.get("_scan_error"):
             return
@@ -374,6 +463,8 @@ class ControlCenterController(QObject):
 
     @Slot(dict)
     def _on_diagnostics_completed(self, snapshot: dict) -> None:
+        if self._shutting_down:
+            return
         self._diagnostics_task = None
         if snapshot.get("_scan_error"):
             return
@@ -488,8 +579,14 @@ class ControlCenterController(QObject):
             self.settings.set("last_notified_system_update", checksum)
             post_notification("Mise à jour système prête", message, "success")
 
-    def _on_deployment_status_error(self, _error) -> None:
-        if self._deployment_timed_out:
+    def _on_deployment_status_error(self, error) -> None:
+        # Crashes and runtime I/O errors are finalized by finished(). Only
+        # FailedToStart has no child process and therefore needs this path to
+        # release the in-flight slot immediately.
+        if (
+            self._deployment_timed_out
+            or error != QProcess.ProcessError.FailedToStart
+        ):
             return
         self._deployment_timeout.stop()
         self._deployment_check_running = False
@@ -549,8 +646,13 @@ class ControlCenterController(QObject):
             post_notification("Échec de vérification des mises à jour", message, "error")
         self.systemUpdatesChanged.emit()
 
-    def _on_system_update_check_error(self, _error) -> None:
-        if self._system_update_timed_out:
+    def _on_system_update_check_error(self, error) -> None:
+        # Keep the process slot occupied until finished() handles a crash or
+        # runtime error; FailedToStart is the only error without a later finish.
+        if (
+            self._system_update_timed_out
+            or error != QProcess.ProcessError.FailedToStart
+        ):
             return
         self._system_update_timeout.stop()
         self._system_update_check_running = False
@@ -605,10 +707,35 @@ class ControlCenterController(QObject):
     def theme(self) -> str:
         return str(self.settings.get("theme"))
 
+    def _theme_color_pair(self) -> tuple[str, str]:
+        # Read both endpoints from the same SettingsStore snapshot. Separate
+        # get() calls could expose a mixed pair during another process update.
+        snapshot = self._shared_settings_snapshot
+        return (
+            str(snapshot[2] or DEFAULT_COLOR_A),
+            str(snapshot[3] or DEFAULT_COLOR_B),
+        )
+
+    @Property(str, notify=settingsChanged)
+    def themeColorA(self) -> str:
+        return self._theme_color_pair()[0]
+
+    @Property(str, notify=settingsChanged)
+    def themeColorB(self) -> str:
+        return self._theme_color_pair()[1]
+
+    @Property(str, notify=settingsChanged)
+    def appearanceMode(self) -> str:
+        return str(self.settings.get("appearance_mode", "dark"))
+
+    @Property(str, notify=settingsChanged)
+    def effectiveAppearance(self) -> str:
+        return resolve_appearance_mode(self.appearanceMode)
+
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
-        """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        """Expose the shared A/B gradient in the selected LEOS appearance."""
+        return palette_for_colors(*self._theme_color_pair(), appearance=self.effectiveAppearance)
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -717,8 +844,34 @@ class ControlCenterController(QObject):
         self.settings.set("gaming_overlay_enabled", enabled)
         self.settingsChanged.emit()
 
+    @Slot(str, str, result=str)
+    def setThemeColors(self, color_a: str, color_b: str) -> str:
+        """Persist both gradient endpoints after validating the complete pair."""
+        try:
+            normalized_a = normalize_color(color_a)
+            normalized_b = normalize_color(color_b)
+            self.settings.set_many({"theme_color_a": normalized_a, "theme_color_b": normalized_b})
+        except (OSError, ValueError, TypeError, KeyError):
+            return "Les couleurs n'ont pas pu être enregistrées. Vérifie le format #RRGGBB."
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self.settingsChanged.emit()
+        return "Dégradé LEOS mis à jour."
+
+    @Slot(str)
+    def setAppearanceMode(self, mode: str) -> None:
+        """Persist dark, light or scheduled automatic appearance."""
+        if mode not in APPEARANCE_MODES:
+            return
+        try:
+            self.settings.set("appearance_mode", mode)
+        except (OSError, ValueError, TypeError, KeyError):
+            return
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self.settingsChanged.emit()
+
     @Slot(str)
     def setTheme(self, theme: str) -> None:
+        """Keep the legacy setting slot for older integrations."""
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
 
@@ -726,7 +879,9 @@ class ControlCenterController(QObject):
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
         try:
-            message = self.kdeColorSchemes.apply_theme(self.theme)
+            message = self.kdeColorSchemes.apply_custom_theme(
+                self.themeColorA, self.themeColorB, self.effectiveAppearance
+            )
         except FileNotFoundError:
             message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
             post_notification("Thème KDE non appliqué", message, "error")
@@ -830,6 +985,169 @@ class ControlCenterController(QObject):
         self.settingsChanged.emit()
 
     @Slot(result=str)
+    def createDesktopLayoutBackup(self) -> str:
+        """Create a verified backup of LEOS desktop layout preferences."""
+        try:
+            backup_id = self.desktopLayoutBackups.create_backup()
+        except (OSError, ValueError, TypeError, RecursionError):
+            message = (
+                "Sauvegarde de la disposition impossible : le fichier actuel est absent de façon "
+                "inattendue, illisible, corrompu ou non sûr. Aucun réglage par défaut n'a été substitué."
+            )
+            post_notification("Sauvegarde de la disposition impossible", message, "error")
+            return message
+        self._refresh_desktop_layout_backup_snapshot()
+        message = f"Disposition du bureau sauvegardée ({backup_id[:8]})."
+        post_notification("Disposition LEOS sauvegardée", message, "success")
+        return message
+
+    @Slot(str, str, result=str)
+    def exportDesktopLayoutBackup(self, backup_id: str, destination_directory: str) -> str:
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde de disposition avant l'export."
+        try:
+            self.desktopLayoutBackups.export_backup(backup_id, destination_directory)
+        except FileExistsError:
+            return "Ces fichiers existent déjà dans le dossier choisi ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = "L'export de la disposition a échoué. Vérifie le support et le dossier choisi."
+            post_notification("Export de disposition impossible", message, "warning")
+            return message
+        message = "Sauvegarde de disposition exportée avec vérification SHA-256."
+        post_notification("Disposition LEOS exportée", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def importDesktopLayoutBackup(self, manifest_path: str) -> str:
+        try:
+            backup_id = self.desktopLayoutBackups.import_backup(manifest_path)
+        except FileExistsError:
+            return "Cette sauvegarde de disposition existe déjà ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = (
+                "Import impossible. Sélectionne le manifeste .json d'une sauvegarde LEOS "
+                "et conserve son fichier .bak dans le même dossier."
+            )
+            post_notification("Import de disposition impossible", message, "warning")
+            return message
+        self._refresh_desktop_layout_backup_snapshot()
+        message = f"Sauvegarde de disposition importée et vérifiée ({backup_id[:8]})."
+        post_notification("Disposition LEOS importée", message, "success")
+        return message
+
+    @Slot(str, bool, result=str)
+    def restoreDesktopLayoutBackup(self, backup_id: str, confirmed: bool) -> str:
+        if confirmed is not True:
+            return "Confirmation explicite requise ; aucune disposition n'a été modifiée."
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde de disposition vérifiée avant la restauration."
+        try:
+            recovery_id = self.desktopLayoutBackups.restore_backup(backup_id, confirmed=True)
+        except (OSError, ValueError, TypeError, PermissionError):
+            message = (
+                "Restauration impossible : la sauvegarde n'a pas pu être vérifiée ou le fichier "
+                "actuel est corrompu/non sûr. Aucun fichier de disposition n'a été remplacé."
+            )
+            post_notification("Restauration de disposition impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        self._refresh_desktop_layout_backup_snapshot()
+        message = (
+            "Disposition LEOS restaurée. La disposition précédente a été sauvegardée automatiquement "
+            f"({recovery_id[:8]})."
+        )
+        post_notification("Disposition LEOS restaurée", message, "success")
+        return message
+
+    @Slot(result=str)
+    def createSettingsBackup(self) -> str:
+        """Create a verified private snapshot of all LEOS preferences."""
+        try:
+            backup_id = self.settingsBackups.create_backup()
+        except (OSError, ValueError, TypeError, RecursionError):
+            message = (
+                "Sauvegarde non créée : le fichier de préférences actuel est illisible, "
+                "non sûr ou inaccessible. LEOS n'a pas enregistré de valeurs par défaut "
+                "à la place de tes réglages."
+            )
+            post_notification("Sauvegarde LEOS impossible", message, "error")
+            return message
+        self._refresh_settings_backup_snapshot()
+        message = f"Sauvegarde des préférences créée ({backup_id[:8]})."
+        post_notification("Préférences LEOS sauvegardées", message, "success")
+        return message
+
+    @Slot(str, str, result=str)
+    def exportSettingsBackup(self, backup_id: str, destination_directory: str) -> str:
+        """Export a selected verified preference snapshot to another mounted folder."""
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde LEOS avant de l'exporter."
+        try:
+            self.settingsBackups.export_backup(backup_id, destination_directory)
+        except FileExistsError:
+            return "Ces fichiers existent déjà dans le dossier choisi ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = "L'export a échoué. Vérifie que le support est monté et que le dossier est accessible."
+            post_notification("Export LEOS impossible", message, "warning")
+            return message
+        message = "Sauvegarde LEOS exportée avec son manifeste SHA-256."
+        post_notification("Sauvegarde LEOS exportée", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def importSettingsBackup(self, manifest_path: str) -> str:
+        """Import an externally stored backup after validating its matching data file."""
+        try:
+            backup_id = self.settingsBackups.import_backup(manifest_path)
+        except FileExistsError:
+            return "Cette sauvegarde existe déjà dans LEOS ; aucun fichier n'a été remplacé."
+        except (OSError, ValueError, TypeError):
+            message = (
+                "L'import a échoué. Sélectionne le manifeste .json d'une sauvegarde LEOS "
+                "et conserve son fichier .bak dans le même dossier."
+            )
+            post_notification("Import LEOS impossible", message, "warning")
+            return message
+        self._refresh_settings_backup_snapshot()
+        message = f"Sauvegarde LEOS importée et vérifiée ({backup_id[:8]})."
+        post_notification("Sauvegarde LEOS importée", message, "success")
+        return message
+
+    @Slot(str, bool, result=str)
+    def restoreSettingsBackup(self, backup_id: str, confirmed: bool) -> str:
+        """Restore a selected verified preference snapshot after UI confirmation."""
+        if confirmed is not True:
+            return "Confirmation explicite requise ; aucun réglage n'a été modifié."
+        if not isinstance(backup_id, str) or not backup_id:
+            return "Sélectionne une sauvegarde LEOS vérifiée avant de restaurer."
+        try:
+            self.settingsBackups.restore_backup(backup_id, confirmed=True)
+        except (OSError, ValueError, TypeError, PermissionError):
+            message = (
+                "Restauration impossible : LEOS n'a pas pu vérifier la sauvegarde "
+                "ou préserver l'état actuel. Aucun réglage n'a été remplacé."
+            )
+            post_notification("Restauration LEOS impossible", message, "error")
+            return message
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self.settingsChanged.emit()
+        self._refresh_settings_backup_snapshot()
+        message = (
+            "Les préférences LEOS ont été restaurées. Une sauvegarde de l'état "
+            "précédent a été créée automatiquement."
+        )
+        post_notification("Préférences LEOS restaurées", message, "success")
+        return message
+
+    @Slot(bool, result=str)
+    def restoreLatestSettingsBackup(self, confirmed: bool) -> str:
+        """Compatibility wrapper for callers that intentionally select the newest backup."""
+        backup_id = self.settingsBackups.latest_backup_id()
+        if backup_id is None:
+            return "Aucune sauvegarde LEOS vérifiée n'est disponible."
+        return self.restoreSettingsBackup(backup_id, confirmed)
+
+    @Slot(result=str)
     def createPlasmaBackup(self) -> str:
         try:
             backup_id = self.plasmaBackups.create_backup()
@@ -892,6 +1210,8 @@ class ControlCenterController(QObject):
     ) -> None:
         """Report asynchronous D-Bus completion without overstating panel state."""
         self._plasma_layout_tasks.pop(backup_id, None)
+        if self._shutting_down:
+            return
         if succeeded:
             message = (
                 f"{result_message} Sauvegarde conservée ({backup_id[:8]}). "
@@ -920,6 +1240,29 @@ class ControlCenterController(QObject):
     def openAdvancedSettings(self) -> bool:
         """Open the complete KDE System Settings application."""
         return self._start_detached(general_settings_command())
+
+    @Slot()
+    def shutdown(self) -> None:
+        """Stop periodic work and read-only helper processes before the UI exits."""
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        for timer in (
+            self._settings_sync_timer,
+            self._hardware_timer,
+            self._network_timer,
+            self._diagnostics_timer,
+            self._cleanup_timer,
+            self._system_update_timeout,
+            self._deployment_timeout,
+            self._deployment_timer,
+        ):
+            timer.stop()
+        for process in (self._system_update_process, self._deployment_process):
+            if process.state() != QProcess.ProcessState.NotRunning:
+                process.kill()
+                process.waitForFinished(1000)
+        self.monitor.stop()
 
     @staticmethod
     def _start_detached(command: list[str] | None) -> bool:

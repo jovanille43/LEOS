@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -13,8 +14,10 @@ ApplicationWindow {
     property var themeColors: controlCenter.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
@@ -23,6 +26,79 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string themeColorNotice: ""
+    property string settingsBackupNotice: ""
+    property string pendingSettingsBackupId: ""
+    property string desktopLayoutBackupNotice: ""
+    property string pendingDesktopLayoutBackupId: ""
+
+    function colorToHex(color) {
+        function byteHex(value) {
+            const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return valueHex.length === 1 ? "0" + valueHex : valueHex
+        }
+        return "#" + byteHex(color.r) + byteHex(color.g) + byteHex(color.b)
+    }
+
+    function relativeLuminance(colorValue) {
+        const color = Qt.color(colorValue)
+        function linear(channel) {
+            return channel <= 0.04045
+                ? channel / 12.92
+                : Math.pow((channel + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b)
+    }
+
+    function contrastAgainstBlack(luminance) {
+        return (luminance + 0.05) / 0.05
+    }
+
+    function contrastAgainstWhite(luminance) {
+        return 1.05 / (luminance + 0.05)
+    }
+
+    function contrastTextForColor(colorValue) {
+        const luminance = window.relativeLuminance(colorValue)
+        return window.contrastAgainstBlack(luminance) >= window.contrastAgainstWhite(luminance)
+            ? "#000000" : "#FFFFFF"
+    }
+
+    function contrastTextForGradient(colorA, colorB) {
+        const start = Qt.color(colorA)
+        const end = Qt.color(colorB)
+        let blackContrast = Number.POSITIVE_INFINITY
+        let whiteContrast = Number.POSITIVE_INFINITY
+        // Check the full A/B transition, not only its endpoints.
+        for (let sample = 0; sample <= 16; sample++) {
+            const amount = sample / 16
+            const interpolated = Qt.rgba(
+                start.r + (end.r - start.r) * amount,
+                start.g + (end.g - start.g) * amount,
+                start.b + (end.b - start.b) * amount,
+                1.0
+            )
+            const luminance = window.relativeLuminance(interpolated)
+            blackContrast = Math.min(
+                blackContrast,
+                window.contrastAgainstBlack(luminance)
+            )
+            whiteContrast = Math.min(
+                whiteContrast,
+                window.contrastAgainstWhite(luminance)
+            )
+        }
+        return blackContrast >= whiteContrast ? "#000000" : "#FFFFFF"
+    }
+
+    function commitThemeColors(colorA, colorB) {
+        const validColor = /^#[0-9a-fA-F]{6}$/
+        if (!validColor.test(colorA) || !validColor.test(colorB)) {
+            themeColorNotice = "Format attendu : #RRGGBB pour chaque couleur."
+            return
+        }
+        themeColorNotice = controlCenter.setThemeColors(colorA.toUpperCase(), colorB.toUpperCase())
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -38,8 +114,11 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
-            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            themeColorAField.text = controlCenter.themeColorA
+            themeColorBField.text = controlCenter.themeColorB
+            appearanceModeBox.currentIndex = Math.max(
+                0, ["dark", "light", "auto"].indexOf(controlCenter.appearanceMode)
+            )
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -53,6 +132,20 @@ ApplicationWindow {
             const priorities = ["all", "important", "critical"]
             notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
         }
+    }
+
+    ColorDialog {
+        id: colorADialog
+        title: "Choisir la couleur A"
+        selectedColor: Qt.color(controlCenter.themeColorA)
+        onAccepted: window.commitThemeColors(window.colorToHex(selectedColor), themeColorBField.text)
+    }
+
+    ColorDialog {
+        id: colorBDialog
+        title: "Choisir la couleur B"
+        selectedColor: Qt.color(controlCenter.themeColorB)
+        onAccepted: window.commitThemeColors(themeColorAField.text, window.colorToHex(selectedColor))
     }
 
     Dialog {
@@ -101,6 +194,84 @@ ApplicationWindow {
         }
     }
 
+    FileDialog {
+        id: settingsBackupImportDialog
+        title: "Choisir le manifeste d'une sauvegarde LEOS"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Manifeste de sauvegarde LEOS (*.json)"]
+        onAccepted: {
+            window.settingsBackupNotice = controlCenter.importSettingsBackup(
+                selectedFile.toLocalFile()
+            )
+        }
+    }
+
+    FolderDialog {
+        id: settingsBackupExportDialog
+        title: "Choisir un dossier externe pour la sauvegarde"
+        onAccepted: {
+            window.settingsBackupNotice = controlCenter.exportSettingsBackup(
+                window.pendingSettingsBackupId,
+                selectedFolder.toLocalFile()
+            )
+        }
+    }
+
+    Dialog {
+        id: settingsBackupConfirmation
+        modal: true
+        title: "Restaurer les préférences LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer les préférences actuelles par la sauvegarde sélectionnée et vérifiée. Une copie de l'état actuel sera créée automatiquement avant la restauration. Les applications, fichiers personnels, comptes et données de jeux ne seront pas modifiés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.settingsBackupNotice = controlCenter.restoreSettingsBackup(window.pendingSettingsBackupId, true)
+    }
+
+    FileDialog {
+        id: desktopLayoutBackupImportDialog
+        title: "Choisir le manifeste d'une sauvegarde de disposition LEOS"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Manifeste de disposition LEOS (*.json)"]
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.importDesktopLayoutBackup(
+                selectedFile.toLocalFile()
+            )
+        }
+    }
+
+    FolderDialog {
+        id: desktopLayoutBackupExportDialog
+        title: "Choisir un dossier externe pour la disposition LEOS"
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.exportDesktopLayoutBackup(
+                window.pendingDesktopLayoutBackupId,
+                selectedFolder.toLocalFile()
+            )
+        }
+    }
+
+    Dialog {
+        id: desktopLayoutBackupConfirmation
+        modal: true
+        title: "Restaurer la disposition du bureau ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer uniquement ses préférences de disposition (profil, dock et widgets) par la sauvegarde vérifiée. Une copie de l'état actuel sera créée avant la restauration. Les panneaux et applets KDE Plasma ne sont pas inclus et ne seront pas modifiés par cette opération."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 440
+            padding: 12
+        }
+        onAccepted: window.desktopLayoutBackupNotice = controlCenter.restoreDesktopLayoutBackup(
+            window.pendingDesktopLayoutBackupId, true
+        )
+    }
+
     Dialog {
         id: plasmaDockConfirmation
         modal: true
@@ -138,7 +309,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DE CONTRÔLE"
-                        color: window.cyan
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -163,45 +334,54 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     spacing: 9
 
-                    Repeater {
-                        model: [
-                            { label: "Vue d'ensemble", page: 0 },
-                            { label: "Apparence", page: 1 },
-                            { label: "Matériel & connexions", page: 2 },
-                            { label: "Performances", page: 3 },
-                            { label: "Paramètres KDE", page: 4 },
-                            { label: "Mises à jour", page: 5 },
-                            { label: "Notifications", page: 6 },
-                            { label: "Diagnostic système", page: 7 },
-                            { label: "Nettoyage", page: 8 },
-                            { label: "Réseau", page: 9 }
-                        ]
-                        delegate: Button {
-                            id: settingsNavigationButton
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 48
-                            text: modelData.label
-                            onClicked: {
-                                window.selectedPage = modelData.page
-                                window.launchNotice = ""
-                            }
-                            background: Rectangle {
-                                radius: 10
-                                color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
-                            }
-                            contentItem: Label {
-                                text: settingsNavigationButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: 8
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                        ColumnLayout {
+                            width: parent.width
+                            spacing: 7
+                            Repeater {
+                                model: [
+                                    { label: "Vue d'ensemble", page: 0 },
+                                    { label: "LEOS Studio", page: 1 },
+                                    { label: "Matériel & connexions", page: 2 },
+                                    { label: "Performances", page: 3 },
+                                    { label: "Paramètres KDE", page: 4 },
+                                    { label: "Mises à jour", page: 5 },
+                                    { label: "Notifications", page: 6 },
+                                    { label: "Diagnostic système", page: 7 },
+                                    { label: "Nettoyage", page: 8 },
+                                    { label: "Réseau", page: 9 },
+                                    { label: "Sauvegardes", page: 10 }
+                                ]
+                                delegate: Button {
+                                    id: settingsNavigationButton
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 48
+                                    text: modelData.label
+                                    onClicked: {
+                                        window.selectedPage = modelData.page
+                                        window.launchNotice = ""
+                                    }
+                                    background: Rectangle {
+                                        radius: 10
+                                        color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
+                                        border.color: window.selectedPage === modelData.page ? window.colorA : window.themeColors.border
+                                    }
+                                    contentItem: Label {
+                                        text: settingsNavigationButton.text
+                                        color: window.themeColors.text
+                                        font.pixelSize: 12
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: 8
+                                    }
+                                }
                             }
                         }
                     }
-
-                    Item { Layout.fillHeight: true }
                     Label {
                         text: "LEOS • BUILD EN DÉVELOPPEMENT"
                         color: window.themeColors.muted_text
@@ -254,7 +434,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "UTILISATION CPU"
-                                            color: window.cyan
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -285,7 +465,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "MÉMOIRE"
-                                            color: window.cyan
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -316,7 +496,7 @@ ApplicationWindow {
                                         spacing: 10
                                         Label {
                                             text: "TEMPÉRATURE CPU"
-                                            color: window.cyan
+                                            color: window.colorAText
                                             font.pixelSize: 10
                                             font.letterSpacing: 1
                                         }
@@ -351,7 +531,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "STOCKAGE SYSTÈME"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -382,7 +562,7 @@ ApplicationWindow {
                                     spacing: 8
                                     Label {
                                         text: "RÉSEAU"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -415,7 +595,7 @@ ApplicationWindow {
                                     spacing: 7
                                     Label {
                                         text: "SURVEILLANCE LEOS"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 10
                                         font.letterSpacing: 1
                                     }
@@ -442,53 +622,234 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 142
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 20
-                                    spacing: 12
+                                    spacing: 8
                                     Label {
-                                        text: "THÈME LEOS"
-                                        color: window.cyan
+                                        text: "APPARENCE LEOS"
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Choisis une interface sombre, claire ou un changement automatique selon l'heure."
                                         color: window.muted
-                                        font.pixelSize: 12
-                                    }
-                                    ComboBox {
-                                        id: themeBox
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
-                                        Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
-                                        }
-                                        onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            controlCenter.setTheme(values[currentIndex])
-                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 8
-                                        Rectangle {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_primary
+                                        Label {
+                                            text: "Mode visuel"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 12
                                         }
-                                        Rectangle {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_secondary
+                                        Item { Layout.fillWidth: true }
+                                        ComboBox {
+                                            id: appearanceModeBox
+                                            Layout.preferredWidth: 250
+                                            model: ["Sombre", "Clair", "Automatique"]
+                                            currentIndex: Math.max(0, ["dark", "light", "auto"].indexOf(controlCenter.appearanceMode))
+                                            onActivated: function(index) {
+                                                controlCenter.setAppearanceMode(["dark", "light", "auto"][index])
+                                            }
                                         }
+                                    }
+                                    Label {
+                                        text: controlCenter.appearanceMode === "auto"
+                                            ? "Automatique : clair de 07:00 à 18:59, sombre de 19:00 à 06:59."
+                                            : "Le dégradé, les logos et les animations conservent les couleurs A et B."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Le changement automatique concerne les interfaces LEOS. Pour harmoniser aussi les applications KDE et Plasma, applique le schéma dans Paramètres KDE."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 310
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+
+                                    Label {
+                                        text: "LEOS STUDIO · IDENTITÉ VISUELLE"
+                                        color: window.colorAText
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Compose librement le dégradé A/B ou pars d'un préréglage. Les modes clair et sombre conservent la même identité ; les logos, fonds LEOS et intros animées suivent les couleurs choisies."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 14
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 5
+                                            Label {
+                                                text: "COULEUR A"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.letterSpacing: 1
+                                            }
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                TextField {
+                                                    id: themeColorAField
+                                                    Layout.fillWidth: true
+                                                    text: controlCenter.themeColorA
+                                                    maximumLength: 7
+                                                    placeholderText: "#RRGGBB"
+                                                    color: window.themeColors.text
+                                                    onEditingFinished: window.commitThemeColors(text, themeColorBField.text)
+                                                }
+                                                Button {
+                                                    text: "●"
+                                                    onClicked: colorADialog.open()
+                                                    background: Rectangle {
+                                                        radius: 8
+                                                        color: controlCenter.themeColorA
+                                                        border.color: window.themeColors.border
+                                                    }
+                                                    contentItem: Label {
+                                                        text: "●"
+                                                        color: window.contrastTextForColor(controlCenter.themeColorA)
+                                                        horizontalAlignment: Text.AlignHCenter
+                                                        verticalAlignment: Text.AlignVCenter
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 5
+                                            Label {
+                                                text: "COULEUR B"
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.letterSpacing: 1
+                                            }
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                TextField {
+                                                    id: themeColorBField
+                                                    Layout.fillWidth: true
+                                                    text: controlCenter.themeColorB
+                                                    maximumLength: 7
+                                                    placeholderText: "#RRGGBB"
+                                                    color: window.themeColors.text
+                                                    onEditingFinished: window.commitThemeColors(themeColorAField.text, text)
+                                                }
+                                                Button {
+                                                    text: "●"
+                                                    onClicked: colorBDialog.open()
+                                                    background: Rectangle {
+                                                        radius: 8
+                                                        color: controlCenter.themeColorB
+                                                        border.color: window.themeColors.border
+                                                    }
+                                                    contentItem: Label {
+                                                        text: "●"
+                                                        color: window.contrastTextForColor(controlCenter.themeColorB)
+                                                        horizontalAlignment: Text.AlignHCenter
+                                                        verticalAlignment: Text.AlignVCenter
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Label {
+                                        text: "PRÉRÉGLAGES DU DÉGRADÉ"
+                                        color: window.muted
+                                        font.pixelSize: 9
+                                        font.letterSpacing: 1
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 7
+                                        Repeater {
+                                            model: [
+                                                { label: "Cyan · Magenta", a: "#00D9FF", b: "#E33BFF" },
+                                                { label: "Émeraude · Or", a: "#00C896", b: "#FFD166" },
+                                                { label: "Bleu · Violet", a: "#3A86FF", b: "#9B5DE5" },
+                                                { label: "Corail · Ambre", a: "#FF5A5F", b: "#FFB000" }
+                                            ]
+                                            delegate: Button {
+                                                required property var modelData
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 34
+                                                text: modelData.label
+                                                onClicked: {
+                                                    themeColorAField.text = modelData.a
+                                                    themeColorBField.text = modelData.b
+                                                    window.commitThemeColors(modelData.a, modelData.b)
+                                                }
+                                                background: Rectangle {
+                                                    radius: 7
+                                                    gradient: Gradient {
+                                                        orientation: Gradient.Horizontal
+                                                        GradientStop { position: 0.0; color: modelData.a }
+                                                        GradientStop { position: 1.0; color: modelData.b }
+                                                    }
+                                                    border.color: window.themeColors.border
+                                                }
+                                                contentItem: Label {
+                                                    text: modelData.label
+                                                    color: window.contrastTextForGradient(modelData.a, modelData.b)
+                                                    font.pixelSize: 9
+                                                    font.weight: Font.DemiBold
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    elide: Text.ElideRight
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 12
+                                        radius: 6
+                                        gradient: Gradient {
+                                            orientation: Gradient.Horizontal
+                                            GradientStop { position: 0.0; color: Qt.color(controlCenter.themeColorA) }
+                                            GradientStop { position: 1.0; color: Qt.color(controlCenter.themeColorB) }
+                                        }
+                                    }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        text: window.themeColorNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
                                     }
                                 }
                             }
@@ -507,7 +868,7 @@ ApplicationWindow {
 
                                     Label {
                                         text: "FONDS D'ÉCRAN LEOS"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -529,12 +890,12 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: window.themeColors.background
                                                 clip: true
                                                 Image {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    source: leosTheme.desktopWallpaperUrl
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -543,7 +904,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: desktopWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU DESKTOP"
-                                                    color: "#a9bacb"
+                                                    color: window.themeColors.muted_text
                                                     font.pixelSize: 10
                                                 }
                                             }
@@ -564,12 +925,12 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: window.themeColors.background
                                                 clip: true
                                                 Image {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    source: leosTheme.gamingWallpaperUrl
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -578,7 +939,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: gamingWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU GAMING"
-                                                    color: "#a9bacb"
+                                                    color: window.themeColors.muted_text
                                                     font.pixelSize: 10
                                                 }
                                             }
@@ -627,7 +988,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "THÈME KDE PLASMA"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -689,7 +1050,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "STYLE DE BUREAU LEOS"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -753,7 +1114,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "EXPÉRIENCE"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -788,7 +1149,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "BUREAU & DOCK"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -882,6 +1243,81 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
+                                Layout.preferredHeight: 282
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 9
+                                    Label {
+                                        text: "SAUVEGARDE DES DISPOSITIONS LEOS"
+                                        color: window.colorAText
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Sauvegarde séparément le profil Desktop, les réglages du dock et l'activation des widgets. Jusqu'à 20 copies vérifiées sont conservées."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    ComboBox {
+                                        id: desktopLayoutBackupBox
+                                        Layout.fillWidth: true
+                                        model: controlCenter.desktopLayoutBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        currentIndex: count > 0 ? 0 : -1
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "Créer une sauvegarde"
+                                            onClicked: window.desktopLayoutBackupNotice = controlCenter.createDesktopLayoutBackup()
+                                        }
+                                        Button {
+                                            text: "Restaurer"
+                                            enabled: desktopLayoutBackupBox.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingDesktopLayoutBackupId = desktopLayoutBackupBox.currentValue
+                                                desktopLayoutBackupConfirmation.open()
+                                            }
+                                        }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "Importer"
+                                            onClicked: desktopLayoutBackupImportDialog.open()
+                                        }
+                                        Button {
+                                            text: "Exporter"
+                                            enabled: desktopLayoutBackupBox.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingDesktopLayoutBackupId = desktopLayoutBackupBox.currentValue
+                                                desktopLayoutBackupExportDialog.open()
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: window.desktopLayoutBackupNotice.length > 0
+                                            ? window.desktopLayoutBackupNotice
+                                            : (controlCenter.desktopLayoutBackupSnapshot.available
+                                                ? controlCenter.desktopLayoutBackupSnapshot.count + " sauvegarde(s) vérifiée(s)."
+                                                : "Aucune sauvegarde de disposition pour le moment.")
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
                                 Layout.preferredHeight: 195
                                 radius: 15
                                 color: window.themeColors.surface
@@ -892,7 +1328,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "SAUVEGARDE PLASMA"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -930,7 +1366,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "INSPECTION DU BUREAU KDE"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1099,7 +1535,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.cyan
+                                                color: window.colorAText
                                                 font.pixelSize: 10
                                                 font.letterSpacing: 1
                                             }
@@ -1178,7 +1614,7 @@ ApplicationWindow {
                             Label {
                                 text: window.launchNotice
                                 visible: text.length > 0
-                                color: window.magenta
+                                color: window.colorBText
                                 font.pixelSize: 11
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
@@ -1204,7 +1640,7 @@ ApplicationWindow {
                                     spacing: 10
                                     Label {
                                         text: "PROFIL DE PERFORMANCES"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1280,7 +1716,7 @@ ApplicationWindow {
                         Label {
                             text: window.launchNotice
                             visible: text.length > 0
-                            color: window.magenta
+                            color: window.colorBText
                             font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -1318,7 +1754,7 @@ ApplicationWindow {
                                     spacing: 14
                                     Label {
                                         text: "ÉTAT DU SYSTÈME"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1358,7 +1794,7 @@ ApplicationWindow {
                                     spacing: 12
                                     Label {
                                         text: "INSTALLATION MANUELLE"
-                                        color: window.magenta
+                                        color: window.colorBText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1402,7 +1838,7 @@ ApplicationWindow {
                                     spacing: 9
                                     Label {
                                         text: "ÉTAT DES DÉPLOIEMENTS OSTREE"
-                                        color: window.cyan
+                                        color: window.colorAText
                                         font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
@@ -1494,7 +1930,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.colorAText; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationDurationBox
                                         Layout.fillWidth: true
@@ -1513,7 +1949,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.colorAText; font.pixelSize: 11; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationPriorityBox
                                         Layout.fillWidth: true
@@ -1590,7 +2026,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 112
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.cyan : window.themeColors.border)
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.colorB : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.colorA : window.themeColors.border)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1598,7 +2034,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Label {
                                             text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
-                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : window.cyan
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.colorBText : window.colorAText
                                             font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                         }
@@ -1667,7 +2103,7 @@ ApplicationWindow {
                                             anchors.fill: parent
                                             anchors.margins: 14
                                             spacing: 6
-                                            Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1 }
+                                            Label { text: modelData.title; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1 }
                                             Label {
                                                 text: modelData.value || "Indisponible"
                                                 color: window.themeColors.text
@@ -1689,7 +2125,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "POINTS À VÉRIFIER"
-                                color: window.cyan
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1716,7 +2152,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "PROCESSUS LES PLUS ACTIFS"
-                                color: window.cyan
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1786,13 +2222,13 @@ ApplicationWindow {
                                 Layout.preferredHeight: 100
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: window.cyan
+                                border.color: window.colorA
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
                                     ColumnLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "ESPACE REPÉRÉ"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.5 }
+                                        Label { text: "ESPACE REPÉRÉ"; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1.5 }
                                         Label {
                                             text: controlCenter.cleanupPreview.totalSize || "Analyse en cours…"
                                             color: window.themeColors.text
@@ -1831,7 +2267,7 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         anchors.margins: 16
                                         spacing: 7
-                                        Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.2 }
+                                        Label { text: modelData.title; color: window.colorAText; font.pixelSize: 10; font.letterSpacing: 1.2 }
                                         Label {
                                             text: modelData.data.size || "Non disponible"
                                             color: window.themeColors.text
@@ -1882,7 +2318,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Label {
                                     text: controlCenter.networkSnapshot.status || "Analyse en cours…"
-                                    color: window.cyan
+                                    color: window.colorAText
                                     font.pixelSize: 14
                                     font.weight: Font.DemiBold
                                 }
@@ -1918,7 +2354,7 @@ ApplicationWindow {
                                             spacing: 6
                                             Label {
                                                 text: modelData.title
-                                                color: window.cyan
+                                                color: window.colorAText
                                                 font.pixelSize: 9
                                                 font.letterSpacing: 1
                                             }
@@ -1936,7 +2372,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "INTERFACES DÉTECTÉES"
-                                color: window.cyan
+                                color: window.colorAText
                                 font.pixelSize: 11
                                 font.letterSpacing: 1.4
                             }
@@ -1948,7 +2384,7 @@ ApplicationWindow {
                                     Layout.preferredHeight: 126
                                     radius: 12
                                     color: window.themeColors.surface
-                                    border.color: modelData.isDefault === "true" ? window.cyan : window.themeColors.border
+                                    border.color: modelData.isDefault === "true" ? window.colorA : window.themeColors.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -1964,7 +2400,7 @@ ApplicationWindow {
                                             Item { Layout.fillWidth: true }
                                             Label {
                                                 text: modelData.state + (modelData.isDefault === "true" ? " · PRINCIPALE" : "")
-                                                color: modelData.state === "Connectée" ? window.cyan : window.muted
+                                                color: modelData.state === "Connectée" ? window.colorAText : window.muted
                                                 font.pixelSize: 9
                                             }
                                         }
@@ -1988,6 +2424,150 @@ ApplicationWindow {
                                 font.pixelSize: 10
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+                    }
+
+                    ScrollView {
+                        clip: true
+                        ColumnLayout {
+                            width: pages.width - 12
+                            spacing: 14
+                            Label {
+                                text: "SAUVEGARDES ET RÉCUPÉRATION"
+                                color: window.themeColors.text
+                                font.pixelSize: 20
+                                font.weight: Font.Bold
+                            }
+                            Label {
+                                text: "Protège les préférences de LEOS avant de tester un nouveau thème ou de modifier les réglages. Les sauvegardes sont privées et conservées dans ton profil utilisateur."
+                                color: window.muted
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 350
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "PRÉFÉRENCES LEOS"
+                                        color: window.colorAText
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 1.8
+                                    }
+                                    Label {
+                                        text: "Une sauvegarde inclut les couleurs A/B, le dernier mode utilisé, les préférences d'animation et de son, les notifications et les réglages LEOS connus."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: controlCenter.settingsBackupSnapshot.available
+                                            ? controlCenter.settingsBackupSnapshot.count + " sauvegarde(s) vérifiée(s) · la plus récente est proposée par défaut."
+                                            : "Aucune sauvegarde vérifiée pour le moment."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    ComboBox {
+                                        id: settingsBackupSelector
+                                        Layout.fillWidth: true
+                                        model: controlCenter.settingsBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        currentIndex: count > 0 ? 0 : -1
+                                        enabled: count > 0
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "CRÉER UNE SAUVEGARDE"
+                                            onClicked: window.settingsBackupNotice = controlCenter.createSettingsBackup()
+                                        }
+                                        Button {
+                                            text: "IMPORTER DEPUIS UN SUPPORT"
+                                            onClicked: settingsBackupImportDialog.open()
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "RESTAURER LA SÉLECTION"
+                                            enabled: settingsBackupSelector.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingSettingsBackupId = settingsBackupSelector.currentValue
+                                                settingsBackupConfirmation.open()
+                                            }
+                                        }
+                                        Button {
+                                            text: "EXPORTER LA SÉLECTION"
+                                            enabled: settingsBackupSelector.currentIndex >= 0
+                                            onClicked: {
+                                                window.pendingSettingsBackupId = settingsBackupSelector.currentValue
+                                                settingsBackupExportDialog.open()
+                                            }
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                    }
+                                    Label {
+                                        text: "L'export copie la sauvegarde et son manifeste SHA-256 vers le dossier choisi. Pour importer, sélectionne le manifeste .json et laisse le fichier .bak dans le même dossier. Aucun fichier existant n'est écrasé."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: window.settingsBackupNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 160
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 18
+                                    spacing: 7
+                                    Label {
+                                        text: "CE QUI EST INCLUS — ET CE QUI NE L'EST PAS"
+                                        color: window.colorAText
+                                        font.pixelSize: 10
+                                        font.letterSpacing: 1.2
+                                    }
+                                    Label {
+                                        text: "La restauration remplace uniquement settings.json et conserve une copie de l'état précédent. Les profils de disposition desktop-layout.json et la configuration réelle de Plasma utilisent des sauvegardes distinctes."
+                                        color: window.themeColors.text
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: "Pour te protéger contre la perte du disque, exporte une sauvegarde vers une clé USB ou un autre support. Les deux fichiers sont copiés ensemble et aucun fichier existant n'est écrasé."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
                             }
                             Item { Layout.fillHeight: true }
                         }

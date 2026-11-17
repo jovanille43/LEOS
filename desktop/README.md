@@ -6,13 +6,13 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
 - `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
-- `config/desktop-defaults.json` : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
+- `files/leos-config/config/desktop-defaults.json` : profil déclaratif LEOS Original (fond sombre, couleurs A/B initiales, dock inférieur, applications épinglées indicatives et widgets facultatifs).
 
 ## Direction visuelle Desktop
 
 - Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
 - Fond d'écran 4K disponible dans `branding/wallpapers/desktop-leos.svg`, avec l'emblème officiel du lion seul, fond noir et halos cyan/magenta. Il est empaqueté sous `/usr/share/leos/branding/wallpapers/desktop-leos.svg` et peut être sélectionné manuellement ; il n'est pas imposé au profil KDE existant.
-- Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
+- Fond sombre LEOS, couleurs d'accent A/B librement choisies, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
@@ -20,14 +20,14 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 ## Règles de personnalisation
 
-Le profil JSON est une référence de conception, pas une configuration Plasma directement applicable. Il ne doit pas être présenté comme un thème déjà installé ou actif. L'application future devra sauvegarder les réglages KDE existants, vérifier les applications disponibles et demander le consentement avant toute modification du profil personnel.
+Le profil JSON décrit les valeurs de départ et ne s'applique pas automatiquement. Les préférences de disposition sont conservées séparément ; l'application du dock est une opération du Centre de contrôle, après inspection, sauvegarde privée et confirmation explicite. Les éléments Plasma non pris en charge ne sont jamais modifiés silencieusement.
 
 Aucune configuration Plasma existante ne sera écrasée silencieusement.
 
 ## À finaliser
 
 - Valider le rendu du fond d'écran SVG et son lien vers l'emblème dans une session Bazzite ; proposer ensuite son application explicite depuis le Centre de contrôle.
-- Application automatique des profils de disposition au véritable panneau Plasma (l'adaptateur de panneau existe mais reste inactif) ; dock et widgets encore non intégrés.
+- Validation sur Bazzite réelle de l'application du dock pris en charge (position, alignement, hauteur, masquage et favoris). Les widgets de bureau ne sont pas appliqués et la suppression du panneau LEOS n'est pas proposée.
 - Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).
 - Tests de session sur une vraie installation Bazzite KDE.
@@ -37,30 +37,57 @@ Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les
 
 ## Moteur de thèmes LEOS
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` définit le moteur de couleurs partagé. Le joueur
+choisit librement deux couleurs opaques au format `#RRGGBB` :
 
-Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
-Une action distincte dans le Centre de contrôle permet, après confirmation,
-d'exporter le thème sous forme de schéma KDE `.colors` dans l'espace utilisateur
-`$XDG_DATA_HOME/color-schemes` (par défaut `~/.local/share/color-schemes`),
-puis d'appeler `plasma-apply-colorscheme` sans shell.
+- **Couleur A** : première extrémité du dégradé ;
+- **Couleur B** : seconde extrémité du dégradé.
 
-L'application est limitée au schéma de couleurs KDE : elle ne remplace pas le
-Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
-écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
-respectent le schéma global changent. Le système immuable Bazzite n'est pas
-modifié.
+Les deux valeurs sont enregistrées ensemble dans le profil utilisateur par
+`leos_core.SettingsStore`. Le fond sombre, les surfaces, les bordures et les
+contrastes de l'interface restent cohérents ; seules les couleurs d'accent et
+les arrêts du dégradé sont remplacés.
 
-Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
-permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
-peut pas être identifié, si le fichier LEOS existe déjà sous une forme
-différente, ou si l'état de restauration est absent alors qu'un thème LEOS est
-déjà actif, l'application est refusée. Les fichiers .colors existants ne sont
-jamais écrasés s'ils diffèrent du contenu généré par LEOS.
+Les accents utilisés dans les textes disposent d'une variante contrastée calculée
+à partir des surfaces LEOS. Une couleur A ou B trop sombre est conservée pour les
+logos, dégradés et effets, mais n'est pas utilisée directement comme couleur de
+texte si elle ne respecte pas un contraste de 4,5:1 sur les surfaces sombres. Les interfaces LEOS Desktop, Gaming,
+le sélecteur de mode, le menu, les notifications, le Centre des manettes et la
+Boutique lisent le même réglage et se rafraîchissent lorsqu'il change.
 
+Par défaut, le changement de couleurs concerne uniquement les interfaces LEOS.
+Une action distincte du Centre de contrôle permet, après confirmation, de créer
+un schéma KDE `.colors` correspondant exactement à la paire A/B dans
+`$XDG_DATA_HOME/color-schemes` (par défaut
+`~/.local/share/color-schemes`), puis de l'appliquer avec
+`plasma-apply-colorscheme` sans shell. Le schéma actif précédent est conservé
+pour pouvoir être restauré.
+
+Les rôles KDE de texte actif, de lien et de lien visité utilisent eux aussi les
+variantes A/B contrastées. Dans les listes sélectionnées, le fond et son fond
+alternatif restent identiques afin de préserver le contraste du texte même
+lorsque les deux couleurs choisies sont très opposées.
+
+L'export KDE ne remplace pas le Plasma Style, les icônes, les curseurs, le fond
+d'écran, les panneaux ni les écrans de connexion. Le système immuable Bazzite
+n'est pas modifié.
+
+## Variantes visuelles du thème
+
+Le module `desktop/branding_assets.py` génère des variantes personnalisées des
+deux emblèmes JPEG, des fonds SVG 4K et des vidéos d'introduction. Une matrice
+RVB commune remplace les deux extrémités de couleur historiques par A et B tout
+en conservant les gris neutres (reflets métalliques, argent et blancs). Les
+variantes sont stockées sous `$XDG_CACHE_HOME/leos/theme-assets` (par défaut
+`~/.cache/leos/theme-assets`) et les interfaces les récupèrent sans modifier
+les ressources empaquetées dans `/usr/share/leos/branding`.
+
+La génération se fait en arrière-plan. Les images sont transformées avec Qt
+Gui, les SVG réutilisent l'emblème PNG recoloré et les vidéos sont traitées par
+`ffmpeg` lorsqu'il est présent. Si la conversion vidéo échoue ou si un outil
+n'est pas disponible, LEOS utilise l'animation officielle d'origine. La source
+reste toujours intacte ; le thème et l'application restent utilisables même si
+une variante optionnelle ne peut pas être produite.
 
 ## Profils de disposition et dock
 
@@ -95,9 +122,7 @@ et restaurer une sauvegarde. Les copies et manifestes sont privés (répertoire
 
 La restauration exige un indicateur de confirmation explicite fourni par
 l'interface appelante. Avant de restaurer, le module sauvegarde également la
-configuration courante afin de permettre un retour arrière. Aucun changement
-n'est appliqué automatiquement à Plasma ; cette brique prépare la future
-intégration du dock et des dispositions LEOS.
+configuration courante afin de permettre un retour arrière. La sauvegarde préalable est utilisée par le flux d'application du dock du Centre de contrôle. La restauration reste une action distincte, soumise à confirmation ; aucune modification de Plasma n'est effectuée sans action explicite.
 
 
 ## Inspection Plasma et aperçu de disposition
@@ -195,9 +220,7 @@ La commande native de KDE est appelée sans shell ; aucun fichier système ou
 
 **Limites alpha :** les trois SVG sont des premières formes originales et ne
 constituent pas encore un habillage exhaustif. Les icônes, boutons et contrôles
-Qt continuent d'utiliser leurs styles existants. L'emblème officiel du lion
-n'est pas encore intégré, car les ressources graphiques originales ne sont
-pas présentes dans le dépôt. Le style est installé mais n'est pas sélectionné
+Qt continuent d'utiliser leurs styles existants. Le Plasma Style ne réutilise pas encore l'emblème officiel du lion dans ses propres éléments SVG ; les ressources de marque sont toutefois présentes dans le dossier `branding/`. Le style est installé mais n'est pas sélectionné
 automatiquement. Son rendu doit encore être contrôlé sur une vraie session
 Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
 
@@ -213,32 +236,26 @@ Le module `desktop/dock_favourites.py` ajoute un stockage local des applications
 des identifiants de fichiers `.desktop`, jamais des commandes arbitraires ou
 des chemins d'exécution. Les favoris peuvent être ajoutés, retirés et réordonnés.
 La liste est bornée à 32 entrées, validée, écrite atomiquement et protégée en
-permissions privées. Les identifiants ne sont pas encore résolus en icônes ni
-appliqués au panneau Plasma : cette étape attend l'intégration visuelle et les
-tests sur une session Bazzite KDE.
+permissions privées. Les identifiants sont résolus à l'application du dock à partir des applications installées. Le Centre de contrôle transmet les favoris ordonnés au gestionnaire de tâches Plasma après sauvegarde et confirmation ; les favoris indisponibles sont ignorés et une liste vide ne vide pas les lanceurs existants. La validation sur une session Bazzite réelle reste nécessaire.
 
 
-## Menu principal LEOS — première alpha
+## Menu principal LEOS
 
-`menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une
-première interface de recherche et de lancement d'applications. Le catalogue
+`menu_main.py`, `menu_controller.py` et `qml/Menu.qml` fournissent une application autonome de recherche et de lancement d'applications. Le catalogue
 lit les fichiers `.desktop` système et utilisateur, filtre sans distinction de casse
 ou d'accents par nom, identifiant, description et catégorie, et lance le programme
 sans shell via `QProcess.startDetached`.
-Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est
-accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
-cyan/bleu/violet/magenta.
+Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est accessible depuis l'entrée **LEOS — Applications**. Son en-tête utilise l'emblème du lion recoloré selon les couleurs A/B sélectionnées, avec un titre textuel de repli si l'image n'est pas disponible.
 
-Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
-du menu Plasma ni un dock intégré. La catégorie Favoris affiche les applications épinglées dans leur ordre personnalisé et conserve la recherche accent-insensible. La catégorie « Récemment utilisées » repose sur les lancements enregistrés localement. Les favoris ne sont pas encore appliqués au panneau Plasma ; les raccourcis globaux KDE restent à raccorder. Le rendu et le lancement doivent encore être validés sur une session Bazzite KDE réelle.
+Le menu LEOS est une application de lancement autonome : il ne remplace pas le menu Plasma. Les catégories Favoris et « Récemment utilisées » conservent leur ordre et leur historique local. Les favoris peuvent être synchronisés avec le gestionnaire de tâches quand l'utilisateur applique un profil de dock depuis le Centre de contrôle ; ils ne modifient jamais Plasma à chaque clic. Les raccourcis globaux KDE restent à raccorder et le rendu doit être validé sur une session Bazzite réelle.
 
 ### Menu LEOS — favoris connectés au dock
 
 Le catalogue du menu utilise désormais le stockage `DockFavourites` : chaque carte d'application propose une étoile pour épingler ou retirer l'application des favoris. Le choix est conservé dans le fichier local privé du dock ; le menu ne modifie toujours pas la configuration Plasma. Les commandes de lancement restent séparées des identifiants favoris et sont exécutées sans shell. Le raccourci `leos-menu.desktop` est inclus dans la recette BlueBuild et apparaît dans le menu d'applications KDE.
 
-L'intégration graphique au véritable panneau Plasma reste une étape distincte. Elle nécessitera une sauvegarde de la disposition existante, une confirmation explicite et une validation sur Bazzite KDE avant activation.
+L'intégration au panneau Plasma est une action distincte du menu : le Centre de contrôle inspecte la disposition, crée une sauvegarde privée et exige une confirmation avant de transmettre les favoris au gestionnaire de tâches. Les applications absentes sont ignorées ; si aucune entrée n'est résolue, les lanceurs existants sont préservés. Le résultat doit encore être validé sur Bazzite KDE.
 
-## Centre de notifications LEOS — première alpha
+## Centre de notifications LEOS
 
 `notification_store.py` conserve un historique local privé, borné à 100 événements, avec niveaux info/succès/avertissement/erreur, état lu/non lu, suppression individuelle et effacement global. Les données sont validées, écrites atomiquement et protégées en permissions 0700/0600. `notification_model.py`, `qml/Notifications.qml` et `notifications_main.py` fournissent une interface Qt Quick autonome, installée dans le menu d'applications KDE par `leos-notifications.desktop`.
 
@@ -298,6 +315,4 @@ Dans la catégorie Favoris, les commandes haut/bas déplacent une entrée d'une
 position à la fois. Elles sont masquées hors de cette catégorie et désactivées
 pendant une recherche pour éviter un ordre ambigu. L'étoile capture l'état
 précédent avant la mise à jour du modèle afin d'afficher le bon retour
-« ajouté » ou « retiré ». Le menu se ferme après un lancement accepté et avec
-Échap ; un lancement refusé laisse le menu ouvert et conserve l'erreur précise
-du backend.
+« ajouté » ou « retiré ». Le menu se ferme après un lancement accepté et avec Échap ; un lancement refusé laisse le menu ouvert et conserve l'erreur précise du backend. Une erreur d'analyse du catalogue est également affichée sans être confondue avec une bibliothèque vide ; si une liste valide avait déjà été chargée, elle reste visible pendant l'échec.

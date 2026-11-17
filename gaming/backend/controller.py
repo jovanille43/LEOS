@@ -14,6 +14,7 @@ from gaming.backend.gamepad import (
 from pathlib import Path
 
 from desktop.notification_store import NotificationStore
+from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, palette_for_colors
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 
@@ -63,9 +64,11 @@ class GamingController(QObject):
     mangoHudChanged = Signal()
     launchStatusChanged = Signal()
     launcherStatusChanged = Signal()
+    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
+        self._shutting_down = False
         self.library = GameLibraryModel()
         self._launcher_statuses = self.library.launcherStatuses()
         self._launcher_refresh_timer = QTimer(self)
@@ -84,6 +87,11 @@ class GamingController(QObject):
         self._power_profile_refresh_timer.start()
         QTimer.singleShot(0, self.refreshPowerProfiles)
         self.settings = SettingsStore()
+        self._theme_snapshot = self._read_theme_snapshot()
+        self._theme_sync_timer = QTimer(self)
+        self._theme_sync_timer.setInterval(1200)
+        self._theme_sync_timer.timeout.connect(self.refreshSharedTheme)
+        self._theme_sync_timer.start()
         self._mangohud_path = find_mangohud()
         self._mangohud_enabled = bool(
             self.settings.get("gaming_mangohud_enabled", False)
@@ -115,6 +123,24 @@ class GamingController(QObject):
         self._gamepad_refresh_timer.start()
 
 
+    def _read_theme_snapshot(self) -> tuple[object, ...]:
+        return self.settings.snapshot(("theme_color_a", "theme_color_b"))
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_colors(
+            str(self.settings.get("theme_color_a", DEFAULT_COLOR_A)),
+            str(self.settings.get("theme_color_b", DEFAULT_COLOR_B)),
+        )
+
+    @Slot()
+    def refreshSharedTheme(self) -> None:
+        """Reflect a gradient changed by the Control Center while Gaming is open."""
+        snapshot = self._read_theme_snapshot()
+        if snapshot != self._theme_snapshot:
+            self._theme_snapshot = snapshot
+            self.themeChanged.emit()
+
     @Property(bool, constant=False)
     def animationsEnabled(self) -> bool:
         return bool(self.settings.get("animations_enabled", True))
@@ -137,11 +163,13 @@ class GamingController(QObject):
 
     @Slot()
     def refreshPowerProfiles(self) -> None:
-        if self._power_profile_task is not None:
+        if self._shutting_down or self._power_profile_task is not None:
             return
         self._start_power_profile_task(None)
 
     def _start_power_profile_task(self, profile: str | None) -> None:
+        if self._shutting_down or self._power_profile_task is not None:
+            return
         task = _PowerProfileTask(profile)
         task.signals.completed.connect(self._on_power_profile_task_completed)
         self._power_profile_task = task
@@ -152,6 +180,8 @@ class GamingController(QObject):
         self, state: PowerProfileState, success: bool, message: str
     ) -> None:
         self._power_profile_task = None
+        if self._shutting_down:
+            return
         self._power_profiles = state
         self._power_profile_message = message or state.message
         self._message = self._power_profile_message
@@ -160,6 +190,8 @@ class GamingController(QObject):
 
     @Slot(str, result=bool)
     def applyPowerProfile(self, profile: str) -> bool:
+        if self._shutting_down:
+            return False
         if not isinstance(profile, str) or profile not in self._power_profiles.profiles:
             self._power_profile_message = "Ce profil n'est pas proposé par le système."
             self.powerProfilesChanged.emit()
@@ -357,8 +389,13 @@ class GamingController(QObject):
         return launched
 
     def shutdown(self) -> None:
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        self.library.shutdown()
         self.monitor.stop()
         self._notification_refresh_timer.stop()
+        self._theme_sync_timer.stop()
         self._launcher_refresh_timer.stop()
         self._power_profile_refresh_timer.stop()
         self._gamepad_poll_timer.stop()

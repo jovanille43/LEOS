@@ -1,4 +1,4 @@
-"""Tests for system/user Flatpak inventory parsing."""
+"""Tests for user, default-system and custom Flatpak inventory parsing."""
 
 import unittest
 
@@ -7,6 +7,7 @@ from shop.flatpak_inventory import (
     is_trusted_flathub_remote,
     trusted_flathub_remote_url,
     parse_flatpak_inventory,
+    parse_flatpak_inventory_details,
 )
 
 
@@ -82,12 +83,43 @@ class FlatpakInventoryTests(unittest.TestCase):
         self.assertFalse(is_trusted_flathub_remote(""))
         self.assertEqual(trusted_flathub_remote_url("flathub https://example.com/repo/"), "")
 
-    def test_named_system_installations_are_system_scope(self):
-        user, system = parse_flatpak_inventory(
-            "Application Installation\norg.example.App external-games\n"
+    def test_custom_system_installations_are_not_misclassified_as_default_system(self):
+        output = (
+            "Application Installation\n"
+            "org.example.App external-games\n"
+            "org.example.Other system\n"
+            "org.example.User user\n"
+            "org.example.Path /srv/flatpak\n"
         )
-        self.assertEqual(user, set())
-        self.assertEqual(system, {"org.example.App"})
+        user, system = parse_flatpak_inventory(output)
+        self.assertEqual(user, {"org.example.User"})
+        self.assertEqual(system, {"org.example.Other"})
+
+    def test_inventory_details_separate_custom_installations(self):
+        user, system, custom = parse_flatpak_inventory_details(
+            "Application Installation\n"
+            "org.example.User user\n"
+            "org.example.System system\n"
+            "org.example.Custom external-games\n"
+            "org.example.Default default\n"
+            "org.example.Path /srv/flatpak\n"
+        )
+        self.assertEqual(user, {"org.example.User"})
+        self.assertEqual(system, {"org.example.System", "org.example.Default"})
+        self.assertEqual(custom, {"org.example.Custom"})
+
+    def test_store_marks_custom_installations_as_installed_but_not_managed(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        catalog = (root / "shop/catalog.py").read_text(encoding="utf-8")
+        controller = (root / "shop/controller.py").read_text(encoding="utf-8")
+        qml = (root / "shop/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("custom_app_ids", catalog)
+        self.assertIn('return "other"', catalog)
+        self.assertIn("parse_flatpak_inventory_details(stdout)", controller)
+        self.assertIn('item.get("installed_scope") not in {"user", "system"}', controller)
+        self.assertIn('detailsPane.installedScope !== "other"', qml)
 
 
 if __name__ == "__main__":

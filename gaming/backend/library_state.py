@@ -111,9 +111,68 @@ CATEGORIES = (
     "PlayStation",
     "SEGA",
     "Arcade",
+    "Émulation",
     "Favoris",
     "Récemment joués",
 )
+
+SOURCE_FILTERS = (
+    "Toutes les sources",
+    "Steam",
+    "Heroic",
+    "Lutris",
+    "RetroArch",
+    "Fichiers locaux",
+    "Ajout manuel",
+)
+
+
+def _matches_source_filter(game: dict[str, Any], source_filter: str) -> bool:
+    """Match a provider filter against stable IDs and provider metadata."""
+    if source_filter == "Toutes les sources":
+        return True
+
+    game_id = str(game.get("id", "")).casefold()
+    source = str(game.get("source", "")).casefold()
+    matches = {
+        "Steam": game_id.startswith("steam:") or "steam" in source,
+        "Heroic": game_id.startswith("heroic:") or "heroic" in source,
+        "Lutris": game_id.startswith("lutris:") or "lutris" in source,
+        "RetroArch": game_id.startswith("retroarch:") or "retroarch" in source,
+        "Fichiers locaux": game_id.startswith("emulator:") or source == "fichiers locaux",
+        "Ajout manuel": game_id.startswith("manual:") or "ajout manuel" in source,
+    }
+    return matches.get(source_filter, True)
+
+
+
+def retain_saved_library_references(
+    favorite_ids: object, recent_ids: object
+) -> tuple[set[str], list[str]]:
+    """Keep valid saved references even while a source drive is unavailable.
+
+    Visibility is decided later by filter_games(); discovery must not delete
+    references merely because a Steam library or ROM disk is temporarily absent.
+    """
+    def clean(values: object) -> list[str]:
+        if not isinstance(values, (list, tuple)):
+            return []
+        result: list[str] = []
+        seen: set[str] = set()
+        for item in values[:5000]:
+            if (
+                not isinstance(item, str)
+                or not 0 < len(item.strip()) <= 512
+                or chr(0) in item
+            ):
+                continue
+            value = item.strip()
+            if value not in seen:
+                seen.add(value)
+                result.append(value)
+        return result
+
+    return set(clean(favorite_ids)), clean(recent_ids)[:50]
 
 
 def filter_games(
@@ -122,8 +181,9 @@ def filter_games(
     favorites: set[str],
     recent: list[str],
     search_query: str = "",
+    source_filter: str = "Toutes les sources",
 ) -> list[dict[str, Any]]:
-    """Filter games by category and a case-insensitive search query."""
+    """Filter games by category, provider and a case-insensitive search query."""
     if category == "Favoris":
         result = [game for game in games if game.get("id") in favorites]
     elif category == "Récemment joués":
@@ -131,6 +191,15 @@ def filter_games(
         result = [by_id[game_id] for game_id in recent if game_id in by_id]
     elif category == "Accueil":
         result = list(games)
+    elif category == "Émulation":
+        result = [
+            game for game in games
+            if "retroarch" in str(game.get("source", "")).casefold()
+            or str(game.get("source", "")).casefold() == "fichiers locaux"
+            or str(game.get("id", "")).casefold().startswith("emulator:")
+            or "émulation" in str(game.get("platform", "")).casefold()
+            or "emulation" in str(game.get("platform", "")).casefold()
+        ]
     elif category == "PC Gaming":
         result = [
             game for game in games
@@ -151,6 +220,12 @@ def filter_games(
                 if platform in str(game.get("platform", "")).casefold()
             ]
         )
+
+    if source_filter in SOURCE_FILTERS and source_filter != "Toutes les sources":
+        result = [
+            game for game in result
+            if _matches_source_filter(game, source_filter)
+        ]
 
     query = normalize_search_text(search_query)
     if not query:

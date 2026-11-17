@@ -12,8 +12,20 @@ class GamingSystemMonitorIntegrationTests(unittest.TestCase):
         refresh = source.split("    def refresh(self) -> None:", 1)[1].split(
             "    @Property", 1
         )[0]
-        self.assertLess(refresh.index("if psutil is not None:"), refresh.index("gpu = read_gpu_metrics()"))
+        self.assertLess(
+            refresh.index("if psutil is not None:"),
+            refresh.index("gpu = normalize_gpu_metrics(read_gpu_metrics())"),
+        )
         self.assertIn("self.metricsChanged.emit()", refresh)
+
+    def test_gpu_provider_failure_clears_previous_metrics_instead_of_reusing_them(self):
+        source = (ROOT / "gaming/backend/system_monitor.py").read_text(encoding="utf-8")
+        refresh = source.split("    def refresh(self) -> None:", 1)[1].split(
+            "    @Property", 1
+        )[0]
+        self.assertIn("except Exception:", refresh)
+        self.assertIn("gpu = unavailable_gpu_metrics()", refresh)
+        self.assertIn("self._gpu_usage = float(gpu[\"usage\"])", refresh)
 
     def test_each_psutil_metric_has_an_independent_error_boundary(self):
         import ast

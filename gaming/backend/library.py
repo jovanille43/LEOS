@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from itertools import islice
 import os
 import re
@@ -12,7 +11,7 @@ from typing import Any
 
 from leos_core.paths import config_home as xdg_config_home, data_home as xdg_data_home
 
-from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QByteArray, QModelIndex, Qt, Signal, Slot, QUrl, QThreadPool
+from PySide6.QtCore import QObject, QRunnable, QAbstractListModel, QByteArray, QModelIndex, Qt, Signal, Slot, Property, QUrl, QThreadPool
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QProcess
 
@@ -20,13 +19,16 @@ from .library_state import (
     CATEGORIES, filter_games, normalize_display_title, title_identity_key,
     duplicate_title_metadata, upsert_manual_game, read_bounded_json, read_bounded_text,
     MAX_LIBRARY_STATE_FILE_BYTES, MAX_MANUAL_GAMES, MAX_MANUAL_TITLE_LENGTH,
-    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, MAX_MANUAL_ARGUMENT_LENGTH,
+    MAX_MANUAL_PLATFORM_LENGTH, MAX_MANUAL_ARGUMENTS, SOURCE_FILTERS,
     validate_manual_game_input, write_bounded_json,
+    retain_saved_library_references,
 )
 from .steam_artwork import find_steam_artwork
 from .steam_manifest import read_steam_manifest
 from .heroic import load_heroic_games
 from .lutris import find_lutris_artwork, load_lutris_games
+from .emulation_discovery import discover_emulated_games
+from .emulator_launch import build_emulator_launch_command
 from .retroarch import (
     RETROARCH_FLATPAK_ID, find_retroarch_playlist_directories,
     find_retroarch_thumbnail_directories, load_retroarch_games,
@@ -53,15 +55,20 @@ class _LibraryScanTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
+        if self.library._closed:
+            return
         try:
             snapshot = self.library._collect_library_snapshot()
         except Exception:
             # Retain the last good library snapshot and let a later refresh retry.
             snapshot = None
-        self.signals.completed.emit(snapshot)
+        if not self.library._closed:
+            self.signals.completed.emit(snapshot)
 
 
 class GameLibraryModel(QAbstractListModel):
+    scanErrorChanged = Signal()
+
     TitleRole = int(Qt.ItemDataRole.UserRole) + 1
     PlatformRole = TitleRole + 1
     SourceRole = TitleRole + 2
@@ -82,11 +89,19 @@ class GameLibraryModel(QAbstractListModel):
         self._favorites: set[str] = set()
         self._recent: list[str] = []
         self._category = "Accueil"
+        self._source_filter = "Toutes les sources"
         self._search_query = ""
         self._last_launch_status = "Sélectionne un jeu à lancer."
+        self._scan_error = ""
         self._scan_task: _LibraryScanTask | None = None
         self._refresh_pending = False
+        self._closed = False
         self.refresh()
+
+    def shutdown(self) -> None:
+        """Prevent background discovery from updating or restarting after exit."""
+        self._closed = True
+        self._refresh_pending = False
 
     def roleNames(self) -> dict[int, QByteArray]:
         return {
@@ -315,6 +330,8 @@ class GameLibraryModel(QAbstractListModel):
 
     def refresh(self) -> None:
         """Schedule a library scan away from the QML thread."""
+        if self._closed:
+            return
         if self._scan_task is not None:
             self._refresh_pending = True
             return
@@ -323,10 +340,23 @@ class GameLibraryModel(QAbstractListModel):
         self._scan_task = task
         QThreadPool.globalInstance().start(task)
 
+    @Property(str, notify=scanErrorChanged)
+    def scanError(self) -> str:
+        return self._scan_error
+
+    def _set_scan_error(self, message: str) -> None:
+        message = str(message)
+        if self._scan_error != message:
+            self._scan_error = message
+            self.scanErrorChanged.emit()
+
     @Slot(object)
     def _on_library_scan_completed(self, snapshot: object) -> None:
         self._scan_task = None
-        if isinstance(snapshot, tuple) and len(snapshot) == 4:
+        if self._closed:
+            return
+        succeeded = isinstance(snapshot, tuple) and len(snapshot) == 4
+        if succeeded:
             games, duplicate_metadata, favorites, recent = snapshot
             self._games = games
             self._duplicate_metadata = duplicate_metadata
@@ -336,6 +366,13 @@ class GameLibraryModel(QAbstractListModel):
         if self._refresh_pending:
             self._refresh_pending = False
             self.refresh()
+            return
+        if succeeded:
+            self._set_scan_error("")
+        else:
+            self._set_scan_error(
+                "Impossible de lire la bibliothèque de jeux. Vérifie l'accès aux catalogues locaux, puis actualise."
+            )
 
     def _collect_library_snapshot(
         self,
@@ -417,6 +454,11 @@ class GameLibraryModel(QAbstractListModel):
                 ):
                     discovered.setdefault(game["id"], game)
 
+        # Discover local ROM/disc files in conventional user folders only.
+        # The scanner reads metadata only; it never opens or launches a game.
+        for game in discover_emulated_games():
+            discovered.setdefault(game["id"], game)
+
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
@@ -424,12 +466,14 @@ class GameLibraryModel(QAbstractListModel):
             game["title"] = normalize_display_title(str(game.get("title", "")))
         games = sorted(discovered.values(), key=lambda item: item["title"].casefold())
         duplicate_metadata = duplicate_title_metadata(games)
-        available_ids = {game["id"] for game in games}
-        favorites = set(self._read_id_list(self._favorites_file)) & available_ids
-        recent = [
-            game_id for game_id in self._read_id_list(self._recent_file)
-            if game_id in available_ids
-        ][:50]
+        # Keep references for temporarily unavailable libraries. The
+        # presentation layer naturally hides IDs that are not in this scan;
+        # dropping them here would erase favourites when an external drive is
+        # disconnected.
+        favorites, recent = retain_saved_library_references(
+            self._read_id_list(self._favorites_file),
+            self._read_id_list(self._recent_file),
+        )
         return games, duplicate_metadata, favorites, recent
 
     def _apply_filter(self) -> None:
@@ -440,6 +484,7 @@ class GameLibraryModel(QAbstractListModel):
             self._favorites,
             self._recent,
             self._search_query,
+            self._source_filter,
         )
         self.endResetModel()
 
@@ -456,6 +501,13 @@ class GameLibraryModel(QAbstractListModel):
         if category not in CATEGORIES or category == self._category:
             return
         self._category = category
+        self._apply_filter()
+
+    @Slot(str)
+    def setSourceFilter(self, source_filter: str) -> None:
+        if source_filter not in SOURCE_FILTERS or source_filter == self._source_filter:
+            return
+        self._source_filter = source_filter
         self._apply_filter()
 
     @Slot(int, result=bool)
@@ -509,7 +561,11 @@ class GameLibraryModel(QAbstractListModel):
             "installStatus": (
                 installation_status(game)
                 if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:"))
-                else "Ajout manuel"
+                else (
+                    "Fichier local · émulateur selon format et installation"
+                    if str(game.get("id", "")).startswith("emulator:")
+                    else "Ajout manuel"
+                )
             ),
             "appId": str(game.get("app_id", "")),
             "duplicateCount": int(self._duplicate_metadata.get(game["id"], {}).get("count", 1)),
@@ -577,6 +633,24 @@ class GameLibraryModel(QAbstractListModel):
             return False
         game = self._visible_games[row]
         launch = game.get("launch", [])
+        if not launch and game.get("source") == "Fichiers locaux":
+            emulator_command, error = build_emulator_launch_command(game.get("path", ""))
+            if not emulator_command:
+                self._last_launch_status = error
+                return False
+            process = QProcess()
+            process.setProgram(emulator_command[0])
+            process.setArguments(emulator_command[1:])
+            launched = process.startDetached()
+            self._last_launch_status = (
+                "Demande transmise à l'émulateur ; le chargement du jeu n'est pas confirmé."
+                if launched else
+                "Le système n'a pas réussi à démarrer l'émulateur."
+            )
+            if launched:
+                self._record_recent(str(game["id"]))
+            return bool(launched)
+
         if not launch or not all(isinstance(part, str) for part in launch):
             self._last_launch_status = "Aucune commande de lancement valide n'est enregistrée."
             return False

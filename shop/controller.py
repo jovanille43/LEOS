@@ -15,7 +15,7 @@ from shop.catalog import CatalogModel
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
     trusted_flathub_remote_url,
-    parse_flatpak_inventory,
+    parse_flatpak_inventory_details,
 )
 from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
@@ -62,9 +62,11 @@ class StoreController(QObject):
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
+        self._shutting_down = False
         self._stdout = bytearray()
         self._stderr = bytearray()
         self._output_overflowed = False
+        self._timeout_pending = False
 
     @Property(str, notify=statusChanged)
     def status(self) -> str:
@@ -93,6 +95,8 @@ class StoreController(QObject):
             self.busyChanged.emit(value)
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
+        if self._shutting_down:
+            return
         if self._busy:
             if action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Une autre opération Flatpak est déjà en cours ; la vérification est annulée.")
@@ -106,7 +110,11 @@ class StoreController(QObject):
             post_notification("Opération impossible", self._status, "error")
             self.operationFinished.emit(False, self._status)
             return
+        if self._process.state() != QProcess.ProcessState.NotRunning:
+            self._set_status("Le processus Flatpak précédent n'a pas encore terminé son arrêt.")
+            return
         self._action, self._target = action, target
+        self._timeout_pending = False
         self._stdout.clear()
         self._stderr.clear()
         self._output_overflowed = False
@@ -203,6 +211,28 @@ class StoreController(QObject):
         action, target = self._action, self._target
         self._set_busy(False)
 
+        if self._timeout_pending:
+            self._timeout_pending = False
+            self._action = ""
+            self._target = ""
+            self._verified_source_url = ""
+            if action in {"install", "uninstall"}:
+                message = (
+                    f"L'opération sur {target} a dépassé le délai prévu et a été arrêtée. "
+                    "Vérifie l'inventaire Flatpak avant toute nouvelle tentative."
+                )
+            else:
+                message = (
+                    "La vérification Flatpak a dépassé le délai prévu et a été arrêtée. "
+                    "La source n'est pas considérée comme vérifiée."
+                )
+                if action in {"verify-remote", "verify-install", "recheck-remote"}:
+                    self._set_verification_details(message)
+            self._set_status(message)
+            post_notification("Délai Flatpak dépassé", message, "warning")
+            self.operationFinished.emit(False, message)
+            return
+
         if self._output_overflowed:
             self._action = ""
             self._target = ""
@@ -220,13 +250,14 @@ class StoreController(QObject):
                 post_notification("Boutique LEOS", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
                 return
-            user_apps, system_apps = parse_flatpak_inventory(stdout)
-            self.catalog.setInstalled(user_apps, system_apps)
+            user_apps, system_apps, custom_apps = parse_flatpak_inventory_details(stdout)
+            self.catalog.setInstalled(user_apps, system_apps, custom_apps)
             self.catalogUpdated.emit()
-            total = len(user_apps | system_apps)
+            total = len(user_apps | system_apps | custom_apps)
             self._set_status(
                 f"{total} application(s) Flatpak détectée(s) "
-                f"({len(user_apps)} utilisateur, {len(system_apps)} système)."
+                f"({len(user_apps)} utilisateur, {len(system_apps)} système, "
+                f"{len(custom_apps)} installation(s) personnalisée(s))."
             )
             self.operationFinished.emit(True, self._status)
             return
@@ -312,26 +343,32 @@ class StoreController(QObject):
         if not self._busy or self._process.state() == QProcess.ProcessState.NotRunning:
             return
         failed_action = self._action
-        target = self._target
-        self._timeout_timer.stop()
-        self._set_busy(False)
-        self._action = ""
-        self._target = ""
-        self._verified_source_url = ""
+        self._timeout_pending = True
         self._process.kill()
         if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
-            self._set_verification_details("Le délai de vérification Flatpak est dépassé. La source n'est pas considérée comme vérifiée.")
+            self._set_verification_details(
+                "Le délai de vérification Flatpak est dépassé. Arrêt du processus en cours ; la source restera non vérifiée."
+            )
         if failed_action in {"install", "uninstall"}:
             self._set_status(
-                f"L'opération sur {target} dépasse le délai prévu. Son état doit être vérifié dans l'inventaire avant toute nouvelle tentative."
+                "Le délai Flatpak est dépassé. Arrêt de l'opération en cours ; "
+                "son état doit être vérifié dans l'inventaire avant toute nouvelle tentative."
             )
         else:
-            self._set_status("La vérification Flatpak a dépassé le délai prévu. Réessaie après avoir vérifié la connexion.")
-        post_notification("Délai Flatpak dépassé", self._status, "warning")
-        self.operationFinished.emit(False, self._status)
+            self._set_status(
+                "Le délai de vérification Flatpak est dépassé. Arrêt du processus en cours."
+            )
 
-    def _on_error(self, _error) -> None:
-        if self._busy:
+    def _on_error(self, error) -> None:
+        # A timeout-triggered kill (and other runtime crashes) is finalized
+        # by finished(), so a late error signal cannot unlock the controller
+        # while the same QProcess still owns an active child.
+        if self._timeout_pending:
+            return
+        if (
+            self._busy
+            and error == QProcess.ProcessError.FailedToStart
+        ):
             self._timeout_timer.stop()
             failed_action = self._action
             self._set_busy(False)
@@ -343,6 +380,27 @@ class StoreController(QObject):
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
+
+    @Slot()
+    def shutdown(self) -> None:
+        """Stop Flatpak work cleanly when the Store window is closing."""
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        self._timeout_timer.stop()
+        was_running = self._busy
+        self._set_busy(False)
+        self._action = ""
+        self._target = ""
+        self._verified_source_url = ""
+        if self._process.state() != QProcess.ProcessState.NotRunning:
+            self._process.kill()
+            self._process.waitForFinished(1000)
+        if was_running:
+            self._set_status(
+                "Opération interrompue à la fermeture de la boutique. "
+                "Actualise l'inventaire Flatpak avant toute nouvelle tentative."
+            )
 
     def _append_output(self, buffer: bytearray, chunk: bytes) -> None:
         remaining = MAX_PROCESS_OUTPUT_BYTES - len(buffer)

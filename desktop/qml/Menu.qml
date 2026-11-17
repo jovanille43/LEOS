@@ -10,10 +10,24 @@ ApplicationWindow {
     minimumHeight: 560
     visible: true
     title: "LEOS — Applications"
-    color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
+    property color muted: themeColors.muted_text
+
+    function accentSurface(accentColor, strength) {
+        const base = Qt.color(themeColors.surface)
+        const amount = Math.max(0.0, Math.min(1.0, strength))
+        return Qt.rgba(
+            base.r * (1.0 - amount) + accentColor.r * amount,
+            base.g * (1.0 - amount) + accentColor.g * amount,
+            base.b * (1.0 - amount) + accentColor.b * amount,
+            1.0
+        )
+    }
 
     function launchApplication(desktopId, applicationName) {
         if (!applicationCatalog.launch(desktopId))
@@ -34,8 +48,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: "#102b3a"; opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: "#321437"; opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: window.colorA; opacity: 0.09 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: window.colorB; opacity: 0.08 }
     }
 
     ColumnLayout {
@@ -49,7 +63,7 @@ ApplicationWindow {
                 spacing: 10
                 Image {
                     id: desktopMenuLogo
-                    source: "../../branding/desktop-logo.jpeg"
+                    source: leosTheme.desktopLogoUrl
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
@@ -61,7 +75,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 27
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -69,7 +83,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "APPLICATIONS"
-                        color: window.cyan
+                        color: window.colorAText
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -108,9 +122,9 @@ ApplicationWindow {
             Layout.fillWidth: true
             placeholderText: "Rechercher une application…"
             font.pixelSize: 16
-            color: "white"
+            color: window.themeColors.text
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: "#141B25"; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : "#303A49" }
+            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.colorA : window.themeColors.border }
         }
 
         RowLayout {
@@ -122,8 +136,8 @@ ApplicationWindow {
                 Layout.preferredWidth: 205
                 Layout.fillHeight: true
                 radius: 15
-                color: "#10151E"
-                border.color: "#263140"
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
@@ -136,12 +150,12 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
-                            contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? window.accentSurface(window.colorA, 0.14) : "transparent"; border.color: categoryMenuButton.down ? window.colorA : "transparent" }
+                            contentItem: Label { text: categoryMenuButton.text; color: window.themeColors.text; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
                         }
                     }
                     Item { Layout.fillHeight: true }
-                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: "#596678"; font.pixelSize: 8; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: window.muted; font.pixelSize: 8; wrapMode: Text.WordWrap; Layout.fillWidth: true }
                 }
             }
 
@@ -149,14 +163,14 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 radius: 15
-                color: "#0E131B"
-                border.color: "#263140"
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 14
                     RowLayout {
                         Layout.fillWidth: true
-                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: window.themeColors.text; font.pixelSize: 18; font.weight: Font.DemiBold }
                         Item { Layout.fillWidth: true }
                         Button {
                             visible: applicationCatalog.currentCategory === "Récemment utilisées"
@@ -204,8 +218,8 @@ ApplicationWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
-                                color: appMouse.containsMouse ? "#1B2633" : "#151B25"
-                                border.color: appMouse.containsMouse ? window.cyan : "#2B3544"
+                                color: appMouse.containsMouse ? window.accentSurface(window.colorA, 0.12) : window.themeColors.surface_elevated
+                                border.color: appMouse.containsMouse ? window.colorA : window.themeColors.border
                             }
                             MouseArea {
                                 id: appMouse
@@ -238,7 +252,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.colorAText : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
@@ -249,7 +263,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.colorAText : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
@@ -263,11 +277,11 @@ ApplicationWindow {
                                             else
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
-                                        contentItem: Label { text: favouritePinButton.text; color: window.magenta; font.pixelSize: 18 }
+                                        contentItem: Label { text: favouritePinButton.text; color: window.colorBText; font.pixelSize: 18 }
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
-                                Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: name; color: window.themeColors.text; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
                                 Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
                         }
@@ -276,12 +290,14 @@ ApplicationWindow {
                             visible: appGrid.count === 0
                             text: applicationCatalog.loading
                                 ? "Chargement des applications…"
-                                : "Aucune application trouvée.\\nEssaie une autre recherche ou actualise la liste."
+                                : applicationCatalog.scanError.length > 0
+                                    ? applicationCatalog.scanError
+                                    : "Aucune application trouvée.\nEssaie une autre recherche ou actualise la liste."
                             color: window.muted
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
-                    Label { id: status; Layout.fillWidth: true; color: window.magenta; font.pixelSize: 10; elide: Text.ElideRight }
+                    Label { id: status; Layout.fillWidth: true; color: window.colorBText; font.pixelSize: 10; elide: Text.ElideRight }
                 }
             }
         }
@@ -290,5 +306,12 @@ ApplicationWindow {
     Connections {
         target: applicationCatalog
         function onLaunchFailed(message) { status.text = message }
+        function onScanErrorChanged() {
+            if (applicationCatalog.scanError.length > 0) {
+                status.text = applicationCatalog.scanError
+            } else if (status.text.indexOf("Impossible de lire le catalogue des applications.") === 0) {
+                status.text = ""
+            }
+        }
     }
 }

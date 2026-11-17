@@ -6,7 +6,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 
 - Catalogue initial maintenu dans `catalog.json`.
 - Recherche insensible à la casse et aux accents, tolérante aux espaces répétés, sur le nom, l'identifiant, la catégorie, la description et la source ; filtrage complémentaire par catégorie.
-- Détection séparée des installations Flatpak utilisateur et système ; la fiche distingue les deux portées et avertit lorsqu'une désinstallation système peut demander une autorisation administrateur.
+- Détection distincte des installations Flatpak utilisateur, système par défaut et système personnalisées. Les installations personnalisées sont signalées comme installées, mais leurs opérations restent bloquées tant que leur cible exacte n'est pas prise en charge ; elles ne sont jamais confondues avec `--system`.
 - Fiches indiquant identifiant, source, compatibilité et information sur les dépendances.
 - Vérification de l'adresse du dépôt Flathub du profil utilisateur avant toute requête de métadonnées ; seules les URL HTTPS canoniques Flathub sont acceptées. L'adresse exacte vérifiée est affichée dans la confirmation finale, avec le runtime déclaré dans les métadonnées lorsque disponible. L'origine est contrôlée une seconde fois juste après la confirmation finale et avant le lancement de l'installation.
 - Confirmation explicite avant installation et désinstallation.
@@ -22,3 +22,7 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - Le code n'a pas encore été exécuté sur Bazzite. Le comportement de Flatpak, les modules QML et l'affichage des sorties doivent être testés dans l'image LEOS.
 
 La boutique ne remplace ni Discover, ni Flatpak, ni les intégrations de lanceurs. Elle prépare une interface LEOS unifiée et transparente.
+
+## Fermeture pendant une opération
+
+À la fermeture de la boutique, le processus Flatpak en cours est interrompu et son délai de surveillance est arrêté. Si une installation ou une désinstallation a été interrompue, LEOS ne prétend pas connaître son résultat : actualise l'inventaire Flatpak avant de relancer une opération. Le nettoyage est également appelé si l'interface QML ne peut pas démarrer.

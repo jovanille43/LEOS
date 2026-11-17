@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
-from desktop.recent_applications import RecentApplications, MAX_RECENT_ENTRIES
+from desktop.recent_applications import RecentApplications, MAX_RECENT_ENTRIES, MAX_RECENT_FILE_BYTES
 
 
 class RecentApplicationsTests(unittest.TestCase):
@@ -56,8 +56,6 @@ class RecentApplicationsTests(unittest.TestCase):
             self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
 
     def test_oversized_history_is_rejected_without_overwriting(self):
-        from desktop.recent_applications import MAX_RECENT_FILE_BYTES
-
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "recent.json"
             raw = b" " * (MAX_RECENT_FILE_BYTES + 1)
@@ -138,8 +136,6 @@ class RecentApplicationsTests(unittest.TestCase):
                 RecentApplications(Path("recent.json"), limit=limit)
 
     def test_deeply_nested_json_is_ignored_without_crashing(self):
-        from desktop.recent_applications import MAX_RECENT_FILE_BYTES
-
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "recent.json"
             path.write_text("[" * 2000 + "]" * 2000, encoding="utf-8")

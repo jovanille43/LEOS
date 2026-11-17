@@ -83,8 +83,11 @@ class SettingsModuleCommandTests(unittest.TestCase):
     def test_appearance_exposes_both_leos_wallpapers_and_native_kde_selection(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', qml)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', qml)
+        self.assertIn("source: leosTheme.desktopWallpaperUrl", qml)
+        self.assertIn("source: leosTheme.gamingWallpaperUrl", qml)
+        main = (root / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("ThemeController()", main)
+        self.assertIn('setContextProperty("leosTheme", theme)', main)
         self.assertEqual(qml.count("fillMode: Image.PreserveAspectFit"), 2)
         wallpaper_start = qml.index("FONDS D")
         wallpaper_end = qml.index("THÈME KDE PLASMA", wallpaper_start)
@@ -93,6 +96,27 @@ class SettingsModuleCommandTests(unittest.TestCase):
         modules = (root / "control_center/settings_modules.py").read_text(encoding="utf-8")
         self.assertIn('"wallpaper": "kcm_wallpaper"', modules)
         self.assertIn("rien n'est appliqué sans ton choix dans KDE", qml)
+
+    def test_light_dark_and_automatic_appearance_are_shared_first_run_and_settings_controls(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        selector = (root / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        theme_controller = (root / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        themes = (root / "desktop/themes.py").read_text(encoding="utf-8")
+        settings = (root / "leos_core/settings.py").read_text(encoding="utf-8")
+        self.assertIn('model: ["Sombre", "Clair", "Automatique"]', qml)
+        self.assertIn("controlCenter.setAppearanceMode", qml)
+        self.assertIn('model: ["Sombre", "Clair", "Automatique"]', selector)
+        self.assertIn("leosTheme.setAppearanceMode", selector)
+        self.assertIn("def appearanceMode(self)", controller)
+        self.assertIn("def effectiveAppearance(self)", controller)
+        self.assertIn("appearance=self.effectiveAppearance", controller)
+        self.assertIn("resolve_appearance_mode", theme_controller)
+        self.assertIn("AUTO_LIGHT_START_HOUR = 7", themes)
+        self.assertIn("AUTO_DARK_START_HOUR = 19", themes)
+        self.assertIn('"appearance_mode": "dark"', settings)
+        self.assertIn('"appearance_mode": {"dark", "light", "auto"}', settings)
 
     def test_animation_and_sound_preferences_are_exposed_as_shared_controls(self):
         root = Path(__file__).resolve().parents[1]
@@ -118,6 +142,33 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("id: settingsNavigationButton", qml)
         self.assertIn("text: settingsNavigationButton.text", qml)
         self.assertNotIn("text: parent.text", qml)
+
+    def test_control_center_shutdown_stops_periodic_work_and_processes(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center/controller.py").read_text(encoding="utf-8")
+        main = (root / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("def shutdown(self)", controller)
+        for timer in (
+            "_settings_sync_timer",
+            "_hardware_timer",
+            "_network_timer",
+            "_diagnostics_timer",
+            "_cleanup_timer",
+            "_system_update_timeout",
+            "_deployment_timeout",
+            "_deployment_timer",
+        ):
+            with self.subTest(timer=timer):
+                self.assertIn(f"self.{timer},", controller)
+        self.assertIn(
+            "for process in (self._system_update_process, self._deployment_process):",
+            controller,
+        )
+        self.assertIn("process.kill()", controller)
+        self.assertIn("self.monitor.stop()", controller)
+        self.assertIn("app.aboutToQuit.connect(controller.shutdown)", main)
+        self.assertIn("controller.shutdown()", main)
+        self.assertIn("if self._shutting_down:", controller)
 
     def test_overview_uses_real_shared_monitor_values(self):
         root = Path(__file__).resolve().parents[1]

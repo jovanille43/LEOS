@@ -204,13 +204,19 @@ _SCRIPT = r'''(function () {
                 resolvedLaunchers.push("applications:" + pinnedApps[p]);
             }
         }
-        if (pinnedApps.length === 0 || resolvedLaunchers.length > 0) {
+        if (resolvedLaunchers.length > 0) {
             manager.currentConfigGroup = ["General"];
             manager.writeConfig("launchers", resolvedLaunchers);
             manager.reloadConfig();
             print("LEOS_PINNED_LAUNCHERS_APPLIED=" + resolvedLaunchers.length);
-        } else {
+        } else if (pinnedApps.length > 0) {
+            // Preserve the user's existing Plasma launchers when none of the
+            // saved LEOS favourites can be resolved on this machine.
             print("LEOS_PINNED_LAUNCHERS_UNAVAILABLE=1");
+        } else {
+            // An empty LEOS favourites list is not an instruction to clear the
+            // user's existing Plasma task-manager launchers.
+            print("LEOS_NO_PINNED_LAUNCHERS=1");
         }
 
         panel.currentConfigGroup = [markerGroup];

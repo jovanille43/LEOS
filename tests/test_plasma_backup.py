@@ -1,5 +1,4 @@
 """Tests for verified Plasma configuration backup and restore."""
-import json
 import os
 import tempfile
 import unittest

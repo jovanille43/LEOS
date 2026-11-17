@@ -10,26 +10,47 @@ ROOT = Path(__file__).resolve().parents[1]
 class SessionFlowTests(unittest.TestCase):
     def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
         source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/desktop-logo.jpeg", source)
-        self.assertIn("../../branding/gaming-logo.jpeg", source)
-        self.assertNotIn("desktop-logo.png", source)
-        self.assertNotIn("gaming-logo.png", source)
+        self.assertIn("source: leosTheme.desktopLogoUrl", source)
+        self.assertIn("source: leosTheme.gamingLogoUrl", source)
+        assets = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn('"desktop-logo.jpeg"', assets)
+        self.assertIn('"gaming-logo.jpeg"', assets)
+        self.assertIn("desktop-logo.png", assets)
+        self.assertIn("gaming-logo.png", assets)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
     def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("source: leosTheme.gamingLogoUrl", qml)
+        self.assertIn("gaming-logo.jpeg", (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8"))
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
+
+    def test_first_run_mode_selector_offers_a_b_theme_customization(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("import QtQuick.Dialogs", selector)
+        controller = (ROOT / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        self.assertIn("visible: !modeSelectorController.onboardingComplete", selector)
+        self.assertIn("initialColorADialog", selector)
+        self.assertIn("initialColorBDialog", selector)
+        self.assertIn("leosTheme.setThemeColors", selector)
+        self.assertIn("GradientStop", selector)
+        self.assertIn("def setThemeColors(self, color_a: str, color_b: str)", controller)
+        self.assertIn("self.settings.set_many", controller)
+        self.assertIn("plus tard dans le Centre de contrôle", selector)
 
     def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
         self.assertIn("import QtMultimedia", qml)
-        self.assertIn("gaming-intro.mp4", qml)
-        self.assertIn("desktop-intro.mov", qml)
+        self.assertIn("leosTheme.gamingIntroUrl", qml)
+        self.assertIn("leosTheme.desktopIntroUrl", qml)
+        branding = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn('"gaming-intro.mp4"', branding)
+        self.assertIn('"desktop-intro.mov"', branding)
+        self.assertIn("source_asset_urls", branding)
         self.assertIn("MediaPlayer.EndOfMedia", qml)
         self.assertIn("MediaPlayer.InvalidMedia", qml)
         self.assertIn("onErrorOccurred", qml)
@@ -94,10 +115,11 @@ class SessionFlowTests(unittest.TestCase):
     def test_desktop_intro_uses_mov_extension_in_both_transitions(self):
         selector = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
         gaming = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn("desktop-intro.mov", selector)
-        self.assertIn("desktop-intro.mov", gaming)
-        self.assertNotIn("desktop-intro.mp4", selector)
-        self.assertNotIn("desktop-intro.mp4", gaming)
+        self.assertIn("leosTheme.desktopIntroUrl", selector)
+        self.assertIn("leosTheme.desktopIntroUrl", gaming)
+        branding = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn('"desktop-intro.mov"', branding)
+        self.assertNotIn("desktop-intro.mp4", branding)
 
     def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
@@ -121,7 +143,8 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
         self.assertIn("import QtMultimedia", qml)
-        self.assertIn("desktop-intro.mov", qml)
+        self.assertIn("leosTheme.desktopIntroUrl", qml)
+        self.assertIn("desktop-intro.mov", (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8"))
         self.assertIn("function requestDesktopReturn()", qml)
         self.assertIn("function finishDesktopReturn()", qml)
         self.assertIn("window.requestDesktopReturn()", qml)
@@ -163,8 +186,11 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("../../branding/desktop-logo.jpeg", qml)
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("source: leosTheme.desktopLogoUrl", qml)
+        self.assertIn("source: leosTheme.gamingLogoUrl", qml)
+        assets = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn('"desktop-logo.jpeg"', assets)
+        self.assertIn('"gaming-logo.jpeg"', assets)
 
     def test_selector_accepts_read_only_controller_navigation(self):
         root = ROOT
@@ -180,10 +206,8 @@ class SessionFlowTests(unittest.TestCase):
     def test_failed_gaming_qml_startup_releases_controller_resources(self):
         main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
-        self.assertLess(
-            main.index("if not engine.rootObjects():"),
-            main.index("controller.shutdown()"),
-        )
+        root_failure = main[main.index("if not engine.rootObjects():"):]
+        self.assertIn("_cleanup_failed_startup(controller, theme)", root_failure)
         self.assertIn("self.monitor.stop()", controller)
         self.assertIn("self._gamepad_poll_timer.stop()", controller)
         self.assertIn("self._gamepad_refresh_timer.stop()", controller)
@@ -243,6 +267,101 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("if device is None:", controller)
         self.assertNotIn("device = devices[0]", controller)
         self.assertIn("except (OSError, ValueError, RuntimeError)", gamepad)
+
+
+    def test_mode_selector_pressed_surfaces_follow_the_selected_a_b_colors(self):
+        qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("function accentSurface(accentColor, strength)", qml)
+        self.assertIn("window.accentSurface(window.colorA, 0.24)", qml)
+        self.assertIn("window.accentSurface(window.colorB, 0.24)", qml)
+        self.assertNotIn('"#1a2630"', qml.lower())
+        self.assertNotIn('"#25172a"', qml.lower())
+        self.assertNotIn('"#17313d"', qml.lower())
+
+    def test_gaming_accent_surfaces_follow_the_shared_a_b_theme_colors(self):
+        qml = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function accentSurface(accentColor, strength)", qml)
+        self.assertIn("color: window.colorA; opacity: 0.12", qml)
+        self.assertIn("color: window.colorB; opacity: 0.10", qml)
+        for legacy_color in (
+            '"#102331"', '"#2a1232"', '"#123847"', '"#1a2c38"',
+            '"#17313d"', '"#123b4b"', '"#103847"',
+        ):
+            with self.subTest(color=legacy_color):
+                self.assertNotIn(legacy_color, qml.lower())
+        self.assertGreaterEqual(qml.count("window.accentSurface(window.colorA"), 6)
+
+
+    def test_desktop_return_intro_can_be_skipped_without_changing_normal_navigation(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        shortcut_start = qml.index("Shortcut {", qml.index("function finishDesktopReturn"))
+        shortcut_end = qml.index("\n    }", shortcut_start)
+        shortcut = qml[shortcut_start:shortcut_end]
+        self.assertIn('sequence: "Esc"', shortcut)
+        self.assertIn("context: Qt.ApplicationShortcut", shortcut)
+        self.assertIn("enabled: window.returningToDesktop", shortcut)
+        self.assertIn("onActivated: window.finishDesktopReturn()", shortcut)
+        overlay_start = qml.index("id: desktopIntroOverlay")
+        mouse_start = qml.index("MouseArea {", overlay_start)
+        overlay_end = qml.index("\n    }", mouse_start)
+        overlay = qml[overlay_start:overlay_end]
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", overlay)
+        self.assertIn("onClicked: window.finishDesktopReturn()", overlay)
+        self.assertIn("function requestDesktopReturn()", qml)
+        self.assertIn("function finishDesktopReturn()", qml)
+
+
+
+    def test_both_mode_intros_can_be_skipped_with_escape_gamepad_or_click(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('sequence: "Esc"', selector)
+        self.assertIn("enabled: window.transitionInProgress", selector)
+        self.assertIn("onActivated: window.finishModeTransition()", selector)
+        self.assertIn('if (action === "back")\n                finishModeTransition()', selector)
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", selector)
+        self.assertIn("onClicked: window.finishModeTransition()", selector)
+        self.assertIn('sequence: "Esc"', gaming)
+        self.assertIn("enabled: window.returningToDesktop", gaming)
+        self.assertIn("onActivated: window.finishDesktopReturn()", gaming)
+        self.assertIn('if (action === "back")\n                finishDesktopReturn()', gaming)
+        self.assertIn("ÉCHAP, RETOUR MANETTE OU CLIC POUR PASSER", gaming)
+        self.assertIn("onClicked: window.finishDesktopReturn()", gaming)
+
+
+
+    def test_gaming_startup_failure_is_reported_without_persisting_gaming_mode(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        failure_report = main[main.index("def _report_startup_failure"):main.index("def _cleanup_failed_startup")]
+        self.assertIn("post_notification(", failure_report)
+        self.assertIn("LEOS Gaming n'a pas pu démarrer", failure_report)
+        self.assertIn('"error"', failure_report)
+        startup = main[main.index("def _run_locked_session"):main.index("# Persist Gaming")]
+        self.assertIn("except Exception:", startup)
+        self.assertIn("_cleanup_failed_startup(controller, theme)", startup)
+        self.assertIn("_report_startup_failure()", startup)
+        self.assertIn("if not engine.rootObjects():", startup)
+        self.assertLess(
+            main.index("if not engine.rootObjects():"),
+            main.index('controller.settings.set("last_mode", "gaming")'),
+        )
+
+    def test_failed_gaming_startup_cleanup_attempts_both_components(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        cleanup = main[main.index("def _cleanup_failed_startup"):main.index("def _run_locked_session")]
+        self.assertIn("controller.shutdown()", cleanup)
+        self.assertIn("theme.shutdown()", cleanup)
+        self.assertIn("except Exception:", cleanup)
+
+
+    def test_gaming_failure_notification_is_best_effort(self):
+        main = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        reporter = main[main.index("def _report_startup_failure"):main.index("def _cleanup_failed_startup")]
+        self.assertIn("try:", reporter)
+        self.assertIn("post_notification(", reporter)
+        self.assertIn("except Exception:", reporter)
+        self.assertIn("traceback.print_exc()", reporter)
+        self.assertIn("import traceback", main)
 
 
 if __name__ == "__main__":

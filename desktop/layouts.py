@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -48,6 +49,62 @@ ALIGNMENTS = frozenset({"left", "center", "right"})
 MAX_LAYOUT_FILE_BYTES = 64 * 1024
 
 
+
+def _reject_symlink_components(path: Path) -> None:
+    for candidate in (path, *path.parents):
+        if candidate.is_symlink():
+            raise OSError("LEOS desktop layout paths cannot contain symbolic links")
+
+
+def _read_valid_layout(path: Path) -> dict[str, Any] | None:
+    """Read one bounded regular layout file without following its final symlink."""
+    _reject_symlink_components(path)
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except FileNotFoundError:
+        return None
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise OSError("LEOS desktop layout is not a regular file")
+        if before.st_size > MAX_LAYOUT_FILE_BYTES:
+            raise ValueError("LEOS desktop layout exceeds its storage limit")
+        chunks: list[bytes] = []
+        remaining = MAX_LAYOUT_FILE_BYTES + 1
+        while remaining > 0:
+            chunk = os.read(descriptor, min(64 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (
+            len(raw) > MAX_LAYOUT_FILE_BYTES
+            or len(raw) != before.st_size
+            or before.st_dev != after.st_dev
+            or before.st_ino != after.st_ino
+            or before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or before.st_ctime_ns != after.st_ctime_ns
+        ):
+            raise OSError("LEOS desktop layout changed while it was being read")
+    finally:
+        os.close(descriptor)
+    try:
+        text = raw.decode("utf-8")
+        if not json_nesting_within_limit(text):
+            raise ValueError("LEOS desktop layout nesting is invalid")
+        loaded = json.loads(text)
+    except (UnicodeError, json.JSONDecodeError, RecursionError) as error:
+        raise ValueError("LEOS desktop layout is not valid JSON") from error
+    if not validate_layout(loaded):
+        raise ValueError("LEOS desktop layout has an unsupported schema")
+    return loaded
+
+
 def _config_path() -> Path:
     root = xdg_config_home()
     return root / "leos" / "desktop-layout.json"
@@ -84,21 +141,37 @@ class DesktopLayoutStore:
         self.load()
 
     def load(self) -> None:
-        if self.path.is_symlink() or self.path.parent.is_symlink():
-            return
         try:
-            with self.path.open("rb") as stream:
-                raw = stream.read(MAX_LAYOUT_FILE_BYTES + 1)
-            if len(raw) > MAX_LAYOUT_FILE_BYTES:
-                return
-            text = raw.decode("utf-8")
-            if not json_nesting_within_limit(text):
-                return
-            loaded = json.loads(text)
-        except (OSError, UnicodeError, json.JSONDecodeError, RecursionError):
+            loaded = _read_valid_layout(self.path)
+        except (OSError, UnicodeError, ValueError, RecursionError):
             return
-        if validate_layout(loaded):
+        if loaded is not None:
             self._layout = loaded
+
+    def validate_current_file(self) -> dict[str, Any] | None:
+        """Return the persisted layout, or None on first run; reject unsafe data."""
+        return _read_valid_layout(self.path)
+
+    def replace_all(self, value: object, *, confirmed: bool = False) -> None:
+        """Atomically replace all layout preferences after explicit confirmation."""
+        if confirmed is not True:
+            raise PermissionError("Explicit confirmation is required to restore the desktop layout")
+        if not validate_layout(value):
+            raise ValueError("Refusing to restore an invalid LEOS desktop layout")
+        self.validate_current_file()
+        self._commit_layout(value)
+
+    def _commit_layout(self, value: object) -> None:
+        """Persist a candidate layout and roll memory back if the write fails."""
+        if not validate_layout(value):
+            raise ValueError("Refusing to save invalid LEOS desktop layout")
+        previous = self._layout
+        self._layout = json.loads(json.dumps(value))
+        try:
+            self.save()
+        except Exception:
+            self._layout = previous
+            raise
 
     def get(self, key: str | None = None) -> Any:
         if key is None:
@@ -111,13 +184,13 @@ class DesktopLayoutStore:
         if profile not in PROFILES:
             raise ValueError(f"Unknown LEOS desktop profile: {profile}")
         selected = PROFILES[profile]
-        self._layout = {
+        candidate = {
             "schema_version": 1,
             "profile": profile,
             "dock": dict(selected["dock"]),
             "widgets_enabled": selected["widgets_enabled"],
         }
-        self.save()
+        self._commit_layout(candidate)
 
     def set_dock(self, *, enabled: bool | None = None, position: str | None = None,
                  alignment: str | None = None, auto_hide: bool | None = None) -> None:
@@ -134,17 +207,19 @@ class DesktopLayoutStore:
             if key == "alignment" and (not isinstance(value, str) or value not in ALIGNMENTS):
                 raise ValueError("Invalid dock alignment")
             dock[key] = value
-        self._layout["dock"] = dock
-        self._layout["profile"] = "custom"
+        candidate = self.get()
+        candidate["dock"] = dock
+        candidate["profile"] = "custom"
         # "custom" is an explicit state, not a selectable built-in preset.
-        self.save()
+        self._commit_layout(candidate)
 
     def set_widgets_enabled(self, enabled: bool) -> None:
         if not isinstance(enabled, bool):
             raise TypeError("enabled must be a boolean")
-        self._layout["widgets_enabled"] = enabled
-        self._layout["profile"] = "custom"
-        self.save()
+        candidate = self.get()
+        candidate["widgets_enabled"] = enabled
+        candidate["profile"] = "custom"
+        self._commit_layout(candidate)
 
     def save(self) -> None:
         if not validate_layout(self._layout):
@@ -154,8 +229,7 @@ class DesktopLayoutStore:
         if len(payload) > MAX_LAYOUT_FILE_BYTES:
             raise ValueError("LEOS desktop layout exceeds its storage limit")
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self.path.parent.is_symlink() or self.path.is_symlink():
-            raise OSError("LEOS desktop layout path cannot be a symbolic link")
+        _reject_symlink_components(self.path)
         os.chmod(self.path.parent, 0o700)
         fd, temp_name = tempfile.mkstemp(
             prefix="desktop-layout.", suffix=".tmp", dir=self.path.parent
@@ -167,6 +241,11 @@ class DesktopLayoutStore:
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temp_name, self.path)
+            directory_fd = os.open(self.path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
         finally:
             try:
                 os.unlink(temp_name)

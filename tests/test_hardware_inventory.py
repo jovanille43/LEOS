@@ -101,6 +101,17 @@ class HardwareInventoryTests(unittest.TestCase):
             {0, 1, 2, 3, 6, 8, 9},
         )
 
+    def test_linux_cpu_list_parser_rejects_unbounded_or_oversized_ranges(self):
+        self.assertEqual(hardware._parse_cpu_list("0-2147483647"), set())
+        self.assertEqual(hardware._parse_cpu_list("0-65536"), set())
+        self.assertEqual(hardware._parse_cpu_list("1" * 65537), set())
+
+    def test_linux_cpu_list_parser_allows_sparse_high_cpu_ids(self):
+        self.assertEqual(
+            hardware._parse_cpu_list("0-2,1000000-1000001"),
+            {0, 1, 2, 1_000_000, 1_000_001},
+        )
+
     def test_sysfs_topology_counts_online_cores_across_packages(self):
         import tempfile
         from pathlib import Path

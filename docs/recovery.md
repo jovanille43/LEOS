@@ -6,6 +6,41 @@ LEOS repose sur Bazzite et son système de déploiements OSTree. La récupérati
 
 Cette procédure concerne les images LEOS basées sur Bazzite avec OSTree. Les intitulés exacts du menu de démarrage peuvent varier selon la version de Bazzite et le firmware.
 
+## Sauvegarder et restaurer les préférences LEOS
+
+Le Centre de contrôle propose une page **Sauvegardes** dédiée aux réglages propres à LEOS. Elle permet de créer une copie privée des préférences connues : couleurs A/B, dernier mode utilisé, animations, sons, notifications et autres valeurs enregistrées par LEOS.
+
+Les fichiers sont conservés dans `$XDG_STATE_HOME/leos/settings-backups/` (par défaut `~/.local/state/leos/settings-backups/`). Chaque sauvegarde comprend un fichier de données et un manifeste d'intégrité SHA-256. Le dossier et les fichiers sont créés avec des permissions privées ; les liens symboliques, fichiers non réguliers, données incomplètes et sauvegardes altérées sont refusés. LEOS conserve au maximum 20 sauvegardes vérifiées et supprime les plus anciennes après la création réussie d'une nouvelle copie.
+
+La création d'une sauvegarde est refusée si un fichier de préférences existant est illisible ou trop volumineux : LEOS ne doit pas transformer ses valeurs de repli en copie présentée comme fidèle. Lors d'une restauration explicitement confirmée, un fichier corrompu mais de taille prise en charge est d'abord conservé à l'identique dans un fichier privé `corrupt-settings-<identifiant>.bin`, accompagné d'un manifeste `.meta` contenant sa taille et son SHA-256. Si ce fichier est trop volumineux ou ne peut pas être lu en sécurité, la restauration est refusée et le fichier actuel reste inchangé.
+
+Pour restaurer :
+
+1. Ouvrir le Centre de contrôle puis **Sauvegardes**.
+2. Vérifier la liste des sauvegardes disponibles et sélectionner la date souhaitée ; la plus récente est présélectionnée.
+3. Lire la confirmation : seule la configuration LEOS est remplacée.
+4. Confirmer l'action. LEOS crée automatiquement une sauvegarde de l'état courant avant d'appliquer la copie vérifiée.
+
+Pour exporter une copie hors du PC, sélectionner la sauvegarde voulue puis choisir **Exporter la sélection**. Choisir un dossier sur un support externe monté. LEOS y copie ensemble le fichier `.bak` et son manifeste `.json`, sans écraser des fichiers existants. Conserver les deux fichiers ayant le même identifiant : le manifeste permet de contrôler l'intégrité de la copie avant restauration.
+
+Pour importer une copie externe, choisir **Importer depuis un support** puis sélectionner le manifeste `.json` ; le fichier `.bak` correspondant doit rester dans le même dossier. LEOS vérifie l'identifiant, la version du format, les valeurs de préférences et le SHA-256 avant l'import. Une sauvegarde déjà présente ou altérée est refusée sans remplacer les fichiers locaux.
+
+La restauration remplace uniquement `$XDG_CONFIG_HOME/leos/settings.json` (par défaut `~/.config/leos/settings.json`). Elle ne modifie ni les données personnelles, ni les comptes, ni les jeux, ni les applications, ni les panneaux ou fichiers de configuration KDE. Les préférences de disposition dans `desktop-layout.json` et la configuration de Plasma ne sont pas incluses dans cette sauvegarde ; elles disposent de mécanismes distincts. La validation des valeurs est rejouée avant écriture ; une sauvegarde invalide n'est jamais appliquée. Une restauration explicitement confirmée peut également remplacer un fichier de préférences LEOS devenu illisible.
+
+**Important :** la sauvegarde automatique reste locale au disque et ne protège pas contre la panne ou la perte de ce disque. Utilise l'export vers un support distinct pour conserver une copie externe. Ces snapshots ne remplacent pas une sauvegarde des documents et données personnelles.
+
+## Sauvegarder et restaurer les dispositions du bureau LEOS
+
+Le Centre de contrôle propose un bloc indépendant **Sauvegarde des dispositions LEOS** dans les réglages du bureau. Il protège uniquement les préférences propres à LEOS enregistrées dans `$XDG_CONFIG_HOME/leos/desktop-layout.json` (par défaut `~/.config/leos/desktop-layout.json`) : profil choisi, activation et position du dock, alignement, masquage automatique et activation des widgets.
+
+Les points de restauration sont conservés dans `$XDG_STATE_HOME/leos/desktop-layout-backups/` (par défaut `~/.local/state/leos/desktop-layout-backups/`). Chaque sauvegarde comprend un fichier `.bak` et un manifeste `.json` avec identifiant, version du format, taille et empreinte SHA-256. Le dossier est privé, les fichiers sont limités à 0600 et LEOS conserve au maximum 20 sauvegardes vérifiées. Les données invalides, les liens symboliques, les fichiers non réguliers et les paires dont l'empreinte ne correspond pas sont refusés.
+
+Pour créer une sauvegarde, utiliser **Créer une sauvegarde**. Pour déplacer une copie vers un support USB, sélectionner une entrée puis **Exporter** ; les deux fichiers sont copiés ensemble, sans écraser de fichier déjà présent. Pour importer, choisir **Importer** et sélectionner le manifeste `.json`, en conservant le fichier `.bak` correspondant dans le même dossier. L'identifiant, le schéma, les valeurs et l'empreinte sont revérifiés avant l'import.
+
+La restauration demande une confirmation explicite et crée automatiquement une sauvegarde de l'état actuel avant de remplacer les préférences. Si le fichier courant est corrompu, trop volumineux, illisible ou lié symboliquement, LEOS refuse la restauration et le laisse intact plutôt que de risquer de perdre son contenu. La copie restaurée ne modifie pas directement les panneaux ou applets KDE.
+
+**Périmètre séparé :** ces copies ne comprennent ni les paramètres généraux `settings.json`, ni la configuration réelle des panneaux et applets Plasma (`plasma-org.kde.plasma.desktop-appletsrc`), ni les fichiers personnels. Les préférences générales et la configuration Plasma gardent leurs propres mécanismes de sauvegarde. Une sauvegarde locale ne protège pas contre la perte du disque : exporter vers un support physique distinct reste nécessaire.
+
 ## Avant une mise à jour
 
 1. Sauvegarder les fichiers personnels importants sur un autre support.

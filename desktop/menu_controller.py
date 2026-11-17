@@ -64,6 +64,7 @@ class ApplicationCatalog(QAbstractListModel):
     notificationCountChanged = Signal()
     categoryChanged = Signal()
     loadingChanged = Signal()
+    scanErrorChanged = Signal()
     categoriesChanged = Signal()
 
     def __init__(self) -> None:
@@ -75,6 +76,7 @@ class ApplicationCatalog(QAbstractListModel):
         self._scan_task: _ApplicationScanTask | None = None
         self._refresh_pending = False
         self._loading = False
+        self._scan_error = ""
         self.favourites = DockFavourites()
         self.notifications = NotificationStore()
         self.recentApplications = RecentApplications()
@@ -179,11 +181,22 @@ class ApplicationCatalog(QAbstractListModel):
             self._loading = loading
             self.loadingChanged.emit()
 
+    @Property(str, notify=scanErrorChanged)
+    def scanError(self) -> str:
+        return self._scan_error
+
+    def _set_scan_error(self, message: str) -> None:
+        message = str(message)
+        if self._scan_error != message:
+            self._scan_error = message
+            self.scanErrorChanged.emit()
+
     @Slot()
     def refresh(self):
         if self._scan_task is not None:
             self._refresh_pending = True
             return
+        self._set_scan_error("")
         task = _ApplicationScanTask(APP_DIRS, self._read_entry)
         task.signals.completed.connect(self._on_scan_completed)
         self._scan_task = task
@@ -203,6 +216,12 @@ class ApplicationCatalog(QAbstractListModel):
             self._refresh_pending = False
             self.refresh()
             return
+        if snapshot is None:
+            self._set_scan_error(
+                "Impossible de lire le catalogue des applications. Vérifie les accès aux dossiers et actualise la liste."
+            )
+        else:
+            self._set_scan_error("")
         self._set_loading(False)
 
     def _apply_filter(self):

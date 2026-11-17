@@ -26,7 +26,7 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_verifies_original_branding_assets_before_publication(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        deployed = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
         self.assertIn("Verify official LEOS branding assets", source)
         self.assertLess(
             source.index("Verify official LEOS branding assets"),
@@ -45,6 +45,7 @@ class BuildWorkflowTests(unittest.TestCase):
         for path in expected:
             with self.subTest(path=path):
                 self.assertIn(path, source)
+                self.assertIn(path, deployed)
 
     def test_branding_checksum_manifest_has_six_unique_valid_entries(self):
         sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8").splitlines()
@@ -62,7 +63,8 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_manual_build_required_asset_list_matches_checksum_manifest(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        sums = (ROOT / "branding/SHA256SUMS").read_text(encoding="utf-8")
+        manifest = (ROOT / "branding/DEPLOYED_SHA256SUMS").read_text(encoding="utf-8")
+        manifest_paths = set(re.findall(r"^[0-9a-f]{64}  (branding/\S+)$", manifest, re.M))
         block_start = source.index("required_assets=(")
         block_end = source.index(")", block_start)
         listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
@@ -77,6 +79,7 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/wallpapers/gaming-leos.svg",
         })
         self.assertEqual(len(listed), 8)
+        self.assertEqual(set(listed), manifest_paths)
 
     def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -165,13 +168,14 @@ class BuildWorkflowTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("Verify private and public signing keys match", source)
-        self.assertIn('cosign sign-blob --key "$workdir/cosign.key"', source)
-        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertIn('cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json"', source)
+        self.assertIn('cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json"', source)
         self.assertLess(
             source.index("Verify private and public signing keys match"),
             source.index("Build and publish LEOS"),
         )
         self.assertIn('chmod 600 "$workdir/cosign.key"', source)
+        self.assertIn("unset SIGNING_SECRET", source)
         self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
 
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
@@ -202,6 +206,15 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("type: signing", common)
         self.assertIn("src: branding", common)
 
+    def test_leos_config_payload_uses_files_module_and_keeps_runtime_path(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("type: files", recipe)
+        self.assertIn("source: leos-config", recipe)
+        self.assertIn("destination: /usr/share/leos", recipe)
+        payload = ROOT / "files/leos-config/config/desktop-defaults.json"
+        self.assertTrue(payload.is_file())
+        self.assertFalse((ROOT / "config").exists())
+
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: branding", recipe)
@@ -229,8 +242,16 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)
         control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn("source: leosTheme.desktopWallpaperUrl", control_center)
+        self.assertIn("source: leosTheme.gamingWallpaperUrl", control_center)
+        theme_controller = (ROOT / "desktop/theme_controller.py").read_text(encoding="utf-8")
+        assets = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
+        main = (ROOT / "control_center/main.py").read_text(encoding="utf-8")
+        self.assertIn("ThemeController()", main)
+        self.assertIn('setContextProperty("leosTheme", theme)', main)
+        self.assertIn("build_themed_branding_assets", theme_controller)
+        self.assertIn("desktop-leos.svg", assets)
+        self.assertIn("gaming-leos.svg", assets)
 
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
@@ -254,7 +275,9 @@ class BuildWorkflowTests(unittest.TestCase):
         for recipe in ("recipe.yml", "recipe-nvidia.yml", "recipe-nvidia-open.yml"):
             with self.subTest(recipe=recipe):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
-                self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
+                start = source.index("for recipe in recipe.yml")
+                end = source.index('output="$RUNNER_TEMP', start)
+                self.assertIn(recipe, source[start:end])
 
     def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
@@ -269,12 +292,39 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_iso_workflow_uses_published_image_and_generates_checksum(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("generate-iso --iso-name", source)
-        self.assertIn('image "$IMAGE_REF"', source)
-        self.assertIn('sha256sum "$ISO_NAME"', source)
-        self.assertIn("actions/upload-artifact@v4", source)
+        self.assertIn('generate-iso --output-dir "$ISO_OUTPUT_DIR" --iso-name', source)
+        self.assertIn('image "$IMAGE_TAG_REF"', source)
+        self.assertIn('sha256sum -- "$ISO_NAME"', source)
+        self.assertIn("actions/upload-artifact@v7", source)
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
+
+    def test_github_workflows_use_node24_compatible_first_party_actions(self):
+        workflow_paths = (
+            ".github/workflows/python-checks.yml",
+            ".github/workflows/recipe-checks.yml",
+            ".github/workflows/build.yml",
+            ".github/workflows/iso.yml",
+        )
+        for relative in workflow_paths:
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(workflow=relative):
+                self.assertIn("actions/checkout@v7", source)
+                self.assertNotIn("actions/checkout@v4", source)
+
+        for relative in (
+            ".github/workflows/python-checks.yml",
+            ".github/workflows/recipe-checks.yml",
+            ".github/workflows/build.yml",
+        ):
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(workflow=relative):
+                self.assertIn("actions/setup-python@v7", source)
+                self.assertNotIn("actions/setup-python@v5", source)
+
+        iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("actions/upload-artifact@v7", iso)
+        self.assertNotIn("actions/upload-artifact@v4", iso)
 
     def test_iso_workflow_validates_image_tag_before_building(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
@@ -305,7 +355,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("id: modeSelectorContent", selector)
         self.assertIn("focus: true", selector)
         self.assertNotIn("    focus: true", selector.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
-        self.assertIn('Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253"', gaming)
+        self.assertIn('Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border', gaming)
         self.assertIn("Layout.preferredWidth: 54", controllers)
         self.assertIn("Layout.preferredHeight: 54", controllers)
         self.assertIn("Layout.preferredHeight: 1", controllers)
@@ -348,20 +398,24 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(path, block)
 
     def test_recipe_ci_validates_both_wallpaper_svg_emblem_links(self):
-        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
-        self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
-        self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
-        self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
-        self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
-        self.assertIn("if not target.is_file()", source)
+        workflow = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        validator = (ROOT / "tests/validate_branding_assets.py").read_text(encoding="utf-8")
+        self.assertIn("Validate wallpaper SVG assets and official emblem links", workflow)
+        self.assertIn("python3 tests/validate_branding_assets.py --svg", workflow)
+        self.assertIn('parsed.attrib.get("viewBox") != "0 0 3840 2160"', validator)
+        self.assertIn('images[0].attrib.get(xlink_href) != emblem_name', validator)
+        self.assertIn('ROOT / "branding/wallpapers/desktop-leos.svg": "../desktop-logo.jpeg"', validator)
+        self.assertIn('ROOT / "branding/wallpapers/gaming-leos.svg": "../gaming-logo.jpeg"', validator)
+        self.assertIn("wallpaper.parent / emblem_name", validator)
     def test_recipe_checks_validate_and_decode_all_branding_video_audio(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
         self.assertIn("Validate branding video and audio streams", source)
         self.assertIn("ffprobe -v error -select_streams v:0", source)
         self.assertIn("ffprobe -v error -select_streams a:0", source)
-        self.assertIn('ffmpeg -v error -i "${video}" -f null -', source)
+        self.assertIn("if ! command -v ffmpeg", source)
+        self.assertIn("sudo apt-get install -y --no-install-recommends ffmpeg", source)
+        self.assertIn("timeout 120 ffmpeg -v error -xerror -threads 2 -i", source)
+        self.assertIn("-map 0:v:0 -map 0:a:0 -f null -", source)
         for path in (
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",

@@ -13,6 +13,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from desktop.icon_provider import DesktopIconProvider
 from desktop.menu_controller import ApplicationCatalog
+from desktop.theme_controller import ThemeController
 
 
 def main() -> int:
@@ -20,12 +21,15 @@ def main() -> int:
     app.setApplicationName("LEOS Menu")
     app.setOrganizationName("LEOS")
     catalog = ApplicationCatalog()
+    theme = ThemeController()
     engine = QQmlApplicationEngine()
     engine.addImageProvider("desktop-icons", DesktopIconProvider())
     engine.rootContext().setContextProperty("applicationCatalog", catalog)
+    engine.rootContext().setContextProperty("leosTheme", theme)
     engine.load(QUrl.fromLocalFile(str(Path(__file__).parent / "qml" / "Menu.qml")))
     if not engine.rootObjects():
         return 1
+    app.aboutToQuit.connect(theme.shutdown)
     return app.exec()
 
 
