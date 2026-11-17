@@ -53,7 +53,7 @@ os_id = bazzite
 default_on_boot = FIRST_WIRED_WITH_LINK
 
 [Bootloader]
-efi_dir = leos
+efi_dir = fedora
 menu_auto_hide = False
 
 [Storage]
