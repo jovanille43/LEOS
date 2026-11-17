@@ -72,6 +72,10 @@ if [[ ! -s "$rootfs/usr/lib/grub/i386-pc/normal.mod" ]]; then
   echo "Titanoboa requires GRUB2 BIOS modules under /usr/lib/grub/i386-pc." >&2
   exit 1
 fi
+if [[ ! -s "$rootfs/usr/share/grub2/unicode.pf" ]]; then
+  echo "Titanoboa requires /usr/share/grub2/unicode.pf from grub2-common." >&2
+  exit 1
+fi
 
 efi_sources=("$rootfs"/usr/lib/efi/shim/*/EFI/fedora)
 if [[ "${#efi_sources[@]}" -ne 1 ]]; then
@@ -79,7 +83,7 @@ if [[ "${#efi_sources[@]}" -ne 1 ]]; then
   exit 1
 fi
 for efi_dir in "${efi_sources[@]}"; do
-  for efi_binary in shimx64.efi grubx64.efi; do
+  for efi_binary in shimx64.efi mmx64.efi gcdx64.efi grubx64.efi; do
     if [[ ! -s "$efi_dir/$efi_binary" ]]; then
       echo "Required UEFI binary is missing: ${efi_dir#"$rootfs"}/$efi_binary" >&2
       exit 1
@@ -87,7 +91,7 @@ for efi_dir in "${efi_sources[@]}"; do
   done
 done
 
-for efi_binary in shimx64.efi grubx64.efi; do
+for efi_binary in shimx64.efi mmx64.efi gcdx64.efi grubx64.efi; do
   if [[ ! -s "$rootfs/boot/efi/EFI/fedora/$efi_binary" ]]; then
     echo "Titanoboa boot EFI tree is missing $efi_binary." >&2
     exit 1
