@@ -71,6 +71,14 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 
 Le workflow `.github/workflows/build.yml` reste manuel. Il vérifie la présence des ressources officielles et les huit empreintes de `branding/DEPLOYED_SHA256SUMS`, puis effectue les tests et contrôles de signature avant d'appeler BlueBuild. Ces contrôles CI ne remplacent pas une validation matérielle.
 
+## Pérennité du générateur ISO
+
+La commande \`bluebuild generate-iso\` utilisée par notre workflow repose sur \`JasonN3/build-container-installer\`. Son dépôt amont a été archivé le 26 octobre 2026 et le mainteneur a déclaré le projet en fin de vie le 27 septembre 2026, en raison du changement d’outillage de génération d’images Fedora (Lorax vers Kiwi). La documentation BlueBuild confirme cette dépendance. Nous conservons temporairement la chaîne existante pour diagnostiquer l’ISO candidate, mais elle ne doit pas être considérée comme notre solution de publication à long terme.
+
+La piste \`ublue-os/titanoboa\` sera évaluée séparément. Le projet vise une ISO Live pour images bootc et reste expérimental ; son contrat d’image et son flux d’installation ne sont pas présumés compatibles avec la base Bazzite/OSTree actuelle de LEOS. Aucune migration ne sera faite sans build, démarrage UEFI, installation sur disque virtuel vierge et test séparé de dual boot.
+
+Les erreurs d’installation ne peuvent pas être attribuées au générateur sans journaux. En particulier, toute erreur pendant « Installation des logiciels » doit être diagnostiquée à partir de \`/tmp/packaging.log\` avant de modifier les recettes ou les paquets. Voir [Validation de l’ISO](iso-validation.md) pour les pistes connues et les références amont.
+
 ## Validation sur matériel réel
 
 La checklist détaillée du premier démarrage, des transitions, du Bluetooth, des manettes, du Centre de contrôle, de la boutique et du rollback est disponible dans [la checklist de validation matérielle](hardware-validation.md). Elle doit être exécutée sur un PC de test avant de considérer l'image comme prête.
