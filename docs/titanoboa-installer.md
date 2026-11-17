@@ -53,7 +53,7 @@ Les journaux peuvent contenir des informations personnelles ou des chemins priv�
 - Les scripts shell doivent passer bash -n et les tests de contrat Python.
 - Le workflow Titanoboa doit réellement construire l’image Live et l’ISO.
 - xorriso doit confirmer le catalogue UEFI ; SHA-256 et signatures doivent être valides.
-- Le workflow démarre automatiquement l’ISO dans QEMU/OVMF en UEFI et attend que le Live atteigne la cible graphique ou multi-utilisateur.
+- Le workflow démarre automatiquement l’ISO dans QEMU/OVMF en UEFI et attend que le Live atteigne la cible graphique ou multi-utilisateur ; en cas d’échec, le journal série est conservé comme artefact GitHub.
 - Une installation complète Anaconda dans une VM UEFI vierge reste obligatoire, même si le smoke test QEMU réussit.
 - Anaconda doit s’ouvrir et installer l’image sur un disque virtuel vierge.
 - Le système installé doit redémarrer et passer les contrôles bootc status, réseau, KDE et services.
