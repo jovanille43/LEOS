@@ -12,9 +12,6 @@ jobs:
   bluebuild:
     name: Build LEOS image
     runs-on: ubuntu-latest
-    env:
-      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.
-      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -120,6 +117,7 @@ jobs:
       - name: Verify private and public signing keys match
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
           workdir="$(mktemp -d)"
@@ -131,6 +129,8 @@ jobs:
 
       - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@v1
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -139,6 +139,8 @@ jobs:
 
       - name: Build and publish LEOS (NVIDIA)
         uses: blue-build/github-action@v1
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe-nvidia.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -147,6 +149,8 @@ jobs:
 
       - name: Build and publish LEOS (NVIDIA modern)
         uses: blue-build/github-action@v1
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe-nvidia-open.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
