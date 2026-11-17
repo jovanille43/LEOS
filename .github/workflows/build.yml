@@ -12,6 +12,9 @@ jobs:
   bluebuild:
     name: Build LEOS image
     runs-on: ubuntu-latest
+    env:
+      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -124,9 +127,7 @@ jobs:
           chmod 700 "$workdir"
           printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
           chmod 600 "$workdir/cosign.key"
-          printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
-          cosign sign-blob --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
-          cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+          bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub
 
       - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@v1
