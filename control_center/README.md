@@ -93,4 +93,4 @@ Le relevé s'exécute hors du thread graphique, sans générer de trafic de test
 
 ## Apparence et fonds d'écran
 
-La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. Le bouton de sélection ouvre le module natif KDE `kcm_wallpaper` ; l'utilisateur choisit lui-même le fichier dans `/usr/share/leos/branding/wallpapers/` et confirme dans KDE. Aucun fond d'écran n'est appliqué automatiquement par le Centre de contrôle.
+La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. **Générer les fonds A/B** crée des variantes SVG dans `$XDG_DATA_HOME/leos/wallpapers` et actualise les aperçus ; les ressources officielles du système restent intactes. **Choisir dans les paramètres KDE** ouvre `kcm_wallpaper` pour que l'utilisateur sélectionne lui-même le fichier original ou généré puis confirme. Aucun fond n'est appliqué automatiquement par le Centre de contrôle.
