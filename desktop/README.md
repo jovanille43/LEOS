@@ -6,13 +6,13 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
 - `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
-- `config/desktop-defaults.json` : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
+- `config/desktop-defaults.json` : profil déclaratif LEOS Original (la paire cyan/magenta est la valeur initiale, pas une palette imposée), dock inférieur, applications épinglées indicatives et widgets facultatifs.
 
 ## Direction visuelle Desktop
 
 - Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
 - Fond d'écran 4K disponible dans `branding/wallpapers/desktop-leos.svg`, avec l'emblème officiel du lion seul, fond noir et halos cyan/magenta. Il est empaqueté sous `/usr/share/leos/branding/wallpapers/desktop-leos.svg` et peut être sélectionné manuellement ; il n'est pas imposé au profil KDE existant.
-- Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
+- Fond sombre LEOS, surfaces sobres et contrastes lisibles ; les deux couleurs d'accent A/B sont choisies librement par l'utilisateur et appliquées aux éléments d'interface concernés.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
@@ -37,14 +37,18 @@ Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les
 
 ## Moteur de thèmes LEOS
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` fournit cinq palettes prédéfinies (LEOS Original,
+Light, Cyan, Magenta et Gaming), ainsi qu'une palette personnalisée à deux
+accents indépendants A/B. Les couleurs personnalisées sont validées au format
+`#RRGGBB`, puis enregistrées ensemble par `SettingsStore.set_many` afin d'éviter
+une paire partiellement persistée. Le même instantané de palette est partagé
+par les sept interfaces QML LEOS ; les applications secondaires rafraîchissent
+leurs préférences lorsqu'un autre processus modifie le thème.
 
-Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
-Une action distincte dans le Centre de contrôle permet, après confirmation,
-d'exporter le thème sous forme de schéma KDE `.colors` dans l'espace utilisateur
+Par défaut, le choix de palette modifie uniquement les interfaces LEOS, les
+éléments néon des emblèmes et les vidéos d'introduction. Une action distincte
+dans le Centre de contrôle permet, après confirmation, d'exporter le thème
+sous forme de schéma KDE `.colors` dans l'espace utilisateur
 `$XDG_DATA_HOME/color-schemes` (par défaut `~/.local/share/color-schemes`),
 puis d'appeler `plasma-apply-colorscheme` sans shell.
 
@@ -153,12 +157,14 @@ Le Centre de contrôle affiche les aperçus des deux SVG 4K :
 - `/usr/share/leos/branding/wallpapers/desktop-leos.svg`
 - `/usr/share/leos/branding/wallpapers/gaming-leos.svg`
 
-Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper`. L'utilisateur choisit le SVG dans `/usr/share/leos/branding/wallpapers/` puis valide dans KDE. LEOS ne change pas le papier peint sans cette action explicite. Le rendu des SVG avec JPEG liés en chemin relatif reste à confirmer sur une session Bazzite réelle.
+Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper`. L'utilisateur choisit le SVG dans `/usr/share/leos/branding/wallpapers/` puis valide dans KDE. LEOS ne change pas le papier peint sans cette action explicite. Les SVG réutilisent les PNG transparents dérivés des JPEG officiels. Ils conservent pour l'instant les halos cyan/magenta de la palette originale et ne suivent pas encore les couleurs A/B. Leur rendu reste à confirmer sur une session Bazzite réelle.
 
 ## Schémas de couleurs KDE
 
-Le module `desktop/kde_colors.py` convertit les cinq palettes LEOS en schémas
-KDE au format INI standard. Les schémas sont créés dans l'espace de données de
+Le module `desktop/kde_colors.py` convertit les palettes prédéfinies et la
+paire A/B personnalisée en schémas KDE au format INI standard. Chaque paire
+personnalisée reçoit un identifiant stable dérivé de ses deux couleurs, afin
+de ne pas écraser une autre variante. Les schémas sont créés dans l'espace de données de
 l'utilisateur et identifiés comme gérés par LEOS. Une collision avec un fichier
 différent n'est jamais écrasée.
 
@@ -227,7 +233,7 @@ ou d'accents par nom, identifiant, description et catégorie, et lance le progra
 sans shell via `QProcess.startDetached`.
 Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est
 accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
-cyan/bleu/violet/magenta.
+les deux couleurs A/B du thème actif.
 
 Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
 du menu Plasma ni un dock intégré. La catégorie Favoris affiche les applications épinglées dans leur ordre personnalisé et conserve la recherche accent-insensible. La catégorie « Récemment utilisées » repose sur les lancements enregistrés localement. Les favoris ne sont pas encore appliqués au panneau Plasma ; les raccourcis globaux KDE restent à raccorder. Le rendu et le lancement doivent encore être validés sur une session Bazzite KDE réelle.
