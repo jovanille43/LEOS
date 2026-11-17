@@ -6,7 +6,7 @@ import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from desktop.wallpapers import generate_user_wallpapers
+from desktop.wallpapers import generate_user_wallpapers, user_wallpaper_directory
 from leos_core.settings import SettingsStore
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,24 +43,31 @@ class UserWallpaperGenerationTests(unittest.TestCase):
             )
 
             self.assertEqual(set(result), {"desktop", "gaming"})
+            variant_directory = user_wallpaper_directory(settings, output)
+            self.assertEqual(
+                Path(result["desktop"]).parent,
+                variant_directory,
+            )
+            self.assertEqual(Path(result["gaming"]).parent, variant_directory)
+
             for kind, filename, logo in (
                 ("desktop", "desktop-leos.svg", "desktop-logo-alpha.png"),
                 ("gaming", "gaming-leos.svg", "gaming-logo-alpha.png"),
             ):
                 with self.subTest(kind=kind):
                     generated = Path(result[kind])
-                    self.assertEqual(generated, output / filename)
+                    self.assertEqual(generated, variant_directory / filename)
                     self.assertTrue(generated.is_file())
-                    self.assertTrue((output.parent / logo).is_file())
+                    self.assertTrue((variant_directory / logo).is_file())
                     self.assertEqual(
-                        (output.parent / logo).read_bytes(),
+                        (variant_directory / logo).read_bytes(),
                         (BRANDING / logo).read_bytes(),
                     )
                     root_svg = ET.parse(generated).getroot()
                     image = root_svg.find("{http://www.w3.org/2000/svg}image")
                     self.assertIsNotNone(image)
                     relative = image.attrib.get("href")
-                    self.assertEqual(relative, "../" + logo)
+                    self.assertEqual(relative, logo)
                     self.assertTrue((generated.parent / relative).resolve().is_file())
 
             desktop_svg = Path(result["desktop"]).read_text(encoding="utf-8")
@@ -78,6 +85,36 @@ class UserWallpaperGenerationTests(unittest.TestCase):
             for path in source_files
         }
         self.assertEqual(before, after)
+
+    def test_second_color_pair_does_not_overwrite_first_generated_wallpaper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            settings = SettingsStore(root / "settings.json")
+            settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": "#11AA77",
+                "custom_accent_secondary": "#D9A521",
+            })
+            output = root / "data" / "wallpapers"
+            first = generate_user_wallpapers(settings, output, BRANDING)
+            first_bytes = {
+                key: Path(path).read_bytes() for key, path in first.items()
+            }
+
+            settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": "#0071CE",
+                "custom_accent_secondary": "#D9A521",
+            })
+            second = generate_user_wallpapers(settings, output, BRANDING)
+
+            self.assertNotEqual(
+                Path(first["desktop"]).parent,
+                Path(second["desktop"]).parent,
+            )
+            for kind in ("desktop", "gaming"):
+                self.assertEqual(Path(first[kind]).read_bytes(), first_bytes[kind])
+                self.assertNotEqual(first[kind], second[kind])
 
     def test_custom_wallpaper_generation_rejects_symlink_output_directory(self):
         with tempfile.TemporaryDirectory() as directory:
