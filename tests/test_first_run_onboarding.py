@@ -38,6 +38,17 @@ class FirstRunOnboardingTests(unittest.TestCase):
         self.assertIn('"last_mode": "gaming"', source)
         self.assertIn('"onboarding_complete": True', source)
 
+    def test_returning_to_desktop_from_gaming_offers_optional_apps(self):
+        source = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        self.assertIn("controller.desktopRequested.connect(handle_desktop_request)", source)
+        self.assertIn('returned_to_desktop["value"] = True', source)
+        self.assertIn('if returned_to_desktop["value"]:', source)
+        self.assertIn("_start_optional_default_apps_setup()", source)
+        self.assertIn("/usr/libexec/leos-default-apps-setup", source)
+        self.assertLess(source.index("exit_code = app.exec()"), source.index(
+            "if returned_to_desktop[\"value\"]:"
+        ))
+
 
 if __name__ == "__main__":
     unittest.main()
