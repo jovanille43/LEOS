@@ -177,7 +177,7 @@ cat >> /usr/share/anaconda/post-scripts/install-configure-upgrade.ks <<EOF
 set -euo pipefail
 test -s /etc/containers/policy.json
 test -s /etc/pki/containers/leos-cosign.pub
-bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"
+bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"
 %end
 EOF
 
