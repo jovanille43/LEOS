@@ -187,6 +187,15 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS target image must include rpm-ostree for the first-boot root mount workaround."
   exit 1
 fi
+if ! command -v skopeo >/dev/null 2>&1; then
+  echo "Skopeo is required to verify the LEOS update image before storage changes."
+  exit 1
+fi
+remote_digest="$(skopeo inspect --format '{{.Digest}}' "docker://$target_local_ref")"
+if [[ "$remote_digest" != "$target_digest" ]]; then
+  echo "The LEOS update tag is unavailable or no longer points to the signed image embedded in this ISO."
+  exit 1
+fi
 %end
 EOF
 
@@ -287,19 +296,67 @@ EOF
 cat > /usr/bin/leos-live-welcome <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+
+image_tag_file="/usr/share/leos-installer/install-image-local-ref"
+digest_file="/usr/share/leos-installer/install-image-digest"
+if [[ ! -s "$image_tag_file" || ! -s "$digest_file" ]] || ! command -v skopeo >/dev/null 2>&1; then
+  message="Le contrôle réseau de l'image LEOS est indisponible. L'installation est bloquée pour éviter un échec tardif."
+  if command -v yad >/dev/null 2>&1; then
+    yad --title="Précontrôle LEOS indisponible" --center --width=600 \
+      --text="$message" --button="Fermer":0 || true
+  else
+    printf '%s\n' "$message"
+  fi
+  exit 0
+fi
+
+image_tag_ref="$(< "$image_tag_file")"
+expected_digest="$(< "$digest_file")"
+remote_digest="$(skopeo inspect --format '{{.Digest}}' "docker://$image_tag_ref" 2>/dev/null || true)"
+if [[ "$remote_digest" != "$expected_digest" ]]; then
+  message="Connexion à GHCR requise ou image candidate modifiée.\n\nLEOS doit vérifier que le tag $image_tag_ref pointe toujours vers le digest intégré à cette clé USB. Connectez le réseau puis relancez Installer LEOS depuis le menu KDE."
+  if command -v yad >/dev/null 2>&1; then
+    yad --title="Connexion requise avant installation" --center --width=680 \
+      --text="$message" --button="Fermer":0 || true
+  else
+    printf '%b\n' "$message"
+  fi
+  exit 0
+fi
+
 status=0
 if command -v yad >/dev/null 2>&1; then
   yad --title="Bienvenue dans LEOS" --center --width=560 \
-    --text="Bienvenue dans l'environnement Live de LEOS.\n\nVous pouvez examiner le matériel avant de lancer l'installation. L'installation ne démarre qu'après votre choix." \
+    --text="Bienvenue dans l'environnement Live de LEOS.\n\nImage vérifiée : $image_tag_ref\n\nVous pouvez examiner le matériel avant de lancer l'installation. L'installation ne démarre qu'après votre choix." \
     --button="Installer LEOS":10 --button="Fermer":0 || status=$?
   if [[ "$status" -eq 10 ]]; then
     liveinst
   fi
 else
+  printf 'Image LEOS vérifiée : %s\n' "$image_tag_ref"
   liveinst
 fi
 EOF
 chmod 0755 /usr/bin/leos-live-welcome
+install -d -m 0755 /etc/skel/.config/autostart /usr/share/applications
+cat > /etc/skel/.config/autostart/leos-live-welcome.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Bienvenue dans LEOS
+Exec=/usr/bin/leos-live-welcome
+Terminal=false
+X-KDE-autostart-after=panel
+EOF
+cat > /usr/share/applications/leos-install.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Installer LEOS
+Comment=Vérifier le réseau et l'image puis installer LEOS
+Icon=system-software-install
+Exec=/usr/bin/leos-live-welcome
+Terminal=false
+Categories=System;
+EOFchmod 0755 /usr/bin/leos-live-welcome
 install -d -m 0755 /etc/skel/.config/autostart /usr/share/applications
 cat > /etc/skel/.config/autostart/leos-live-welcome.desktop <<'EOF'
 [Desktop Entry]
