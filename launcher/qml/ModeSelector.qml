@@ -271,7 +271,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: "../../branding/desktop-logo-alpha.png"
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -279,6 +279,13 @@ ApplicationWindow {
                             Layout.preferredWidth: 185
                             Layout.preferredHeight: 175
                             visible: status === Image.Ready
+                            layer.enabled: true
+                            layer.smooth: true
+                            layer.effect: ShaderEffect {
+                                property color accentA: window.accentPrimary
+                                property color accentB: window.accentSecondary
+                                fragmentShader: "../../branding/shaders/recolor.frag.qsb"
+                            }
                         }
                         Label {
                             text: "LEOS DESKTOP"
@@ -319,7 +326,7 @@ ApplicationWindow {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: "../../branding/gaming-logo-alpha.png"
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -327,6 +334,13 @@ ApplicationWindow {
                             Layout.preferredWidth: 185
                             Layout.preferredHeight: 175
                             visible: status === Image.Ready
+                            layer.enabled: true
+                            layer.smooth: true
+                            layer.effect: ShaderEffect {
+                                property color accentA: window.accentPrimary
+                                property color accentB: window.accentSecondary
+                                fragmentShader: "../../branding/shaders/recolor.frag.qsb"
+                            }
                         }
                         Label {
                             text: "LEOS GAMING"
@@ -431,6 +445,13 @@ ApplicationWindow {
             id: introVideoOutput
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
+            layer.enabled: true
+            layer.smooth: true
+            layer.effect: ShaderEffect {
+                property color accentA: window.accentPrimary
+                property color accentB: window.accentSecondary
+                fragmentShader: "../../branding/shaders/recolor.frag.qsb"
+            }
         }
         MouseArea {
             anchors.fill: parent
