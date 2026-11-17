@@ -185,7 +185,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("ne formatez pas l'ESP", hook)
         self.assertIn("/boot ext4 séparé", hook)
         self.assertIn("Le dual boot reste à valider", hook)
-        self.assertIn("EOF\\nchmod 0755 /usr/bin/leos-live-welcome", hook)
+        self.assertIn("EOF\nchmod 0755 /usr/bin/leos-live-welcome", hook)
         self.assertIn("Exec=/usr/bin/leos-live-welcome", hook)
         self.assertIn('podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -x /usr/bin/rpm-ostree', hook)
         self.assertIn("2332319", documentation)
