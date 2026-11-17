@@ -30,34 +30,44 @@ class TitanoboaInstallerTests(unittest.TestCase):
         containerfile = (INSTALLER / "Containerfile").read_text(encoding="utf-8")
         build_script = (INSTALLER / "src/build.sh").read_text(encoding="utf-8")
         self.assertIn("ghcr.io/ublue-os/bazzite:stable", containerfile)
-        self.assertIn("INSTALL_IMAGE_PAYLOAD", containerfile)
+        self.assertIn("INSTALL_IMAGE_REF", containerfile)
+        self.assertIn("INSTALL_IMAGE_TAG_REF", containerfile)
         self.assertIn("INSTALL_IMAGE_DIGEST", containerfile)
         self.assertIn("--mount=type=secret,id=ghcr-auth", containerfile)
         self.assertIn(
-            'podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_PAYLOAD"',
+            'podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"',
             build_script,
         )
+        self.assertIn('podman tag "$INSTALL_IMAGE_REF" "$INSTALL_IMAGE_TAG_REF"', build_script)
         self.assertIn(
-            'podman save --format oci-archive "$INSTALL_IMAGE_PAYLOAD"',
+            'podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"',
             build_script,
         )
-        self.assertIn('loaded_digest="$(podman image inspect --format', build_script)
-        self.assertIn("/usr/share/leos-installer/install-image-ref", build_script)
+        self.assertIn('loaded_id="$(podman image inspect --format', build_script)
+        self.assertIn("/usr/share/leos-installer/install-image-local-ref", build_script)
+        self.assertIn("/usr/share/leos-installer/install-image-registry-ref", build_script)
+        self.assertIn("/usr/share/leos-installer/install-image-id", build_script)
         self.assertNotIn("podman images", build_script)
 
     def test_anaconda_uses_the_exact_image_ref_and_does_not_rewrite_existing_efi(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
         self.assertIn("efi_dir = leos", hook)
         self.assertIn(
-            "ostreecontainer --url=$target_ref --transport=containers-storage",
+            "ostreecontainer --url=%s --transport=containers-storage",
             hook,
         )
         self.assertIn(
-            "bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry",
+            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"',
             hook,
         )
-        self.assertIn("/etc/containers/policy.json", hook)
-        self.assertIn("/etc/pki/containers/leos-cosign.pub", hook)
+        self.assertIn(
+            'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/policy.json',
+            hook,
+        )
+        self.assertIn(
+            'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/pki/containers/leos-cosign.pub',
+            hook,
+        )
         self.assertNotIn("rm -rf /mnt/sysroot/boot/efi/EFI/fedora", hook)
         self.assertNotIn("e2label ", hook)
         self.assertNotIn("wipefs ", hook)
@@ -121,7 +131,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
             workflow,
         )
         self.assertIn("image-ref: localhost/leos-live-installer:", workflow)
-        self.assertIn("--build-arg INSTALL_IMAGE_PAYLOAD=", workflow)
+        self.assertIn("--build-arg INSTALL_IMAGE_REF=", workflow)
+        self.assertIn("--build-arg INSTALL_IMAGE_TAG_REF=", workflow)
         self.assertIn("--build-arg INSTALL_IMAGE_DIGEST=", workflow)
         self.assertIn("verify-installer-iso.sh", workflow)
         self.assertIn("sign-iso-artifacts.sh", workflow)
