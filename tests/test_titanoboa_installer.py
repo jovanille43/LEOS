@@ -99,6 +99,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
         policy = json.loads(policy_path.read_text(encoding="utf-8"))
         self.assertEqual(policy["default"], [{"type": "reject"}])
         repositories = policy["transports"]["docker"]
+        self.assertEqual(
+            repositories[""][0]["type"], "insecureAcceptAnything"
+        )
         expected = (
             "ghcr.io/jovanille43/leos",
             "ghcr.io/jovanille43/leos-nvidia",
