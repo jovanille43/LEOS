@@ -91,6 +91,12 @@ def main() -> int:
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         selector_controller.shutdown()
+        post_notification(
+            "Sélecteur LEOS indisponible",
+            "Le sélecteur de mode n'a pas pu se charger. Le bureau KDE reste accessible. "
+            "Relance-le depuis Konsole avec /usr/bin/python3 /usr/share/leos/launcher/main.py --select.",
+            "error",
+        )
         return 1
 
     exit_code = app.exec()
