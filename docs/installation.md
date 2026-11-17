@@ -14,6 +14,8 @@ La branche `feature/titanoboa-installer` contient une nouvelle chaîne expérime
 
 **Important :** les images précédemment publiées avec le tag `e33a010-45` ne contiennent pas la nouvelle politique de signatures installée par cette branche. Il faut d'abord relancer le workflow **Build LEOS** sur `feature/titanoboa-installer` pour publier trois nouvelles images signées, puis utiliser le workflow **Generate LEOS Titanoboa Live installer ISO** avec le tag correspondant. Ne lance pas l'ancien tag avec le nouveau workflow.
 
+Le workflow Titanoboa est encore dans une PR en brouillon. GitHub ne propose son déclenchement manuel qu'une fois le fichier de workflow disponible sur la branche par défaut du dépôt ; il faudra donc attendre l'intégration de cette PR dans le flux principal avant de lancer la génération ISO.
+
 Cette chaîne n'a pas encore été construite ni démarrée dans une VM. Elle n'est pas prête pour une installation sur le ThinkPad. L'installation automatique ou le dual boot ne sont pas garantis ; le partitionnement doit rester vérifié à la main. Voir [l'architecture et les critères de validation Titanoboa](titanoboa-installer.md).
 
 ## Matériel et variante
