@@ -1,4 +1,4 @@
-"""LEOS Gaming Mode — Qt Quick application entry point."""
+""""LEOS Gaming Mode — Qt Quick application entry point."""
 
 from __future__ import annotations
 
@@ -64,16 +64,19 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         controller.shutdown()
         return 1
 
-    # Persist Gaming only after its QML window loaded successfully. A
-    # read-only/corrupt preference file must not prevent the session itself.
+    # Persist the selected mode and finish first-run onboarding only after the
+    # Gaming window loaded successfully. A failed QML startup remains retryable.
     try:
-        controller.settings.set("last_mode", "gaming")
+        controller.settings.set_many({
+            "last_mode": "gaming",
+            "onboarding_complete": True,
+        })
         startup_message = "L'interface Gaming a démarré."
         startup_priority = "success"
     except (OSError, ValueError, TypeError, KeyError):
         startup_message = (
-            "Gaming a démarré, mais le choix du mode au prochain démarrage "
-            "n'a pas pu être enregistré."
+            "Gaming a démarré, mais les préférences de démarrage "
+            "n'ont pas pu être enregistrées."
         )
         startup_priority = "warning"
     post_notification(
