@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import normalize_hex_color, palette_for_settings
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -256,7 +256,7 @@ class ControlCenterController(QObject):
 
     def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
         keys = (
-            "last_mode", "theme", "performance_profile", "animations_enabled",
+            "last_mode", "theme", "custom_accent_primary", "custom_accent_secondary", "performance_profile", "animations_enabled",
             "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
             "notification_duration_seconds", "notification_minimum_priority",
             "notification_sounds_enabled", "silent_notifications_in_gaming",
@@ -608,7 +608,15 @@ class ControlCenterController(QObject):
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
         """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        return palette_for_settings(self.settings)
+
+    @Property(str, notify=settingsChanged)
+    def customAccentPrimary(self) -> str:
+        return str(self.settings.get("custom_accent_primary"))
+
+    @Property(str, notify=settingsChanged)
+    def customAccentSecondary(self) -> str:
+        return str(self.settings.get("custom_accent_secondary"))
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -722,11 +730,29 @@ class ControlCenterController(QObject):
         self.settings.set("theme", theme)
         self.settingsChanged.emit()
 
+    @Slot(str, str, result=bool)
+    def setCustomAccentColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        """Persist a complete, validated custom A/B pair as one transaction."""
+        primary = normalize_hex_color(accent_primary)
+        secondary = normalize_hex_color(accent_secondary)
+        if primary is None or secondary is None:
+            return False
+        try:
+            self.settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": primary,
+                "custom_accent_secondary": secondary,
+            })
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+        self.settingsChanged.emit()
+        return True
+
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
         try:
-            message = self.kdeColorSchemes.apply_theme(self.theme)
+            message = self.kdeColorSchemes.apply_theme(self.theme, self.themePalette)
         except FileNotFoundError:
             message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
             post_notification("Thème KDE non appliqué", message, "error")
