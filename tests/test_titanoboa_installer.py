@@ -46,7 +46,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("efi_dir = leos", hook)
         self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
         self.assertIn(
-            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"',
+            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"',
             hook,
         )
         self.assertIn(
@@ -55,6 +55,10 @@ class TitanoboaInstallerTests(unittest.TestCase):
         )
         self.assertIn(
             'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/pki/containers/leos-cosign.pub',
+            hook,
+        )
+        self.assertIn(
+            'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/registries.d/leos.yaml',
             hook,
         )
         self.assertNotIn("rm -rf /mnt/sysroot/boot/efi/EFI/fedora", hook)
@@ -82,10 +86,10 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("rd.live.image", content)
         self.assertIn("nomodeset", content)
 
-    def test_installed_images_require_leos_signatures_without_blocking_other_registries(self):
+    def test_installed_images_reject_untrusted_registries_by_default(self):
         policy_path = ROOT / "files/leos-containers-policy.json"
         policy = json.loads(policy_path.read_text(encoding="utf-8"))
-        self.assertEqual(policy["default"], [{"type": "insecureAcceptAnything"}])
+        self.assertEqual(policy["default"], [{"type": "reject"}])
         docker = policy["transports"]["docker"]
         expected = (
             "ghcr.io/jovanille43/leos",
@@ -105,6 +109,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
                 )
         public_key = (ROOT / "files/leos-cosign.pub").read_text(encoding="utf-8")
         self.assertIn("BEGIN PUBLIC KEY", public_key)
+        registries = (ROOT / "files/leos-registries.yaml").read_text(encoding="utf-8")
+        self.assertEqual(registries.count("use-sigstore-attachments: true"), 3)
 
     def test_bluebuild_recipe_installs_signature_policy_and_public_key(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
@@ -112,6 +118,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("destination: /etc/containers/policy.json", recipe)
         self.assertIn("source: leos-cosign.pub", recipe)
         self.assertIn("destination: /etc/pki/containers/leos-cosign.pub", recipe)
+        self.assertIn("source: leos-registries.yaml", recipe)
+        self.assertIn("destination: /etc/containers/registries.d/leos.yaml", recipe)
 
     def test_workflow_uses_pinned_titanoboa_and_checks_iso_artifacts(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -125,7 +133,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("--build-arg INSTALL_IMAGE_DIGEST=", workflow)
         self.assertIn("verify-installer-iso.sh", workflow)
         self.assertIn("sign-iso-artifacts.sh", workflow)
-        self.assertNotIn("$RUNNER_TEMP/bluebuild" generate-iso workflow)
+        self.assertNotIn("bluebuild generate-iso", workflow)
 
     def test_previous_iso_workflow_remains_available_for_comparison(self):
         old_workflow = ROOT / ".github/workflows/iso.yml"
