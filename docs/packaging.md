@@ -20,7 +20,7 @@ La vue d'ensemble du Centre de contrôle réutilise `gaming.backend.system_monit
 - `/usr/share/applications/leos-control-center.desktop` : entrée du Centre de contrôle.
 - `/usr/share/applications/leos-controller-center.desktop` : entrée du Centre des manettes.
 - `/usr/share/applications/leos-store.desktop` : entrée de la boutique LEOS.
-- `/usr/etc/xdg/autostart/leos-session.desktop` : restauration du dernier mode après connexion.
+- `/usr/etc/xdg/autostart/leos-session.desktop` : sélecteur LEOS après connexion, avec rappel du dernier mode choisi.
 
 ## Dépendances système prévues
 
