@@ -145,6 +145,28 @@ class SessionFlowTests(unittest.TestCase):
             entry,
         )
 
+    def test_selector_qml_failure_exits_without_disabling_the_kde_session(self):
+        main = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        self.assertIn("if not engine.rootObjects():", main)
+        failure_branch = main.split("if not engine.rootObjects():", 1)[1].split(
+            "exit_code = app.exec()", 1
+        )[0]
+        self.assertIn("selector_controller.shutdown()", failure_branch)
+        self.assertIn("return 1", failure_branch)
+        self.assertNotIn("systemctl", main)
+        self.assertNotIn("pkill", main)
+        self.assertNotIn("killall", main)
+
+    def test_gaming_starts_as_separate_user_process_and_keeps_kde_alive(self):
+        main = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        self.assertIn("subprocess.Popen(", main)
+        self.assertIn("start_new_session=True", main)
+        self.assertIn("close_fds=True", main)
+        self.assertIn("gaming_entry = PROJECT_ROOT / \"gaming\" / \"main.py\"", main)
+        self.assertNotIn("systemctl", main)
+        self.assertNotIn("pkill", main)
+        self.assertNotIn("killall", main)
+
     def test_mode_selector_routes_keyboard_events_through_focused_content(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         self.assertIn("id: modeSelectorContent", qml)
