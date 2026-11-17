@@ -76,6 +76,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
         self.assertIn("bootc switch --mutate-in-place --enforce-container-sigpolicy", hook)
         self.assertNotIn("bootc --source-imgref", hook)
+        self.assertIn("dnf upgrade -qy anaconda-core anaconda-live anaconda-dracut", hook)
+        self.assertIn("rpm -q --changelog anaconda-dracut", hook)
+        self.assertIn("2332319", hook)
         self.assertIn("2332319", documentation)
         self.assertIn("systemd-remount-fs", documentation)
 
