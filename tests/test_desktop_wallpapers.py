@@ -75,10 +75,12 @@ class UserWallpaperGenerationTests(unittest.TestCase):
             for svg in (desktop_svg, gaming_svg):
                 self.assertIn("#11AA77", svg)
                 self.assertIn("#D9A521", svg)
-            self.assertNotIn("#00b9e8", desktop_svg.lower())
-            self.assertNotIn("#d32ce8", desktop_svg.lower())
-            self.assertNotIn("#00d9ff", gaming_svg.lower())
-            self.assertNotIn("#e33bff", gaming_svg.lower())
+            for obsolete_tint in (
+                "#00b9e8", "#d32ce8", "#00d9ff", "#e33bff",
+                "#001018", "#16051c", "#18051d",
+            ):
+                self.assertNotIn(obsolete_tint, desktop_svg.lower())
+                self.assertNotIn(obsolete_tint, gaming_svg.lower())
 
         after = {
             path: hashlib.sha256(path.read_bytes()).hexdigest()
