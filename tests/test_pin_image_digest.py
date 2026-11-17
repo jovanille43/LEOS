@@ -29,17 +29,6 @@ class PinImageDigestTests(unittest.TestCase):
         self.skopeo_log = self.workdir / "skopeo-calls.txt"
 
         self.fake_skopeo = self.workdir / "skopeo"
-        self.fake_skopeo.write_text(
-            "#!/usr/bin/env bash\n"
-            "set -euo pipefail\n"
-            "printf '%s\\n' \"$*\" >> \"$SKOPEO_CALL_LOG\"\n"
-            "if [[ \"$1\" == inspect ]]; then\n"
-            "  exit \"$SKOPEO_INSPECT_STATUS\"\n"
-            "fi\n"
-            "exit 97\n"
-            "printf '%s\\n' \"$SKOPEO_DIGEST\"\n",
-            encoding="utf-8",
-        )
         # Return the configured registry manifest digest after logging inspect.
         self.fake_skopeo.write_text(
             "#!/usr/bin/env bash\n"
