@@ -1,9 +1,11 @@
 """Qt model exposing the LEOS-owned notification inbox to QML."""
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot, Signal, Property, QTimer
 
 from desktop.notification_store import NotificationStore
+from leos_core.settings import SettingsStore
+from desktop.themes import palette_for_settings
 
 ROLES = {
     Qt.ItemDataRole.UserRole + 1: b"notificationId",
@@ -17,11 +19,33 @@ ROLES = {
 
 class NotificationModel(QAbstractListModel):
     changed = Signal()
+    themeChanged = Signal()
 
     def __init__(self, store: NotificationStore | None = None) -> None:
         super().__init__()
         self.store = store or NotificationStore()
+        self.settings = SettingsStore()
+        self._theme_snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        self._theme_timer = QTimer(self)
+        self._theme_timer.setInterval(1500)
+        self._theme_timer.timeout.connect(self.refreshThemePalette)
+        self._theme_timer.start()
         self._items = self.store.items()
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self.settings)
+
+    @Slot()
+    def refreshThemePalette(self) -> None:
+        snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        if snapshot != self._theme_snapshot:
+            self._theme_snapshot = snapshot
+            self.themeChanged.emit()
 
     def roleNames(self):
         return ROLES
