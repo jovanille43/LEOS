@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import tempfile
 import stat
 from pathlib import Path
@@ -15,6 +16,7 @@ from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
+_HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 
 def _read_settings_file(path: Path) -> dict[str, Any]:
@@ -57,9 +59,12 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
         raise ValueError("LEOS settings file has an invalid format")
     return loaded
 
+
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
+    "custom_accent_primary": "#00D9FF",
+    "custom_accent_secondary": "#E33BFF",
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
@@ -76,7 +81,7 @@ DEFAULTS: dict[str, Any] = {
 
 ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
-    "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "theme": {"leos-original", "light", "cyan", "magenta", "gaming", "custom"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
     "notification_minimum_priority": {"all", "important", "critical"},
@@ -111,6 +116,10 @@ class SettingsStore:
             allowed = ALLOWED_VALUES.get(key)
             if allowed is not None and value not in allowed:
                 continue
+            if key in {"custom_accent_primary", "custom_accent_secondary"}:
+                if not isinstance(value, str) or not _HEX_COLOR.fullmatch(value):
+                    continue
+                value = value.upper()
             if key == "notification_duration_seconds" and value not in {3, 5, 8}:
                 continue
             self._values[key] = value
@@ -127,7 +136,8 @@ class SettingsStore:
         self.load()
         return tuple(self._values.get(key) for key in keys)
 
-    def set(self, key: str, value: Any) -> None:
+    @staticmethod
+    def _validate_value(key: str, value: Any) -> None:
         if key not in DEFAULTS:
             raise KeyError(f"Unknown LEOS setting: {key}")
         if not isinstance(value, type(DEFAULTS[key])):
@@ -135,8 +145,21 @@ class SettingsStore:
         allowed = ALLOWED_VALUES.get(key)
         if allowed is not None and value not in allowed:
             raise ValueError(f"Invalid value for {key}: {value}")
+        if key in {"custom_accent_primary", "custom_accent_secondary"}:
+            if not isinstance(value, str) or not _HEX_COLOR.fullmatch(value):
+                raise ValueError(f"Invalid HEX color for {key}")
         if key == "notification_duration_seconds" and value not in {3, 5, 8}:
             raise ValueError(f"Invalid value for {key}: {value}")
+
+    def set(self, key: str, value: Any) -> None:
+        self.set_many({key: value})
+
+    def set_many(self, values: dict[str, Any]) -> None:
+        """Validate and persist related preferences in one atomic transaction."""
+        if not isinstance(values, dict) or not values:
+            raise ValueError("At least one LEOS setting is required")
+        for key, value in values.items():
+            self._validate_value(key, value)
 
         # Serialize read-modify-write across Desktop, Gaming and Control Center.
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -157,7 +180,10 @@ class SettingsStore:
                             "LEOS settings file is unreadable or too large; it was left untouched"
                         ) from exc
                 self.load()
-                self._values[key] = value
+                for key, value in values.items():
+                    self._values[key] = value.upper() if key in {
+                        "custom_accent_primary", "custom_accent_secondary"
+                    } else value
                 self.save()
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
