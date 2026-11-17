@@ -120,7 +120,9 @@ cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 %pre
 mkdir -p /tmp/leos-install-logs
 %end
+EOF
 
+cat >> /usr/share/anaconda/interactive-defaults.ks <<EOF
 %pre --erroronfail --log=/tmp/leos-install-logs/preflight.log
 set -euo pipefail
 if [[ ! -d /sys/firmware/efi ]]; then
@@ -131,7 +133,7 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS image-signature policy is missing from the install payload."
   exit 1
 fi
-if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s $target_cosign_key; then
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s "$target_cosign_key"; then
   echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
@@ -181,7 +183,7 @@ set -euo pipefail
 test -s /etc/containers/policy.json
 test -s $target_cosign_key
 test -s /etc/containers/registries.d/leos.yaml
-bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"
+bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"
 %end
 EOF
 
