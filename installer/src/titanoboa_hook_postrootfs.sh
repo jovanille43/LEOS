@@ -138,6 +138,22 @@ fi
 %end
 EOF
 
+cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
+%pre-install --erroronfail --log=/tmp/leos-install-logs/boot-partition-check.log
+set -euo pipefail
+boot_dev="$(findmnt -o SOURCE --nofsroot --noheadings -f --target /mnt/sysroot/boot)"
+if [[ -z "$boot_dev" ]]; then
+  echo "LEOS requires a dedicated /boot partition formatted as ext4."
+  exit 1
+fi
+boot_fstype="$(blkid -o value -s TYPE "$boot_dev" || true)"
+if [[ "$boot_fstype" != "ext4" ]]; then
+  echo "LEOS requires /boot on ext4 (separate from /boot/efi); detected: ${boot_fstype:-unknown}"
+  exit 1
+fi
+%end
+EOF
+
 printf 'ostreecontainer --url=%s --transport=containers-storage --no-signature-verification\n' \
   "$target_local_ref" >> /usr/share/anaconda/interactive-defaults.ks
 cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
