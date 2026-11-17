@@ -10,13 +10,14 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: "LEOS — Centre des manettes"
-    color: "#090b10"
+    property var themeColors: controllerCenter.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#909aac"
-    property color panel: "#121720"
-    property color line: "#293342"
+    property color accentPrimary: themeColors.accent_primary
+    property color accentSecondary: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
+    property color panel: themeColors.surface
+    property color line: themeColors.border
 
     Rectangle {
         anchors.fill: parent
@@ -40,7 +41,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "CENTRE DES MANETTES"
-                        color: window.cyan
+                        color: window.accentPrimary
                         font.pixelSize: 10
                         font.letterSpacing: 3
                     }
@@ -69,12 +70,12 @@ ApplicationWindow {
                         Layout.preferredWidth: 54
                         Layout.preferredHeight: 54
                         radius: 14
-                        color: "#17303b"
-                        border.color: window.cyan
+                        color: Qt.darker(window.accentPrimary, 2.6)
+                        border.color: window.accentPrimary
                         Label {
                             anchors.centerIn: parent
                             text: "⌘"
-                            color: window.cyan
+                            color: window.accentPrimary
                             font.pixelSize: 28
                         }
                     }
@@ -123,7 +124,7 @@ ApplicationWindow {
                             spacing: 11
                             Label {
                                 text: "MANETTE"
-                                color: window.cyan
+                                color: window.accentPrimary
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -138,7 +139,7 @@ ApplicationWindow {
                                 text: controllerCenter.backendAvailable
                                     ? "Détection Linux active"
                                     : "Backend evdev non installé"
-                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.magenta
+                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.accentSecondary
                                 font.pixelSize: 11
                             }
                         }
@@ -156,7 +157,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "PROFIL LEOS"
-                                color: window.cyan
+                                color: window.accentPrimary
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -193,7 +194,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: Math.round(deadzoneSlider.value) + " %"
-                                color: window.cyan
+                                color: window.accentPrimary
                                 font.pixelSize: 13
                             }
                             Item { Layout.fillHeight: true }
@@ -224,7 +225,7 @@ ApplicationWindow {
                             spacing: 12
                             Label {
                                 text: "TEST DES COMMANDES"
-                                color: window.cyan
+                                color: window.accentPrimary
                                 font.pixelSize: 11
                                 font.letterSpacing: 2
                             }
@@ -232,8 +233,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 104
                                 radius: 10
-                                color: "#0b1119"
-                                border.color: "#263543"
+                                color: window.themeColors.surface_elevated
+                                border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 14
