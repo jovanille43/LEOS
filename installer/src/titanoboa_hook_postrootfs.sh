@@ -132,6 +132,10 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/registries.d/leos.yaml; then
+  echo "The LEOS GHCR signature-attachment configuration is missing from the install payload."
+  exit 1
+fi
 %end
 EOF
 
@@ -177,7 +181,8 @@ cat >> /usr/share/anaconda/post-scripts/install-configure-upgrade.ks <<EOF
 set -euo pipefail
 test -s /etc/containers/policy.json
 test -s /etc/pki/containers/leos-cosign.pub
-bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"
+test -s /etc/containers/registries.d/leos.yaml
+bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"
 %end
 EOF
 
