@@ -109,7 +109,10 @@ def _serialize_wallpaper(
 
     ET.register_namespace("", SVG_NAMESPACE)
     ET.register_namespace("xlink", XLINK_NAMESPACE)
-    root = ET.parse(source).getroot()
+    try:
+        root = ET.parse(source).getroot()
+    except ET.ParseError as exc:
+        raise ValueError(f"LEOS wallpaper source is not valid SVG: {source}") from exc
     color_map = _color_map(accent_a, accent_b, kind)
 
     def recolor(value: str) -> str:
