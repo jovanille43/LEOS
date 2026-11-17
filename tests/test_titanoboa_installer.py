@@ -16,6 +16,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             INSTALLER / "src/build.sh",
             INSTALLER / "src/titanoboa_hook_preinitramfs.sh",
             INSTALLER / "src/titanoboa_hook_postrootfs.sh",
+            INSTALLER / "src/leos-root-fstab-fix.sh",
             ROOT / ".github/scripts/verify-live-installer-image.sh",
         ):
             with self.subTest(script=script):
@@ -87,6 +88,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("install-image-registry-ref", build_script)
         self.assertIn("install-image-id", build_script)
         self.assertNotIn("podman images", build_script)
+        self.assertIn('install -D -m 0755 "$SCRIPT_DIR/leos-root-fstab-fix.sh" /usr/share/leos-installer/leos-root-fstab-fix.sh', build_script)
 
     def test_anaconda_keeps_the_fedora45_compatible_install_path(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
@@ -100,19 +102,21 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("rootflags/fstab workaround will be applied", hook)
         self.assertNotIn("refusing to build this Live installer", hook)
         self.assertIn("leos-fstab-rootflags.ks", hook)
-        self.assertIn('rpm-ostree kargs --append-if-missing="rootflags=$rootflags"', hook)
-        self.assertIn('rootflags_file=/run/leos-rootflags', hook)
+        self.assertIn("/usr/share/leos-installer/leos-root-fstab-fix.sh", hook)
+        self.assertIn("leos-root-fstab-fix.service", hook)
+        self.assertIn("graphical.target.wants", hook)
+        self.assertIn("Before=graphical.target", hook)
         self.assertIn("2332319", documentation)
         self.assertIn("systemd-remount-fs", documentation)
 
     def test_embedded_fstab_workaround_kickstart_shell_has_valid_syntax(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
-        marker = "cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'\n"
+        marker = "cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'\\n"
         self.assertIn(marker, hook)
-        kickstart = hook.split(marker, 1)[1].split("\nEOF\n", 1)[0].splitlines()
-        self.assertTrue(kickstart[0].startswith("%post "))
+        kickstart = hook.split(marker, 1)[1].split("\\nEOF\\n", 1)[0].splitlines()
+        self.assertTrue(kickstart[0].startswith("%post --nochroot"))
         self.assertEqual(kickstart[-1], "%end")
-        shell_body = "\n".join(kickstart[1:-1]) + "\n"
+        shell_body = "\\n".join(kickstart[1:-1]) + "\\n"
         result = subprocess.run(
             ["bash", "-n"],
             input=shell_body,
@@ -124,12 +128,18 @@ class TitanoboaInstallerTests(unittest.TestCase):
 
     def test_fstab_workaround_moves_only_root_options_to_kernel_args(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
+        helper = (INSTALLER / "src/leos-root-fstab-fix.sh").read_text(encoding="utf-8")
         self.assertIn("leos-fstab-rootflags.ks", hook)
-        self.assertIn('rootflags="$(< "$rootflags_file")"', hook)
-        self.assertIn('rpm-ostree kargs --append-if-missing="rootflags=$rootflags"', hook)
-        self.assertIn("Moved root mount options to the kernel command line", hook)
-        self.assertIn("Remove only the root filesystem line", hook)
-        self.assertIn("root fstab row", hook)
+        self.assertIn("graphical.target.wants", hook)
+        self.assertIn('if [[ "$root_count" == "0" ]]; then', helper)
+        self.assertIn('rpm-ostree kargs --append-if-missing="rootflags=$rootflags"', helper)
+        self.assertIn('rpm-ostree kargs --delete-if-present="rootflags=', helper)
+        self.assertIn('fields[1] == "/"', helper)
+        self.assertIn("systemctl reboot", helper)
+        self.assertIn("Remove only the root filesystem row", helper)
+        self.assertIn("rootflags=$rootflags", helper)
+        self.assertNotIn("mkfs.", helper)
+        self.assertNotIn("wipefs", helper)
         self.assertIn("%include /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks", hook)
 
     def test_anaconda_uses_the_embedded_image_and_preserves_existing_efi_files(self):
