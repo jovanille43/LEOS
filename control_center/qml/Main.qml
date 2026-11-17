@@ -651,7 +651,7 @@ ApplicationWindow {
                                         Button {
                                             text: "CHOISIR DANS LES PARAMÈTRES KDE"
                                             onClicked: {
-                                                const generated = controlCenter.desktopWallpaperPreviewUrl !== ""
+                                                const generated = controlCenter.customWallpaperGenerated
                                                 const directory = generated
                                                     ? controlCenter.customWallpaperDirectory
                                                     : "/usr/share/leos/branding/wallpapers"
