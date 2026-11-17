@@ -31,7 +31,7 @@ La navigation fonctionne à la souris, au clavier et avec les manettes reconnues
 - Les raccourcis du sélecteur sont des raccourcis de fenêtre, pas encore des raccourcis globaux KDE.
 - Le sélecteur joue `gaming-intro.mp4` avant d'ouvrir Gaming et `desktop-intro.mov` avant d'ouvrir Desktop. Le retour depuis Gaming joue également `desktop-intro.mov`. Les pistes audio intégrées sont lues avec la vidéo et peuvent être coupées indépendamment des animations.
 - Le retour depuis Gaming joue également l'introduction Desktop avant de fermer l'application.
-- Les emblèmes JPEG et les trois animations sont présents dans `branding/`. La variante `gaming-roar-reference.mp4` est conservée comme référence et n'est pas jouée automatiquement. Si un fichier est absent, si le décodage échoue ou si le lecteur dépasse son délai de sécurité, LEOS poursuit la transition sans rester bloqué.
+- Les JPEG restent les sources officielles ; le sélecteur affiche leurs PNG transparents dérivés afin d'éviter les fonds noirs. Un ShaderEffect Qt 6 remappe les tons néon de chaque emblème vers les couleurs A/B, en préservant les ombres, la luminosité et le dégradé. Le même filtre est appliqué à la vidéo de transition. `branding/shaders/recolor.frag` est compilé par `tools/compile-theme-shader.sh` en paquet `.qsb` pendant la CI. La variante `gaming-roar-reference.mp4` est conservée comme référence et n'est pas jouée automatiquement. La lecture et le rendu du filtre restent à valider sur une session Bazzite réelle.
 - Le sélecteur, le rendu vidéo, le son et les transitions doivent encore être testés dans une session Bazzite KDE réelle.
 
 ## Notifications des modes LEOS
