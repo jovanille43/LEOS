@@ -20,6 +20,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             INSTALLER / "src/titanoboa_hook_postrootfs.sh",
             INSTALLER / "src/leos-root-fstab-fix.sh",
             ROOT / ".github/scripts/verify-live-installer-image.sh",
+            ROOT / ".github/scripts/pin-image-digest.sh",
         ):
             with self.subTest(script=script):
                 result = subprocess.run(
@@ -43,6 +44,71 @@ class TitanoboaInstallerTests(unittest.TestCase):
         )
         self.assertIn("cosign verify --key files/bazzite-cosign.pub --new-bundle-format=false", workflow)
         self.assertIn("f8580007fb1fb4241378fd99b33800aefe62c3b5", documentation)
+
+    def test_pin_image_digest_uses_skopeo_registry_manifest_digest(self):
+        script = ROOT / ".github/scripts/pin-image-digest.sh"
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            bin_dir = root / "bin"
+            bin_dir.mkdir()
+            authfile = root / "auth.json"
+            authfile.write_text("{}", encoding="utf-8")
+            output_file = root / "github-output"
+            podman_log = root / "podman.log"
+            digest = "sha256:" + "a" * 64
+
+            skopeo = bin_dir / "skopeo"
+            skopeo.write_text(
+                "#!/usr/bin/env bash\\n"
+                "set -euo pipefail\\n"
+                "printf '%s\\n' \"$*\" > \"$SKOPEO_LOG\"\\n"
+                f"printf '%s\\n' '{digest}'\\n",
+                encoding="utf-8",
+            )
+            podman = bin_dir / "podman"
+            podman.write_text(
+                "#!/usr/bin/env bash\\n"
+                "set -euo pipefail\\n"
+                "printf '%s\\n' \"$*\" >> \"$PODMAN_LOG\"\\n",
+                encoding="utf-8",
+            )
+            skopeo.chmod(0o755)
+            podman.chmod(0o755)
+
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "SKOPEO_BIN": str(skopeo),
+                    "PODMAN_BIN": str(podman),
+                    "SKOPEO_LOG": str(root / "skopeo.log"),
+                    "PODMAN_LOG": str(podman_log),
+                    "GITHUB_OUTPUT": str(output_file),
+                }
+            )
+            image_tag = "ghcr.io/jovanille43/leos:unit-test"
+            result = subprocess.run(
+                ["bash", str(script), image_tag, str(authfile)],
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            repository = "ghcr.io/jovanille43/leos"
+            immutable_ref = f"{repository}@{digest}"
+            self.assertEqual(
+                output_file.read_text(encoding="utf-8"),
+                f"ref={immutable_ref}\\ntag_ref={image_tag}\\n",
+            )
+            podman_calls = podman_log.read_text(encoding="utf-8")
+            self.assertIn(f"pull --authfile {authfile} {immutable_ref}", podman_calls)
+            self.assertIn(f"tag {immutable_ref} {image_tag}", podman_calls)
+            self.assertNotIn("inspect", podman_calls)
+            self.assertIn(
+                f"inspect --authfile {authfile} --format {{.Digest}} docker://{image_tag}",
+                (root / "skopeo.log").read_text(encoding="utf-8"),
+            )
 
     def test_live_image_contract_check_covers_titanoboa_inputs(self):
         checker = (ROOT / ".github/scripts/verify-live-installer-image.sh").read_text(encoding="utf-8")
@@ -81,7 +147,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
             'podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"',
             build_script,
         )
-        self.assertIn("podman image inspect --format '{{.Digest}}'", build_script)
+        self.assertIn("skopeo inspect --authfile", build_script)
+        self.assertIn("remote_digest", build_script)
+        self.assertNotIn("podman image inspect --format '{{.Digest}}'", build_script)
         self.assertIn(
             'podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"',
             build_script,
@@ -328,6 +396,8 @@ EOF
         self.assertIn("--build-arg INSTALL_IMAGE_DIGEST=", workflow)
         self.assertIn("--build-arg BASE_IMAGE=", workflow)
         self.assertIn("steps.pinned-base.outputs.ref", workflow)
+        self.assertIn("skopeo inspect --authfile", workflow)
+        self.assertIn("skopeo", workflow[workflow.index("Install Podman"):workflow.index("Prepare large Btrfs")])
         self.assertIn("cosign verify --key files/bazzite-cosign.pub", workflow)
         self.assertIn("--new-bundle-format=false", workflow)
         bazzite_key = (ROOT / "files/bazzite-cosign.pub").read_text(encoding="utf-8")
