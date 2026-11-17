@@ -10,4 +10,4 @@ RUN --mount=type=bind,source=src,target=/src \
       INSTALL_IMAGE_PAYLOAD="$INSTALL_IMAGE_PAYLOAD" \
       INSTALL_IMAGE_DIGEST="$INSTALL_IMAGE_DIGEST" \
       REGISTRY_AUTH_FILE=/run/secrets/ghcr-auth \
-      /src/build.sh
+      /usr/bin/bash /src/build.sh
