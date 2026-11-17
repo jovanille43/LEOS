@@ -37,6 +37,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             "/usr/lib/grub/i386-pc/normal.mod",
             "/usr/lib/efi/shim/*/EFI/fedora",
             "/boot/efi/EFI/fedora",
+            "exactly one Fedora UEFI vendor directory",
             "install-image-id",
             "/var/lib/containers/storage",
         ):
