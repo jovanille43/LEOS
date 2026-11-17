@@ -21,7 +21,7 @@ from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
 from leos_core.paths import data_home
 from desktop.notifications import post_notification
-from desktop.wallpapers import generate_user_wallpapers
+from desktop.wallpapers import generate_user_wallpapers, user_wallpaper_directory
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
 from control_center.diagnostics import collect_system_diagnostics, format_diagnostic_report
@@ -627,19 +627,37 @@ class ControlCenterController(QObject):
     def customAccentSecondary(self) -> str:
         return str(self.settings.get("custom_accent_secondary"))
 
+    def _current_wallpaper_directory(self) -> Path:
+        try:
+            return user_wallpaper_directory(self.settings)
+        except (OSError, TypeError, ValueError):
+            return data_home() / "leos" / "wallpapers"
+
     @Property(str, notify=wallpaperFilesChanged)
     def customWallpaperDirectory(self) -> str:
-        return str(data_home() / "leos" / "wallpapers")
+        """Return the isolated output folder for the currently selected A/B pair."""
+        return str(self._current_wallpaper_directory())
+
+    @Property(bool, notify=wallpaperFilesChanged)
+    def customWallpaperGenerated(self) -> bool:
+        directory = self._current_wallpaper_directory()
+        return all(
+            (directory / filename).is_file()
+            for filename in ("desktop-leos.svg", "gaming-leos.svg",
+                              "desktop-logo-alpha.png", "gaming-logo-alpha.png")
+        )
 
     @Property(str, notify=wallpaperFilesChanged)
     def desktopWallpaperPreviewUrl(self) -> str:
         path = self._custom_wallpaper_paths.get("desktop")
-        return Path(path).as_uri() if path else ""
+        candidate = Path(path) if path else self._current_wallpaper_directory() / "desktop-leos.svg"
+        return candidate.as_uri() if candidate.is_file() else ""
 
     @Property(str, notify=wallpaperFilesChanged)
     def gamingWallpaperPreviewUrl(self) -> str:
         path = self._custom_wallpaper_paths.get("gaming")
-        return Path(path).as_uri() if path else ""
+        candidate = Path(path) if path else self._current_wallpaper_directory() / "gaming-leos.svg"
+        return candidate.as_uri() if candidate.is_file() else ""
 
     @Slot()
     def _invalidate_custom_wallpaper_previews(self) -> None:
