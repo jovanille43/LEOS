@@ -274,7 +274,7 @@ class ControlCenterController(QObject):
         """Reflect preferences changed by another LEOS process."""
         snapshot = self._read_shared_settings_snapshot()
         if snapshot != self._shared_settings_snapshot:
-            previous_theme = self._shared_settings_snapshot[:3]
+            previous_theme = self._shared_settings_snapshot[1:4]
             self._shared_settings_snapshot = snapshot
             if snapshot[:3] != previous_theme:
                 self._invalidate_custom_wallpaper_previews()
