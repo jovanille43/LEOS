@@ -27,6 +27,20 @@ class TitanoboaInstallerTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_bazzite_base_signature_uses_the_pinned_upstream_key_format(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        documentation = (ROOT / "docs/titanoboa-installer.md").read_text(encoding="utf-8")
+        key = (ROOT / "files/bazzite-cosign.pub").read_text(encoding="utf-8")
+        self.assertEqual(
+            key,
+            "-----BEGIN PUBLIC KEY-----\n"
+            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHLRpBfPRYiMl9wb7s6fx47PzzNWu\n"
+            "3zyJgXhWEvxoOgwv9CpwjbvUwR9qHxNMWkJhuGE6cjDA2hpy1I6NbA+24Q==\n"
+            "-----END PUBLIC KEY-----\n",
+        )
+        self.assertIn("cosign verify --key files/bazzite-cosign.pub --new-bundle-format=false", workflow)
+        self.assertIn("f8580007fb1fb4241378fd99b33800aefe62c3b5", documentation)
+
     def test_live_image_contract_check_covers_titanoboa_inputs(self):
         checker = (ROOT / ".github/scripts/verify-live-installer-image.sh").read_text(encoding="utf-8")
         workflow = WORKFLOW.read_text(encoding="utf-8")
