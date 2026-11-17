@@ -390,6 +390,20 @@ EOF
         self.assertIn("destination: /etc/containers/registries.d/leos.yaml", recipe)
         self.assertIn("- type: signing", recipe)
 
+    def test_manual_build_workflow_reports_immutable_tags_for_all_variants(self):
+        workflow = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        for digestfile in (
+            "leos-standard-digests.json",
+            "leos-nvidia-digests.json",
+            "leos-nvidia-open-digests.json",
+        ):
+            with self.subTest(digestfile=digestfile):
+                self.assertIn(digestfile, workflow)
+        self.assertIn("Summarize immutable candidate image tags for ISO generation", workflow)
+        self.assertIn('short_sha = os.environ["BUILD_COMMIT"][:7]', workflow)
+        self.assertIn('tag.startswith(short_sha + "-")', workflow)
+        self.assertIn('GITHUB_STEP_SUMMARY', workflow)
+
     def test_workflow_uses_pinned_titanoboa_and_checks_iso_artifacts(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn(
