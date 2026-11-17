@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 
@@ -17,7 +19,9 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
+from leos_core.paths import data_home
 from desktop.notifications import post_notification
+from desktop.wallpapers import generate_user_wallpapers
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
 from control_center.diagnostics import collect_system_diagnostics, format_diagnostic_report
@@ -138,6 +142,7 @@ class _PlasmaScriptTask(QRunnable):
 
 class ControlCenterController(QObject):
     settingsChanged = Signal()
+    wallpaperFilesChanged = Signal()
     plasmaLayoutFinished = Signal(str)
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
@@ -148,6 +153,7 @@ class ControlCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self._custom_wallpaper_paths: dict[str, str] = {}
         self._shared_settings_snapshot = self._read_shared_settings_snapshot()
         self._settings_sync_timer = QTimer(self)
         self._settings_sync_timer.setInterval(1500)
@@ -268,7 +274,10 @@ class ControlCenterController(QObject):
         """Reflect preferences changed by another LEOS process."""
         snapshot = self._read_shared_settings_snapshot()
         if snapshot != self._shared_settings_snapshot:
+            previous_theme = self._shared_settings_snapshot[:3]
             self._shared_settings_snapshot = snapshot
+            if snapshot[:3] != previous_theme:
+                self._invalidate_custom_wallpaper_previews()
             self.settingsChanged.emit()
 
     @Property("QVariantMap", notify=hardwareChanged)
@@ -618,6 +627,48 @@ class ControlCenterController(QObject):
     def customAccentSecondary(self) -> str:
         return str(self.settings.get("custom_accent_secondary"))
 
+    @Property(str, notify=wallpaperFilesChanged)
+    def customWallpaperDirectory(self) -> str:
+        return str(data_home() / "leos" / "wallpapers")
+
+    @Property(str, notify=wallpaperFilesChanged)
+    def desktopWallpaperPreviewUrl(self) -> str:
+        path = self._custom_wallpaper_paths.get("desktop")
+        return Path(path).as_uri() if path else ""
+
+    @Property(str, notify=wallpaperFilesChanged)
+    def gamingWallpaperPreviewUrl(self) -> str:
+        path = self._custom_wallpaper_paths.get("gaming")
+        return Path(path).as_uri() if path else ""
+
+    @Slot()
+    def _invalidate_custom_wallpaper_previews(self) -> None:
+        if self._custom_wallpaper_paths:
+            self._custom_wallpaper_paths = {}
+            self.wallpaperFilesChanged.emit()
+
+    @Slot(result=bool)
+    def generateThemeWallpapers(self) -> bool:
+        """Generate local A/B copies; never apply a wallpaper automatically."""
+        try:
+            self._custom_wallpaper_paths = generate_user_wallpapers(self.settings)
+        except (OSError, ValueError, TypeError):
+            self._custom_wallpaper_paths = {}
+            self.wallpaperFilesChanged.emit()
+            post_notification(
+                "Fonds LEOS non générés",
+                "Les fonds personnalisés n'ont pas pu être créés. Les originaux restent inchangés.",
+                "error",
+            )
+            return False
+        self.wallpaperFilesChanged.emit()
+        post_notification(
+            "Fonds LEOS personnalisés prêts",
+            "Les deux SVG A/B sont prêts. Choisis toi-même celui que tu souhaites dans les paramètres KDE.",
+            "success",
+        )
+        return True
+
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
         return self.kdeColorSchemes.tool_available()
@@ -728,6 +779,7 @@ class ControlCenterController(QObject):
     @Slot(str)
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
+        self._invalidate_custom_wallpaper_previews()
         self.settingsChanged.emit()
 
     @Slot(str, str, result=bool)
@@ -745,6 +797,7 @@ class ControlCenterController(QObject):
             })
         except (OSError, ValueError, TypeError, KeyError):
             return False
+        self._invalidate_custom_wallpaper_previews()
         self.settingsChanged.emit()
         return True
 
