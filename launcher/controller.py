@@ -8,6 +8,7 @@ from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import mapper_from_preferences, open_first_available_gamepad
 from leos_core.settings import SettingsStore
+from desktop.themes import normalize_hex_color, palette_for_settings
 
 
 class ModeSelectorController(QObject):
@@ -16,6 +17,7 @@ class ModeSelectorController(QObject):
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
     onboardingChanged = Signal()
+    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -40,6 +42,35 @@ class ModeSelectorController(QObject):
 
         self._refresh()
         self._refresh_timer.start()
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self._settings)
+
+    @Property(str, notify=themeChanged)
+    def customAccentPrimary(self) -> str:
+        return str(self._settings.get("custom_accent_primary"))
+
+    @Property(str, notify=themeChanged)
+    def customAccentSecondary(self) -> str:
+        return str(self._settings.get("custom_accent_secondary"))
+
+    @Slot(str, str, result=bool)
+    def setCustomAccentColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        primary = normalize_hex_color(accent_primary)
+        secondary = normalize_hex_color(accent_secondary)
+        if primary is None or secondary is None:
+            return False
+        try:
+            self._settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": primary,
+                "custom_accent_secondary": secondary,
+            })
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+        self.themeChanged.emit()
+        return True
 
     @Property(bool, constant=False)
     def animationsEnabled(self) -> bool:
