@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman
+          sudo apt-get install -y podman skopeo
           docker pull ghcr.io/blue-build/cli:v0.9-installer
           docker create --name bluebuild-cli ghcr.io/blue-build/cli:v0.9-installer
           docker cp bluebuild-cli:/out/bluebuild "$RUNNER_TEMP/bluebuild"
@@ -78,20 +78,34 @@ jobs:
           sudo mkdir -p /root/.docker
           printf '%s' "$GH_TOKEN" | sudo podman login --authfile /root/.docker/config.json ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      - name: Verify published LEOS image signature
+      - name: Resolve and verify immutable LEOS image
+        id: verified
         env:
           IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
           set -euo pipefail
           test -s cosign.pub
-          sudo env DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "$IMAGE_REF"
+
+          # Resolve the mutable tag once, then use only its immutable digest.
+          digest="$(sudo skopeo inspect --authfile /root/.docker/config.json --format '{{.Digest}}' "docker://$IMAGE_REF")"
+          if [[ ! "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "::error::Registry returned an invalid image digest."
+            exit 1
+          fi
+
+          image_repository="${IMAGE_REF%:*}"
+          immutable_ref="${image_repository}@${digest}"
+          echo "Verifying immutable image: ${immutable_ref}"
+          sudo env DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "${immutable_ref}"
+          echo "image_ref=${immutable_ref}" >> "$GITHUB_OUTPUT"
 
       - name: Generate bootable installer ISO
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.verified.outputs.image_ref }}
           ISO_NAME: ${{ steps.image.outputs.filename }}
         run: |
           set -euo pipefail
+          test -n "$IMAGE_REF"
           sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --iso-name "$ISO_NAME" image "$IMAGE_REF"
           test -s "$ISO_NAME"
           sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
