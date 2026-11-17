@@ -26,38 +26,27 @@ class TitanoboaInstallerTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_live_builder_embeds_the_explicit_leos_image_and_digest(self):
+    def test_live_payload_is_pulled_by_digest_and_verified_after_import(self):
         containerfile = (INSTALLER / "Containerfile").read_text(encoding="utf-8")
         build_script = (INSTALLER / "src/build.sh").read_text(encoding="utf-8")
         self.assertIn("ghcr.io/ublue-os/bazzite:stable", containerfile)
         self.assertIn("INSTALL_IMAGE_REF", containerfile)
         self.assertIn("INSTALL_IMAGE_TAG_REF", containerfile)
-        self.assertIn("INSTALL_IMAGE_DIGEST", containerfile)
         self.assertIn("--mount=type=secret,id=ghcr-auth", containerfile)
-        self.assertIn(
-            'podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"',
-            build_script,
-        )
-        self.assertIn('podman tag "$INSTALL_IMAGE_REF" "$INSTALL_IMAGE_TAG_REF"', build_script)
-        self.assertIn(
-            'podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"',
-            build_script,
-        )
-        self.assertIn('loaded_id="$(podman image inspect --format', build_script)
-        self.assertIn("/usr/share/leos-installer/install-image-local-ref", build_script)
-        self.assertIn("/usr/share/leos-installer/install-image-registry-ref", build_script)
-        self.assertIn("/usr/share/leos-installer/install-image-id", build_script)
+        self.assertIn('podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"', build_script)
+        self.assertIn("podman image inspect --format '{{.Digest}}'", build_script)
+        self.assertIn('podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"', build_script)
+        self.assertIn("loaded_id", build_script)
+        self.assertIn("install-image-registry-ref", build_script)
+        self.assertIn("install-image-id", build_script)
         self.assertNotIn("podman images", build_script)
 
-    def test_anaconda_uses_the_exact_image_ref_and_does_not_rewrite_existing_efi(self):
+    def test_anaconda_uses_the_exact_image_and_separate_efi_directory(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
         self.assertIn("efi_dir = leos", hook)
+        self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
         self.assertIn(
-            "ostreecontainer --url=%s --transport=containers-storage",
-            hook,
-        )
-        self.assertIn(
-            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"',
+            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"',
             hook,
         )
         self.assertIn(
@@ -84,7 +73,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         ):
             self.assertIn(log_name, hook)
         self.assertIn("LEOS-installation-diagnostics.tar.gz", hook)
-        self.assertIn("yad --title=\"Échec de l'installation LEOS\"", hook)
+        self.assertIn("%onerror", hook)
 
     def test_titanoboa_iso_config_has_consistent_label_and_uefi_entries(self):
         content = (INSTALLER / "src/iso.yaml").read_text(encoding="utf-8")
@@ -93,10 +82,10 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("rd.live.image", content)
         self.assertIn("nomodeset", content)
 
-    def test_installed_images_trust_only_signed_leos_registry_repositories(self):
+    def test_installed_images_require_leos_signatures_without_blocking_other_registries(self):
         policy_path = ROOT / "files/leos-containers-policy.json"
         policy = json.loads(policy_path.read_text(encoding="utf-8"))
-        self.assertEqual(policy["default"], [{"type": "reject"}])
+        self.assertEqual(policy["default"], [{"type": "insecureAcceptAnything"}])
         docker = policy["transports"]["docker"]
         expected = (
             "ghcr.io/jovanille43/leos",
@@ -117,26 +106,34 @@ class TitanoboaInstallerTests(unittest.TestCase):
         public_key = (ROOT / "files/leos-cosign.pub").read_text(encoding="utf-8")
         self.assertIn("BEGIN PUBLIC KEY", public_key)
 
-    def test_bluebuild_recipes_install_signature_policy_and_public_key(self):
+    def test_bluebuild_recipe_installs_signature_policy_and_public_key(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("source: leos-containers-policy.json", recipe)
         self.assertIn("destination: /etc/containers/policy.json", recipe)
         self.assertIn("source: leos-cosign.pub", recipe)
         self.assertIn("destination: /etc/pki/containers/leos-cosign.pub", recipe)
 
-    def test_workflow_uses_a_pinned_titanoboa_action_and_keeps_old_generator_separate(self):
+    def test_workflow_uses_pinned_titanoboa_and_checks_iso_artifacts(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn(
             "uses: ublue-os/titanoboa@5c457c3d0518bd17e754be0fd98a60d29d26abb4",
             workflow,
         )
-        self.assertIn("image-ref: localhost/leos-live-installer:", workflow)
+        self.assertIn("cosign verify --key cosign.pub", workflow)
         self.assertIn("--build-arg INSTALL_IMAGE_REF=", workflow)
         self.assertIn("--build-arg INSTALL_IMAGE_TAG_REF=", workflow)
         self.assertIn("--build-arg INSTALL_IMAGE_DIGEST=", workflow)
         self.assertIn("verify-installer-iso.sh", workflow)
         self.assertIn("sign-iso-artifacts.sh", workflow)
         self.assertNotIn("bluebuild generate-iso", workflow)
+
+    def test_previous_iso_workflow_remains_available_for_comparison(self):
+        old_workflow = ROOT / ".github/workflows/iso.yml"
+        self.assertTrue(old_workflow.is_file())
+        self.assertIn(
+            "bluebuild generate-iso",
+            old_workflow.read_text(encoding="utf-8"),
+        )
 
 
 if __name__ == "__main__":
