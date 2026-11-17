@@ -33,6 +33,8 @@ Références amont :
 
 Une implémentation séparée existe maintenant sur `feature/titanoboa-installer`, dans `.github/workflows/iso-titanoboa.yml`. Elle reprend la méthode Live de Bazzite : image Live KDE basée sur Bazzite, image LEOS explicitement embarquée dans le stockage Podman, puis génération par Titanoboa. L'action Titanoboa est épinglée sur le commit `5c457c3d0518bd17e754be0fd98a60d29d26abb4`.
 
+Le déclenchement manuel du workflow ISO ne sera disponible dans GitHub Actions qu'après que le fichier soit présent sur la branche par défaut ; la PR de migration est pour le moment un brouillon non fusionné.
+
 Cette intégration est une candidate, pas une validation. Les trois nouvelles images LEOS doivent d'abord être reconstruites sur cette branche pour contenir la politique Sigstore et la clé publique. Ensuite seulement le workflow ISO peut être lancé. La première étape à valider est une installation complète sur une VM UEFI avec disque vierge ; aucun test matériel ni dual boot n'est enregistré. Voir [le détail du flux et ses critères de validation](titanoboa-installer.md).
 
 Référence amont : [ublue-os/titanoboa](https://github.com/ublue-os/titanoboa).
