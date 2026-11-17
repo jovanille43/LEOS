@@ -15,6 +15,8 @@ from desktop.desktop_exec import parse_desktop_exec, resolve_desktop_working_dir
 from desktop.dock_favourites import DockFavourites
 from desktop.notification_store import NotificationStore
 from desktop.recent_applications import RecentApplications
+from leos_core.settings import SettingsStore
+from desktop.themes import palette_for_settings
 
 
 APP_DIRS = desktop_application_dirs()
@@ -65,6 +67,7 @@ class ApplicationCatalog(QAbstractListModel):
     categoryChanged = Signal()
     loadingChanged = Signal()
     categoriesChanged = Signal()
+    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -75,6 +78,10 @@ class ApplicationCatalog(QAbstractListModel):
         self._scan_task: _ApplicationScanTask | None = None
         self._refresh_pending = False
         self._loading = False
+        self.settings = SettingsStore()
+        self._theme_snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
         self.favourites = DockFavourites()
         self.notifications = NotificationStore()
         self.recentApplications = RecentApplications()
@@ -84,8 +91,22 @@ class ApplicationCatalog(QAbstractListModel):
         self._notification_timer.setInterval(3000)
         self._notification_timer.timeout.connect(self.refreshNotificationCount)
         self._notification_timer.timeout.connect(self.refreshSharedStores)
+        self._notification_timer.timeout.connect(self.refreshThemePalette)
         self._notification_timer.start()
         self.refresh()
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self.settings)
+
+    @Slot()
+    def refreshThemePalette(self) -> None:
+        snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        if snapshot != self._theme_snapshot:
+            self._theme_snapshot = snapshot
+            self.themeChanged.emit()
 
     def roleNames(self):
         return ROLE_NAMES
