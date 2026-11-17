@@ -14,14 +14,18 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 
 Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
 
-## Fond d'écran Desktop
+## Fonds d'écran Desktop et Gaming
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), lion seul, halos cyan/magenta discrets |
-| `branding/wallpapers/gaming-leos.svg` | Fond LEOS Gaming 4K (3840 × 2160), lion avec manette, halos cyan/magenta plus dynamiques |
+| `branding/wallpapers/desktop-leos.svg` | Modèle officiel Desktop 4K (3840 × 2160), lion seul, halos A/B cyan/magenta d'origine |
+| `branding/wallpapers/gaming-leos.svg` | Modèle officiel Gaming 4K (3840 × 2160), lion avec manette, halos plus dynamiques |
 
-Chaque SVG référence par un lien relatif (`../desktop-logo-alpha.png` ou `../gaming-logo-alpha.png`) une copie dérivée du JPEG officiel correspondant : le JPEG fourni reste la source unique et n'est jamais modifié, la copie est régénérable à l'identique avec `python3 tools/derive_emblem_alpha.py` (vérification : `--check`). Le PNG supprime le rectangle noir que le JPEG, sans transparence, dessinait sur les halos du fond ; composé sur du noir, il redonne l'emblème d'origine à 4 niveaux près. Les courbes décoratives du fond Gaming s'arrêtent avant le halo de l'emblème, qui n'est plus masqué par un rectangle noir. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
+Ces deux SVG sont les sources maîtresses immuables et conservent les dégradés, courbes, proportions et positions d'emblèmes validés. Dans le Centre de contrôle, le bouton **Générer les fonds A/B** crée des copies personnalisées à partir de la paire active. Le générateur `desktop/wallpapers.py` ne remplace que les couleurs de halo/néon répertoriées ; les tons neutres, les géométries SVG et les images officielles des lions sont conservés.
+
+Les variantes sont créées dans `$XDG_DATA_HOME/leos/wallpapers/A-<couleur-A>__B-<couleur-B>/` (par défaut sous `~/.local/share/leos/wallpapers/`). Chaque dossier contient les deux SVG et les deux PNG transparents correspondants, avec des liens d'image relatifs locaux. Une nouvelle paire reçoit un dossier distinct : générer un autre thème ne remplace donc pas les fichiers que KDE pourrait déjà afficher.
+
+Les aperçus du Centre de contrôle se mettent à jour après génération. Le choix du fond reste manuel : le bouton de sélection ouvre le module KDE natif, où l'utilisateur parcourt le dossier généré et choisit Desktop ou Gaming. Aucun fond n'est appliqué automatiquement au changement de thème, à la connexion ou au changement de mode. Les SVG originaux, JPEG fournis et PNG transparents packagés ne sont jamais modifiés. Le rendu réel doit encore être validé dans une session Bazzite.
 
 ## Animations intégrées
 
