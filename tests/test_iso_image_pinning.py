@@ -52,6 +52,7 @@ class IsoImagePinningTests(unittest.TestCase):
 
     def run_helper(self, image_ref=VALID_IMAGE, *, digest=VALID_DIGEST, pull_exit=0, skopeo_exit=0):
         environment = os.environ.copy()
+        environment.pop("GITHUB_OUTPUT", None)
         environment.update(
             {
                 "PODMAN_BIN": str(self.podman),
@@ -149,6 +150,7 @@ class IsoImagePinningTests(unittest.TestCase):
 
     def test_requires_output_destination_before_resolving_or_pulling(self):
         environment = os.environ.copy()
+        environment.pop("GITHUB_OUTPUT", None)
         environment.update(
             {
                 "PODMAN_BIN": str(self.podman),
