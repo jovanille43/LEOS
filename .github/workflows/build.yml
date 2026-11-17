@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: leos-image-pipeline
+  cancel-in-progress: false
+
 jobs:
   preflight:
     name: Validate LEOS before image builds
