@@ -48,9 +48,10 @@ dnf install -qy --enable-repo=fedora-cisco-openh264 --allowerasing \
   firefox anaconda-live anaconda-dracut libblockdev-{btrfs,lvm,dm} yad
 # Ensure Anaconda includes the Fedora fix for RHBZ 2332319 (bootc/OSTree root fstab handling).
 dnf upgrade -qy anaconda-core anaconda-live anaconda-dracut
-if ! rpm -q --changelog anaconda-dracut | grep -Eqi '2332319'; then
-  echo "::error::Anaconda lacks the systemd-remount-fs fix for RHBZ 2332319; refusing to build this Live installer." >&2
-  exit 1
+if rpm -q --changelog anaconda-dracut | grep -Eqi '2332319'; then
+  echo "Anaconda contains the RHBZ 2332319 fix; the post-install root mount cleanup remains enabled."
+else
+  echo "::warning::Anaconda does not advertise the RHBZ 2332319 fix; the documented rootflags/fstab workaround will be applied to the installed deployment."
 fi
 install -d -m 0755 /var/lib/rpm-state /etc/anaconda/profile.d /etc/anaconda/conf.d
 install -d -m 0755 /usr/share/anaconda/post-scripts
@@ -135,6 +136,100 @@ mkdir -p /tmp/leos-install-logs
 %end
 EOF
 
+cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'
+%post --erroronfail --log=/tmp/leos-install-logs/root-fstab-workaround.log
+set -euo pipefail
+
+fstab=/etc/fstab
+rootflags_file=/run/leos-rootflags
+if [[ ! -f "$fstab" ]]; then
+  echo "The installed system has no /etc/fstab; cannot apply the bootc root mount workaround."
+  exit 1
+fi
+
+# Preserve non-default root filesystem options as kernel rootflags. The bug
+# report documents deleting the Anaconda-generated root fstab row; non-default
+# options (notably Btrfs subvolume/compression) must move to the kernel command
+# line first.
+python3 - "$fstab" "$rootflags_file" <<'PY'
+from pathlib import Path
+import sys
+
+fstab = Path(sys.argv[1])
+destination = Path(sys.argv[2])
+matches = []
+for line in fstab.read_text(encoding="utf-8").splitlines():
+    stripped = line.strip()
+    if not stripped or stripped.startswith("#"):
+        continue
+    fields = stripped.split()
+    if len(fields) >= 4 and fields[1] == "/":
+        matches.append(fields[3])
+
+if len(matches) > 1:
+    raise SystemExit("More than one / entry exists in the installed /etc/fstab.")
+
+flags = []
+if matches:
+    flags = [
+        option for option in matches[0].split(",")
+        if option and option not in {"defaults", "ro", "rw"}
+    ]
+destination.write_text(",".join(flags), encoding="utf-8")
+PY
+
+rootflags="$(< "$rootflags_file")"
+if [[ -n "$rootflags" ]]; then
+  if ! command -v rpm-ostree >/dev/null 2>&1; then
+    echo "rpm-ostree is required to preserve non-default root mount options as kernel arguments."
+    exit 1
+  fi
+  current_kargs="$(rpm-ostree kargs)"
+  mapfile -t existing_rootflags < <(
+    grep -oE '(^|[[:space:]])rootflags=[^[:space:]]+' <<< "$current_kargs" |
+      sed -E 's/^[[:space:]]*rootflags=//'
+  )
+  if [[ "${#existing_rootflags[@]}" -gt 1 ]]; then
+    echo "Multiple rootflags kernel arguments exist; refusing to guess which one to replace."
+    exit 1
+  fi
+  if [[ "${#existing_rootflags[@]}" -eq 1 && "${existing_rootflags[0]}" != "$rootflags" ]]; then
+    rpm-ostree kargs --delete-if-present="rootflags=${existing_rootflags[0]}"
+  fi
+  rpm-ostree kargs --append-if-missing="rootflags=$rootflags"
+fi
+
+# Remove only the root filesystem line. /boot, /boot/efi, swap, and all data
+# mounts remain untouched.
+python3 - "$fstab" <<'PY'
+from pathlib import Path
+import sys
+
+fstab = Path(sys.argv[1])
+lines = fstab.read_text(encoding="utf-8").splitlines(keepends=True)
+kept = []
+removed = 0
+for line in lines:
+    stripped = line.strip()
+    fields = stripped.split() if stripped and not stripped.startswith("#") else []
+    if len(fields) >= 2 and fields[1] == "/":
+        removed += 1
+    else:
+        kept.append(line)
+
+if removed > 1:
+    raise SystemExit("More than one / entry was found; refusing to rewrite /etc/fstab.")
+if removed == 1:
+    fstab.write_text("".join(kept), encoding="utf-8")
+    print("Moved root mount options to the kernel command line and removed only the / fstab row.")
+else:
+    print("No root fstab row remained; nothing to change.")
+PY
+
+rm -f "$rootflags_file"
+%end
+EOF
+
 cat >> /usr/share/anaconda/interactive-defaults.ks <<EOF
 %pre --erroronfail --log=/tmp/leos-install-logs/preflight.log
 set -euo pipefail
@@ -193,6 +288,7 @@ printf 'ostreecontainer --url=%s --transport=containers-storage --no-signature-v
   "$target_local_ref" >> /usr/share/anaconda/interactive-defaults.ks
 cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 %include /usr/share/anaconda/post-scripts/install-configure-upgrade.ks
+%include /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks
 %include /usr/share/anaconda/post-scripts/leos-disable-fedora-flatpak.ks
 %include /usr/share/anaconda/post-scripts/leos-restore-selinux-labels.ks
 %include /usr/share/anaconda/post-scripts/leos-secureboot-enroll-key.ks
