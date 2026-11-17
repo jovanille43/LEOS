@@ -53,6 +53,7 @@ printf '%s\n' "$INSTALL_IMAGE_REF" > /usr/share/leos-installer/install-image-reg
 printf '%s\n' "$INSTALL_IMAGE_DIGEST" > /usr/share/leos-installer/install-image-digest
 printf '%s\n' "$pulled_id" > /usr/share/leos-installer/install-image-id
 chmod 0644 /usr/share/leos-installer/install-image-*
+install -D -m 0755 "$SCRIPT_DIR/leos-root-fstab-fix.sh" /usr/share/leos-installer/leos-root-fstab-fix.sh
 
 bash "$SCRIPT_DIR/titanoboa_hook_preinitramfs.sh"
 dnf install -y dracut-live
