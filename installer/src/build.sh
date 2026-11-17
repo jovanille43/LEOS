@@ -36,8 +36,11 @@ if [[ ! "$pulled_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
 fi
 podman tag "$INSTALL_IMAGE_REF" "$INSTALL_IMAGE_TAG_REF"
 
-podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF" |
-  podman load --storage-opt additionalimagestore=''
+if mountpoint -q /usr/lib/containers/storage; then
+  podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF" |
+    podman load --storage-opt additionalimagestore=''
+fi
+podman image exists "$INSTALL_IMAGE_TAG_REF"
 loaded_id="$(podman image inspect --format '{{.Id}}' "$INSTALL_IMAGE_TAG_REF")"
 if [[ "$loaded_id" != "$pulled_id" ]]; then
   echo "::error::The image embedded in the Live environment changed during storage import." >&2
