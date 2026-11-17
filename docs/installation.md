@@ -10,7 +10,7 @@ La première validation physique n’a pas abouti : le contrôle média a affich
 
 ## Nouvelle chaîne Live Titanoboa — candidate, non validée
 
-La branche `feature/titanoboa-installer` contient une nouvelle chaîne expérimentale : elle construit un environnement Live KDE à partir de Bazzite, y embarque l'image LEOS cible, puis génère l'ISO avec Titanoboa. Anaconda déploie l'image embarquée, puis vérifie sa signature en revenant à sa référence GHCR. Le profil déclare un répertoire EFI `leos` et les hooks LEOS ne suppriment pas les dossiers EFI d'autres systèmes.
+La branche `feature/titanoboa-installer` contient une nouvelle chaîne expérimentale : elle construit un environnement Live KDE à partir de Bazzite, y embarque l'image LEOS cible, puis génère l'ISO avec Titanoboa. Anaconda déploie l'image embarquée, puis vérifie sa signature en revenant à sa référence GHCR. Le profil Anaconda conserve le répertoire EFI `fedora` utilisé par Bazzite ; le dossier Ubuntu `EFI/ubuntu` reste distinct. Les hooks LEOS ne suppriment aucun dossier EFI existant. Un double démarrage avec une installation Fedora déjà présente n'est toutefois pas garanti.
 
 **Important :** les images précédemment publiées avec le tag `e33a010-45` ne contiennent pas la nouvelle politique de signatures installée par cette branche. Il faut d'abord relancer le workflow **Build LEOS** sur `feature/titanoboa-installer` pour publier trois nouvelles images signées, puis utiliser le workflow **Generate LEOS Titanoboa Live installer ISO** avec le tag correspondant. Ne lance pas l'ancien tag avec le nouveau workflow.
 
