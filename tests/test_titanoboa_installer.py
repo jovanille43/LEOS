@@ -33,22 +33,29 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("INSTALL_IMAGE_REF", containerfile)
         self.assertIn("INSTALL_IMAGE_TAG_REF", containerfile)
         self.assertIn("--mount=type=secret,id=ghcr-auth", containerfile)
-        self.assertIn('podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"', build_script)
+        self.assertIn(
+            'podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"',
+            build_script,
+        )
         self.assertIn("podman image inspect --format '{{.Digest}}'", build_script)
-        self.assertIn('podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"', build_script)
+        self.assertIn(
+            'podman save --format oci-archive "$INSTALL_IMAGE_TAG_REF"',
+            build_script,
+        )
         self.assertIn("loaded_id", build_script)
         self.assertIn("install-image-registry-ref", build_script)
         self.assertIn("install-image-id", build_script)
         self.assertNotIn("podman images", build_script)
 
-    def test_anaconda_uses_the_exact_image_and_separate_efi_directory(self):
+    def test_anaconda_uses_the_embedded_image_and_preserves_existing_efi_files(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
         self.assertIn("efi_dir = fedora", hook)
         self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
         self.assertIn(
-            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"',
+            'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"',
             hook,
         )
+        self.assertIn('target_cosign_key="/etc/pki/containers/leos-cosign.pub"', hook)
         self.assertIn(
             'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/policy.json',
             hook,
@@ -85,19 +92,44 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertEqual(content.count("root=live:CDLABEL=LEOS-Live"), 2)
         self.assertIn("rd.live.image", content)
         self.assertIn("nomodeset", content)
+        self.assertNotIn("  default:", content)
 
-    def test_bluebuild_signing_module_installs_policy_and_variant_key(self):
+    def test_installed_images_require_only_leos_signed_ghcr_repositories(self):
+        policy_path = ROOT / "files/leos-containers-policy.json"
+        policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        self.assertEqual(policy["default"], [{"type": "reject"}])
+        repositories = policy["transports"]["docker"]
+        expected = (
+            "ghcr.io/jovanille43/leos",
+            "ghcr.io/jovanille43/leos-nvidia",
+            "ghcr.io/jovanille43/leos-nvidia-open",
+        )
+        for repository in expected:
+            with self.subTest(repository=repository):
+                rule = repositories[repository][0]
+                self.assertEqual(rule["type"], "sigstoreSigned")
+                self.assertEqual(
+                    rule["keyPath"], "/etc/pki/containers/leos-cosign.pub"
+                )
+                self.assertEqual(
+                    rule["signedIdentity"], {"type": "matchRepository"}
+                )
+
+        public_key = (ROOT / "files/leos-cosign.pub").read_text(encoding="utf-8")
+        self.assertEqual(public_key, (ROOT / "cosign.pub").read_text(encoding="utf-8"))
+
+        registry_config = (ROOT / "files/leos-registries.yaml").read_text(encoding="utf-8")
+        self.assertEqual(registry_config.count("use-sigstore-attachments: true"), 3)
+
+    def test_bluebuild_recipes_install_policy_public_key_and_ghcr_config(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
-        hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
+        self.assertIn("source: leos-containers-policy.json", recipe)
+        self.assertIn("destination: /etc/containers/policy.json", recipe)
+        self.assertIn("source: leos-cosign.pub", recipe)
+        self.assertIn("destination: /etc/pki/containers/leos-cosign.pub", recipe)
+        self.assertIn("source: leos-registries.yaml", recipe)
+        self.assertIn("destination: /etc/containers/registries.d/leos.yaml", recipe)
         self.assertIn("- type: signing", recipe)
-        self.assertTrue((ROOT / "cosign.pub").is_file())
-        self.assertIn('target_image_name="${target_local_ref##*/}"', hook)
-        self.assertIn('target_cosign_key="/etc/pki/containers/${target_image_name}.pub"', hook)
-        self.assertIn("/etc/containers/policy.json", hook)
-        self.assertNotIn("leos-containers-policy.json", recipe)
-        self.assertNotIn("leos-cosign.pub", recipe)
-        self.assertFalse((ROOT / "files/leos-containers-policy.json").exists())
-        self.assertFalse((ROOT / "files/leos-cosign.pub").exists())
 
     def test_workflow_uses_pinned_titanoboa_and_checks_iso_artifacts(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
