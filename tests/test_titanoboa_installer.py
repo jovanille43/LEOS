@@ -84,7 +84,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         ):
             self.assertIn(log_name, hook)
         self.assertIn("LEOS-installation-diagnostics.tar.gz", hook)
-        self.assertIn('yad --title="Échec de l\\'installation LEOS"', hook)
+        self.assertIn("yad --title=\"Échec de l'installation LEOS\"", hook)
 
     def test_titanoboa_iso_config_has_consistent_label_and_uefi_entries(self):
         content = (INSTALLER / "src/iso.yaml").read_text(encoding="utf-8")
