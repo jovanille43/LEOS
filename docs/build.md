@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des huit ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des dix ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
 
 ## Base retenue
 
@@ -52,7 +52,7 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - Les logos officiels, les trois vidéos d'introduction/référence et les deux fonds d'écran 4K sont présents dans `branding/`. Le rendu des fonds SVG et JPEG liés, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite réelle.
 - Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six ressources d'origine (trois emblèmes et trois vidéos) et des deux fonds SVG, puis contrôle les huit empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
+Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six ressources d'origine (trois emblèmes et trois vidéos) et des deux fonds SVG, puis contrôle les dix empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
 
 ## Validation sur matériel réel
 
