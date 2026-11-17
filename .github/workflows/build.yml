@@ -5,18 +5,14 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
-
-concurrency:
-  group: leos-image-pipeline
-  cancel-in-progress: false
 
 jobs:
-  bluebuild:
-    name: Build LEOS image
+  preflight:
+    name: Validate LEOS before image builds
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 90
+    permissions:
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -139,6 +135,20 @@ jobs:
           chmod 600 "$workdir/cosign.key"
           bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub
 
+  build-amd-intel:
+    name: Build LEOS (AMD / Intel)
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build and publish LEOS (AMD / Intel)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
@@ -151,7 +161,22 @@ jobs:
           verify_install: true
           build_opts: "--signing-driver sigstore"
           cli_version: v0.9.42
+          skip_checkout: true
 
+  build-nvidia-legacy:
+    name: Build LEOS (NVIDIA legacy)
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build and publish LEOS (NVIDIA)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
@@ -164,7 +189,22 @@ jobs:
           verify_install: true
           build_opts: "--signing-driver sigstore"
           cli_version: v0.9.42
+          skip_checkout: true
 
+  build-nvidia-modern:
+    name: Build LEOS (NVIDIA modern)
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build and publish LEOS (NVIDIA modern)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
@@ -177,3 +217,4 @@ jobs:
           verify_install: true
           build_opts: "--signing-driver sigstore"
           cli_version: v0.9.42
+          skip_checkout: true
