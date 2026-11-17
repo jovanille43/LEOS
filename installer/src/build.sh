@@ -23,12 +23,17 @@ if [[ ! -r "$REGISTRY_AUTH_FILE" ]]; then
   exit 1
 fi
 
-podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"
-pulled_digest="$(podman image inspect --format '{{.Digest}}' "$INSTALL_IMAGE_REF")"
-if [[ "$pulled_digest" != "$INSTALL_IMAGE_DIGEST" ]]; then
-  echo "::error::The downloaded image does not match the verified digest." >&2
+dnf install -y skopeo
+remote_digest="$(skopeo inspect --authfile "$REGISTRY_AUTH_FILE" --format '{{.Digest}}' "docker://$INSTALL_IMAGE_TAG_REF")"
+if [[ "$remote_digest" != "$INSTALL_IMAGE_DIGEST" ]]; then
+  echo "::error::The LEOS registry tag no longer resolves to the signed manifest digest selected by CI." >&2
   exit 1
 fi
+
+# Pull the immutable registry manifest, then record the local architecture's
+# image ID. Do not compare Podman's local child-manifest digest to the signed
+# multi-architecture index digest.
+podman pull --authfile "$REGISTRY_AUTH_FILE" "$INSTALL_IMAGE_REF"
 pulled_id="$(podman image inspect --format '{{.Id}}' "$INSTALL_IMAGE_REF")"
 if [[ ! "$pulled_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
   echo "::error::Podman did not return a valid immutable image ID." >&2
