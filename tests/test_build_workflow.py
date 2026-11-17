@@ -276,6 +276,25 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
                 self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
 
+    def test_iso_workflow_verifies_and_digest_pins_bluebuild_installer(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        public_key = (ROOT / "tools/trust/blue-build-cli.pub").read_text(encoding="utf-8")
+        provenance = (ROOT / "tools/trust/README.md").read_text(encoding="utf-8")
+        self.assertIn("Verify and install BlueBuild CLI", source)
+        self.assertIn("CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer", source)
+        self.assertIn("tools/trust/blue-build-cli.pub", source)
+        self.assertIn('skopeo inspect --format \'{{.Digest}}\'', source)
+        self.assertIn('cli_immutable_ref="${cli_repository}@${cli_digest}"', source)
+        verify = source.index('cosign verify --key tools/trust/blue-build-cli.pub "${cli_immutable_ref}"')
+        pull = source.index('docker pull "${cli_immutable_ref}"')
+        extract = source.index('docker cp bluebuild-cli:/out/bluebuild')
+        self.assertLess(verify, pull)
+        self.assertLess(pull, extract)
+        self.assertIn("-----BEGIN PUBLIC KEY-----", public_key)
+        self.assertIn("-----END PUBLIC KEY-----", public_key)
+        self.assertIn("cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6", provenance)
+        self.assertNotIn("PRIVATE KEY", public_key)
+
     def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", source)
