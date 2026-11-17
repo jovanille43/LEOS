@@ -147,6 +147,10 @@ La pile BlueZ, PipeWire et les paramètres KDE restent ceux fournis par Bazzite 
 - [ ] Après génération, le sélecteur KDE permet de parcourir le dossier de la paire active et de choisir explicitement `desktop-leos.svg` ou `gaming-leos.svg`.
 - [ ] Sans variante générée, le sélecteur peut toujours parcourir `/usr/share/leos/branding/wallpapers/` pour choisir les ressources originales.
 - [ ] Le fond Desktop affiche le lion seul ; le fond Gaming affiche le lion avec la manette, sans déformation ni recadrage involontaire.
+- [ ] Appliquer le Plasma Style LEOS génère les copies utilisateur Plasma et Aurorae avec les couleurs A/B actives, sans modifier les fichiers système d'origine.
+- [ ] Les SVG Plasma et Aurorae générés conservent leurs identifiants, dimensions, chemins, dégradés, états, transparences et couleurs neutres ; seules les nuances d'accent LEOS changent.
+- [ ] Après modification des couleurs A/B, réappliquer le Plasma Style LEOS actualise les ressources personnalisées.
+- [ ] La décoration Aurorae LEOS peut être sélectionnée explicitement dans KDE ; vérifier boutons, hitboxes, fenêtres actives/inactives et rendu après reconnexion/reconfiguration KWin.
 - [ ] La résolution et la netteté sont correctes sur chaque écran connecté, y compris en multi-écrans.
 - [ ] Annuler le sélecteur KDE ne modifie pas le fond actif.
 - [ ] Changer le thème LEOS ne change jamais automatiquement un fond déjà sélectionné.

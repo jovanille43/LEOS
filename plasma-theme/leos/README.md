@@ -6,8 +6,8 @@ for elements not yet customized.
 
 - `metadata.json`: Plasma 6 style metadata.
 - `plasmarc`: subtle background contrast and blur settings.
-- `widgets/panel-background.svg`: dark glass-like panel with restrained cyan
-  to magenta edge lighting.
+- `widgets/panel-background.svg`: dark glass-like panel with the original A/B
+  edge-lighting geometry.
 - `dialogs/background.svg`: matching widget popup and KRunner surface.
 - `widgets/background.svg`: desktop widget surface.
 - `widgets/button.svg`: normal, hover, pressed and focus states, including
@@ -23,9 +23,18 @@ assets have not yet been added to the repository. It must not substitute a
 generic lion or fabricate a replacement emblem.
 
 Install path in the image: `/usr/share/plasma/desktoptheme/leos`.
-The style is packaged but is not automatically selected. It must first be
-tested on a real Bazzite KDE session. Missing SVG elements intentionally use
-the installed Breeze fallback.
+The packaged files are immutable source assets. When the user explicitly
+applies the LEOS Plasma Style, `desktop/plasma_assets.py` creates a
+user-scoped copy and maps the original accent shades to the selected A/B
+colors. Only color literals change: SVG paths, gradients, IDs, dimensions,
+states and neutral surfaces are preserved. The companion Aurorae resources
+are generated at the same time under
+`$XDG_DATA_HOME/aurorae/themes/leos`.
+
+The style is not automatically selected. It must still be tested on a real
+Bazzite KDE session. Missing SVG elements intentionally use the installed
+Breeze fallback. After changing A/B colors, apply the LEOS Plasma Style again
+to refresh the generated desktop assets.
 
 The Plasma Style affects Plasma surfaces, not all Qt application controls.
 The separate LEOS KDE color scheme continues to control compatible app colors.

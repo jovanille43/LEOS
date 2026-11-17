@@ -88,7 +88,7 @@ ApplicationWindow {
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
             text: plasmaStyleConfirmation.action === "apply"
-                ? "LEOS va demander à Plasma d'utiliser son style de bureau. Cela modifie l'apparence des panneaux, widgets et fenêtres contextuelles Plasma, sans remplacer les icônes ni les réglages de disposition."
+                ? "LEOS va générer les variantes A/B du Plasma Style et des ressources de décoration Aurorae, puis demander à Plasma d'utiliser son style de bureau. Cela modifie les panneaux, widgets et fenêtres contextuelles sans remplacer les icônes ni les réglages de disposition. La décoration de fenêtres Aurorae restera à sélectionner dans les paramètres KDE."
                 : "LEOS va réappliquer le style Plasma enregistré avant le premier changement LEOS."
             color: window.themeColors.text
             wrapMode: Text.WordWrap

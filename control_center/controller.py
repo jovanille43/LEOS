@@ -163,7 +163,7 @@ class ControlCenterController(QObject):
         self.plasmaBackups = PlasmaBackupManager()
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
-        self.plasmaStyle = PlasmaStyleManager()
+        self.plasmaStyle = PlasmaStyleManager(settings=self.settings)
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"

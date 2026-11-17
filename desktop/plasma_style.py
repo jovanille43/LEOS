@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
+from desktop.plasma_assets import generate_user_theme_assets
+
 STYLE_ID = "leos"
 STYLE_NAME = "LEOS"
 MANAGED_BY = "LEOS Plasma Style Manager"
@@ -81,6 +83,7 @@ class PlasmaStyleManager:
         system_theme_root: Path = Path("/usr/share/plasma/desktoptheme"),
         apply_executable: str | None = None,
         runner: Callable[..., Any] | None = None,
+        settings: Any | None = None,
     ) -> None:
         self.data_home = data_home or Path(
             xdg_data_home()
@@ -97,6 +100,7 @@ class PlasmaStyleManager:
         self.state_file = self.state_home / "leos" / "plasma-style.json"
         self.apply_executable = apply_executable
         self.runner = runner or subprocess.run
+        self.settings = settings
 
     def tool_available(self) -> bool:
         return bool(self.apply_executable or shutil.which("plasma-apply-desktoptheme"))
@@ -217,6 +221,10 @@ class PlasmaStyleManager:
     def apply_style(self) -> str:
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-desktoptheme is unavailable")
+        if self.settings is not None:
+            # Build a personalized user-scoped Plasma/Aurorae copy before
+            # selecting the style; packaged source assets remain untouched.
+            generate_user_theme_assets(self.settings, data_root=self.data_home)
         if not self.style_installed():
             raise FileNotFoundError("The LEOS Plasma Style package is not installed")
         if self.state_file.is_symlink():
@@ -245,7 +253,7 @@ class PlasmaStyleManager:
             "last_applied": STYLE_ID,
             "apply_pending": False,
         })
-        return "Style Plasma LEOS appliqué."
+        return "Style Plasma LEOS A/B appliqué ; ressources Aurorae personnalisées préparées."
 
     def restore_previous_style(self) -> str:
         state = self._read_state()
