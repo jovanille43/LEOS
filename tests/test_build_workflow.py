@@ -311,7 +311,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("id: modeSelectorContent", selector)
         self.assertIn("focus: true", selector)
         self.assertNotIn("    focus: true", selector.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
-        self.assertIn('Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253"', gaming)
+        self.assertIn("Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border", gaming)
         self.assertIn("Layout.preferredWidth: 54", controllers)
         self.assertIn("Layout.preferredHeight: 54", controllers)
         self.assertIn("Layout.preferredHeight: 1", controllers)
