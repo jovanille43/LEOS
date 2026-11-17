@@ -188,9 +188,9 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        self.assertIn("recipe: recipe.yml", source)
-        self.assertIn("recipe: recipe-nvidia.yml", source)
-        self.assertIn("recipe: recipe-nvidia-open.yml", source)
+        self.assertIn("recipe: recipes/recipe.yml", source)
+        self.assertIn("recipe: recipes/recipe-nvidia.yml", source)
+        self.assertIn("recipe: recipes/recipe-nvidia-open.yml", source)
         self.assertTrue((ROOT / "recipes/recipe.yml").is_file())
         self.assertTrue((ROOT / "recipes/recipe-nvidia.yml").is_file())
         self.assertTrue((ROOT / "recipes/recipe-nvidia-open.yml").is_file())
