@@ -11,6 +11,7 @@ Titanoboa est présenté par son projet comme un constructeur expérimental d’
 1. Le workflow sélectionne explicitement une variante LEOS et un tag publié.
 2. Le script de préparation résout le digest SHA-256 immuable de l’image.
 3. Cosign vérifie la signature de l’image publiée avant qu’elle soit intégrée au média.
+4. La signature du socle Live Bazzite est également vérifiée avec la clé publique amont `files/bazzite-cosign.pub`, après résolution de son digest immuable.
 4. Le workflow résout le digest de ghcr.io/ublue-os/bazzite:stable et construit l’image Live KDE depuis cette référence immuable ; le manifeste conserve le tag et le digest de la base.
 5. Le constructeur Live tire l’image LEOS par digest, lui donne un nom local pour Anaconda et compare l’identifiant de l’image après export/import.
 6. Titanoboa construit l’ISO. Le workflow vérifie ensuite le SHA-256, le catalogue UEFI, la signature et le manifeste de provenance.
