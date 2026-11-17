@@ -16,6 +16,7 @@ jobs:
   bluebuild:
     name: Build LEOS image
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -142,6 +143,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
 
       - name: Build and publish LEOS (NVIDIA)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
@@ -152,6 +154,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
 
       - name: Build and publish LEOS (NVIDIA modern)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
@@ -162,3 +165,4 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
