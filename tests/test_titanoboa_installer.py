@@ -84,6 +84,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
         ):
             self.assertIn(log_name, hook)
         self.assertIn("LEOS-installation-diagnostics.tar.gz", hook)
+        self.assertIn("/tmp/leos-install-logs/*.log", hook)
+        self.assertIn("journalctl -b -n 1000", hook)
         self.assertIn("%onerror", hook)
 
     def test_titanoboa_iso_config_has_consistent_label_and_uefi_entries(self):
