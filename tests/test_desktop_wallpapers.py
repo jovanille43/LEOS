@@ -68,6 +68,10 @@ class UserWallpaperGenerationTests(unittest.TestCase):
                     self.assertIsNotNone(image)
                     relative = image.attrib.get("href")
                     self.assertEqual(relative, logo)
+                    self.assertEqual(
+                        image.attrib.get("{http://www.w3.org/1999/xlink}href"),
+                        logo,
+                    )
                     self.assertTrue((generated.parent / relative).resolve().is_file())
 
             desktop_svg = Path(result["desktop"]).read_text(encoding="utf-8")
@@ -140,6 +144,9 @@ class UserWallpaperGenerationTests(unittest.TestCase):
         self.assertIn("def generateThemeWallpapers(self)", controller)
         self.assertIn("def desktopWallpaperPreviewUrl(self)", controller)
         self.assertIn("def gamingWallpaperPreviewUrl(self)", controller)
+        self.assertIn("def customWallpaperGenerated(self)", controller)
+        self.assertIn("user_wallpaper_directory(self.settings)", controller)
+        self.assertIn("controlCenter.customWallpaperGenerated", qml)
         self.assertIn("controlCenter.generateThemeWallpapers()", qml)
         self.assertIn("controlCenter.desktopWallpaperPreviewUrl", qml)
         self.assertIn("controlCenter.gamingWallpaperPreviewUrl", qml)
