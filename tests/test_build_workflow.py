@@ -359,7 +359,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Unknown image variant.", source)
         self.assertIn("Authenticate to GitHub Container Registry", source)
         self.assertIn("sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3", source)
-        self.assertIn("cosign verify --key cosign.pub", source)
+        self.assertIn('cosign_bin="$(command -v cosign)"', source)
+        self.assertIn('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --key cosign.pub', source)
         self.assertIn("Resolve and verify LEOS image tag", source)
 
     def test_iso_generation_checks_the_signed_digest_before_and_after_build(self):
@@ -369,7 +370,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('^sha256:[a-f0-9]{64}$', source)
         self.assertIn('image_repository="${IMAGE_REF%:*}"', source)
         self.assertIn('immutable_ref="${image_repository}@${digest}"', source)
-        self.assertIn('cosign verify --key cosign.pub "${immutable_ref}"', source)
+        self.assertIn('cosign_bin="$(command -v cosign)"', source)
+        self.assertIn('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --key cosign.pub "${immutable_ref}"', source)
         self.assertIn('digest=${digest}', source)
         self.assertIn('VERIFIED_DIGEST: ${{ steps.verified.outputs.digest }}', source)
         self.assertIn('IMAGE_REF: ${{ steps.image.outputs.ref }}', source)
@@ -384,7 +386,7 @@ class BuildWorkflowTests(unittest.TestCase):
             source.index("Generate bootable installer ISO"),
         )
         self.assertLess(
-            source.index('cosign verify --key cosign.pub "${immutable_ref}"'),
+            source.index('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --key cosign.pub "${immutable_ref}"'),
             source.index('generate-iso --iso-name'),
         )
 
