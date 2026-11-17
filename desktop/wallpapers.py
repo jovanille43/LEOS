@@ -1,4 +1,10 @@
-"""Generate user-scoped LEOS wallpapers using the active A/B theme accents."""
+"""Generate user-scoped LEOS wallpapers from the active A/B theme accents.
+
+The official 4K SVG files and transparent emblems remain immutable package
+assets. This module creates a separate user-owned pair for each accent
+combination; generating a new pair never overwrites a wallpaper already chosen
+in KDE.
+"""
 
 from __future__ import annotations
 
@@ -42,26 +48,31 @@ def _mix(first: str, second: str, ratio: float) -> str:
 
 
 def _color_map(accent_a: str, accent_b: str, kind: str) -> dict[str, str]:
+    """Map only the known neon/halo colors, preserving neutral linework."""
+    if kind not in WALLPAPER_FILES:
+        raise ValueError("Unknown LEOS wallpaper kind")
+
     midpoint = _mix(accent_a, accent_b, 0.5)
-    mapping = {
+    return {
+        # Primary/cyan family, including the low-light halo stops.
         "#00d9ff": accent_a,
         "#00cfff": accent_a,
         "#00b9e8": accent_a,
         "#006782": _shade(accent_a, 0.45),
         "#006b8a": _shade(accent_a, 0.45),
         "#087b9a": _shade(accent_a, 0.50),
+        "#001018": _shade(accent_a, 0.07),
+        # Secondary/magenta family.
         "#e33bff": accent_b,
         "#d32ce8": accent_b,
         "#67136f": _shade(accent_b, 0.45),
         "#761286": _shade(accent_b, 0.45),
         "#a12eae": _shade(accent_b, 0.50),
+        "#16051c": _shade(accent_b, 0.07),
+        "#18051d": _shade(accent_b, 0.07),
+        # The original subdued transition between the two glow families.
         "#8c6eaa": midpoint,
     }
-    # Dark, fully transparent end-stops remain close to the original neutral
-    # background; only the visible glow colors move with the selected accents.
-    if kind not in WALLPAPER_FILES:
-        raise ValueError("Unknown LEOS wallpaper kind")
-    return mapping
 
 
 def _atomic_write(path: Path, payload: bytes, mode: int = 0o600) -> None:
@@ -86,7 +97,13 @@ def _atomic_write(path: Path, payload: bytes, mode: int = 0o600) -> None:
             pass
 
 
-def _serialize_wallpaper(source: Path, kind: str, accent_a: str, accent_b: str) -> bytes:
+def _serialize_wallpaper(
+    source: Path,
+    kind: str,
+    accent_a: str,
+    accent_b: str,
+    logo_filename: str,
+) -> bytes:
     if source.is_symlink() or not source.is_file():
         raise FileNotFoundError(f"LEOS wallpaper source is missing: {source}")
 
@@ -102,6 +119,11 @@ def _serialize_wallpaper(source: Path, kind: str, accent_a: str, accent_b: str) 
         for attribute, value in tuple(element.attrib.items()):
             if attribute.lower() in {"stop-color", "stroke", "fill"}:
                 element.set(attribute, recolor(value))
+            elif element.tag == f"{{{SVG_NAMESPACE}}}image" and attribute in {
+                "href", f"{{{XLINK_NAMESPACE}}}href"
+            }:
+                element.set(attribute, logo_filename)
+
         if element.text:
             text = element.text.replace("halos cyan et magenta", "halos A/B personnalisés")
             text = text.replace("arcs cyan et magenta", "arcs A/B personnalisés")
@@ -116,20 +138,21 @@ def generate_user_wallpapers(
     destination: Path | None = None,
     source_root: Path | None = None,
 ) -> dict[str, str]:
-    """Create custom Desktop/Gaming SVG copies without modifying packaged originals.
+    """Create a Desktop/Gaming pair without editing or auto-applying originals.
 
-    The copied transparent emblems are placed one directory above the wallpaper
-    files so the original relative SVG image references continue to resolve.
+    Each A/B pair receives its own folder under
+    `$XDG_DATA_HOME/leos/wallpapers/`. Emblem PNGs are copied into that same
+    folder, so SVG links stay relative and portable. A later palette generation
+    cannot silently change a wallpaper that KDE is already displaying.
     """
     package_root = source_root or Path(__file__).resolve().parents[1] / "branding"
     source_wallpapers = package_root / "wallpapers"
-    output_dir = destination or data_home() / "leos" / "wallpapers"
+    output_root = destination or data_home() / "leos" / "wallpapers"
 
-    if output_dir.is_symlink() or output_dir.parent.is_symlink():
+    if output_root.is_symlink() or output_root.parent.is_symlink():
         raise OSError("LEOS wallpaper output directory cannot be a symbolic link")
-    output_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-    os.chmod(output_dir.parent, 0o700)
-    os.chmod(output_dir, 0o700)
+    output_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(output_root, 0o700)
 
     palette = palette_for_settings(settings)
     accent_a = normalize_hex_color(palette.get("accent_primary"))
@@ -137,22 +160,24 @@ def generate_user_wallpapers(
     if accent_a is None or accent_b is None:
         raise ValueError("LEOS A/B theme accents are invalid")
 
-    # The packaged source of truth remains untouched. Store logo copies beside
-    # the generated wallpaper directory to preserve ../<logo>.png in the SVG.
-    asset_directory = output_dir.parent
+    variant_dir = output_root / f"A-{accent_a[1:]}__B-{accent_b[1:]}"
+    if variant_dir.is_symlink():
+        raise OSError("LEOS wallpaper variant directory cannot be a symbolic link")
+    variant_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(variant_dir, 0o700)
+
     results: dict[str, str] = {}
     for kind, (filename, logo_filename) in WALLPAPER_FILES.items():
         source_logo = package_root / logo_filename
         if source_logo.is_symlink() or not source_logo.is_file():
             raise FileNotFoundError(f"LEOS transparent emblem is missing: {source_logo}")
-        target_logo = asset_directory / logo_filename
-        if target_logo.is_symlink():
-            raise OSError("Refusing to overwrite a symbolic-link LEOS emblem")
-        _atomic_write(target_logo, source_logo.read_bytes())
 
+        _atomic_write(variant_dir / logo_filename, source_logo.read_bytes())
         source_svg = source_wallpapers / filename
-        payload = _serialize_wallpaper(source_svg, kind, accent_a, accent_b)
-        target_svg = output_dir / filename
+        payload = _serialize_wallpaper(
+            source_svg, kind, accent_a, accent_b, logo_filename
+        )
+        target_svg = variant_dir / filename
         _atomic_write(target_svg, payload)
         results[kind] = str(target_svg)
 
