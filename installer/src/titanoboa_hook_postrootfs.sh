@@ -186,6 +186,10 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -x /usr/bin/rpm-ostree; then
+  echo "The LEOS target image must include rpm-ostree for the first-boot root mount workaround."
+  exit 1
+fi
 %end
 EOF
 
