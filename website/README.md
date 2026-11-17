@@ -24,7 +24,7 @@ Pour ce dépôt, l'URL GitHub Pages attendue est généralement `https://jovanil
 
 ## Préparer une publication ISO
 
-La section Téléchargements reste volontairement en mode pré-lancement. Ne pas y ajouter de lien tant que :
+Une ISO candidate standard a été générée et signée, mais sa validation physique n’a pas abouti. La section Téléchargements reste donc fermée. Ne pas y ajouter de lien tant que :
 - l'ISO de la variante concernée a été construite ;
 - les tests de démarrage et d'installation ont été réalisés ;
 - le SHA-256 et le bundle de signature ont été générés et vérifiés ;

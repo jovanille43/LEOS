@@ -188,6 +188,20 @@ jobs:
               stream.write("\\n")
           PY
 
+      - name: Install ISO inspection tooling
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xorriso
+
+      - name: Verify ISO checksum and UEFI boot catalog
+        env:
+          ISO_OUTPUT_DIR: ${{ github.workspace }}/dist/iso
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/verify-installer-iso.sh "$ISO_OUTPUT_DIR/$ISO_NAME"
+
       - name: Sign and verify LEOS ISO and provenance artifacts
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}

@@ -1,62 +1,117 @@
 # Installation de LEOS
 
-## État actuel
+## État au 17 novembre 2026
 
-LEOS est encore en développement. Les trois premières images (AMD/Intel, NVIDIA legacy et NVIDIA moderne) ont été construites et publiées avec succès dans GHCR le 16 novembre 2026 ; **aucune ISO installateur LEOS n'a encore été générée ni validée**. Le tag commun de ce build est `7794179-45`. Ne tente pas d'installer une image de développement sur un ordinateur principal. Un démarrage live et une installation de test sur matériel dédié devront précéder toute diffusion.
+Les trois images LEOS (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites et signées dans GHCR avec le tag e33a010-45 (workflow 43933044510). Une ISO installateur **standard** a été générée et signée (workflow 43946765765). Les ISO NVIDIA doivent encore être générées.
 
-## Matériel et choix de l'image
+Cette ISO est une image d’installation basée sur l’installateur Fedora/Anaconda. Le menu observé propose « Install LEOS » et « Test this media & install LEOS » ; ce dernier contrôle le support avant d’ouvrir l’installateur. **Ce parcours ne démarre pas un bureau LEOS en session Live.**
 
-LEOS vise les PC modernes x86_64 démarrant en UEFI. Le système conserve un seul ensemble de fonctions Desktop et Gaming ; les variantes ci-dessous ne changent que la base et les pilotes graphiques.
+La première validation physique n’a pas abouti : le contrôle média a affiché FAIL et une tentative d’installation a ensuite échoué pendant l’étape « Installation des logiciels ». La cause n’est pas établie. Le fichier ISO téléchargé et la clé USB doivent être contrôlés avant tout nouvel essai. Ne considère pas un build GitHub réussi comme une preuve qu’une installation fonctionne.
 
-| Matériel graphique principal | Image à utiliser |
+## Matériel et variante
+
+LEOS cible les PC x86_64 démarrant en UEFI. Les variantes partagent les mêmes fonctions Desktop et Gaming ; seule la base et la pile graphique varient.
+
+| Matériel graphique principal | Image |
 | --- | --- |
-| AMD Radeon ou graphique intégré AMD | `leos` |
-| Intel intégré ou Intel Arc | `leos` |
-| NVIDIA Maxwell / Pascal / Volta | `leos-nvidia` |
-| NVIDIA Turing ou génération plus récente | `leos-nvidia-open` |
+| AMD Radeon ou graphique intégré AMD | leos (standard) |
+| Intel intégré ou Intel Arc | leos (standard) |
+| NVIDIA Maxwell / Pascal / Volta | leos-nvidia (legacy) |
+| NVIDIA Turing ou génération plus récente | leos-nvidia-open |
 
-Les GPU NVIDIA Kepler et plus anciens ne sont pas annoncés comme compatibles Gaming avec les pilotes propriétaires actuels de Bazzite. Les PC portables hybrides (iGPU + NVIDIA) devront être validés individuellement.
+Les GPU NVIDIA Kepler et plus anciens ne sont pas annoncés comme compatibles Gaming avec les pilotes actuels de Bazzite. Les portables hybrides iGPU + NVIDIA doivent être validés individuellement. Choisis la variante correspondant au GPU principal ; ne suppose pas que l’installateur la détectera automatiquement.
 
-## Prérequis à vérifier
+## Prérequis
 
-- Architecture x86_64.
-- Démarrage UEFI ; le mode BIOS Legacy/CSM n'est pas pris en charge par la base ciblée.
-- Disque cible : SSD interne, partitionnement GPT et au moins 50 Go libres (120 Go recommandés). Un disque actuellement partitionné en MBR n'est pas pris en charge par la base Bazzite.
-- Sauvegarde complète : le partitionnement ou l'installation peut modifier ou effacer les partitions du disque choisi. Vérifie le modèle et la capacité du disque cible avant de confirmer toute opération.
-- Le précontrôle matériel du Centre de contrôle LEOS est disponible après installation ; il ne vérifie pas à l'avance le disque choisi par l'installateur ni sa table GPT.
-- Pour l'usage Gaming, prendre comme repère initial la référence publiée par Bazzite : 8 Go de RAM, processeur quadricœur à 2 GHz et GPU compatible Vulkan 1.3 ou supérieur.
-- La prise en charge Wi-Fi, Bluetooth, audio, veille, écrans multiples et manettes dépend aussi des pilotes et périphériques présents.
+- Architecture x86_64 et démarrage UEFI ; le mode BIOS Legacy/CSM n’est pas dans la cible actuelle.
+- Disque GPT ; repère de stockage Gaming : au moins 50 Go libres sur SSD interne, 120 Go recommandés. La capacité réellement nécessaire doit être contrôlée pour la version de l’image installée.
+- Sauvegarde complète sur un support distinct.
+- Identification certaine du disque cible par modèle et capacité.
+- Pour tout essai d’installation, privilégier une machine ou un disque de test. Ne pas utiliser le seul ordinateur principal.
+- La vérification matérielle dans le Centre de contrôle intervient après installation ; elle ne valide pas le disque cible, la table GPT ni le schéma de partitions de l’installateur.
 
-Ces repères Gaming ne doivent pas être présentés comme des exigences universelles du mode Desktop. Un PC peut être utilisable en Desktop sans offrir les performances nécessaires aux jeux récents.
+Les repères Gaming ne sont pas des exigences universelles du mode Desktop. Wi-Fi, Bluetooth, audio, veille, écrans et manettes dépendent des pilotes et périphériques réellement présents.
 
-Le parcours du premier démarrage, y compris l'offre d'applications facultatives, est décrit dans le [guide de premier démarrage](first-run.md).
+## Vérifier l’ISO avant de préparer la clé
 
-## Procédure prévue après publication
+Télécharge l’ISO et tous les fichiers annexes depuis le même artefact GitHub Actions. Depuis le dossier extrait, vérifie d’abord la somme SHA-256. Exemple pour l’ISO standard candidate :
 
-La procédure détaillée de retour arrière et de récupération est disponible dans [le guide de récupération](recovery.md). Lis-la avant le premier essai d'installation : LEOS repose sur les déploiements OSTree de Bazzite et ne fournit pas encore de mécanisme de réparation autonome.
+~~~bash
+sha256sum --check LEOS-standard-e33a010-45.iso.sha256
+~~~
 
-1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
-2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag exact de l'image publiée. Pour les trois images actuellement disponibles, saisir `7794179-45` ; pour une compilation ultérieure, reprendre le tag affiché dans les logs du build réussi.
-3. Récupérer l'ISO, son fichier SHA-256, le manifeste JSON de provenance et les deux bundles `.sigstore.json` dans les artefacts du workflow. Pour l'exemple AMD/Intel avec le tag actuel, vérifier la somme avec `sha256sum --check LEOS-standard-7794179-45.iso.sha256`, puis vérifier l'authenticité de l'ISO et du manifeste avec Cosign et la clé publique `cosign.pub` publiée dans le dépôt :
-   ```bash
-   cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.sigstore.json LEOS-standard-7794179-45.iso
-   cosign verify-blob --key cosign.pub --bundle LEOS-standard-7794179-45.iso.json.sigstore.json LEOS-standard-7794179-45.iso.json
-   ```
-   Adapter les noms des fichiers à la variante et au tag téléchargés. Ne pas utiliser une ISO si l'une des vérifications échoue.
-4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer ; l'écriture de l'image efface le contenu de la clé choisie.
-5. Démarrer la machine sur la clé en mode UEFI et choisir explicitement la variante correspondant au GPU principal.
-6. Tester d'abord le démarrage live, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
-7. Avant toute installation, identifier précisément le disque cible (modèle et capacité), vérifier la sauvegarde et lire l'écran de partitionnement. Ne pas poursuivre si le disque ou les conséquences ne sont pas parfaitement compris.
-8. Installer uniquement après validation du mode live et en ayant vérifié le disque cible. L'installation peut modifier ou effacer les partitions sélectionnées.
-9. Au premier démarrage, vérifier que KDE, le réseau et le GPU fonctionnent avant de choisir Desktop ou Gaming depuis le sélecteur LEOS.
-10. Les applications facultatives proposées par LEOS restent optionnelles : aucune installation ne sera effectuée sans confirmation.
-11. Avant la première mise à jour, consulter le guide de récupération et vérifier qu'un déploiement précédent est disponible avec `rpm-ostree status`.
+Puis vérifie la signature de l’ISO et celle du manifeste de provenance avec la clé publique cosign.pub du dépôt :
 
-## Validation avant diffusion
+~~~bash
+cosign verify-blob --key cosign.pub --bundle LEOS-standard-e33a010-45.iso.sigstore.json LEOS-standard-e33a010-45.iso
+cosign verify-blob --key cosign.pub --bundle LEOS-standard-e33a010-45.iso.json.sigstore.json LEOS-standard-e33a010-45.iso.json
+~~~
 
-Chaque variante doit être testée sur au moins une machine physique adaptée, puis sur une matrice élargie : PC de bureau, portable hybride, graphiques intégrés, GPU dédié, plusieurs écrans, Wi-Fi/Bluetooth, audio et manettes. Un build réussi ou un test sur une seule machine ne constitue pas une certification universelle.
+Adapte les noms à la variante et au tag récupérés. Si la somme SHA-256 ou une signature échoue, **n’écris pas l’ISO sur une clé USB** : télécharge à nouveau l’artefact et recommence les contrôles. La clé cosign.pub est publique ; ne demande ni ne copie jamais la clé privée.
+
+La CI inspecte aussi le catalogue d’amorçage El Torito et vérifie la présence d’une entrée UEFI. Ce contrôle statique confirme la présence d’une structure d’amorçage UEFI dans l’ISO ; il ne remplace pas un vrai démarrage en machine virtuelle.
+
+## Préparer et contrôler la clé USB
+
+Utilise de préférence Fedora Media Writer ou un outil fiable d’écriture brute. L’écriture efface entièrement la clé sélectionnée. Identifie le périphérique USB avec lsblk et vérifie son modèle et sa capacité ; ne sélectionne jamais le SSD interne.
+
+Après l’écriture et la synchronisation, compare si possible l’empreinte des premiers octets écrits sur le périphérique avec celle de l’ISO. Exemple en remplaçant /dev/sdX par **le disque USB entier**, jamais une partition :
+
+~~~bash
+ISO=LEOS-standard-e33a010-45.iso
+DEVICE=/dev/sdX
+ISO_SIZE=$(stat -c '%s' "$ISO")
+sha256sum "$ISO"
+sudo head -c "$ISO_SIZE" "$DEVICE" | sha256sum
+~~~
+
+Les deux empreintes SHA-256 doivent être identiques. Cette lecture ne modifie pas la clé. Si elles diffèrent, ne démarre pas dessus : réécris la clé ou essaie un autre support/port USB.
+
+Au démarrage, sélectionne l’entrée USB en mode UEFI. Le choix « Test this media & install LEOS » lance le contrôle du média. Si le résultat est FAIL, arrête le test : ne contourne pas l’avertissement pour installer. Vérifie de nouveau l’ISO et la lecture USB ; si les empreintes correspondent encore, conserve les journaux et investigue le problème au lieu de multiplier les tentatives.
+
+Pour le détail de cette procédure, voir [Validation de l’ISO et du support USB](iso-validation.md).
+
+## Installation et dual boot
+
+**L’installation en dual boot n’est pas encore validée ni garantie par LEOS.** L’installateur peut proposer des opérations de partitionnement qui modifient le disque choisi. Ne valide pas le partitionnement automatique sur un disque qui contient déjà Ubuntu, Windows ou des données importantes.
+
+Jusqu’à la validation dédiée :
+1. teste d’abord l’installateur dans une machine virtuelle UEFI avec un disque virtuel vierge ;
+2. réalise ensuite les premiers essais physiques sur un disque de test ou une machine secondaire ;
+3. pour tester le dual boot, utilise une machine virtuelle jetable contenant un autre système et un espace non alloué ;
+4. vérifie chaque partition, son système de fichiers, son point de montage et l’option de formatage avant d’appliquer les changements.
+
+Ne formate jamais la partition EFI existante d’un système que tu souhaites conserver. Ne redimensionne pas une partition depuis l’installateur sans procédure confirmée et sauvegarde vérifiée. Si l’écran ne permet pas de distinguer clairement l’espace libre des partitions existantes, annule et demande un diagnostic. N’invente pas de point de montage : le schéma exact doit être confirmé pour la version de l’installateur.
+
+## En cas d’échec de l’installateur
+
+Ne relance pas immédiatement l’installation. Note l’étape exacte, le texte intégral de l’erreur et l’opération qui venait de se produire. Pour un blocage pendant « Installation des logiciels », récupère si disponibles les journaux Anaconda suivants depuis l’installateur ou son terminal :
+
+- /tmp/anaconda.log
+- /tmp/packaging.log
+- /tmp/program.log
+- /tmp/storage.log
+- /tmp/syslog
+- journalctl -b
+
+Ne partage que les extraits utiles et masque les noms d’utilisateur, chemins personnels, adresses IP publiques et identifiants. Ces journaux permettent de distinguer un problème de lecture du support, de stockage, de téléchargement de métadonnées ou de déploiement.
+
+## Validation après installation
+
+Sur une machine de test, confirme que le système démarre, que KDE s’ouvre, que le réseau fonctionne et que la variante GPU attendue est chargée. Vérifie ensuite les services et l’état OSTree :
+
+~~~bash
+rpm-ostree status
+uname -r
+cat /etc/os-release
+systemctl --failed
+systemctl --user --failed
+~~~
+
+La compatibilité doit être consignée pour chaque configuration testée. Un build réussi, une somme correcte ou un démarrage de l’installateur ne certifient pas à eux seuls l’installation complète ni tous les PC.
 
 Voir aussi :
+- [Validation de l’ISO et du support USB](iso-validation.md)
 - [Récupération et retour arrière](recovery.md)
 - [Compatibilité matérielle](hardware-compatibility.md)
 - [Matrice de validation](hardware-validation.md)

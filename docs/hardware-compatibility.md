@@ -69,7 +69,8 @@ Une image qui compile ou passe les tests automatisés n'est pas pour autant cert
 ## Limites de la première version
 
 - Cible actuelle : x86_64 + UEFI.
-- Les recettes standard, NVIDIA legacy et NVIDIA open existent dans le dépôt ; leur construction, la signature et les essais matériels restent à réaliser.
+- Les trois recettes et images standard, NVIDIA legacy et NVIDIA open ont été construites et signées avec le tag e33a010-45 (run 43933044510). Les pilotes restent à valider sur GPU physiques.
+- Une ISO installateur standard a été générée et signée (run 43946765765) ; les ISO NVIDIA restent à générer.
+- Le premier essai physique n’a pas validé l’installation : contrôle média en échec puis erreur Anaconda pendant l’installation des logiciels. La cause est inconnue et doit être diagnostiquée avant un nouvel essai.
 - Le précontrôle Gaming mesure les capacités exposées par Linux, mais ne remplace pas l'inspection du support cible ni les essais physiques.
-- Aucune liste exhaustive de PC compatibles n'est revendiquée.
-- La construction d'une ISO installable et la validation sur plusieurs ordinateurs restent à effectuer.
+- Aucune liste exhaustive de PC compatibles n'est revendiquée ; le dual boot reste expérimental et non certifié.

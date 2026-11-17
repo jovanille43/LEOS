@@ -30,6 +30,27 @@ Ne pas transformer ce tableau en liste de matériels minimaux imposés. Les pré
 
 Ne pas modifier les partitions du PC principal pour cette première validation. Conserver un moyen de revenir à un déploiement Bazzite fonctionnel.
 
+### Contrôles préalables de l’ISO et de l’installateur
+
+- [ ] Vérifier la somme SHA-256 de l’ISO téléchargée.
+- [ ] Vérifier la signature Cosign de l’ISO et du manifeste de provenance.
+- [ ] Confirmer que la CI détecte un catalogue El Torito avec une entrée UEFI.
+- [ ] Écrire l’ISO sur une clé USB dédiée et, en cas de doute, comparer par lecture l’empreinte du support avec celle du fichier ISO.
+- [ ] Le contrôle « Test this media » doit terminer avec PASS avant toute installation.
+- [ ] Démarrer l’ISO dans une VM x86_64/UEFI et ouvrir l’interface Anaconda.
+- [ ] Réaliser une installation sur un disque virtuel vierge, retirer l’ISO et démarrer le système installé.
+- [ ] Vérifier les journaux Anaconda lorsqu’une étape échoue ; ne pas relancer à l’aveugle.
+
+### Test séparé du dual boot
+
+- [ ] Créer une VM jetable avec un système UEFI/GPT déjà installé et un espace non alloué.
+- [ ] Effectuer le partitionnement manuel uniquement sur l’espace de test explicitement identifié.
+- [ ] Vérifier que la partition EFI existante n’est pas formatée et que le système préexistant reste amorçable.
+- [ ] Vérifier que LEOS démarre depuis son entrée UEFI et que l’autre système démarre toujours.
+- [ ] Répéter le test après arrêt complet de la VM.
+
+Ne jamais utiliser le poste de travail principal pour les premiers essais de partitionnement ou de dual boot.
+
 ## 2. Contrôles système après le premier démarrage
 
 Dans un terminal :
@@ -200,4 +221,4 @@ Pour chaque anomalie, consigner :
 
 ## Critères de validation
 
-Une première image LEOS peut être considérée comme **validée sur cette machine** uniquement lorsque les sections 2 à 10 ont été exécutées, que les transitions vidéo/audio sont vérifiées dans Qt Multimedia, et qu'aucune régression bloquante n'est présente. La compatibilité d'une machine ne prouve pas celle de tous les GPU ou périphériques.
+Une première image LEOS peut être considérée comme **validée sur cette machine** uniquement lorsque les contrôles de l’installateur et les sections 2 à 10 ont été exécutés, que les transitions vidéo/audio sont vérifiées dans Qt Multimedia, et qu'aucune régression bloquante n'est présente. La compatibilité d'une machine ne prouve pas celle de tous les GPU ou périphériques.

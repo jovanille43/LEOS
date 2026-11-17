@@ -97,6 +97,8 @@ class WebsiteSmokeTests(unittest.TestCase):
     def test_no_iso_download_is_advertised_before_release(self) -> None:
         self.assertEqual(self.parser.download_links, [])
         self.assertIn("Aucune version publiée", self.source)
+        self.assertIn("ISO candidate", self.source)
+        self.assertIn("validation", self.source)
         self.assertIn("disabled", self.source)
 
     def test_theme_controls_are_present(self) -> None:

@@ -2,7 +2,7 @@
 
 **LEOS est un projet de distribution Linux fondé sur Bazzite KDE.** Il réunit un bureau KDE adapté à l’usage quotidien et une interface Gaming plein écran, dans une seule installation et une seule session système.
 
-> **Statut : prototype en développement.** Le dépôt contient les applications LEOS, les ressources graphiques, les recettes BlueBuild et les workflows de validation. Les tests automatisés et la génération des fichiers de construction passent sur GitHub Actions. En revanche, aucune image LEOS publiée ni ISO installable n’est encore disponible ; le démarrage et les usages doivent toujours être validés sur des machines réelles.
+> **Statut : prototype en validation.** Les trois images LEOS (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites et signées dans GHCR. Une première ISO standard a également été générée et signée. Elle n’est pas publiée : les premiers essais physiques n’ont pas abouti, avec un échec du contrôle média puis un échec de l’installateur pendant l’installation des logiciels. La cause n’est pas encore établie ; l’intégrité du fichier téléchargé et la lecture de la clé USB doivent être vérifiées avant tout nouvel essai. Aucune compatibilité matérielle générale ni installation en dual boot n’est encore certifiée.
 
 [![Python checks](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml)
 [![BlueBuild recipe checks](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml)
@@ -224,8 +224,10 @@ Un workflow de construction manuelle de l’image existe également. Il exécute
 | Service de tri des téléchargements | Présent et référencé au démarrage de session KDE |
 | Tests Python et lint QML | Automatisés par GitHub Actions |
 | Recettes BlueBuild standard et NVIDIA | Présentes ; validation automatisée disponible |
-| Image LEOS publiée et signée | Pas encore disponible |
-| ISO installable | Pas encore disponible |
+| Images LEOS publiées et signées | Trois variantes disponibles dans GHCR (tag e33a010-45) |
+| ISO installateur standard | Générée et signée ; validation physique non concluante |
+| ISO NVIDIA legacy / moderne | À générer |
+| Validation sur plusieurs PC physiques | À effectuer |
 | Validation sur plusieurs PC physiques | À effectuer |
 
 ## Construction de l’image et de l’ISO
@@ -254,9 +256,9 @@ Après publication et vérification de la signature de l’image, le workflow **
 
 Le workflow vérifie la signature Cosign, génère l’ISO d’installation et produit un fichier de somme SHA-256. L’ISO et son empreinte sont fournis comme artefacts GitHub Actions.
 
-**Aucune de ces étapes ne signifie que LEOS est déjà publié :** la première image doit encore être construite avec une signature configurée, puis l’ISO doit être générée et testée avant toute installation.
+Les images sont déjà construites et signées, et l’ISO standard candidate a été générée puis signée par GitHub Actions (run 43946765765). Cela ne constitue pas une validation de l’installation : le contrôle de structure UEFI et les sommes cryptographiques ne remplacent pas un démarrage en machine virtuelle, une installation sur disque de test et des essais sur matériel réel.
 
-Ne tente pas d’installer une recette BlueBuild directement sur un ordinateur principal. Consulte le [guide d’installation](docs/installation.md) et le [guide de récupération](docs/recovery.md) avant les premiers essais.
+L’ISO candidate ne doit pas être utilisée sur le seul ordinateur principal ni pour un dual boot réel tant que le diagnostic des premiers échecs n’est pas terminé. Consulte les [consignes de validation de l’ISO](docs/iso-validation.md), le [guide d’installation](docs/installation.md) et le [guide de récupération](docs/recovery.md).
 
 ## Documentation
 
@@ -267,14 +269,15 @@ Ne tente pas d’installer une recette BlueBuild directement sur un ordinateur p
 - [Matrice de validation matérielle](docs/hardware-validation.md)
 - [Bluetooth](docs/bluetooth.md)
 - [Construction et signature](docs/build.md)
+- [Validation de l’ISO et du support USB](docs/iso-validation.md)
 - [Packaging](docs/packaging.md)
 - [Installation](docs/installation.md)
-- [Récupération et retour arrière](docs/recovery.md)
 
 ## Structure du dépôt
 
 ```text
 LEOS/
+├── .github/scripts/     # Vérification des images, signatures et ISO
 ├── .github/workflows/   # Tests, validation, construction, ISO et site
 ├── aurorae/             # Décorations de fenêtres KDE
 ├── branding/            # Emblèmes, fonds d’écran, vidéos et sons
@@ -303,4 +306,4 @@ LEOS/
 
 ## Site officiel
 
-Le site vitrine et le futur centre de téléchargement sont préparés dans [`website/`](website/README.md). Le site reste en pré-lancement tant que les images LEOS n'ont pas été construites et validées ; aucun ISO n'est publié à ce stade.
+Le site vitrine et le centre de téléchargement sont préparés dans [`website/`](website/README.md). Une ISO candidate existe, mais aucun téléchargement public n’est ouvert tant que le démarrage, l’installation et la compatibilité matérielle ne sont pas validés.
