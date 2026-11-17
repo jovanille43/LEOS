@@ -61,6 +61,8 @@ modules:
         destination: /etc/containers/policy.json
       - source: leos-cosign.pub
         destination: /etc/pki/containers/leos-cosign.pub
+      - source: leos-registries.yaml
+        destination: /etc/containers/registries.d/leos.yaml
 
   - type: copy
     src: packaging/leos-default-apps-setup
