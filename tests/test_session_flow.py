@@ -233,7 +233,7 @@ class SessionFlowTests(unittest.TestCase):
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
         self.assertLess(
             main.index("if not engine.rootObjects():"),
-            main.index('controller.settings.set("last_mode", "gaming")'),
+            main.index("controller.settings.set_many({"),
         )
         self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
 
