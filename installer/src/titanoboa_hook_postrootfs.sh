@@ -8,6 +8,9 @@ target_local_ref="$(< /usr/share/leos-installer/install-image-local-ref)"
 target_registry_ref="$(< /usr/share/leos-installer/install-image-registry-ref)"
 target_digest="$(< /usr/share/leos-installer/install-image-digest)"
 target_image_id="$(< /usr/share/leos-installer/install-image-id)"
+target_image_name="${target_local_ref##*/}"
+target_image_name="${target_image_name%%:*}"
+target_cosign_key="/etc/pki/containers/${target_image_name}.pub"
 
 if [[ ! "$target_local_ref" =~ ^ghcr\.io/jovanille43/(leos|leos-nvidia|leos-nvidia-open):[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
   echo "::error::The embedded LEOS local image reference is invalid." >&2
@@ -128,7 +131,7 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS image-signature policy is missing from the install payload."
   exit 1
 fi
-if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/pki/containers/leos-cosign.pub; then
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s $target_cosign_key; then
   echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
@@ -180,7 +183,7 @@ cat >> /usr/share/anaconda/post-scripts/install-configure-upgrade.ks <<EOF
 %post --erroronfail --log=/tmp/leos-install-logs/bootc-switch.log
 set -euo pipefail
 test -s /etc/containers/policy.json
-test -s /etc/pki/containers/leos-cosign.pub
+test -s $target_cosign_key
 test -s /etc/containers/registries.d/leos.yaml
 bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"
 %end
