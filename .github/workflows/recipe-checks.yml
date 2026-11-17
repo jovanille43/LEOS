@@ -52,11 +52,12 @@ jobs:
         run: |
           set -euo pipefail
           docker run --rm \
-            --volume "$GITHUB_WORKSPACE:/workspace:ro" \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
             --workdir /workspace \
             fedora:45 \
             bash -euc '
-              dnf install -y qt6-qtdeclarative-devel qt6-qtmultimedia qt6-qtsvg
+              dnf install -y qt6-qtdeclarative-devel qt6-qtmultimedia qt6-qtsvg qt6-qtshadertools-devel
+              bash tools/compile-theme-shader.sh
               mapfile -d "" qml_files < <(find launcher gaming control_center controller_center desktop shop -type f -name "*.qml" -print0)
               if [[ "${#qml_files[@]}" -eq 0 ]]; then
                 echo "No QML sources found."
@@ -79,8 +80,11 @@ jobs:
           python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
           python -m unittest discover -s tests -v
 
-      - name: Check LEOS first-run shell script
-        run: bash -n packaging/leos-default-apps-setup
+      - name: Check LEOS shell scripts
+        run: |
+          set -euo pipefail
+          bash -n packaging/leos-default-apps-setup
+          bash -n tools/verify-cosign-key-pair.sh
 
       - name: Validate branding video and audio streams
         run: |
@@ -115,6 +119,8 @@ jobs:
           sha256sum \
             branding/desktop-logo.jpeg \
             branding/gaming-logo.jpeg \
+            branding/desktop-logo-alpha.png \
+            branding/gaming-logo-alpha.png \
             branding/reference-comparison.jpeg \
             branding/animations/desktop-intro.mov \
             branding/animations/gaming-intro.mp4 \
@@ -132,8 +138,8 @@ jobs:
           namespace = "{http://www.w3.org/2000/svg}"
           xlink_href = "{http://www.w3.org/1999/xlink}href"
           expected = {
-              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg",
-              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg",
+              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png",
+              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png",
           }
           for wallpaper, emblem in expected.items():
               root = ET.parse(wallpaper).getroot()

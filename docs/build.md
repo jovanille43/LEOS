@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des huit ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
+La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des dix ressources déployées, validation des trois recettes BlueBuild et génération de leurs trois Containerfiles. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
 
 ## Base retenue
 
@@ -31,12 +31,12 @@ Préparation à effectuer depuis un poste de confiance disposant de cosign :
 3. Ajouter uniquement `cosign.pub` à la racine du dépôt.
 4. Conserver la clé privée hors du dépôt et en lieu sûr.
 
-Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image. Avant la compilation, le workflow installe Cosign, signe un petit fichier temporaire avec la clé privée fournie par le secret, puis vérifie cette signature avec `cosign.pub`. Cette vérification confirme que les deux clés forment bien une paire. Le fichier privé temporaire est limité aux permissions utilisateur et supprimé à la fin de l'étape ; la clé privée n'est jamais écrite dans le dépôt ni affichée volontairement dans les logs.
+Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image. Le script local `tools/verify-cosign-key-pair.sh` vérifie que la clé privée et la clé publique correspondent en signant puis en vérifiant un petit fichier temporaire, sans publier d'image. Exemple depuis le dépôt : `bash tools/verify-cosign-key-pair.sh /chemin/vers/cosign.key /chemin/vers/cosign.pub`. Il ne copie ni n'affiche le contenu des clés. Le workflow manuel `.github/workflows/signing-check.yml` réutilise ce script avec le secret Actions `SIGNING_SECRET` et `cosign.pub`, sans construire ni publier d'image ; il ne dispose que de la permission GitHub `contents: read`. Le fichier privé temporaire est limité aux permissions utilisateur et supprimé à la fin de l'étape. Le workflow de publication répète ce contrôle avant de lancer BlueBuild.
 
 ## Avant la première compilation
 
-- Vérifier le contenu du workflow `.github/workflows/build.yml`, notamment le contrôle cryptographique de correspondance entre la clé privée et `cosign.pub`.
-- [x] Valider `recipes/recipe.yml` avec le CLI BlueBuild (`bluebuild validate`) et générer un Containerfile (`bluebuild generate`) dans le workflow GitHub Actions.
+- Après avoir configuré le secret et ajouté la clé publique, lancer le workflow manuel **Verify LEOS signing key** pour vérifier la paire seule, sans construire ni publier d'image.
+- [x] Valider les trois recettes (standard, NVIDIA legacy et NVIDIA open) avec le CLI BlueBuild (`bluebuild validate`) et générer leurs trois Containerfiles (`bluebuild generate`) dans le workflow GitHub Actions.
 - Vérifier la présence des trois logos, des trois vidéos et des deux fonds d'écran 4K aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
 - Confirmer que le secret `SIGNING_SECRET` est configuré et que la clé publique correspondante est disponible.
 - Déclencher le workflow manuellement seulement après ces contrôles.
@@ -52,7 +52,7 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - Les logos officiels, les trois vidéos d'introduction/référence et les deux fonds d'écran 4K sont présents dans `branding/`. Le rendu des fonds SVG et JPEG liés, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite réelle.
 - Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six ressources d'origine (trois emblèmes et trois vidéos) et des deux fonds SVG, puis contrôle les huit empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
+Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie les dix ressources packagées : trois JPEG d'origine, deux PNG transparents dérivés, trois vidéos et deux fonds SVG. Il contrôle ensuite les dix empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite le secret `SIGNING_SECRET` et le fichier `cosign.pub` avant d'appeler BlueBuild.
 
 ## Validation sur matériel réel
 

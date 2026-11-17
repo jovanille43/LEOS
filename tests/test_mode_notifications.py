@@ -19,8 +19,9 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertIn('"L\'interface Gaming a démarré."', gaming)
         self.assertLess(
             gaming.index("if not engine.rootObjects():"),
-            gaming.index('controller.settings.set("last_mode", "gaming")'),
+            gaming.index("controller.settings.set_many({"),
         )
+        self.assertIn('"onboarding_complete": True', gaming)
         self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
 
 
@@ -39,7 +40,7 @@ class ModeNotificationTests(unittest.TestCase):
         self.assertIn("return False", manager[manager.index("def rememberMode"):])
         self.assertIn("remembered = manager.rememberMode(\"desktop\")", launcher)
         self.assertIn("if remembered else \"warning\"", launcher)
-        self.assertIn("try:\n        controller.settings.set(\"last_mode\", \"gaming\")", gaming)
+        self.assertIn("try:\n        controller.settings.set_many({", gaming)
         self.assertIn("startup_priority = \"warning\"", gaming)
         self.assertIn("controller.monitor.start()", gaming)
 

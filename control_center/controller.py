@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import palette_for_theme
+from desktop.themes import normalize_hex_color, palette_for_settings
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.plasma_adapter import build_panel_management_script
@@ -17,7 +19,9 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
+from leos_core.paths import data_home
 from desktop.notifications import post_notification
+from desktop.wallpapers import generate_user_wallpapers, user_wallpaper_directory
 from control_center.hardware import collect_hardware_snapshot
 from control_center.network import collect_network_snapshot
 from control_center.diagnostics import collect_system_diagnostics, format_diagnostic_report
@@ -138,6 +142,7 @@ class _PlasmaScriptTask(QRunnable):
 
 class ControlCenterController(QObject):
     settingsChanged = Signal()
+    wallpaperFilesChanged = Signal()
     plasmaLayoutFinished = Signal(str)
     systemUpdatesChanged = Signal()
     hardwareChanged = Signal()
@@ -148,6 +153,7 @@ class ControlCenterController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.settings = SettingsStore()
+        self._custom_wallpaper_paths: dict[str, str] = {}
         self._shared_settings_snapshot = self._read_shared_settings_snapshot()
         self._settings_sync_timer = QTimer(self)
         self._settings_sync_timer.setInterval(1500)
@@ -157,7 +163,7 @@ class ControlCenterController(QObject):
         self.plasmaBackups = PlasmaBackupManager()
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
-        self.plasmaStyle = PlasmaStyleManager()
+        self.plasmaStyle = PlasmaStyleManager(settings=self.settings)
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -256,7 +262,7 @@ class ControlCenterController(QObject):
 
     def _read_shared_settings_snapshot(self) -> tuple[object, ...]:
         keys = (
-            "last_mode", "theme", "performance_profile", "animations_enabled",
+            "last_mode", "theme", "custom_accent_primary", "custom_accent_secondary", "performance_profile", "animations_enabled",
             "sounds_enabled", "gaming_overlay_enabled", "notifications_enabled",
             "notification_duration_seconds", "notification_minimum_priority",
             "notification_sounds_enabled", "silent_notifications_in_gaming",
@@ -268,7 +274,10 @@ class ControlCenterController(QObject):
         """Reflect preferences changed by another LEOS process."""
         snapshot = self._read_shared_settings_snapshot()
         if snapshot != self._shared_settings_snapshot:
+            previous_theme = self._shared_settings_snapshot[1:4]
             self._shared_settings_snapshot = snapshot
+            if snapshot[1:4] != previous_theme:
+                self._invalidate_custom_wallpaper_previews()
             self.settingsChanged.emit()
 
     @Property("QVariantMap", notify=hardwareChanged)
@@ -608,7 +617,76 @@ class ControlCenterController(QObject):
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
         """Expose the selected palette to LEOS-owned QML without changing KDE."""
-        return palette_for_theme(self.theme)
+        return palette_for_settings(self.settings)
+
+    @Property(str, notify=settingsChanged)
+    def customAccentPrimary(self) -> str:
+        return str(self.settings.get("custom_accent_primary"))
+
+    @Property(str, notify=settingsChanged)
+    def customAccentSecondary(self) -> str:
+        return str(self.settings.get("custom_accent_secondary"))
+
+    def _current_wallpaper_directory(self) -> Path:
+        try:
+            return user_wallpaper_directory(self.settings)
+        except (OSError, TypeError, ValueError):
+            return data_home() / "leos" / "wallpapers"
+
+    @Property(str, notify=wallpaperFilesChanged)
+    def customWallpaperDirectory(self) -> str:
+        """Return the isolated output folder for the currently selected A/B pair."""
+        return str(self._current_wallpaper_directory())
+
+    @Property(bool, notify=wallpaperFilesChanged)
+    def customWallpaperGenerated(self) -> bool:
+        directory = self._current_wallpaper_directory()
+        return all(
+            (directory / filename).is_file()
+            for filename in ("desktop-leos.svg", "gaming-leos.svg",
+                              "desktop-logo-alpha.png", "gaming-logo-alpha.png")
+        )
+
+    @Property(str, notify=wallpaperFilesChanged)
+    def desktopWallpaperPreviewUrl(self) -> str:
+        path = self._custom_wallpaper_paths.get("desktop")
+        candidate = Path(path) if path else self._current_wallpaper_directory() / "desktop-leos.svg"
+        return candidate.as_uri() if candidate.is_file() else ""
+
+    @Property(str, notify=wallpaperFilesChanged)
+    def gamingWallpaperPreviewUrl(self) -> str:
+        path = self._custom_wallpaper_paths.get("gaming")
+        candidate = Path(path) if path else self._current_wallpaper_directory() / "gaming-leos.svg"
+        return candidate.as_uri() if candidate.is_file() else ""
+
+    @Slot()
+    def _invalidate_custom_wallpaper_previews(self) -> None:
+        # The active directory is derived from the current A/B pair and can
+        # change even when no preview was generated during this app session.
+        self._custom_wallpaper_paths = {}
+        self.wallpaperFilesChanged.emit()
+
+    @Slot(result=bool)
+    def generateThemeWallpapers(self) -> bool:
+        """Generate local A/B copies; never apply a wallpaper automatically."""
+        try:
+            self._custom_wallpaper_paths = generate_user_wallpapers(self.settings)
+        except (OSError, ValueError, TypeError):
+            self._custom_wallpaper_paths = {}
+            self.wallpaperFilesChanged.emit()
+            post_notification(
+                "Fonds LEOS non générés",
+                "Les fonds personnalisés n'ont pas pu être créés. Les originaux restent inchangés.",
+                "error",
+            )
+            return False
+        self.wallpaperFilesChanged.emit()
+        post_notification(
+            "Fonds LEOS personnalisés prêts",
+            "Les deux SVG A/B sont prêts. Choisis toi-même celui que tu souhaites dans les paramètres KDE.",
+            "success",
+        )
+        return True
 
     @Property(bool, notify=settingsChanged)
     def kdeColorSchemeToolAvailable(self) -> bool:
@@ -720,13 +798,33 @@ class ControlCenterController(QObject):
     @Slot(str)
     def setTheme(self, theme: str) -> None:
         self.settings.set("theme", theme)
+        self._invalidate_custom_wallpaper_previews()
         self.settingsChanged.emit()
+
+    @Slot(str, str, result=bool)
+    def setCustomAccentColors(self, accent_primary: str, accent_secondary: str) -> bool:
+        """Persist a complete, validated custom A/B pair as one transaction."""
+        primary = normalize_hex_color(accent_primary)
+        secondary = normalize_hex_color(accent_secondary)
+        if primary is None or secondary is None:
+            return False
+        try:
+            self.settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": primary,
+                "custom_accent_secondary": secondary,
+            })
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+        self._invalidate_custom_wallpaper_previews()
+        self.settingsChanged.emit()
+        return True
 
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
         try:
-            message = self.kdeColorSchemes.apply_theme(self.theme)
+            message = self.kdeColorSchemes.apply_theme(self.theme, self.themePalette)
         except FileNotFoundError:
             message = "Outil KDE introuvable : le thème LEOS n'a pas été appliqué."
             post_notification("Thème KDE non appliqué", message, "error")

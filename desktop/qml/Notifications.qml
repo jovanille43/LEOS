@@ -10,10 +10,11 @@ ApplicationWindow {
     minimumHeight: 440
     visible: true
     title: "LEOS — Notifications"
-    color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: notificationModel.themePalette
+    color: themeColors.background
+    property color accentPrimary: themeColors.accent_primary
+    property color accentSecondary: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
 
     ColumnLayout {
         anchors.fill: parent
@@ -25,19 +26,19 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: "white"; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.accentPrimary; font.pixelSize: 10; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
                 radius: 12
-                color: "#14202B"
-                border.color: "#245064"
+                color: window.themeColors.surface_elevated
+                border.color: window.themeColors.border
                 implicitWidth: 90
                 implicitHeight: 34
                 Label {
                     anchors.centerIn: parent
                     text: notificationModel.unreadCount + " non lues"
-                    color: window.cyan
+                    color: window.accentPrimary
                     font.pixelSize: 11
                 }
             }
@@ -55,8 +56,8 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: 16
-            color: "#10151E"
-            border.color: "#263140"
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
             ListView {
                 id: list
                 anchors.fill: parent
@@ -74,9 +75,9 @@ ApplicationWindow {
                     width: list.width
                     height: content.implicitHeight + 22
                     radius: 11
-                    color: isRead ? "#141B25" : "#172330"
+                    color: isRead ? window.themeColors.surface : window.themeColors.surface_elevated
                     border.width: isRead ? 1 : 2
-                    border.color: isRead ? "#2B3544" : window.cyan
+                    border.color: isRead ? "#2B3544" : window.accentPrimary
                     RowLayout {
                         id: content
                         anchors.fill: parent
@@ -86,7 +87,7 @@ ApplicationWindow {
                             Layout.preferredWidth: 3
                             Layout.fillHeight: true
                             radius: 2
-                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.cyan : window.magenta
+                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.accentPrimary : window.accentSecondary
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
@@ -100,13 +101,13 @@ ApplicationWindow {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.cyan; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.accentPrimary; font.pixelSize: 17 }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.magenta; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.accentSecondary; font.pixelSize: 18 }
                             }
                         }
                     }

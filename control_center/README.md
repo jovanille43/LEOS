@@ -4,7 +4,7 @@ Premier panneau de préférences LEOS réalisé avec Qt 6 / QML et PySide6.
 
 ## Préférences actuellement persistées
 
-- Thème sélectionné (LEOS Original, Light, Cyan, Magenta, Gaming).
+- Thème sélectionné : cinq palettes prédéfinies ou deux couleurs personnalisées A/B au format HEX `#RRGGBB`.
 - Animations et sons LEOS activés/désactivés.
 - Overlay Gaming activé/désactivé.
 - Profil de performances sélectionné.
@@ -13,7 +13,7 @@ Les valeurs sont conservées dans `~/.config/leos/settings.json` (ou `$XDG_CONFI
 
 ## Limites
 
-Le panneau enregistre les préférences partagées. Le réglage Animations pilote les introductions de transition Desktop/Gaming ; le réglage Sons coupe séparément leurs pistes audio AAC sans désactiver la vidéo. Les effets sonores des notifications LEOS restent confiés au service KDE, sans fichier audio propriétaire supplémentaire. La sélection d'un profil ne change pas directement les fréquences CPU/GPU : elle demande le profil natif réellement exposé par le système. Les paramètres système avancés restent ouverts dans KDE System Settings.
+Le panneau enregistre les préférences partagées. La paire A/B personnalisée est enregistrée atomiquement et réutilisée par les sept interfaces LEOS, les accents graphiques des emblèmes et les intros vidéo. Le réglage Animations pilote les introductions de transition Desktop/Gaming ; le réglage Sons coupe séparément leurs pistes audio AAC sans désactiver la vidéo. Les effets sonores des notifications LEOS restent confiés au service KDE, sans fichier audio propriétaire supplémentaire. La sélection d'un profil ne change pas directement les fréquences CPU/GPU : elle demande le profil natif réellement exposé par le système. Les paramètres système avancés restent ouverts dans KDE System Settings.
 
 Le prototype n'a pas encore été exécuté dans une session Bazzite/KDE.
 
@@ -93,4 +93,4 @@ Le relevé s'exécute hors du thread graphique, sans générer de trafic de test
 
 ## Apparence et fonds d'écran
 
-La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. Le bouton de sélection ouvre le module natif KDE `kcm_wallpaper` ; l'utilisateur choisit lui-même le fichier dans `/usr/share/leos/branding/wallpapers/` et confirme dans KDE. Aucun fond d'écran n'est appliqué automatiquement par le Centre de contrôle.
+La page Apparence présente les aperçus des fonds 4K LEOS Desktop et Gaming. **Générer les fonds A/B** crée des variantes SVG dans `$XDG_DATA_HOME/leos/wallpapers` et actualise les aperçus ; les ressources officielles du système restent intactes. **Choisir dans les paramètres KDE** ouvre `kcm_wallpaper` pour que l'utilisateur sélectionne lui-même le fichier original ou généré puis confirme. Aucun fond n'est appliqué automatiquement par le Centre de contrôle.

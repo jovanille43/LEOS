@@ -14,6 +14,32 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", source)
         self.assertNotIn("branches: [main]", source)
 
+    def test_manual_image_publications_are_serialized(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("concurrency:", source)
+        self.assertIn("group: leos-image-publication", source)
+        self.assertIn("cancel-in-progress: false", source)
+
+
+    def test_cosign_preflight_is_manual_read_only_and_never_publishes(self):
+        source = (ROOT / ".github/workflows/signing-check.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", source)
+        self.assertIn("contents: read", source)
+        self.assertNotIn("packages: write", source)
+        self.assertNotIn("blue-build/github-action", source)
+        self.assertNotIn("generate-iso", source)
+        self.assertIn("tools/verify-cosign-key-pair.sh", source)
+        self.assertIn('chmod 700 "$workdir"', source)
+        self.assertIn('chmod 600 "$workdir/cosign.key"', source)
+        self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
+        helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
+        self.assertIn("cosign sign-blob", helper)
+        self.assertIn("cosign verify-blob", helper)
+        self.assertIn('trap \'rm -rf "$workdir"\' EXIT', helper)
+        self.assertIn("|| -L \"$private_key\"", helper)
+        self.assertIn("|| -L \"$public_key\"", helper)
+
+
     def test_manual_image_build_runs_python_suite_before_publishing(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Run LEOS Python test suite", source)
@@ -35,6 +61,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = (
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -69,6 +97,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertEqual(set(listed), {
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -76,7 +106,7 @@ class BuildWorkflowTests(unittest.TestCase):
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         })
-        self.assertEqual(len(listed), 8)
+        self.assertEqual(len(listed), 10)
 
     def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -84,8 +114,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
         self.assertIn('images[0].attrib.get("href") != emblem', source)
         self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
+        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png"', source)
+        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png"', source)
         self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
         self.assertIn("if not target.is_file()", source)
 
@@ -105,7 +135,7 @@ class BuildWorkflowTests(unittest.TestCase):
             line for line in deployed.splitlines()
             if line and not line.startswith("#")
         ]
-        self.assertEqual(len(entries), 8)
+        self.assertEqual(len(entries), 10)
         for line in entries:
             self.assertRegex(line, r"^[0-9a-f]{64}  branding/.+")
 
@@ -123,6 +153,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = {
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -165,14 +197,16 @@ class BuildWorkflowTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("Verify private and public signing keys match", source)
-        self.assertIn('cosign sign-blob --key "$workdir/cosign.key"', source)
-        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertIn('tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
         self.assertLess(
             source.index("Verify private and public signing keys match"),
             source.index("Build and publish LEOS"),
         )
         self.assertIn('chmod 600 "$workdir/cosign.key"', source)
         self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
+        helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
+        self.assertIn("cosign sign-blob", helper)
+        self.assertIn("cosign verify-blob", helper)
 
     def test_image_workflow_uses_recipe_path_relative_to_recipes_directory(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -217,6 +251,22 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
+    def test_recipe_installs_qt_declarative_runtime_for_qml_interfaces(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("- python3-pyside6", recipe)
+        self.assertIn("- qt6-qtdeclarative", recipe)
+        self.assertIn("- qt6-qtmultimedia", recipe)
+        self.assertIn("- qt6-qtsvg", recipe)
+
+    def test_recipe_installs_kde_session_autostart_and_launcher_payload(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        entry = (ROOT / "desktop/autostart/leos-session.desktop").read_text(encoding="utf-8")
+        self.assertIn("src: launcher", recipe)
+        self.assertIn("dest: /usr/share/leos/", recipe)
+        self.assertIn("src: desktop/autostart/leos-session.desktop", recipe)
+        self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
+        self.assertIn("Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select", entry)
+
     def test_recipe_installs_qt_multimedia_for_intro_playback(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtmultimedia", recipe)
@@ -229,8 +279,9 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)
         control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn('source: controlCenter.desktopWallpaperPreviewUrl !== "" ? controlCenter.desktopWallpaperPreviewUrl : "../../branding/wallpapers/desktop-leos.svg"', control_center)
+        self.assertIn('source: controlCenter.gamingWallpaperPreviewUrl !== "" ? controlCenter.gamingWallpaperPreviewUrl : "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn("controlCenter.generateThemeWallpapers()", control_center)
 
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
@@ -305,7 +356,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("id: modeSelectorContent", selector)
         self.assertIn("focus: true", selector)
         self.assertNotIn("    focus: true", selector.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
-        self.assertIn('Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253"', gaming)
+        self.assertIn("Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border", gaming)
         self.assertIn("Layout.preferredWidth: 54", controllers)
         self.assertIn("Layout.preferredHeight: 54", controllers)
         self.assertIn("Layout.preferredHeight: 1", controllers)
@@ -333,6 +384,8 @@ class BuildWorkflowTests(unittest.TestCase):
         expected = (
             "branding/desktop-logo.jpeg",
             "branding/gaming-logo.jpeg",
+            "branding/desktop-logo-alpha.png",
+            "branding/gaming-logo-alpha.png",
             "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
@@ -352,8 +405,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Validate wallpaper SVG assets and official emblem links", source)
         self.assertIn('root.attrib.get("viewBox") != "0 0 3840 2160"', source)
         self.assertIn('images[0].attrib.get(xlink_href) != emblem', source)
-        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg"', source)
-        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg"', source)
+        self.assertIn('Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo-alpha.png"', source)
+        self.assertIn('Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo-alpha.png"', source)
         self.assertIn("target = (wallpaper.parent / emblem).resolve()", source)
         self.assertIn("if not target.is_file()", source)
     def test_recipe_checks_validate_and_decode_all_branding_video_audio(self):

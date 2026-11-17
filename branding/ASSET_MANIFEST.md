@@ -8,18 +8,24 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 | --- | --- |
 | `branding/desktop-logo.jpeg` | Lion seul, Desktop Mode |
 | `branding/gaming-logo.jpeg` | Lion avec manette, Gaming Mode |
+| `branding/desktop-logo-alpha.png` | Copie dérivée de `desktop-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Desktop |
+| `branding/gaming-logo-alpha.png` | Copie dérivée de `gaming-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Gaming |
 | `branding/reference-comparison.jpeg` | Référence interne uniquement |
 
-Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
+Les PNG alpha sont générés de façon reproductible par `tools/derive_emblem_alpha.py` à partir des JPEG officiels. Le script retire le fond noir selon un seuil documenté sans réencoder ni remplacer les JPEG sources. Le sélecteur QML et les fonds d'écran personnalisés utilisent les copies PNG transparentes ; les libellés textuels restent visibles si une image est absente ou illisible.
 
-## Fond d'écran Desktop
+## Fonds d'écran Desktop et Gaming
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), lion seul, halos cyan/magenta discrets |
-| `branding/wallpapers/gaming-leos.svg` | Fond LEOS Gaming 4K (3840 × 2160), lion avec manette, halos cyan/magenta plus dynamiques |
+| `branding/wallpapers/desktop-leos.svg` | Modèle officiel Desktop 4K (3840 × 2160), lion seul, halos A/B cyan/magenta d'origine |
+| `branding/wallpapers/gaming-leos.svg` | Modèle officiel Gaming 4K (3840 × 2160), lion avec manette, halos plus dynamiques |
 
-Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
+Ces deux SVG sont les sources maîtresses immuables et conservent les dégradés, courbes, proportions et positions d'emblèmes validés. Dans le Centre de contrôle, le bouton **Générer les fonds A/B** crée des copies personnalisées à partir de la paire active. Le générateur `desktop/wallpapers.py` ne remplace que les couleurs de halo/néon répertoriées ; les tons neutres, les géométries SVG et les images officielles des lions sont conservés.
+
+Les variantes sont créées dans `$XDG_DATA_HOME/leos/wallpapers/A-<couleur-A>__B-<couleur-B>/` (par défaut sous `~/.local/share/leos/wallpapers/`). Chaque dossier contient les deux SVG et les deux PNG transparents correspondants, avec des liens d'image relatifs locaux. Une nouvelle paire reçoit un dossier distinct : générer un autre thème ne remplace donc pas les fichiers que KDE pourrait déjà afficher.
+
+Les aperçus du Centre de contrôle se mettent à jour après génération. Le choix du fond reste manuel : le bouton de sélection ouvre le module KDE natif, où l'utilisateur parcourt le dossier généré et choisit Desktop ou Gaming. Aucun fond n'est appliqué automatiquement au changement de thème, à la connexion ou au changement de mode. Les SVG originaux, JPEG fournis et PNG transparents packagés ne sont jamais modifiés. Le rendu réel doit encore être validé dans une session Bazzite.
 
 ## Animations intégrées
 
@@ -39,7 +45,7 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 ## Intégrité des fichiers déployés
 
-Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des huit ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des dix ressources effectivement présentes dans le dépôt. Les trois JPEG et les trois vidéos ont été comparés aux fichiers originaux fournis par le propriétaire du projet le 13 novembre 2026 : leurs SHA-256 sont strictement identiques (`IMG_2598.JPG` = `desktop-logo.jpeg`, `IMG_2599.JPG` = `gaming-logo.jpeg`, `IMG_2591.JPG` = `reference-comparison.jpeg`, `Lion_desktop.mov` = `animations/desktop-intro.mov`, `Lion_gaming.MP4` = `animations/gaming-intro.mp4`, `Lion_face_.MP4` = `animations/gaming-roar-reference.mp4`). Les deux SVG et les deux PNG dérivés sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
 
 ## État des fichiers présents sur GitHub
 
@@ -62,7 +68,9 @@ Métadonnées relevées par CI pour les vidéos :
 | `gaming-intro.mp4` | H.264 / AAC | 1112 × 828 | 6,048 s |
 | `gaming-roar-reference.mp4` | H.264 / AAC | 1112 × 834 | 6,080 s |
 
-**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. Les tailles des vidéos ne correspondent pas à celles des originaux précédemment reçus dans la conversation : leur identité binaire avec les originaux n'est donc pas confirmée. Ne pas présenter les empreintes SHA-256 des originaux comme celles des copies GitHub. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
+Format : les vidéos sont d'origine en 4:3 (1112 × 834, et 1112 × 828 pour l'intro Gaming). Les lecteurs (`launcher/qml/ModeSelector.qml`, `gaming/qml/Main.qml`) les affichent en `PreserveAspectFit` sur un fond `#000000`, et le fond des vidéos est quasi noir (bords ≤ 9 sur 255 hors flashs néon) : les bandes sur un écran 16:9 ne sont pas visibles. Ne pas les réencoder ni les agrandir : ce serait une perte de qualité sans gain visible.
+
+**Vérification CI :** `ffprobe` confirme pour chacune des trois vidéos la présence d'un flux vidéo et d'un flux audio, et relève les durées indiquées ci-dessus. `ffmpeg` décode ensuite chaque fichier jusqu'au bout sans erreur. Les comparaisons SHA-256 confirment que les trois vidéos du dépôt sont binaires-identiques aux originaux fournis. Ces contrôles ne remplacent pas un test de lecture dans Qt Multimedia sur Bazzite. La qualité visuelle, la synchronisation audio/vidéo et la lecture effective restent à valider sur une session Bazzite réelle.
 
 ## Identité visuelle
 

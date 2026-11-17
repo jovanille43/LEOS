@@ -9,11 +9,11 @@ Lors de la première ouverture du sélecteur, LEOS affiche un guide non bloquant
 - Les deux modes appartiennent au même système et les applications ouvertes ne sont pas fermées automatiquement lors d'un changement de mode.
 - Le guide ne change aucun thème, panneau, fond d'écran, réglage KDE ou logiciel.
 
-Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/settings.json`, via la préférence `onboarding_complete`. Choisir directement Desktop ou Gaming mémorise également cette étape. Si l'enregistrement échoue, le démarrage continue et le guide pourra réapparaître à la prochaine ouverture.
+Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/settings.json`, via la préférence `onboarding_complete`. Choisir Desktop mémorise également cette étape après le choix du bureau. Pour Gaming, le sélecteur ne marque pas l'accueil comme terminé au simple lancement du processus : l'application Gaming enregistre atomiquement `last_mode` et `onboarding_complete` uniquement après le chargement réussi de sa fenêtre QML. Si Gaming échoue avant cette étape, le guide pourra réapparaître à la prochaine ouverture. Si l'enregistrement échoue, le démarrage continue et le guide peut réapparaître.
 
 ## Applications facultatives
 
-Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une proposition séparée pour Brave, LibreOffice et VLC.
+Lors du premier accès réussi à **Desktop Mode** — sélection directe depuis l'écran LEOS ou retour depuis Gaming — le lanceur peut ouvrir une proposition séparée pour Brave, LibreOffice et VLC.
 
 - Une réponse positive autorise l'ajout du dépôt utilisateur Flathub et l'installation des seules applications absentes.
 - Les applications déjà présentes dans l'installation utilisateur ou système sont ignorées.
@@ -47,7 +47,8 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 - [ ] **Compris** masque le guide et mémorise le choix.
 - [ ] Choisir Desktop ou Gaming mémorise également la lecture du guide.
 - [ ] Un problème d'écriture des préférences ne bloque pas le démarrage d'un mode.
-- [ ] La proposition d'applications apparaît uniquement après l'entrée dans Desktop.
+- [ ] Un échec de chargement de la fenêtre Gaming ne marque pas l'accueil comme terminé et permet de reprendre le guide à la prochaine session.
+- [ ] La proposition d'applications apparaît uniquement après le premier accès à Desktop, y compris après un retour depuis Gaming.
 - [ ] Choisir Non n'ajoute pas Flathub et ne lance aucun Flatpak.
 - [ ] Choisir Oui installe seulement les applications manquantes après confirmation.
 - [ ] Une erreur sur une application n'empêche pas les autres installations ; le parcours reste réessayable sans doublonner les applications déjà présentes.

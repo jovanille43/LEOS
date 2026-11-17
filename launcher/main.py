@@ -65,6 +65,8 @@ def main() -> int:
             except OSError as error:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
+            # Gaming marks onboarding complete itself, but only after its QML
+            # window has loaded. A child-process spawn is not proof of readiness.
             selected_mode["value"] = "gaming"
         if mode == "desktop":
             selected_mode["value"] = "desktop"
@@ -75,7 +77,7 @@ def main() -> int:
                 else "Le bureau est actif, mais le choix de démarrage n'a pas pu être enregistré.",
                 "success" if remembered else "warning",
             )
-        selector_controller.completeOnboarding()
+            selector_controller.completeOnboarding()
         app.quit()
 
     selected_mode = {"value": ""}
@@ -89,6 +91,12 @@ def main() -> int:
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         selector_controller.shutdown()
+        post_notification(
+            "Sélecteur LEOS indisponible",
+            "Le sélecteur de mode n'a pas pu se charger. Le bureau KDE reste accessible. "
+            "Relance-le depuis Konsole avec /usr/bin/python3 /usr/share/leos/launcher/main.py --select.",
+            "error",
+        )
         return 1
 
     exit_code = app.exec()

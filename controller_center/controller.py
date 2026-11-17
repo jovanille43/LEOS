@@ -11,6 +11,8 @@ from controller_center.profiles import (
     detect_controller_profile,
     device_profile_id,
 )
+from leos_core.settings import SettingsStore
+from desktop.themes import palette_for_settings
 
 
 PROFILE_LABELS = {
@@ -31,6 +33,7 @@ class ControllerCenterController(QObject):
         self.backend = GamepadBackend()
         self.input_state = ControllerInputState()
         self.store = ControllerProfileStore()
+        self.settings = SettingsStore()
         self.devices: list[dict] = []
         self.selected_index = -1
         self.selected_id = ""
@@ -54,6 +57,10 @@ class ControllerCenterController(QObject):
 
         self.refreshDevices()
         self.refresh_timer.start()
+
+    @Property("QVariantMap", notify=changed)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self.settings)
 
     @Property(bool, notify=changed)
     def backendAvailable(self) -> bool:

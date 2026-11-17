@@ -89,5 +89,13 @@ class GamingLibraryGamepadNavigationTests(unittest.TestCase):
         self.assertIn("addDialog.accept()", self.qml)
 
 
+    def test_manual_game_add_clears_stale_selection_before_async_library_refresh(self):
+        start = self.qml.index("onAccepted:", self.qml.index("id: addDialog"))
+        end = self.qml.index("onRejected:", start)
+        handler = self.qml[start:end]
+        success_branch = handler.split("if (leos.addGame", 1)[1].split("} else {", 1)[0]
+        self.assertIn("window.clearSelection()", success_branch)
+
+
 if __name__ == "__main__":
     unittest.main()

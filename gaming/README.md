@@ -68,4 +68,4 @@ Les manifestes Steam ne peuvent fournir un chemin d'installation que si le nom d
 
 ## Fonds d'écran de référence
 
-Le dépôt fournit un fond Gaming 4K dans `branding/wallpapers/gaming-leos.svg`. Il réutilise directement `branding/gaming-logo.jpeg` par référence relative, sans créer une version altérée de l'emblème. Le fichier est empaqueté avec les autres ressources LEOS ; il reste une ressource sélectionnable via les paramètres natifs KDE et n'est pas appliqué automatiquement à l'arrière-plan de l'application Gaming. Le rendu SVG lié attend encore une validation sur Bazzite.
+Le dépôt fournit un fond Gaming 4K dans `branding/wallpapers/gaming-leos.svg`. Il réutilise `gaming-logo-alpha.png`, copie transparente dérivée du JPEG officiel conservé intact. Le générateur crée une copie SVG utilisateur dont les halos et lignes énergétiques adoptent les couleurs A/B ; le fond généré reste à sélectionner volontairement dans KDE. Le logo d'en-tête Gaming et la vidéo de retour vers Desktop utilisent également le ShaderEffect partagé. Le rendu de l'ensemble doit être validé sur une session Bazzite réelle.

@@ -167,7 +167,7 @@ class PlasmaStyleManagerTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn("PlasmaStyleManager()", controller)
+        self.assertIn("PlasmaStyleManager(settings=self.settings)", controller)
         self.assertIn("def applyPlasmaStyle(self)", controller)
         self.assertIn("def restorePreviousPlasmaStyle(self)", controller)
         self.assertIn("plasmaStyleConfirmation.open()", qml)

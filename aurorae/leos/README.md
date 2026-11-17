@@ -1,6 +1,8 @@
 # LEOS KWin window decoration — alpha
 
-Aurorae theme for KWin window frames and titlebar controls.
+Aurorae theme for KWin window frames and titlebar controls. The packaged
+assets are source templates; LEOS generates a user-scoped A/B-colored copy
+when the user applies the LEOS Plasma Style.
 
 ## Visual direction
 
@@ -17,7 +19,11 @@ A near-black frame with a restrained cyan → blue-violet → magenta accent lin
 
 System-wide image path: `/usr/share/aurorae/themes/leos/`.
 
-Choose **LEOS** in KDE System Settings → Colors & Themes → Window Decorations. This package is not selected automatically. Users can keep the native Breeze decoration.
+Choose **LEOS** in KDE System Settings → Colors & Themes → Window Decorations. The generated user copy is located at
+`$XDG_DATA_HOME/aurorae/themes/leos`. The decoration is not selected automatically; users can keep the native
+Breeze decoration. Re-apply the LEOS
+Plasma Style after changing A/B colors so the window-decoration assets are
+regenerated.
 
 ## Scope and validation
 

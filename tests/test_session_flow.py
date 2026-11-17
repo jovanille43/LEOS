@@ -8,19 +8,24 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SessionFlowTests(unittest.TestCase):
-    def test_mode_selector_uses_jpeg_branding_sources_and_graceful_fallback(self):
+    def test_mode_selector_uses_transparent_branding_and_dynamic_accent_shader(self):
         source = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/desktop-logo.jpeg", source)
-        self.assertIn("../../branding/gaming-logo.jpeg", source)
-        self.assertNotIn("desktop-logo.png", source)
-        self.assertNotIn("gaming-logo.png", source)
+        self.assertIn("../../branding/desktop-logo-alpha.png", source)
+        self.assertIn("../../branding/gaming-logo-alpha.png", source)
+        self.assertIn("../../branding/shaders/recolor.frag.qsb", source)
+        self.assertIn("property color accentA: window.accentPrimary", source)
+        self.assertIn("property color accentB: window.accentSecondary", source)
+        self.assertEqual(source.count("layer.enabled: true"), 3)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
-        self.assertEqual(source.count("smooth: true"), 2)
+        self.assertGreaterEqual(source.count("smooth: true"), 2)
 
-    def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
+    def test_gaming_header_uses_transparent_official_emblem_and_accent_shader(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("../../branding/gaming-logo-alpha.png", qml)
+        self.assertIn("../../branding/shaders/recolor.frag.qsb", qml)
+        self.assertIn("property color accentA: window.accentPrimary", qml)
+        self.assertIn("property color accentB: window.accentSecondary", qml)
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
 
@@ -61,12 +66,12 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
-        self.assertEqual(image.attrib.get("href"), "../desktop-logo.jpeg")
+        self.assertEqual(image.attrib.get("href"), "../desktop-logo-alpha.png")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
-            "../desktop-logo.jpeg",
+            "../desktop-logo-alpha.png",
         )
-        self.assertTrue((wallpaper.parent.parent / "desktop-logo.jpeg").is_file())
+        self.assertTrue((wallpaper.parent.parent / "desktop-logo-alpha.png").is_file())
 
     def test_gaming_wallpaper_is_valid_4k_svg_and_reuses_the_official_emblem(self):
         import xml.etree.ElementTree as ET
@@ -77,12 +82,12 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
-        self.assertEqual(image.attrib.get("href"), "../gaming-logo.jpeg")
+        self.assertEqual(image.attrib.get("href"), "../gaming-logo-alpha.png")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
-            "../gaming-logo.jpeg",
+            "../gaming-logo-alpha.png",
         )
-        self.assertTrue((wallpaper.parent.parent / "gaming-logo.jpeg").is_file())
+        self.assertTrue((wallpaper.parent.parent / "gaming-logo-alpha.png").is_file())
     def test_branding_animation_files_exist_at_runtime_paths(self):
         branding = ROOT / "branding"
         self.assertTrue((branding / "desktop-logo.jpeg").is_file())
@@ -140,6 +145,30 @@ class SessionFlowTests(unittest.TestCase):
             entry,
         )
 
+    def test_selector_qml_failure_exits_without_disabling_the_kde_session(self):
+        main = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        self.assertIn("if not engine.rootObjects():", main)
+        failure_branch = main.split("if not engine.rootObjects():", 1)[1].split(
+            "exit_code = app.exec()", 1
+        )[0]
+        self.assertIn("selector_controller.shutdown()", failure_branch)
+        self.assertIn("post_notification(", failure_branch)
+        self.assertIn("Le bureau KDE reste accessible.", failure_branch)
+        self.assertIn("return 1", failure_branch)
+        self.assertNotIn("systemctl", main)
+        self.assertNotIn("pkill", main)
+        self.assertNotIn("killall", main)
+
+    def test_gaming_starts_as_separate_user_process_and_keeps_kde_alive(self):
+        main = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        self.assertIn("subprocess.Popen(", main)
+        self.assertIn("start_new_session=True", main)
+        self.assertIn("close_fds=True", main)
+        self.assertIn("gaming_entry = PROJECT_ROOT / \"gaming\" / \"main.py\"", main)
+        self.assertNotIn("systemctl", main)
+        self.assertNotIn("pkill", main)
+        self.assertNotIn("killall", main)
+
     def test_mode_selector_routes_keyboard_events_through_focused_content(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         self.assertIn("id: modeSelectorContent", qml)
@@ -163,8 +192,9 @@ class SessionFlowTests(unittest.TestCase):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("../../branding/desktop-logo.jpeg", qml)
-        self.assertIn("../../branding/gaming-logo.jpeg", qml)
+        self.assertIn("../../branding/desktop-logo-alpha.png", qml)
+        self.assertIn("../../branding/gaming-logo-alpha.png", qml)
+        self.assertIn("../../branding/shaders/recolor.frag.qsb", qml)
 
     def test_selector_accepts_read_only_controller_navigation(self):
         root = ROOT
@@ -188,6 +218,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("self._gamepad_poll_timer.stop()", controller)
         self.assertIn("self._gamepad_refresh_timer.stop()", controller)
         self.assertIn("self._gamepad.close()", controller)
+
+    def test_gaming_qml_startup_failure_notifies_and_keeps_kde_available(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        failure_branch = main.split("if not engine.rootObjects():", 1)[1].split(
+            "return 1", 1
+        )[0]
+        self.assertIn("controller.shutdown()", failure_branch)
+        self.assertIn("post_notification(", failure_branch)
+        self.assertIn("Le bureau KDE reste accessible.", failure_branch)
 
     def test_mode_selector_documentation_matches_integrated_assets_and_transitions(self):
         readme = (ROOT / "components/mode-selector/README.md").read_text(encoding="utf-8")
@@ -227,7 +266,7 @@ class SessionFlowTests(unittest.TestCase):
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
         self.assertLess(
             main.index("if not engine.rootObjects():"),
-            main.index('controller.settings.set("last_mode", "gaming")'),
+            main.index("controller.settings.set_many({"),
         )
         self.assertNotIn('self.settings.set("last_mode", "gaming")', controller)
 

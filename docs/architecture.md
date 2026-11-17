@@ -11,11 +11,14 @@ LEOS est une seule installation basée sur Bazzite KDE Desktop. Desktop Mode et 
 - **Gaming Mode** : application LEOS plein écran lancée au-dessus de KDE ; KDE reste actif en arrière-plan.
 - **LEOS Control Center** : accès simplifié aux fonctions spécifiques LEOS et aux outils Linux avancés.
 - **LEOS Store** : catalogue unifié s'appuyant sur les sources et gestionnaires existants.
+- **Moteur de thèmes A/B** : deux accents utilisateurs partagés par tous les écrans LEOS, recoloration GPU des emblèmes et intros, génération à la demande de fonds SVG 4K personnalisés dans l'espace utilisateur ; export KDE `.colors` distinct et soumis à confirmation. Les fonds ne sont jamais appliqués sans sélection manuelle dans KDE.
 
 ## 3. Technologies
 
 - **Qt 6 / QML** pour l'interface Gaming et ses animations.
 - **PySide6** pour la logique applicative et les intégrations Python de la première version.
+- **Qt Shader Tools / QSB** pour compiler un filtre GPU Qt 6 qui transpose le dégradé néon des emblèmes et vidéos vers les couleurs A/B tout en préservant luminance et transparence.
+- **Générateur SVG LEOS** pour produire les variantes A/B des fonds d'écran 4K à partir des sources officielles, en conservant leur géométrie et en isolant chaque paire de couleurs dans son propre dossier utilisateur.
 - Des services et outils Linux existants pour les fonctions système ; ne pas réimplémenter les mécanismes déjà fournis par Bazzite/KDE.
 
 Le choix d'une couche C++ dédiée pourra être réévalué si un composant nécessite des performances ou une intégration que PySide6 ne fournit pas suffisamment.
@@ -68,7 +71,11 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 - Il accepte la souris, le clavier et les manettes reconnues via evdev en lecture seule ; il réutilise les profils contrôleur LEOS sans modifier globalement les entrées Linux.
 - Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
 
-## 8. Compatibilité matérielle
+Le sélecteur est déclaré dans le répertoire d'autostart XDG de l'image (`/usr/etc/xdg/autostart/`) et s'exécute avec les droits de l'utilisateur connecté. Aucun service LEOS système ni privilège administrateur n'est requis pour ouvrir les interfaces. Les dépendances Qt Quick/QML, Multimedia et SVG sont déclarées dans la recette ; la session KDE existante fournit le compositeur et le bus de notifications.
+
+Si le sélecteur ne charge pas son interface QML, il libère ses ressources et quitte : KDE reste la session active. Si Gaming échoue après son lancement, son processus séparé se termine sans arrêter Plasma. Le lanceur LEOS reste disponible dans le menu d'applications pour une nouvelle tentative. Ces replis sont couverts par des tests structurels ; leur validation visuelle et matérielle reste à effectuer sur Bazzite réel.
+
+## 9. Compatibilité matérielle
 
 LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique. La cible initiale suit la base Bazzite : x86_64 et démarrage UEFI. La référence Gaming publiée par Bazzite inclut 8 Go de RAM, un processeur quadricœur à 2 GHz, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés).
 
@@ -76,7 +83,7 @@ Trois recettes d'image partagent les mêmes modules LEOS : Bazzite standard pour
 
 Le Centre de contrôle expose un précontrôle Gaming indicatif : architecture, UEFI, RAM, estimation des cœurs physiques, espace libre sur / et version Vulkan par GPU lorsque disponible. Il ne certifie pas la fréquence CPU, le type de SSD, la destination d'installation, les pilotes ou la compatibilité réelle des périphériques ; les données absentes restent non vérifiables et ne bloquent pas Desktop Mode. La politique et la matrice de tests sont détaillées dans [hardware-compatibility.md](hardware-compatibility.md).
 
-## 9. Principes de développement
+## 10. Principes de développement
 
 1. Construire d'abord une version minimale fonctionnelle.
 2. Préserver la stabilité et les mécanismes natifs de Bazzite.

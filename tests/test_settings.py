@@ -241,5 +241,48 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(lock_path.stat().st_mode & 0o777, 0o600)
 
 
+class CustomAccentSettingsTests(unittest.TestCase):
+    def test_custom_accent_pair_round_trips_together(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set_many({
+                "theme": "custom",
+                "custom_accent_primary": "#008C7A",
+                "custom_accent_secondary": "#F2B632",
+            })
+            reloaded = SettingsStore(path)
+            self.assertEqual(reloaded.get("theme"), "custom")
+            self.assertEqual(reloaded.get("custom_accent_primary"), "#008C7A")
+            self.assertEqual(reloaded.get("custom_accent_secondary"), "#F2B632")
+
+    def test_invalid_custom_accent_values_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            for key, value in (
+                ("custom_accent_primary", "cyan"),
+                ("custom_accent_secondary", "#FFF"),
+                ("custom_accent_primary", "#GGGGGG"),
+            ):
+                with self.subTest(key=key, value=value):
+                    with self.assertRaises(ValueError):
+                        settings.set(key, value)
+
+    def test_set_many_validates_every_value_before_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set("sounds_enabled", False)
+            before = path.read_bytes()
+            with self.assertRaises(ValueError):
+                settings.set_many({
+                    "theme": "custom",
+                    "custom_accent_primary": "#008C7A",
+                    "custom_accent_secondary": "gold",
+                })
+            self.assertEqual(path.read_bytes(), before)
+            self.assertFalse(SettingsStore(path).get("sounds_enabled"))
+
+
 if __name__ == "__main__":
     unittest.main()

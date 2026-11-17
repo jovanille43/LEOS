@@ -8,6 +8,7 @@ commands through a shell.
 from __future__ import annotations
 
 import configparser
+import hashlib
 import json
 import os
 import re
@@ -33,6 +34,7 @@ THEME_NAMES = {
     "cyan": "LEOS Cyan",
     "magenta": "LEOS Magenta",
     "gaming": "LEOS Gaming",
+    "custom": "LEOS personnalisé",
 }
 SCHEME_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 THEME_PATTERN = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
@@ -102,11 +104,25 @@ def _color_set(
     }
 
 
-def build_colorscheme(theme: str) -> str:
-    """Serialize one built-in LEOS palette into KDE's standard .colors format."""
-    if theme not in THEME_PALETTES or not THEME_PATTERN.fullmatch(theme):
+def _theme_scheme_id(theme: str, palette: dict[str, str] | None = None) -> str:
+    if theme not in THEME_NAMES:
         raise ValueError(f"Unknown LEOS theme: {theme}")
-    palette = palette_for_theme(theme)
+    if theme == "custom":
+        if not validate_palette(palette):
+            raise ValueError("A valid custom LEOS palette is required")
+        payload = f"{palette['accent_primary']}:{palette['accent_secondary']}".encode("ascii")
+        return "LEOS-custom-" + hashlib.sha256(payload).hexdigest()[:12]
+    return f"LEOS-{theme}"
+
+
+def build_colorscheme(theme: str, palette: dict[str, str] | None = None) -> str:
+    """Serialize a preset or user-defined accent pair into KDE's .colors format."""
+    scheme_id = _theme_scheme_id(theme, palette)
+    if theme == "custom":
+        assert palette is not None
+        palette = dict(palette)
+    else:
+        palette = palette_for_theme(theme)
     if not validate_palette(palette):
         raise ValueError("Invalid LEOS palette")
     name = THEME_NAMES[theme]
@@ -133,7 +149,7 @@ def build_colorscheme(theme: str) -> str:
         "# Generated from the matching palette in desktop/themes.py.",
         "",
         "[General]",
-        f"ColorScheme=LEOS-{theme}",
+        f"ColorScheme={scheme_id}",
         f"Name={name}",
         f"AccentColor={_rgb(primary)}",
         "shadeSortColumn=true",
@@ -157,6 +173,8 @@ def build_colorscheme(theme: str) -> str:
         "[LEOS]",
         f"ManagedBy={MANAGED_BY}",
         f"ThemeId={theme}",
+        f"AccentPrimary={primary}",
+        f"AccentSecondary={secondary}",
         f"SchemaVersion={SCHEMA_VERSION}",
         "",
     ])
@@ -190,10 +208,8 @@ class KdeColorSchemeManager:
         self.runner = runner or subprocess.run
 
     @staticmethod
-    def scheme_id(theme: str) -> str:
-        if theme not in THEME_NAMES:
-            raise ValueError(f"Unknown LEOS theme: {theme}")
-        return f"LEOS-{theme}"
+    def scheme_id(theme: str, palette: dict[str, str] | None = None) -> str:
+        return _theme_scheme_id(theme, palette)
 
     def tool_available(self) -> bool:
         return bool(self.apply_executable or shutil.which("plasma-apply-colorscheme"))
@@ -246,9 +262,9 @@ class KdeColorSchemeManager:
         previous = self._read_state().get("previous_scheme")
         return isinstance(previous, str) and bool(previous)
 
-    def install_scheme(self, theme: str) -> Path:
+    def install_scheme(self, theme: str, palette: dict[str, str] | None = None) -> Path:
         """Install a user-scoped scheme without overwriting any differing file."""
-        scheme_id = self.scheme_id(theme)
+        scheme_id = self.scheme_id(theme, palette)
         if self.scheme_dir.is_symlink():
             raise ValueError("Symbolic-link color-scheme directories are not accepted")
         self.scheme_dir.mkdir(parents=True, exist_ok=True)
@@ -257,7 +273,7 @@ class KdeColorSchemeManager:
         destination = self.scheme_dir / f"{scheme_id}.colors"
         if destination.is_symlink():
             raise ValueError("Symbolic-link color-scheme files are not accepted")
-        payload = build_colorscheme(theme)
+        payload = build_colorscheme(theme, palette)
         if destination.exists():
             if not destination.is_file():
                 raise ValueError("The existing color-scheme path is not a regular file")
@@ -336,9 +352,9 @@ class KdeColorSchemeManager:
             detail = (getattr(result, "stderr", "") or "").strip()
             raise RuntimeError(detail or "KDE refused to apply this color scheme")
 
-    def apply_theme(self, theme: str) -> str:
+    def apply_theme(self, theme: str, palette: dict[str, str] | None = None) -> str:
         """Apply after explicit confirmation in the caller's UI."""
-        scheme_id = self.scheme_id(theme)
+        scheme_id = self.scheme_id(theme, palette)
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-colorscheme is unavailable")
         if self.state_file.is_symlink():
@@ -349,16 +365,19 @@ class KdeColorSchemeManager:
             raise RuntimeError(
                 "The active KDE color scheme cannot be identified; no theme was applied."
             )
-        leos_ids = {self.scheme_id(key) for key in THEME_NAMES}
+        leos_ids = {
+            self.scheme_id(key) for key in THEME_NAMES if key != "custom"
+        }
+        is_leos_custom = re.fullmatch(r"LEOS-custom-[0-9a-f]{12}", current) is not None
         previous = state.get("previous_scheme")
-        if current not in leos_ids:
+        if current not in leos_ids and not is_leos_custom:
             previous = current
         elif not previous:
             raise RuntimeError(
                 "A LEOS color scheme is active but its previous KDE scheme is unavailable."
             )
 
-        self.install_scheme(theme)
+        self.install_scheme(theme, palette)
         # Persist the rollback target before changing KDE. If the command fails
         # or the process is interrupted, the previous scheme remains recoverable.
         self._write_state({
