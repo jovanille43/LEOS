@@ -97,8 +97,23 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("dnf upgrade -qy anaconda-core anaconda-live anaconda-dracut", hook)
         self.assertIn("rpm -q --changelog anaconda-dracut", hook)
         self.assertIn("2332319", hook)
+        self.assertIn("rootflags/fstab workaround will be applied", hook)
+        self.assertNotIn("refusing to build this Live installer", hook)
+        self.assertIn("leos-fstab-rootflags.ks", hook)
+        self.assertIn('rpm-ostree kargs --append-if-missing="rootflags=$rootflags"', hook)
+        self.assertIn('rootflags_file=/run/leos-rootflags', hook)
         self.assertIn("2332319", documentation)
         self.assertIn("systemd-remount-fs", documentation)
+
+    def test_fstab_workaround_moves_only_root_options_to_kernel_args(self):
+        hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
+        self.assertIn("leos-fstab-rootflags.ks", hook)
+        self.assertIn('rootflags="$(< "$rootflags_file")"', hook)
+        self.assertIn('rpm-ostree kargs --append-if-missing="rootflags=$rootflags"', hook)
+        self.assertIn("Moved root mount options to the kernel command line", hook)
+        self.assertIn("Remove only the root filesystem line", hook)
+        self.assertIn("root fstab row", hook)
+        self.assertIn("%include /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks", hook)
 
     def test_anaconda_uses_the_embedded_image_and_preserves_existing_efi_files(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
