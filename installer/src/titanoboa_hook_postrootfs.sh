@@ -135,10 +135,6 @@ if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_re
   echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
-if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/registries.d/leos.yaml; then
-  echo "The LEOS GHCR signature-attachment configuration is missing from the install payload."
-  exit 1
-fi
 %end
 EOF
 
