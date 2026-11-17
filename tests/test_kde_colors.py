@@ -14,6 +14,7 @@ from desktop.kde_colors import (
     THEME_NAMES,
     build_colorscheme,
 )
+from desktop.themes import palette_for_theme
 
 
 class FakeRunner:
@@ -64,9 +65,41 @@ class KdeColorSchemeTests(unittest.TestCase):
             self.assertIn("ForegroundNormal", parser[group])
             self.assertIn("DecorationFocus", parser[group])
 
-    def test_generates_all_five_palettes(self):
+    def test_generates_all_builtin_and_custom_palettes(self):
         for theme in THEME_NAMES:
-            self.assertIn("[LEOS]", build_colorscheme(theme))
+            palette = (
+                palette_for_theme("custom", "#008C7A", "#F2B632")
+                if theme == "custom" else None
+            )
+            self.assertIn("[LEOS]", build_colorscheme(theme, palette))
+
+    def test_builds_custom_scheme_from_arbitrary_accent_pair(self):
+        palette = palette_for_theme("custom", "#008C7A", "#F2B632")
+        content = build_colorscheme("custom", palette)
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.optionxform = str
+        parser.read_string(content)
+        self.assertEqual(parser["General"]["AccentColor"], "0,140,122")
+        self.assertEqual(parser["LEOS"]["AccentPrimary"], "#008C7A")
+        self.assertEqual(parser["LEOS"]["AccentSecondary"], "#F2B632")
+        self.assertRegex(parser["General"]["ColorScheme"], r"^LEOS-custom-[0-9a-f]{12}$")
+
+    def test_custom_scheme_identifier_is_stable_per_pair_and_changes_with_colors(self):
+        first = palette_for_theme("custom", "#008C7A", "#F2B632")
+        same = palette_for_theme("custom", "#008C7A", "#F2B632")
+        changed = palette_for_theme("custom", "#0071CE", "#F2B632")
+        self.assertEqual(self.manager.scheme_id("custom", first), self.manager.scheme_id("custom", same))
+        self.assertNotEqual(self.manager.scheme_id("custom", first), self.manager.scheme_id("custom", changed))
+
+    def test_applies_custom_pair_and_keeps_restore_target(self):
+        palette = palette_for_theme("custom", "#008C7A", "#F2B632")
+        result = self.manager.apply_theme("custom", palette)
+        self.assertIn("LEOS personnalisé", result)
+        self.assertEqual(
+            self.runner.calls[-1][0],
+            ["/usr/bin/plasma-apply-colorscheme", self.manager.scheme_id("custom", palette)],
+        )
+        self.assertTrue(self.manager.can_restore())
 
     def test_unknown_theme_is_rejected(self):
         with self.assertRaises(ValueError):
