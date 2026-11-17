@@ -13,7 +13,7 @@ Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/set
 
 ## Applications facultatives
 
-Après une sélection réussie de **Desktop Mode**, le lanceur peut ouvrir une proposition séparée pour Brave, LibreOffice et VLC.
+Lors du premier accès réussi à **Desktop Mode** — sélection directe depuis l'écran LEOS ou retour depuis Gaming — le lanceur peut ouvrir une proposition séparée pour Brave, LibreOffice et VLC.
 
 - Une réponse positive autorise l'ajout du dépôt utilisateur Flathub et l'installation des seules applications absentes.
 - Les applications déjà présentes dans l'installation utilisateur ou système sont ignorées.
@@ -48,7 +48,7 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 - [ ] Choisir Desktop ou Gaming mémorise également la lecture du guide.
 - [ ] Un problème d'écriture des préférences ne bloque pas le démarrage d'un mode.
 - [ ] Un échec de chargement de la fenêtre Gaming ne marque pas l'accueil comme terminé et permet de reprendre le guide à la prochaine session.
-- [ ] La proposition d'applications apparaît uniquement après l'entrée dans Desktop.
+- [ ] La proposition d'applications apparaît uniquement après le premier accès à Desktop, y compris après un retour depuis Gaming.
 - [ ] Choisir Non n'ajoute pas Flathub et ne lance aucun Flatpak.
 - [ ] Choisir Oui installe seulement les applications manquantes après confirmation.
 - [ ] Une erreur sur une application n'empêche pas les autres installations ; le parcours reste réessayable sans doublonner les applications déjà présentes.
