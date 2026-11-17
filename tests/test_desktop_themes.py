@@ -91,6 +91,32 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIsNone(normalize_hex_color("#FFF"))
         self.assertIsNone(normalize_hex_color("#GGGGGG"))
 
+    def test_palette_for_settings_reads_custom_accents_from_one_snapshot(self):
+        from desktop.themes import palette_for_settings
+
+        class SnapshotSettings:
+            def __init__(self):
+                self.calls = 0
+
+            def snapshot(self, keys):
+                self.calls += 1
+                self.asserted_keys = keys
+                return ("custom", "#008C7A", "#F2B632")
+
+            def get(self, key, default=None):
+                raise AssertionError("snapshot-capable settings must use one read")
+
+        settings = SnapshotSettings()
+        palette = palette_for_settings(settings)
+
+        self.assertEqual(settings.calls, 1)
+        self.assertEqual(
+            settings.asserted_keys,
+            ("theme", "custom_accent_primary", "custom_accent_secondary"),
+        )
+        self.assertEqual(palette["accent_primary"], "#008C7A")
+        self.assertEqual(palette["accent_secondary"], "#F2B632")
+
     def test_control_center_is_bound_to_live_theme_tokens(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
