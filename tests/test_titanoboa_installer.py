@@ -35,7 +35,10 @@ class TitanoboaInstallerTests(unittest.TestCase):
             "/usr/lib/modules/*/vmlinuz",
             "initramfs.img",
             "/usr/lib/grub/i386-pc/normal.mod",
+            "/usr/share/grub2/unicode.pf",
             "/usr/lib/efi/shim/*/EFI/fedora",
+            "mmx64.efi",
+            "gcdx64.efi",
             "/boot/efi/EFI/fedora",
             "exactly one Fedora UEFI vendor directory",
             "install-image-id",
@@ -66,6 +69,15 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("install-image-registry-ref", build_script)
         self.assertIn("install-image-id", build_script)
         self.assertNotIn("podman images", build_script)
+
+    def test_anaconda_keeps_the_fedora45_compatible_install_path(self):
+        hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
+        documentation = (ROOT / "docs/titanoboa-installer.md").read_text(encoding="utf-8")
+        self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
+        self.assertIn("bootc switch --mutate-in-place --enforce-container-sigpolicy", hook)
+        self.assertNotIn("bootc --source-imgref", hook)
+        self.assertIn("2332319", documentation)
+        self.assertIn("systemd-remount-fs", documentation)
 
     def test_anaconda_uses_the_embedded_image_and_preserves_existing_efi_files(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
