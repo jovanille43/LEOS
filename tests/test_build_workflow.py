@@ -216,11 +216,13 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_leos_config_files_use_bluebuild_files_directory(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
-        self.assertIn("src: config", recipe)
+        self.assertIn("src: files/config", recipe)
         self.assertTrue((ROOT / "files/config/desktop-defaults.json").is_file())
         self.assertTrue((ROOT / "files/config/README.md").is_file())
         self.assertTrue((ROOT / "files/README.md").is_file())
         self.assertFalse((ROOT / "config").exists())
+        self.assertIn("src: files/config", recipe)
+        self.assertNotIn("src: config\\n", recipe)
 
     def test_packaging_documentation_matches_installed_config_and_startup_behavior(self):
         desktop = (ROOT / "desktop/README.md").read_text(encoding="utf-8")
