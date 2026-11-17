@@ -44,7 +44,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
             "install-image-id",
             "payload_digest",
             "payload_image_id",
-            'registry_ref != "${local_ref%:*}@$payload_digest"',
+            "registry_ref",
+            "The embedded LEOS digest and tag references do not match.",
             "/var/lib/containers/storage",
         ):
             with self.subTest(required=required):
