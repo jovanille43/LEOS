@@ -661,9 +661,10 @@ class ControlCenterController(QObject):
 
     @Slot()
     def _invalidate_custom_wallpaper_previews(self) -> None:
-        if self._custom_wallpaper_paths:
-            self._custom_wallpaper_paths = {}
-            self.wallpaperFilesChanged.emit()
+        # The active directory is derived from the current A/B pair and can
+        # change even when no preview was generated during this app session.
+        self._custom_wallpaper_paths = {}
+        self.wallpaperFilesChanged.emit()
 
     @Slot(result=bool)
     def generateThemeWallpapers(self) -> bool:
