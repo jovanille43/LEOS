@@ -11,6 +11,30 @@ Ce guide sépare quatre contrôles qui ne prouvent pas la même chose :
 
 Au 17 novembre 2026, l’ISO standard e33a010-45 a été générée et signée par GitHub Actions (run 43946765765). Le workflow vérifie sa somme SHA-256 et sa signature. Le contrôle statique du catalogue UEFI est ajouté au pipeline. En revanche, aucun démarrage complet ni aucune installation réussie dans une machine virtuelle ou sur du matériel réel ne sont encore enregistrés. Le premier essai physique a échoué au contrôle média ; une autre tentative a échoué pendant « Installation des logiciels ». La cause reste à diagnostiquer.
 
+## Risque connu dans la chaîne de génération
+
+Le workflow actuel appelle \`bluebuild generate-iso\`. La documentation officielle de BlueBuild indique que cette commande utilise \`JasonN3/build-container-installer\` sous le capot. Or le dépôt amont a été archivé le 26 octobre 2026 ; son mainteneur a annoncé sa fin de vie le 27 septembre 2026, notamment parce que le passage de Lorax à Kiwi demanderait une réécriture. La chaîne actuelle doit donc être considérée comme **transitoire**, et non comme une dépendance durable pour les futures ISO.
+
+Cela ne signifie pas que ce composant est la cause de l’échec LEOS. Il existe toutefois des signalements d’échecs Anaconda pendant le déploiement d’images OSTree où le message générique masque l’erreur réelle dans \`/tmp/packaging.log\`. Une erreur connue mentionne \`Pathname can't be converted from UTF-8 to current locale\` ; des rapports amont relient ce symptôme à des chemins de fichiers non ASCII présents dans les couches d’une image. Ce sont des pistes de diagnostic, pas un diagnostic confirmé de LEOS.
+
+En cas d’échec à « Installation des logiciels » :
+1. récupérer \`/tmp/packaging.log\` avant de refaire l’installation ;
+2. chercher le message OSTree réel, notamment les erreurs de locale ou de conversion de chemin ;
+3. si un chemin non ASCII est mentionné, examiner les fichiers de l’image et de ses couches parentes, pas seulement les fichiers ajoutés par les modules LEOS ;
+4. conserver le journal expurgé dans le dossier de diagnostic du ticket, sans publier d’informations personnelles.
+
+Références amont :
+- [Guide BlueBuild de génération ISO](https://blue-build.org/how-to/generate-iso/) — précise le recours à \`build-container-installer\`.
+- [Fin de vie de build-container-installer, issue #215](https://github.com/JasonN3/build-container-installer/issues/215) — dépôt archivé et mainteneur ayant annoncé l’arrêt.
+- [Erreur d’installation OSTree / Unicode, BlueBuild issue #310](https://github.com/blue-build/cli/issues/310).
+- [Erreur générique de déploiement Anaconda, build-container-installer issue #150](https://github.com/JasonN3/build-container-installer/issues/150).
+
+### Alternative à évaluer, pas à adopter sans test
+
+\`ublue-os/titanoboa\` est une piste de remplacement à étudier : son objectif est de produire une ISO Live et un installateur bootc. Le projet se présente lui-même comme une expérimentation et exige un contrat d’image bootc spécifique, notamment \`/usr/lib/bootc-image-builder/iso.yaml\`. Il ne doit donc pas être substitué directement à la chaîne actuelle sans confirmer la compatibilité avec la base Bazzite/OSTree de LEOS, le partitionnement et la stratégie de dual boot.
+
+Référence : [ublue-os/titanoboa](https://github.com/ublue-os/titanoboa).
+
 ## 1. Vérifier le fichier téléchargé
 
 Télécharge l’ISO, son fichier .sha256, son manifeste JSON de provenance et les deux bundles .sigstore.json depuis le même artefact GitHub Actions. Extrais tous les fichiers dans un même dossier.
