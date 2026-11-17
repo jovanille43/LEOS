@@ -85,7 +85,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
                     if "uses:" in line and not line.strip().startswith("#"):
                         self.assertRegex(
                             line,
-                            r"@([0-9a-f]{40})(?:\\s+# v[0-9.]+)?$",
+                            r"@([0-9a-f]{40})(?:\s+# v[0-9.]+)?$",
                         )
 
     def test_checkout_actions_do_not_persist_github_token_credentials(self):
