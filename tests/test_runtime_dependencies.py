@@ -41,7 +41,7 @@ class RuntimeDependencyTests(unittest.TestCase):
                             continue
                         external_imports.add(node.module.split(".", 1)[0])
 
-        local_imports = set(RUNTIME_PACKAGES)
+        local_imports = set(RUNTIME_PACKAGES) | {"backend"}
         external_imports.difference_update(sys.stdlib_module_names)
         external_imports.difference_update(local_imports)
 
