@@ -1,42 +1,45 @@
 # Chaîne d’installation Live LEOS avec Titanoboa
 
-## État
+## Statut actuel
 
-Cette chaîne est une **candidate de migration** développée sur la branche \`feature/titanoboa-installer\`. Elle n’a pas encore produit une ISO validée et ne doit pas être utilisée sur le PC principal. L’ancien workflow \`.github/workflows/iso.yml\` est laissé intact pour conserver une comparaison et un retour arrière.
+Cette chaîne est une candidate expérimentale développée sur la branche feature/titanoboa-installer. Elle n’a pas encore produit une ISO validée et ne doit pas être utilisée sur le PC principal. L’ancien workflow iso.yml est conservé intact comme référence de comparaison et solution de repli.
 
-Titanoboa est un outil expérimental destiné aux images bootc. Le workflow reprend l’architecture utilisée par Bazzite : une image Live KDE est construite à partir de Bazzite, l’image LEOS à installer est embarquée dans le stockage Podman du Live, puis Titanoboa transforme cette image Live en ISO. Références : [Titanoboa](https://github.com/ublue-os/titanoboa), [workflow ISO Bazzite](https://github.com/ublue-os/bazzite/blob/main/.github/workflows/build_iso.yml), [scripts d’installation Bazzite](https://github.com/ublue-os/bazzite/tree/main/installer).
+Titanoboa est présenté par son projet comme un constructeur expérimental d’ISO Live pour images bootc. LEOS reprend l’architecture du workflow Bazzite : une image Live KDE est préparée à partir de Bazzite, l’image LEOS à installer est embarquée dans le stockage Podman du Live, puis Titanoboa produit l’ISO. Références amont : https://github.com/ublue-os/titanoboa, le workflow ISO de Bazzite et ses scripts d’installation.
 
 ## Flux de construction
 
-1. Le workflow sélectionne explicitement une variante et un tag LEOS publiés.
-2. Il récupère le digest immuable de l’image et vérifie sa signature Cosign avec \`cosign.pub\`.
-3. Il construit une image Live KDE basée sur \`ghcr.io/ublue-os/bazzite:stable\`.
-4. Le constructeur Live tire l’image LEOS cible, l’intègre dans le stockage Podman, puis contrôle que son digest correspond à celui vérifié par le workflow.
-5. Titanoboa génère l’ISO depuis l’image Live. Le workflow contrôle ensuite son checksum, son catalogue UEFI et signe l’ISO ainsi que son manifeste.
+1. Le workflow sélectionne explicitement une variante LEOS et un tag publié.
+2. Le script de préparation résout le digest SHA-256 immuable de l’image.
+3. Cosign vérifie la signature de l’image publiée avant qu’elle soit intégrée au média.
+4. Une image Live KDE est construite à partir de ghcr.io/ublue-os/bazzite:stable.
+5. Le constructeur Live tire l’image LEOS par digest, lui donne un nom local pour Anaconda et compare l’identifiant de l’image après export/import.
+6. Titanoboa construit l’ISO. Le workflow vérifie ensuite le SHA-256, le catalogue UEFI, la signature et le manifeste de provenance.
 
-Le secret \`SIGNING_SECRET\` reste uniquement dans GitHub Actions. La clé privée n'est ni copiée dans l'image Live, ni enregistrée dans le dépôt, ni incluse dans l'ISO.
+Le secret SIGNING_SECRET reste exclusivement dans GitHub Actions. La clé privée de signature n’est ni copiée dans l’image Live, ni enregistrée dans le dépôt, ni incluse dans l’ISO.
 
 ## Déploiement Anaconda
 
-Anaconda déploie d'abord l'image LEOS embarquée via \`ostreecontainer\` et le transport \`containers-storage\`, ce qui évite de retélécharger l'ensemble de l'image pendant l'étape initiale de déploiement. Un \`bootc switch\` final utilise ensuite la référence GHCR avec vérification obligatoire de la politique de signatures.
+Anaconda déploie d’abord l’image LEOS embarquée via ostreecontainer et le transport containers-storage. Le déploiement initial utilise donc le contenu déjà vérifié et présent dans le Live, sans télécharger à nouveau l’image complète pendant la phase OSTree.
 
-Les trois variantes LEOS déclarent une politique de conteneur dont la règle par défaut rejette les images non approuvées. Les trois dépôts LEOS GHCR ne sont acceptés qu'avec une signature Sigstore correspondant à la clé publique LEOS et à l'identité du dépôt.
+Un bootc switch final utilise ensuite la référence GHCR par digest et exige la politique de signature des conteneurs. Les trois dépôts LEOS (standard, NVIDIA legacy et NVIDIA open) sont associés à la clé publique LEOS ; les autres images de conteneurs conservent le comportement par défaut standard pour ne pas empêcher des usages comme Distrobox.
 
-Le profil Anaconda crée une entrée EFI distincte sous \`EFI/leos\`. Les hooks LEOS ne suppriment pas le dossier \`EFI/fedora\`, ne renomment pas de partition \`/boot\`, ne formatent pas de partition et ne lancent pas de commande destructive de disque. Le partitionnement proposé par Anaconda reste à examiner manuellement : cela ne constitue **pas** une garantie de dual boot.
+Le profil Anaconda utilise un dossier EFI distinct, EFI/leos. Les hooks LEOS ne suppriment pas EFI/fedora, ne renomment pas de partition /boot et ne lancent aucune commande de formatage ou d’effacement de disque. Cela réduit le risque d’écraser une entrée de démarrage existante, mais ne constitue pas une garantie de dual boot : le partitionnement choisi dans Anaconda doit encore être testé et validé.
 
-## Journaux en cas d'échec
+## Journaux en cas d’échec
 
-Le hook \`%onerror\` collecte, lorsqu'ils existent, les journaux Anaconda suivants : \`anaconda.log\`, \`packaging.log\`, \`program.log\`, \`storage.log\` et \`syslog\`. Il prépare une archive \`LEOS-installation-diagnostics.tar.gz\` sur le bureau du compte Live et tente d'afficher un extrait avec YAD. Les journaux peuvent contenir des informations personnelles ; il faut les examiner et les expurger avant de les partager.
+Le bloc %onerror récupère, lorsqu’ils existent, les journaux suivants : anaconda.log, packaging.log, program.log, storage.log et syslog. Il prépare l’archive LEOS-installation-diagnostics.tar.gz sur le bureau de la session Live et tente d’afficher un résumé avec YAD.
 
-## Validation obligatoire avant utilisation sur du matériel
+Les journaux peuvent contenir des informations personnelles ou des chemins privés. Il faut les inspecter et les expurger avant de les partager.
 
-- La validation BlueBuild doit confirmer les trois recettes et les fichiers de politique de signature.
-- Les scripts shell doivent passer \`bash -n\` et les tests de contrat Python.
-- Le workflow Titanoboa doit réellement construire l'image Live et l'ISO.
-- \`xorriso\` doit confirmer le catalogue UEFI ; le checksum et les signatures doivent être valides.
-- L'ISO doit démarrer dans une VM x86_64 UEFI.
-- Anaconda doit s'ouvrir et installer l'image sur un disque virtuel vierge.
-- Le système installé doit redémarrer et passer les contrôles \`bootc status\`, réseau, KDE et services.
-- Un test dual boot distinct doit préserver un système UEFI existant dans une VM jetable.
+## Validation obligatoire
 
-Un build ou des tests statiques verts ne prouvent pas une installation réussie. Aucune nouvelle tentative sur le ThinkPad ne doit avoir lieu tant que le démarrage et l'installation dans la VM ne sont pas validés et que le checksum de l'ISO ainsi que de la clé USB n'est pas contrôlé.
+- Les trois recettes BlueBuild doivent passer la validation.
+- Les scripts shell doivent passer bash -n et les tests de contrat Python.
+- Le workflow Titanoboa doit réellement construire l’image Live et l’ISO.
+- xorriso doit confirmer le catalogue UEFI ; SHA-256 et signatures doivent être valides.
+- L’ISO doit démarrer dans une VM x86_64 en UEFI.
+- Anaconda doit s’ouvrir et installer l’image sur un disque virtuel vierge.
+- Le système installé doit redémarrer et passer les contrôles bootc status, réseau, KDE et services.
+- Le dual boot doit être testé séparément dans une VM jetable contenant un autre système UEFI et des partitions existantes.
+
+Un build réussi ou des tests statiques verts ne prouvent pas une installation réussie. Aucune nouvelle tentative sur le ThinkPad ne doit avoir lieu tant que le démarrage et l’installation dans la VM ne sont pas validés, puis que le fichier ISO et la clé USB n’ont pas été contrôlés par SHA-256.
