@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,6 +17,22 @@ from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
 from backend.controller import GamingController  # noqa: E402
 from backend.instance_lock import acquire_instance_lock  # noqa: E402
 from desktop.notifications import post_notification  # noqa: E402
+
+
+def _start_optional_default_apps_setup() -> None:
+    """Offer approved starter apps on the first successful return to Desktop."""
+    setup_script = Path("/usr/libexec/leos-default-apps-setup")
+    if not setup_script.is_file():
+        return
+    try:
+        subprocess.Popen(
+            ["/usr/bin/bash", str(setup_script)],
+            start_new_session=True,
+            close_fds=True,
+        )
+    except OSError:
+        # Optional software must never block the return to the KDE desktop.
+        pass
 
 
 def main() -> int:
@@ -50,7 +67,13 @@ def main() -> int:
 
 def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     controller = GamingController()
-    controller.desktopRequested.connect(app.quit)
+    returned_to_desktop = {"value": False}
+
+    def handle_desktop_request() -> None:
+        returned_to_desktop["value"] = True
+        app.quit()
+
+    controller.desktopRequested.connect(handle_desktop_request)
 
     engine = QQmlApplicationEngine()
     context = engine.rootContext()
@@ -87,7 +110,11 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     )
     controller.monitor.start()
     app.aboutToQuit.connect(controller.shutdown)
-    return app.exec()
+
+    exit_code = app.exec()
+    if returned_to_desktop["value"]:
+        _start_optional_default_apps_setup()
+    return exit_code
 
 
 if __name__ == "__main__":
