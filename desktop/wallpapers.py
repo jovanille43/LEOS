@@ -177,7 +177,9 @@ def generate_user_wallpapers(
     if accent_a is None or accent_b is None:
         raise ValueError("LEOS A/B theme accents are invalid")
 
-    variant_dir = user_wallpaper_directory(settings, output_root)
+    # Reuse the palette snapshot above. Reading settings a second time here
+    # could pair one set of SVG colors with another pair's directory name.
+    variant_dir = output_root / f"A-{accent_a[1:]}__B-{accent_b[1:]}"
     if variant_dir.is_symlink():
         raise OSError("LEOS wallpaper variant directory cannot be a symbolic link")
     variant_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
