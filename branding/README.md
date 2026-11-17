@@ -24,7 +24,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
 
-Le ShaderEffect partagé est défini dans `shaders/recolor.frag`. Il remappe les néons de l'emblème et des vidéos vers les couleurs A/B en conservant la luminosité, l'alpha et le dégradé. Le binaire Qt Shader Bundle `shaders/recolor.frag.qsb` est généré au build par `tools/compile-theme-shader.sh` (paquet Fedora `qt6-qtshadertools-devel`) ; il n'est pas stocké dans Git. Les SVG de fond d'écran utilisent encore les halos cyan/magenta de la palette originale et leur génération dynamique A/B reste à faire.
+Le ShaderEffect partagé est défini dans `shaders/recolor.frag`. Il remappe les néons de l'emblème et des vidéos vers les couleurs A/B en conservant la luminosité, l'alpha et le dégradé. Le binaire Qt Shader Bundle `shaders/recolor.frag.qsb` est généré au build par `tools/compile-theme-shader.sh` (paquet Fedora `qt6-qtshadertools-devel`) ; il n'est pas stocké dans Git. `desktop/wallpapers.py` génère aussi des copies SVG Desktop/Gaming dans les données utilisateur en remappant les couleurs des halos et lignes énergétiques, sans altérer les SVG originaux ni les JPEG sources. L'utilisateur choisit ensuite le fond dans KDE.
 
 La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chemins et l'état de vérification sont détaillés dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
 
