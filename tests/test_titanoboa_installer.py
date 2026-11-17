@@ -111,12 +111,15 @@ class TitanoboaInstallerTests(unittest.TestCase):
 
     def test_embedded_fstab_workaround_kickstart_shell_has_valid_syntax(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
-        marker = "cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'\\n"
+        marker = """cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'
+"""
         self.assertIn(marker, hook)
-        kickstart = hook.split(marker, 1)[1].split("\\nEOF\\n", 1)[0].splitlines()
+        kickstart = hook.split(marker, 1)[1].split("""
+EOF
+""", 1)[0].splitlines()
         self.assertTrue(kickstart[0].startswith("%post --nochroot"))
         self.assertEqual(kickstart[-1], "%end")
-        shell_body = "\\n".join(kickstart[1:-1]) + "\\n"
+        shell_body = "\n".join(kickstart[1:-1]) + "\n"
         result = subprocess.run(
             ["bash", "-n"],
             input=shell_body,
