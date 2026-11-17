@@ -1368,6 +1368,10 @@ ApplicationWindow {
             if (leos.addGame(gameName.text, gamePlatform.currentText, launchCommand.text)) {
                 gameName.clear()
                 launchCommand.clear()
+                // The asynchronous library refresh may reorder the grid.
+                // Drop the old row selection so the next action cannot target
+                // a different game at the same index.
+                window.clearSelection()
                 statusText.text = "Jeu ajouté. Sélectionne-le dans la bibliothèque."
             } else {
                 statusText.text = "Impossible d'ajouter ce jeu. Vérifie les champs."
