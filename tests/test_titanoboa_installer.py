@@ -59,17 +59,17 @@ class TitanoboaInstallerTests(unittest.TestCase):
 
             skopeo = bin_dir / "skopeo"
             skopeo.write_text(
-                "#!/usr/bin/env bash\\n"
-                "set -euo pipefail\\n"
-                "printf '%s\\n' \"$*\" > \"$SKOPEO_LOG\"\\n"
-                f"printf '%s\\n' '{digest}'\\n",
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                "printf '%s\n' \"$*\" > \"$SKOPEO_LOG\"\n"
+                f"printf '%s\n' '{digest}'\n",
                 encoding="utf-8",
             )
             podman = bin_dir / "podman"
             podman.write_text(
-                "#!/usr/bin/env bash\\n"
-                "set -euo pipefail\\n"
-                "printf '%s\\n' \"$*\" >> \"$PODMAN_LOG\"\\n",
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                "printf '%s\n' \"$*\" >> \"$PODMAN_LOG\"\n",
                 encoding="utf-8",
             )
             skopeo.chmod(0o755)
@@ -99,7 +99,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             immutable_ref = f"{repository}@{digest}"
             self.assertEqual(
                 output_file.read_text(encoding="utf-8"),
-                f"ref={immutable_ref}\\ntag_ref={image_tag}\\n",
+                f"ref={immutable_ref}\ntag_ref={image_tag}\n",
             )
             podman_calls = podman_log.read_text(encoding="utf-8")
             self.assertIn(f"pull --authfile {authfile} {immutable_ref}", podman_calls)
