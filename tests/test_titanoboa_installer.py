@@ -359,6 +359,8 @@ EOF
         self.assertIn("qemu-system-x86_64", workflow)
         self.assertIn("OVMF_CODE", workflow)
         self.assertIn("Reached target (Graphical Interface|Multi-User System)", workflow)
+        self.assertIn("Upload UEFI serial log when the smoke test fails", workflow)
+        self.assertIn("LEOS-UEFI-serial.log", workflow)
         self.assertNotIn("  default:", content)
 
     def test_installed_images_require_only_leos_signed_ghcr_repositories(self):
