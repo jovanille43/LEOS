@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Verify that a local Cosign private key matches the public key without
-# publishing an image or exposing either key in command output.
+# publishing an image, uploading to the transparency log, or exposing either key.
 # Compatible with modern Cosign releases that use signature bundles.
 
 set -euo pipefail
@@ -26,12 +26,15 @@ trap 'rm -rf "$workdir"' EXIT
 chmod 700 "$workdir"
 printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
 
+# This is a local key-pair check only. Do not publish a test entry to Rekor.
 cosign sign-blob \
   --key "$private_key" \
+  --tlog-upload=false \
   --bundle "$workdir/challenge.bundle" \
   "$workdir/challenge.txt"
 cosign verify-blob \
   --key "$public_key" \
+  --insecure-ignore-tlog \
   --bundle "$workdir/challenge.bundle" \
   "$workdir/challenge.txt"
 
