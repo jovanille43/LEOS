@@ -6,7 +6,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
 - `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
-- ``files/config/desktop-defaults.json` (installé sous `/usr/share/leos/config/desktop-defaults.json`) : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
+- `files/config/desktop-defaults.json` (installé sous `/usr/share/leos/config/desktop-defaults.json`) : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
 
 ## Direction visuelle Desktop
 
