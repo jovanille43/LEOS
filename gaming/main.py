@@ -85,6 +85,11 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         controller.shutdown()
+        post_notification(
+            "LEOS Gaming Mode indisponible",
+            "L'interface Gaming n'a pas pu se charger. Le bureau KDE reste accessible.",
+            "error",
+        )
         return 1
 
     # Persist the selected mode and finish first-run onboarding only after the
