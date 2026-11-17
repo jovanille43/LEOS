@@ -175,8 +175,13 @@ class BuildWorkflowTests(unittest.TestCase):
             "    env:\n      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.",
             source,
         )
-        self.assertIn("--tlog-upload=false", helper)
+        self.assertIn("cosign signing-config create", helper)
+        for service in ("--no-default-fulcio", "--no-default-rekor", "--no-default-oidc", "--no-default-tsa"):
+            with self.subTest(service=service):
+                self.assertIn(service, helper)
+        self.assertIn('--signing-config "$workdir/signing-config.json"', helper)
         self.assertIn("--insecure-ignore-tlog", helper)
+        self.assertNotIn("--tlog-upload", helper)
         self.assertNotIn("--output-signature", source)
         self.assertNotIn("--signature", source)
         self.assertLess(
