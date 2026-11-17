@@ -32,11 +32,8 @@ if [[ "$target_registry_ref" != "${target_local_ref%:*}@$target_digest" ]]; then
 fi
 
 podman image exists "$target_local_ref"
-live_digest="$(podman image inspect --format '{{.Digest}}' "$target_local_ref")"
-if [[ "$live_digest" != "$target_digest" ]]; then
-  echo "::error::The embedded LEOS tag no longer resolves to the digest verified during the ISO build." >&2
-  exit 1
-fi
+# The local image ID is the architecture-specific config digest recorded after
+# pulling the already-verified top-level registry manifest in the Live build.
 live_image_id="$(podman image inspect --format '{{.Id}}' "$target_local_ref")"
 if [[ "$live_image_id" != "$target_image_id" ]]; then
   echo "::error::The image available to Anaconda is not the verified LEOS payload." >&2
