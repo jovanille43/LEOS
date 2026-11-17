@@ -134,8 +134,8 @@ jobs:
 
       - name: Build Bazzite-based LEOS Live payload
         env:
-          INSTALL_IMAGE_PAYLOAD: ${{ steps.pinned-image.outputs.tag_ref }}
           INSTALL_IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+          INSTALL_IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
           LIVE_IMAGE_TAG: localhost/leos-live-installer:${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -euo pipefail
@@ -145,7 +145,8 @@ jobs:
             --security-opt label=disable \
             --secret id=ghcr-auth,src=/root/.docker/config.json \
             --build-arg BASE_IMAGE=ghcr.io/ublue-os/bazzite:stable \
-            --build-arg INSTALL_IMAGE_PAYLOAD="$INSTALL_IMAGE_PAYLOAD" \
+            --build-arg INSTALL_IMAGE_REF="$INSTALL_IMAGE_REF" \
+            --build-arg INSTALL_IMAGE_TAG_REF="$INSTALL_IMAGE_TAG_REF" \
             --build-arg INSTALL_IMAGE_DIGEST="$expected_digest" \
             -t "$LIVE_IMAGE_TAG" installer/
 
