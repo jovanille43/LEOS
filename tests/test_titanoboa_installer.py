@@ -142,7 +142,7 @@ EOF
         self.assertIn('"$rpm_ostree_bin" kargs --append-if-missing="rootflags=$rootflags"', helper)
         self.assertIn('"$rpm_ostree_bin" kargs --delete-if-present="rootflags=', helper)
         self.assertIn('fields[1] == "/"', helper)
-        self.assertIn("systemctl reboot", helper)
+        self.assertIn('"$systemctl_bin" reboot', helper)
         self.assertIn("Remove only the root filesystem row", helper)
         self.assertIn("rootflags=$rootflags", helper)
         self.assertNotIn("mkfs.", helper)
