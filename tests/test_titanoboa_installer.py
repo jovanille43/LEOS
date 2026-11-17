@@ -95,7 +95,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             hook,
         )
         self.assertIn('target_cosign_key="/etc/pki/containers/leos-cosign.pub"', hook)
-        self.assertIn("target_registry_ref", hook)
+        self.assertIn('if [[ "$target_registry_ref" != "${target_local_ref%:*}@$target_digest" ]]; then', hook)
         self.assertIn("${target_local_ref%:*}@$target_digest", hook)
         self.assertIn('live_digest="$(podman image inspect --format', hook)
         self.assertIn(
@@ -107,7 +107,11 @@ class TitanoboaInstallerTests(unittest.TestCase):
             hook,
         )
         self.assertIn("test -s /etc/containers/registries.d/leos.yaml", hook)
-        self.assertIn('boot_fstype="$(blkid -o value -s TYPE "$boot_dev" || true)"', hook)
+        self.assertIn('boot_source="$(findmnt --raw --noheadings --output SOURCE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"', hook)
+        self.assertIn('boot_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"', hook)
+        self.assertIn('boot_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"', hook)
+        self.assertIn('esp_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"', hook)
+        self.assertIn('if [[ "$boot_device" == "$esp_device" ]]; then', hook)
         self.assertIn('if [[ "$boot_fstype" != "ext4" ]]; then', hook)
         self.assertNotIn("e2label ", hook)
         self.assertNotIn("rm -rf /mnt/sysroot/boot/efi/EFI/fedora", hook)
