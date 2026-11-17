@@ -318,6 +318,14 @@ jobs:
           fi
           echo "UEFI smoke test passed: LEOS reached a systemd graphical or multi-user target."
 
+      - name: Upload UEFI serial log when the smoke test fails
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: LEOS-UEFI-smoke-${{ inputs.variant }}-${{ inputs.image_tag }}
+          path: ${{ runner.temp }}/LEOS-UEFI-serial.log
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Sign and verify LEOS ISO and provenance artifacts
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
