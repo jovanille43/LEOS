@@ -137,6 +137,7 @@ jobs:
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
+            ${{ steps.image.outputs.filename }}.source-digest
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
