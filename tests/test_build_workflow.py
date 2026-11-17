@@ -235,8 +235,9 @@ class BuildWorkflowTests(unittest.TestCase):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtsvg", recipe)
         control_center = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', control_center)
-        self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn('source: controlCenter.desktopWallpaperPreviewUrl !== "" ? controlCenter.desktopWallpaperPreviewUrl : "../../branding/wallpapers/desktop-leos.svg"', control_center)
+        self.assertIn('source: controlCenter.gamingWallpaperPreviewUrl !== "" ? controlCenter.gamingWallpaperPreviewUrl : "../../branding/wallpapers/gaming-leos.svg"', control_center)
+        self.assertIn("controlCenter.generateThemeWallpapers()", control_center)
 
     def test_branding_manifest_documents_secondary_gaming_animation(self):
         manifest = (ROOT / "branding/ASSET_MANIFEST.md").read_text(encoding="utf-8")
