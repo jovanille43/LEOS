@@ -157,7 +157,7 @@ Le Centre de contrôle affiche les aperçus des deux SVG 4K :
 - `/usr/share/leos/branding/wallpapers/desktop-leos.svg`
 - `/usr/share/leos/branding/wallpapers/gaming-leos.svg`
 
-Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper`. L'utilisateur choisit le SVG dans `/usr/share/leos/branding/wallpapers/` puis valide dans KDE. LEOS ne change pas le papier peint sans cette action explicite. Les SVG réutilisent les PNG transparents dérivés des JPEG officiels. Ils conservent pour l'instant les halos cyan/magenta de la palette originale et ne suivent pas encore les couleurs A/B. Leur rendu reste à confirmer sur une session Bazzite réelle.
+Le bouton **Générer les fonds A/B** crée deux copies SVG personnalisées dans `$XDG_DATA_HOME/leos/wallpapers` (par défaut `~/.local/share/leos/wallpapers`) et place les PNG transparents dérivés auprès des fichiers pour conserver les liens relatifs. Les SVG d'origine et les JPEG officiels ne sont jamais modifiés. Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper` ; l'utilisateur choisit lui-même le fichier généré puis confirme dans KDE. Aucun fond n'est appliqué automatiquement. Le rendu SVG reste à confirmer sur une session Bazzite réelle.
 
 ## Schémas de couleurs KDE
 
