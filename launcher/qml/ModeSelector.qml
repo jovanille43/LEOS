@@ -94,12 +94,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: "#102b3a"; opacity: 0.18
+            color: Qt.darker(window.accentPrimary, 2.7); opacity: 0.18
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: "#321437"; opacity: 0.15
+            color: Qt.darker(window.accentSecondary, 2.7); opacity: 0.15
         }
 
         ColumnLayout {
@@ -263,9 +263,9 @@ ApplicationWindow {
                     onClicked: window.requestModeWithIntro("desktop")
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? "#1a2630" : "#111720"
+                        color: desktopCard.down ? Qt.darker(window.accentPrimary, 2.7) : window.themeColors.surface
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.accentPrimary : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.accentPrimary : window.themeColors.border
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -318,9 +318,9 @@ ApplicationWindow {
                     onClicked: transitionDialog.open()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? "#25172a" : "#15121d"
+                        color: gamingCard.down ? Qt.darker(window.accentSecondary, 2.7) : window.themeColors.surface_elevated
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.accentSecondary : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.accentSecondary : window.themeColors.border
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -491,7 +491,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentPrimary }
+                background: Rectangle { radius: 9; color: Qt.darker(window.accentPrimary, 2.7); border.color: window.accentPrimary }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
