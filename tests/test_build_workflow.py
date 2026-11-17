@@ -222,6 +222,29 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertTrue((ROOT / "files/README.md").is_file())
         self.assertFalse((ROOT / "config").exists())
 
+    def test_packaging_documentation_matches_installed_config_and_startup_behavior(self):
+        desktop = (ROOT / "desktop/README.md").read_text(encoding="utf-8")
+        packaging = (ROOT / "docs/packaging.md").read_text(encoding="utf-8")
+        build = (ROOT / "docs/build.md").read_text(encoding="utf-8")
+        self.assertIn("files/config/desktop-defaults.json", desktop)
+        self.assertIn("/usr/share/leos/config/desktop-defaults.json", desktop)
+        self.assertIn("/usr/share/leos/config", packaging)
+        self.assertIn("sélecteur LEOS après connexion", packaging)
+        self.assertNotIn("restauration du dernier mode après connexion", packaging)
+        for package in (
+            "python3-pyside6",
+            "python3-psutil",
+            "python3-evdev",
+            "vulkan-tools",
+            "libnotify",
+            "aurorae",
+            "qt6-qtmultimedia",
+            "qt6-qtsvg",
+        ):
+            with self.subTest(package=package):
+                self.assertIn(package, packaging)
+                self.assertIn(package, build)
+
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: branding", recipe)
