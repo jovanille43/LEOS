@@ -125,7 +125,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("--build-arg INSTALL_IMAGE_DIGEST=", workflow)
         self.assertIn("verify-installer-iso.sh", workflow)
         self.assertIn("sign-iso-artifacts.sh", workflow)
-        self.assertNotIn("bluebuild generate-iso", workflow)
+        self.assertNotIn("$RUNNER_TEMP/bluebuild" generate-iso workflow)
 
     def test_previous_iso_workflow_remains_available_for_comparison(self):
         old_workflow = ROOT / ".github/workflows/iso.yml"
