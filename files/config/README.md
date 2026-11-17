@@ -1,6 +1,6 @@
 # Configuration LEOS
 
-Ce dossier accueillera les configurations propres à LEOS, communes aux modes Desktop et Gaming.
+Ce dossier contient les paramètres LEOS communs aux modes Desktop et Gaming, copiés dans l'image sous `/usr/share/leos/config/`.
 
 Contenu prévu :
 - préférences et paramètres LEOS ;
@@ -10,5 +10,3 @@ Contenu prévu :
 - paramètres des notifications et des sons.
 
 Les réglages système déjà fournis par Bazzite et KDE seront réutilisés plutôt que dupliqués.
-
-Aucune configuration fonctionnelle n'est encore intégrée ici.

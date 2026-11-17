@@ -50,7 +50,7 @@ modules:
     dest: /usr/share/aurorae/themes/leos/
 
   - type: copy
-    src: config
+    src: files/config
     dest: /usr/share/leos/
 
   - type: copy

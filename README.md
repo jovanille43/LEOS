@@ -131,7 +131,7 @@ La boutique proposera jeux, émulateurs, applications, utilitaires et éléments
 LEOS/
 ├── .github/workflows/   # Automatisation et vérifications
 ├── branding/            # Logos, animations, sons et ressources
-├── config/              # Configuration partagée de LEOS
+├── files/config/        # Configuration partagée de LEOS
 ├── controller_center/   # Gestion et test des manettes
 ├── control_center/      # Paramètres LEOS
 ├── desktop/             # Personnalisation du Desktop Mode
@@ -163,11 +163,11 @@ LEOS/
 - [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
 - [ ] Intégrations d'émulateurs.
 - [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
-- [ ] Ajouter cosign.pub et configurer le secret GitHub SIGNING_SECRET correspondant.
+- [x] Ajouter `cosign.pub` et configurer les secrets GitHub `SIGNING_SECRET` et `COSIGN_PASSWORD` pour la signature chiffrée.
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
 - [ ] Préparer une ISO installable après validation de l'image.
 
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
+**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Les contrôles Python, QML, médias, recettes BlueBuild et signatures des outils sont verts sur GitHub Actions. La chaîne de construction reste protégée et manuelle ; la compilation réelle attend la validation finale et l'autorisation explicite.
 
 ---
 

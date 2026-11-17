@@ -163,10 +163,22 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_cryptographically_verifies_cosign_key_pair(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        self.assertIn("sigstore/cosign-installer@v3", source)
+        helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
+        self.assertIn("sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3", source)
         self.assertIn("Verify private and public signing keys match", source)
-        self.assertIn('cosign sign-blob --key "$workdir/cosign.key"', source)
-        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertIn('bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
+        self.assertEqual(
+            source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"),
+            4,  # one preflight step and the three BlueBuild signing steps
+        )
+        self.assertNotIn(
+            "    env:\n      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.",
+            source,
+        )
+        self.assertIn("--tlog-upload=false", helper)
+        self.assertIn("--insecure-ignore-tlog", helper)
+        self.assertNotIn("--output-signature", source)
+        self.assertNotIn("--signature", source)
         self.assertLess(
             source.index("Verify private and public signing keys match"),
             source.index("Build and publish LEOS"),
@@ -201,6 +213,38 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertEqual(modern_nvidia.count("from-file: common-modules.yml"), 1)
         self.assertIn("type: signing", common)
         self.assertIn("src: branding", common)
+
+    def test_leos_config_files_use_bluebuild_files_directory(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("src: files/config", recipe)
+        self.assertNotIn("src: config", recipe)
+        self.assertTrue((ROOT / "files/config/desktop-defaults.json").is_file())
+        self.assertTrue((ROOT / "files/config/README.md").is_file())
+        self.assertTrue((ROOT / "files/README.md").is_file())
+        self.assertFalse((ROOT / "config").exists())
+
+    def test_packaging_documentation_matches_installed_config_and_startup_behavior(self):
+        desktop = (ROOT / "desktop/README.md").read_text(encoding="utf-8")
+        packaging = (ROOT / "docs/packaging.md").read_text(encoding="utf-8")
+        build = (ROOT / "docs/build.md").read_text(encoding="utf-8")
+        self.assertIn("files/config/desktop-defaults.json", desktop)
+        self.assertIn("/usr/share/leos/config/desktop-defaults.json", desktop)
+        self.assertIn("/usr/share/leos/config", packaging)
+        self.assertIn("sélecteur LEOS après connexion", packaging)
+        self.assertNotIn("restauration du dernier mode après connexion", packaging)
+        for package in (
+            "python3-pyside6",
+            "python3-psutil",
+            "python3-evdev",
+            "vulkan-tools",
+            "libnotify",
+            "aurorae",
+            "qt6-qtmultimedia",
+            "qt6-qtsvg",
+        ):
+            with self.subTest(package=package):
+                self.assertIn(package, packaging)
+                self.assertIn(package, build)
 
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
@@ -256,6 +300,25 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
                 self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
 
+    def test_iso_workflow_verifies_and_digest_pins_bluebuild_installer(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        public_key = (ROOT / "tools/trust/blue-build-cli.pub").read_text(encoding="utf-8")
+        provenance = (ROOT / "tools/trust/README.md").read_text(encoding="utf-8")
+        self.assertIn("Verify and install BlueBuild CLI", source)
+        self.assertIn("CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer", source)
+        self.assertIn("tools/trust/blue-build-cli.pub", source)
+        self.assertIn('skopeo inspect --format \'{{.Digest}}\'', source)
+        self.assertIn('cli_immutable_ref="${cli_repository}@${cli_digest}"', source)
+        verify = source.index('cosign verify --key tools/trust/blue-build-cli.pub "${cli_immutable_ref}"')
+        pull = source.index('docker pull "${cli_immutable_ref}"')
+        extract = source.index('docker cp bluebuild-cli:/out/bluebuild')
+        self.assertLess(verify, pull)
+        self.assertLess(pull, extract)
+        self.assertIn("-----BEGIN PUBLIC KEY-----", public_key)
+        self.assertIn("-----END PUBLIC KEY-----", public_key)
+        self.assertIn("cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6", provenance)
+        self.assertNotIn("PRIVATE KEY", public_key)
+
     def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", source)
@@ -272,7 +335,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("generate-iso --iso-name", source)
         self.assertIn('image "$IMAGE_REF"', source)
         self.assertIn('sha256sum "$ISO_NAME"', source)
-        self.assertIn("actions/upload-artifact@v4", source)
+        self.assertIn("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2", source)
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
 
@@ -281,9 +344,37 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]', source)
         self.assertIn("Unknown image variant.", source)
         self.assertIn("Authenticate to GitHub Container Registry", source)
-        self.assertIn("sigstore/cosign-installer@v3", source)
+        self.assertIn("sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3", source)
         self.assertIn("cosign verify --key cosign.pub", source)
-        self.assertIn("Verify published LEOS image signature", source)
+        self.assertIn("Resolve and verify LEOS image tag", source)
+
+    def test_iso_generation_checks_the_signed_digest_before_and_after_build(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("sudo apt-get install -y podman skopeo", source)
+        self.assertIn('skopeo inspect --authfile /root/.docker/config.json', source)
+        self.assertIn('^sha256:[a-f0-9]{64}$', source)
+        self.assertIn('image_repository="${IMAGE_REF%:*}"', source)
+        self.assertIn('immutable_ref="${image_repository}@${digest}"', source)
+        self.assertIn('cosign verify --key cosign.pub "${immutable_ref}"', source)
+        self.assertIn('digest=${digest}', source)
+        self.assertIn('VERIFIED_DIGEST: ${{ steps.verified.outputs.digest }}', source)
+        self.assertIn('IMAGE_REF: ${{ steps.image.outputs.ref }}', source)
+        self.assertIn('if [[ "$before_digest" != "$VERIFIED_DIGEST" ]]', source)
+        self.assertIn('if [[ "$after_digest" != "$VERIFIED_DIGEST" ]]', source)
+        self.assertIn('echo "::error::The image tag changed during ISO generation; refusing to publish the ISO artifact."', source)
+        self.assertIn('printf \'%s\\n\' "$VERIFIED_DIGEST" > "$ISO_NAME.source-digest"', source)
+        self.assertIn('${{ steps.image.outputs.filename }}.source-digest', source)
+        self.assertNotIn('IMAGE_REF: ${{ steps.verified.outputs.image_ref }}', source)
+        self.assertLess(
+            source.index("Resolve and verify LEOS image tag"),
+            source.index("Generate bootable installer ISO"),
+        )
+        self.assertLess(
+            source.index('cosign verify --key cosign.pub "${immutable_ref}"'),
+            source.index('generate-iso --iso-name'),
+        )
+
+
 
     def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")

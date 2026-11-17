@@ -8,16 +8,23 @@ permissions:
   packages: write
   id-token: write
 
+concurrency:
+  group: leos-image-pipeline
+  cancel-in-progress: false
+
 jobs:
   bluebuild:
     name: Build LEOS image
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python for pre-build tests
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -113,10 +120,11 @@ jobs:
           fi
 
       - name: Validate Cosign key pair
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       - name: Verify private and public signing keys match
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
           workdir="$(mktemp -d)"
@@ -124,30 +132,43 @@ jobs:
           chmod 700 "$workdir"
           printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
           chmod 600 "$workdir/cosign.key"
-          printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
-          cosign sign-blob --key "$workdir/cosign.key" --output-signature "$workdir/challenge.sig" "$workdir/challenge.txt"
-          cosign verify-blob --key cosign.pub --signature "$workdir/challenge.sig" "$workdir/challenge.txt"
+          bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub
 
       - name: Build and publish LEOS (AMD / Intel)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
+          build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42
 
       - name: Build and publish LEOS (NVIDIA)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe-nvidia.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
+          build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42
 
       - name: Build and publish LEOS (NVIDIA modern)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
           recipe: recipe-nvidia-open.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          verify_install: true
+          build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42

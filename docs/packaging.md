@@ -14,16 +14,17 @@ La vue d'ensemble du Centre de contrôle réutilise `gaming.backend.system_monit
 - `/usr/share/leos/controller_center` : détection, test et préférences locales des manettes.
 - `/usr/share/leos/shop` : catalogue et interface de la boutique LEOS.
 - `/usr/share/leos/leos_core` : préférences partagées.
+- `/usr/share/leos/config` : profil déclaratif LEOS et paramètres communs, provenant de `files/config/` dans le dépôt.
 - `/usr/share/leos/branding` : ressources visuelles officielles.
 - `/usr/share/applications/leos-mode-selector.desktop` : entrée du sélecteur.
 - `/usr/share/applications/leos-control-center.desktop` : entrée du Centre de contrôle.
 - `/usr/share/applications/leos-controller-center.desktop` : entrée du Centre des manettes.
 - `/usr/share/applications/leos-store.desktop` : entrée de la boutique LEOS.
-- `/usr/etc/xdg/autostart/leos-session.desktop` : restauration du dernier mode après connexion.
+- `/usr/etc/xdg/autostart/leos-session.desktop` : sélecteur LEOS après connexion, avec rappel du dernier mode choisi.
 
 ## Dépendances système prévues
 
-Le prototype utilise les paquets Fedora `python3-pyside6`, `python3-psutil`, `python3-evdev`, `vulkan-tools` et `qt6-qtmultimedia`. Ils sont intégrés via le module DNF de BlueBuild. Qt Multimedia fournit les types QML `MediaPlayer`, `VideoOutput` et `AudioOutput` pour les introductions de modes. Le paquet `python3-evdev` fournit les bindings Linux permettant d'identifier les périphériques d'entrée et de lire leurs événements depuis `/dev/input`. `vulkan-tools` fournit la commande `vulkaninfo`, utilisée en lecture seule pour relever la version Vulkan annoncée par chaque GPU ; l'absence d'une interface Vulkan reste un état de diagnostic, pas une condition bloquante pour Desktop Mode.
+Le prototype utilise les paquets Fedora `python3-pyside6`, `python3-psutil`, `python3-evdev`, `vulkan-tools`, `libnotify`, `aurorae`, `qt6-qtmultimedia` et `qt6-qtsvg`. Ils sont intégrés via le module DNF de BlueBuild. Qt Multimedia fournit les types QML `MediaPlayer`, `VideoOutput` et `AudioOutput` pour les introductions de modes. Le paquet `python3-evdev` fournit les bindings Linux permettant d'identifier les périphériques d'entrée et de lire leurs événements depuis `/dev/input`. `vulkan-tools` fournit la commande `vulkaninfo`, utilisée en lecture seule pour relever la version Vulkan annoncée par chaque GPU ; l'absence d'une interface Vulkan reste un état de diagnostic, pas une condition bloquante pour Desktop Mode.
 
 Le backend ouvre les périphériques en lecture seule et utilise leur descripteur non bloquant pour que la surveillance périodique ne bloque pas l'interface Qt. Lorsque `InputDevice(readonly=True)` est disponible (python-evdev 2.0+), il utilise l'API publique. Pour la branche Fedora 1.9.x, qui ne propose pas encore cet argument, un adaptateur ouvre explicitement le fichier avec `O_RDONLY | O_NONBLOCK` et initialise les métadonnées nécessaires à partir des helpers ioctl de python-evdev. LEOS n'envoie aucun événement, ne saisit pas le périphérique avec `EVIOCGRAB` et ne modifie ni permissions udev ni mappings système.
 

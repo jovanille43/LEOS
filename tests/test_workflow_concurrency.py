@@ -19,6 +19,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("group: leos-bluebuild-${{ github.ref }}", source)
         self.assertIn("cancel-in-progress: true", source)
         self.assertIn("timeout-minutes: 15", source)
+        self.assertIn('"files/**"', source)
 
     def test_recipe_generation_retries_transient_schema_fetch_failures(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
@@ -40,6 +41,93 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         generate = source.index("generate-iso --iso-name")
         self.assertLess(verify, generate)
         self.assertIn("sha256sum", source)
+
+    def test_image_build_and_iso_generation_share_a_registry_lock(self):
+        build = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("group: leos-image-pipeline", build)
+        self.assertIn("group: leos-image-pipeline", iso)
+        self.assertIn("cancel-in-progress: false", build)
+        self.assertIn("cancel-in-progress: false", iso)
+
+    def test_workflow_actions_are_pinned_to_reviewed_immutable_commits(self):
+        workflows = {
+            ".github/workflows/build.yml": (
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+                "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0",
+                "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3",
+                "blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0",
+            ),
+            ".github/workflows/iso.yml": (
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+                "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3",
+                "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
+            ),
+            ".github/workflows/recipe-checks.yml": (
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+                "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0",
+                "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3",
+            ),
+            ".github/workflows/python-checks.yml": (
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+                "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0",
+            ),
+            ".github/workflows/signing-check.yml": (
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+                "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3",
+            ),
+        }
+        for path, expected_pins in workflows.items():
+            source = (ROOT / path).read_text(encoding="utf-8")
+            with self.subTest(path=path):
+                for pin in expected_pins:
+                    self.assertIn(pin, source)
+                for line in source.splitlines():
+                    if "uses:" in line and not line.strip().startswith("#"):
+                        self.assertRegex(
+                            line,
+                            r"@([0-9a-f]{40})(?:\s+# v[0-9.]+)?$",
+                        )
+
+    def test_recipe_checks_verify_the_pinned_bluebuild_cli_before_using_it(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("Install Cosign", source)
+        self.assertIn("Install Skopeo", source)
+        self.assertIn("Verify and install BlueBuild CLI", source)
+        self.assertIn("tools/trust/blue-build-cli.pub", source)
+        self.assertIn('CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer', source)
+        self.assertIn('skopeo inspect --format', source)
+        verify = source.index('cosign verify --key tools/trust/blue-build-cli.pub')
+        pull = source.index('docker pull "${cli_immutable_ref}"')
+        extract = source.index('docker cp bluebuild-cli:/out/bluebuild')
+        self.assertLess(verify, pull)
+        self.assertLess(pull, extract)
+
+    def test_checkout_actions_do_not_persist_github_token_credentials(self):
+        for path in (
+            ".github/workflows/build.yml",
+            ".github/workflows/iso.yml",
+            ".github/workflows/recipe-checks.yml",
+            ".github/workflows/python-checks.yml",
+            ".github/workflows/signing-check.yml",
+        ):
+            source = (ROOT / path).read_text(encoding="utf-8")
+            if "actions/checkout@" in source:
+                with self.subTest(path=path):
+                    self.assertIn("persist-credentials: false", source)
+
+    def test_bluebuild_cli_signature_and_provenance_are_verified_before_publish(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertEqual(source.count("verify_install: true"), 3)
+        self.assertEqual(source.count("blue-build/github-action@"), 3)
+        self.assertEqual(source.count('build_opts: "--signing-driver sigstore"'), 3)
+        self.assertEqual(source.count("cli_version: v0.9.42"), 3)
+        self.assertEqual(source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"), 4)
+        self.assertLess(
+            source.index("Run LEOS Python test suite"),
+            source.index("Build and publish LEOS"),
+        )
+        self.assertIn("timeout-minutes: 360", source)
 
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
