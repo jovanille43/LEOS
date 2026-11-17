@@ -48,6 +48,7 @@ class RuntimeDependencyTests(unittest.TestCase):
         self.assertEqual(external_imports, set(THIRD_PARTY_PACKAGES))
 
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("src: files/config", recipe)
         for module, package_name in THIRD_PARTY_PACKAGES.items():
             with self.subTest(module=module):
                 self.assertIn(f"- {package_name}", recipe)
