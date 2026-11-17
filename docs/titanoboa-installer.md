@@ -37,6 +37,10 @@ Un bootc switch final utilise ensuite la référence GHCR taguée comme origine 
 
 Le profil Anaconda conserve le chemin EFI standard `EFI/fedora`, comme Bazzite, pour rester cohérent avec son intégration bootc/bootupd. Sur une installation Ubuntu existante, `EFI/ubuntu` est distinct et les hooks LEOS ne le suppriment pas. Ils ne suppriment pas non plus `EFI/fedora`, ne renomment pas de partition `/boot` et ne lancent aucune commande de formatage ou d’effacement de disque. Un système Fedora déjà présent pourrait toutefois partager ce chemin : le dual boot n'est donc pas garanti. Le partitionnement choisi dans Anaconda doit encore être testé et validé. Le précontrôle vérifie aussi qu’Anaconda a réellement monté `/boot` sur un périphérique dédié, distinct de la racine, en ext4, ainsi qu’une ESP séparée au format FAT (`vfat`) sous `/boot/efi` ; sinon l’installation s’interrompt avant le déploiement. Il ne renomme pas le label de cette partition. Pour un essai avec Ubuntu, il faudra créer ce `/boot` ext4 séparément dans l’espace libre et réutiliser l’ESP existante sans la formater ; ce scénario reste à valider en VM.
 
+### Précontrôle réseau avant installation
+
+Le bouton d’installation Live vérifie d’abord le mode UEFI, puis utilise Skopeo pour confirmer que le tag GHCR de l’image LEOS est toujours associé au digest signé embarqué dans l’ISO. Si le réseau est absent ou si le tag a changé, l’installateur n’est pas lancé ; le raccourci KDE appelle le même lanceur. Anaconda répète cette vérification dans son bloc Kickstart `%pre`, avant les opérations de stockage, afin d’éviter un échec tardif du `bootc switch` après le partitionnement.
+
 ## Journaux en cas d’échec
 
 Le bloc %onerror récupère, lorsqu’ils existent, les journaux suivants : anaconda.log, packaging.log, program.log, storage.log et syslog. Il prépare l’archive LEOS-installation-diagnostics.tar.gz sur le bureau de la session Live et tente d’afficher un résumé avec YAD.
