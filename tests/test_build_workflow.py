@@ -21,6 +21,20 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", source)
 
 
+    def test_cosign_preflight_is_manual_read_only_and_never_publishes(self):
+        source = (ROOT / ".github/workflows/signing-check.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", source)
+        self.assertIn("contents: read", source)
+        self.assertNotIn("packages: write", source)
+        self.assertNotIn("blue-build/github-action", source)
+        self.assertNotIn("generate-iso", source)
+        self.assertIn("cosign sign-blob", source)
+        self.assertIn("cosign verify-blob", source)
+        self.assertIn('chmod 700 "$workdir"', source)
+        self.assertIn('chmod 600 "$workdir/cosign.key"', source)
+        self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
+
+
     def test_manual_image_build_runs_python_suite_before_publishing(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Run LEOS Python test suite", source)
