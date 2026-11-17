@@ -25,7 +25,7 @@ La directive Kickstart native `bootc` de Fedora 43+ sait séparer la référence
 
 ## Déploiement Anaconda
 
-Anaconda déploie d’abord l’image LEOS embarquée via ostreecontainer et le transport containers-storage. Le déploiement initial utilise donc le contenu déjà vérifié et présent dans le Live, sans télécharger à nouveau l’image complète pendant la phase OSTree.
+Anaconda déploie d’abord l’image LEOS embarquée via ostreecontainer et le transport containers-storage. Le déploiement initial utilise donc le contenu déjà vérifié et présent dans le Live, sans télécharger à nouveau l’image complète pendant la phase OSTree. Le hook revalide aussi que la référence taguée et le digest embarqué désignent le même dépôt, puis compare le digest réellement visible dans le stockage Podman au digest enregistré pendant la génération de l’ISO ; sinon l’installation s’arrête.
 
 Un bootc switch final utilise ensuite la référence GHCR taguée comme origine des futures mises à jour et exige la politique de signature des conteneurs. L’image intégrée au Live reste, elle, vérifiée par digest immuable. Les trois dépôts LEOS (standard, NVIDIA legacy et NVIDIA open) sont associés à la clé publique LEOS ; les autres images de conteneurs conservent le comportement par défaut standard pour ne pas empêcher des usages comme Distrobox.
 
