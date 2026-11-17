@@ -4,9 +4,11 @@ import unittest
 from pathlib import Path
 
 from desktop.themes import (
+    CUSTOM_THEME,
     DEFAULT_THEME,
     REQUIRED_TOKENS,
     THEME_PALETTES,
+    normalize_hex_color,
     palette_for_theme,
     validate_palette,
 )
@@ -71,6 +73,24 @@ class DesktopThemeTests(unittest.TestCase):
         invalid["accent_primary"] = "cyan"
         self.assertFalse(validate_palette(invalid))
 
+    def test_custom_palette_uses_two_independent_user_accents(self):
+        palette = palette_for_theme(CUSTOM_THEME, "#008C7A", "#F2B632")
+        self.assertEqual(palette["accent_primary"], "#008C7A")
+        self.assertEqual(palette["accent_secondary"], "#F2B632")
+        self.assertEqual(palette["background"], THEME_PALETTES[DEFAULT_THEME]["background"])
+        self.assertTrue(validate_palette(palette))
+
+    def test_invalid_custom_colors_fall_back_to_safe_defaults(self):
+        palette = palette_for_theme(CUSTOM_THEME, "cyan", "#xyz")
+        self.assertEqual(palette["accent_primary"], THEME_PALETTES[DEFAULT_THEME]["accent_primary"])
+        self.assertEqual(palette["accent_secondary"], THEME_PALETTES[DEFAULT_THEME]["accent_secondary"])
+
+    def test_hex_colors_are_normalized_without_accepting_names_or_shortcuts(self):
+        self.assertEqual(normalize_hex_color(" #aBcD09 "), "#ABCD09")
+        self.assertIsNone(normalize_hex_color("cyan"))
+        self.assertIsNone(normalize_hex_color("#FFF"))
+        self.assertIsNone(normalize_hex_color("#GGGGGG"))
+
     def test_control_center_is_bound_to_live_theme_tokens(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
@@ -78,9 +98,10 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertIn("property var themeColors: controlCenter.themePalette", qml)
         self.assertIn("color: themeColors.background", qml)
         self.assertIn("window.themeColors.accent_primary", qml)
-        self.assertIn("property color cyan: themeColors.accent_primary", qml)
+        self.assertIn("property color accentPrimary: themeColors.accent_primary", qml)
         self.assertIn("def themePalette(self)", controller)
-        self.assertIn("palette_for_theme(self.theme)", controller)
+        self.assertIn("palette_for_settings(self.settings)", controller)
+        self.assertIn("def setCustomAccentColors", controller)
         self.assertNotIn("#121720", qml)
         self.assertNotIn("#293342", qml)
 
@@ -88,7 +109,8 @@ class DesktopThemeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("function onSettingsChanged()", qml)
-        self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]', qml)
+        self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming", "custom"]', qml)
+        self.assertIn("controlCenter.setCustomAccentColors(customAccentA.text, customAccentB.text)", qml)
         self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
 
     def test_all_shared_combo_selectors_refresh_after_external_settings_changes(self):
