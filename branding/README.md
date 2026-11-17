@@ -6,13 +6,13 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 - **Desktop Mode :** emblème du lion seul.
 - **Gaming Mode :** emblème du lion avec manette.
-- **Style :** lion métallique, accents cyan et magenta, typographie LEOS et fond noir.
+- **Style :** lion métallique, typographie LEOS et fond sombre. Les couleurs d'accent A/B sont choisies librement ; cyan/magenta correspondent uniquement à la palette de départ LEOS Original.
 
 ## Organisation
 
 - `desktop-logo.jpeg` — emblème Desktop.
 - `gaming-logo.jpeg` — emblème Gaming.
-- `desktop-logo-alpha.png` et `gaming-logo-alpha.png` — copies dérivées (PNG transparent) des deux emblèmes ci-dessus, générées par `tools/derive_emblem_alpha.py` ; elles servent aux fonds d'écran pour éviter le rectangle noir du JPEG. Les JPEG restent les sources officielles.
+- `desktop-logo-alpha.png` et `gaming-logo-alpha.png` — copies dérivées (PNG transparent) des deux emblèmes ci-dessus, générées par `tools/derive_emblem_alpha.py` ; elles servent aux fonds d'écran et aux écrans LEOS pour éviter le rectangle noir du JPEG. Les JPEG restent les sources officielles.
 - `reference-comparison.jpeg` — référence interne uniquement.
 - `animations/desktop-intro.mov` — entrée Desktop et retour depuis Gaming.
 - `animations/gaming-intro.mp4` — animation principale d'entrée Gaming.
@@ -23,6 +23,8 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - `icons/` — icônes et éléments graphiques.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
+
+Le ShaderEffect partagé est défini dans `shaders/recolor.frag`. Il remappe les néons de l'emblème et des vidéos vers les couleurs A/B en conservant la luminosité, l'alpha et le dégradé. Le binaire Qt Shader Bundle `shaders/recolor.frag.qsb` est généré au build par `tools/compile-theme-shader.sh` (paquet Fedora `qt6-qtshadertools-devel`) ; il n'est pas stocké dans Git. Les SVG de fond d'écran utilisent encore les halos cyan/magenta de la palette originale et leur génération dynamique A/B reste à faire.
 
 La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chemins et l'état de vérification sont détaillés dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
 
