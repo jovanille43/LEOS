@@ -167,7 +167,7 @@ LEOS/
 - [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
 - [ ] Préparer une ISO installable après validation de l'image.
 
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Le workflow de validation Python est en place ; ses résultats devront être consultés sur GitHub Actions.
+**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Les contrôles Python, QML, médias, recettes BlueBuild et signatures des outils sont verts sur GitHub Actions. La chaîne de construction reste protégée et manuelle ; la compilation réelle attend la validation finale et l'autorisation explicite.
 
 ---
 
