@@ -1,0 +1,11 @@
+label: "LEOS-Live"
+grub2:
+  default: 0
+  timeout: 10
+  entries:
+    - name: "Démarrer l’installation de LEOS"
+      linux: "/images/pxeboot/vmlinuz quiet rhgb root=live:CDLABEL=LEOS-Live enforcing=0 rd.live.image console=tty0 console=ttyS0,115200n8"
+      initrd: "/images/pxeboot/initrd.img"
+    - name: "Démarrer LEOS en mode graphique de secours"
+      linux: "/images/pxeboot/vmlinuz quiet rhgb root=live:CDLABEL=LEOS-Live enforcing=0 rd.live.image nomodeset console=tty0 console=ttyS0,115200n8"
+      initrd: "/images/pxeboot/initrd.img"
