@@ -41,6 +41,14 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertLess(verify, generate)
         self.assertIn("sha256sum", source)
 
+    def test_image_build_and_iso_generation_share_a_registry_lock(self):
+        build = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("group: leos-image-pipeline", build)
+        self.assertIn("group: leos-image-pipeline", iso)
+        self.assertIn("cancel-in-progress: false", build)
+        self.assertIn("cancel-in-progress: false", iso)
+
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
         recipe = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
