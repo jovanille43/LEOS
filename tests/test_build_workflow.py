@@ -164,7 +164,7 @@ class BuildWorkflowTests(unittest.TestCase):
     def test_image_workflow_cryptographically_verifies_cosign_key_pair(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
-        self.assertIn("sigstore/cosign-installer@v3", source)
+        self.assertIn("sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3", source)
         self.assertIn("Verify private and public signing keys match", source)
         self.assertIn('bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
         self.assertEqual(
@@ -292,7 +292,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("generate-iso --iso-name", source)
         self.assertIn('image "$IMAGE_REF"', source)
         self.assertIn('sha256sum "$ISO_NAME"', source)
-        self.assertIn("actions/upload-artifact@v4", source)
+        self.assertIn("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2", source)
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
 
