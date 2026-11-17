@@ -29,6 +29,30 @@ La page **Mises à jour** peut afficher un inventaire local issu de `rpm-ostree 
 
 Cet inventaire ne certifie pas que chaque ancienne entrée peut démarrer ou servir de retour arrière. Il ne remplace pas la lecture complète de `rpm-ostree status`. LEOS ne lance aucune commande de rollback, de pinning ou de nettoyage depuis cette page ; toute intervention reste volontaire et doit suivre la procédure ci-dessous.
 
+## Si le bureau démarre mais qu'une interface LEOS ne s'ouvre pas
+
+Un échec du sélecteur ou de Gaming n'implique pas que KDE ou Bazzite soit arrêté : les interfaces LEOS sont des processus utilisateur séparés. Ne lance pas de rollback OSTree pour un simple échec de l'interface.
+
+1. Reste dans la session KDE et ouvre Konsole depuis le menu système.
+2. Relance le sélecteur depuis le terminal afin de voir directement les diagnostics Python/QML :
+
+   ```bash
+   /usr/bin/python3 /usr/share/leos/launcher/main.py --select
+   ```
+
+3. Si seule l'interface Gaming échoue, choisis Desktop dans le sélecteur pour conserver l'accès au bureau. Tu peux aussi relancer « LEOS — Choisir un mode » depuis le menu d'applications KDE.
+4. Pour contrôler l'état général de la session, utilise :
+
+   ```bash
+   systemctl --failed
+   systemctl --user --failed
+   journalctl --user -b -p warning
+   ```
+
+5. Note le message exact affiché dans Konsole, la variante LEOS et le GPU. Ne supprime pas les préférences utilisateur ni les fichiers système pour tenter une réparation sans diagnostic.
+
+Le sélecteur est lancé après l'ouverture de session KDE depuis XDG Autostart. LEOS ne déclare pas de service système privilégié pour ces interfaces ; en cas d'échec, le bureau KDE reste le chemin de secours. Les scénarios de récupération visuelle devront néanmoins être confirmés sur une image Bazzite installée.
+
 ## Si le nouveau déploiement ne démarre pas
 
 1. Redémarrer le PC.
