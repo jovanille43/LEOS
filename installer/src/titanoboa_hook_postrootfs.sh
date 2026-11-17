@@ -356,7 +356,8 @@ Icon=system-software-install
 Exec=/usr/bin/leos-live-welcome
 Terminal=false
 Categories=System;
-EOFchmod 0755 /usr/bin/leos-live-welcome
+EOF
+chmod 0755 /usr/bin/leos-live-welcome
 install -d -m 0755 /etc/skel/.config/autostart /usr/share/applications
 cat > /etc/skel/.config/autostart/leos-live-welcome.desktop <<'EOF'
 [Desktop Entry]
