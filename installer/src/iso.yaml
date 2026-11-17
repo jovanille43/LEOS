@@ -1,6 +1,5 @@
 label: "LEOS-Live"
 grub2:
-  default: 0
   timeout: 10
   entries:
     - name: "Démarrer l’installation de LEOS"
