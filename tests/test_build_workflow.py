@@ -163,10 +163,15 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_image_workflow_cryptographically_verifies_cosign_key_pair(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("Verify private and public signing keys match", source)
-        self.assertIn('cosign sign-blob --key "$workdir/cosign.key"', source)
-        self.assertIn('cosign verify-blob --key cosign.pub', source)
+        self.assertIn('bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
+        self.assertIn("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}", source)
+        self.assertIn("--tlog-upload=false", helper)
+        self.assertIn("--insecure-ignore-tlog", helper)
+        self.assertNotIn("--output-signature", source)
+        self.assertNotIn("--signature", source)
         self.assertLess(
             source.index("Verify private and public signing keys match"),
             source.index("Build and publish LEOS"),
