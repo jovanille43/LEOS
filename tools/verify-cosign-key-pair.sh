@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Verify that a local Cosign private key matches the public key without
 # publishing an image or exposing either key in command output.
+# Compatible with modern Cosign releases that use signature bundles.
 
 set -euo pipefail
 
@@ -27,11 +28,11 @@ printf 'LEOS signing-key preflight\n' > "$workdir/challenge.txt"
 
 cosign sign-blob \
   --key "$private_key" \
-  --output-signature "$workdir/challenge.sig" \
+  --bundle "$workdir/challenge.bundle" \
   "$workdir/challenge.txt"
 cosign verify-blob \
   --key "$public_key" \
-  --signature "$workdir/challenge.sig" \
+  --bundle "$workdir/challenge.bundle" \
   "$workdir/challenge.txt"
 
 printf 'Cosign private/public key pair verified successfully.\n'
