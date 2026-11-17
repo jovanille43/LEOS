@@ -259,13 +259,64 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xorriso
+          sudo apt-get install -y --no-install-recommends xorriso qemu-system-x86 ovmf
 
       - name: Verify ISO checksum and UEFI boot catalog
         run: |
           set -euo pipefail
           bash .github/scripts/verify-installer-iso.sh \
             "dist/iso/${{ steps.image.outputs.filename }}"
+
+      - name: Boot LEOS Live ISO in UEFI QEMU smoke test
+        env:
+          ISO_PATH: dist/iso/${{ steps.image.outputs.filename }}
+        run: |
+          set -euo pipefail
+          firmware_code=""
+          firmware_vars_template=""
+          for firmware_dir in /usr/share/OVMF /usr/share/ovmf; do
+            for suffix in _4M ""; do
+              code="$firmware_dir/OVMF_CODE${suffix}.fd"
+              vars="$firmware_dir/OVMF_VARS${suffix}.fd"
+              if [[ -s "$code" && -s "$vars" ]]; then
+                firmware_code="$code"
+                firmware_vars_template="$vars"
+                break 2
+              fi
+            done
+          done
+          if [[ -z "$firmware_code" || -z "$firmware_vars_template" ]]; then
+            echo "::error::Could not locate a matching OVMF CODE/VARS firmware pair."
+            exit 1
+          fi
+
+          firmware_vars="$RUNNER_TEMP/LEOS-OVMF-VARS.fd"
+          serial_log="$RUNNER_TEMP/LEOS-UEFI-serial.log"
+          cp "$firmware_vars_template" "$firmware_vars"
+          test -s "$ISO_PATH"
+
+          qemu_status=0
+          timeout 360s qemu-system-x86_64 \
+            -machine q35,accel=tcg \
+            -cpu max -m 4096 -smp 2 \
+            -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \
+            -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
+            -cdrom "$ISO_PATH" -boot order=d \
+            -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
+            -display none -serial "file:$serial_log" -monitor none -no-reboot \
+            || qemu_status=$?
+
+          if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 124 ]]; then
+            echo "::error::QEMU exited unexpectedly with status $qemu_status."
+            tail -n 200 "$serial_log" || true
+            exit 1
+          fi
+          if ! grep -Eiq 'Reached target (Graphical Interface|Multi-User System)' "$serial_log"; then
+            echo "::error::LEOS did not reach a usable systemd target during UEFI boot."
+            tail -n 240 "$serial_log" || true
+            exit 1
+          fi
+          echo "UEFI smoke test passed: LEOS reached a systemd graphical or multi-user target."
 
       - name: Sign and verify LEOS ISO and provenance artifacts
         env:
