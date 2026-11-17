@@ -223,6 +223,15 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertTrue((ROOT / "files/README.md").is_file())
         self.assertFalse((ROOT / "config").exists())
 
+    def test_build_documentation_matches_verified_cosign_setup(self):
+        build = (ROOT / "docs/build.md").read_text(encoding="utf-8")
+        self.assertIn("SIGNING_SECRET", build)
+        self.assertIn("COSIGN_PASSWORD", build)
+        self.assertIn("cosign.pub", build)
+        self.assertIn("Le contrôle manuel de correspondance des clés a réussi", build)
+        self.assertNotIn("sans phrase secrète", build)
+        self.assertNotIn("ne contient pas encore le fichier public", build)
+
     def test_packaging_documentation_matches_installed_config_and_startup_behavior(self):
         desktop = (ROOT / "desktop/README.md").read_text(encoding="utf-8")
         packaging = (ROOT / "docs/packaging.md").read_text(encoding="utf-8")
