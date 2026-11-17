@@ -120,6 +120,8 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertEqual(source.count("verify_install: true"), 3)
         self.assertEqual(source.count("blue-build/github-action@"), 3)
+        self.assertEqual(source.count('build_opts: "--signing-driver sigstore"'), 3)
+        self.assertEqual(source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"), 4)
         self.assertLess(
             source.index("Run LEOS Python test suite"),
             source.index("Build and publish LEOS"),
