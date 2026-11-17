@@ -136,7 +136,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s files/bazzite-cosign.pub
-          sudo env PATH="$PATH" cosign verify --key files/bazzite-cosign.pub "$BASE_IMAGE_REF"
+          sudo env PATH="$PATH" cosign verify --key files/bazzite-cosign.pub --new-bundle-format=false "$BASE_IMAGE_REF"
 
       - name: Resolve and pin the signed LEOS image digest
         id: pinned-image
@@ -154,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo env PATH="$PATH" DOCKER_CONFIG=/root/.docker \
-            cosign verify --key cosign.pub "$IMAGE_REF"
+            cosign verify --key cosign.pub --new-bundle-format=false "$IMAGE_REF"
 
       - name: Build Bazzite-based LEOS Live payload
         env:
