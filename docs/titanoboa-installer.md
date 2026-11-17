@@ -19,6 +19,10 @@ Le secret SIGNING_SECRET reste exclusivement dans GitHub Actions. La clé privé
 
 Le workflow exécute maintenant `.github/scripts/verify-live-installer-image.sh` juste après la construction de l’image Live et avant Titanoboa. Ce précontrôle monte l’image avec Podman et vérifie la présence d’un seul noyau, de son initramfs, des modules GRUB PC, des binaires EFI Fedora dans les deux emplacements attendus par le contrat, du fichier `iso.yaml` et des métadonnées/du stockage Podman qui embarquent l’image LEOS. Ce contrôle statique ne remplace pas un démarrage de l’ISO : il prouve seulement que l’image source contient les éléments nécessaires au générateur.
 
+### Pourquoi conserver le parcours Anaconda actuel
+
+La directive Kickstart native `bootc` de Fedora 43+ sait séparer la référence source de l’image cible utilisée pour les mises à jour. Toutefois, la documentation Image Builder signale un échec possible de `systemd-remount-fs.service` sur les systèmes bootc installés par Anaconda. Le ticket Anaconda [Bugzilla 2332319](https://bugzilla.redhat.com/show_bug.cgi?id=2332319) indique un correctif dans Anaconda 46.6-1.fc46. La base LEOS utilisée par cette branche est encore Bazzite/Fedora 45 : nous gardons donc le parcours éprouvé par Bazzite (`ostreecontainer` sur le stockage local, puis `bootc switch` avec signature obligatoire) jusqu’à ce que le correctif soit disponible dans la base et validé en VM. Il ne faut pas confondre l’existence de la directive Kickstart avec la validation de ce parcours sur Fedora 45.
+
 ## Déploiement Anaconda
 
 Anaconda déploie d’abord l’image LEOS embarquée via ostreecontainer et le transport containers-storage. Le déploiement initial utilise donc le contenu déjà vérifié et présent dans le Live, sans télécharger à nouveau l’image complète pendant la phase OSTree.
