@@ -152,6 +152,8 @@ class SessionFlowTests(unittest.TestCase):
             "exit_code = app.exec()", 1
         )[0]
         self.assertIn("selector_controller.shutdown()", failure_branch)
+        self.assertIn("post_notification(", failure_branch)
+        self.assertIn("Le bureau KDE reste accessible.", failure_branch)
         self.assertIn("return 1", failure_branch)
         self.assertNotIn("systemctl", main)
         self.assertNotIn("pkill", main)
@@ -216,6 +218,15 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("self._gamepad_poll_timer.stop()", controller)
         self.assertIn("self._gamepad_refresh_timer.stop()", controller)
         self.assertIn("self._gamepad.close()", controller)
+
+    def test_gaming_qml_startup_failure_notifies_and_keeps_kde_available(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        failure_branch = main.split("if not engine.rootObjects():", 1)[1].split(
+            "return 1", 1
+        )[0]
+        self.assertIn("controller.shutdown()", failure_branch)
+        self.assertIn("post_notification(", failure_branch)
+        self.assertIn("Le bureau KDE reste accessible.", failure_branch)
 
     def test_mode_selector_documentation_matches_integrated_assets_and_transitions(self):
         readme = (ROOT / "components/mode-selector/README.md").read_text(encoding="utf-8")
