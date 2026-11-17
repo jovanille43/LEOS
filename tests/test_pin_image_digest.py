@@ -25,22 +25,45 @@ class PinImageDigestTests(unittest.TestCase):
         self.authfile = self.workdir / "registry-auth.json"
         self.authfile.write_text("{}", encoding="utf-8")
         self.output_file = self.workdir / "github-output.txt"
-        self.call_log = self.workdir / "podman-calls.txt"
-        self.fake_podman = self.workdir / "podman"
-        self.fake_podman.write_text(
+        self.podman_log = self.workdir / "podman-calls.txt"
+        self.skopeo_log = self.workdir / "skopeo-calls.txt"
+
+        self.fake_skopeo = self.workdir / "skopeo"
+        self.fake_skopeo.write_text(
             "#!/usr/bin/env bash\n"
             "set -euo pipefail\n"
-            "printf '%s\\n' \"$*\" >> \"$PODMAN_CALL_LOG\"\n"
-            "if [[ \"$1\" == pull ]]; then\n"
-            "  exit \"$PODMAN_PULL_STATUS\"\n"
+            "printf '%s\\n' \"$*\" >> \"$SKOPEO_CALL_LOG\"\n"
+            "if [[ \"$1\" == inspect ]]; then\n"
+            "  exit \"$SKOPEO_INSPECT_STATUS\"\n"
             "fi\n"
-            "if [[ \"$1\" == image && \"$2\" == inspect ]]; then\n"
-            "  printf '%s\\n' \"$PODMAN_DIGEST\"\n"
+            "exit 97\n"
+            "printf '%s\\n' \"$SKOPEO_DIGEST\"\n",
+            encoding="utf-8",
+        )
+        # Return the configured registry manifest digest after logging inspect.
+        self.fake_skopeo.write_text(
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            "printf '%s\\n' \"$*\" >> \"$SKOPEO_CALL_LOG\"\n"
+            "if [[ \"$1\" == inspect ]]; then\n"
+            "  if [[ \"$SKOPEO_INSPECT_STATUS\" != 0 ]]; then exit \"$SKOPEO_INSPECT_STATUS\"; fi\n"
+            "  printf '%s\\n' \"$SKOPEO_DIGEST\"\n"
             "  exit 0\n"
             "fi\n"
             "exit 97\n",
             encoding="utf-8",
         )
+        self.fake_podman = self.workdir / "podman"
+        self.fake_podman.write_text(
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            "printf '%s\\n' \"$*\" >> \"$PODMAN_CALL_LOG\"\n"
+            "if [[ \"$1\" == pull ]]; then exit \"$PODMAN_PULL_STATUS\"; fi\n"
+            "if [[ \"$1\" == tag ]]; then exit 0; fi\n"
+            "exit 97\n",
+            encoding="utf-8",
+        )
+        self.fake_skopeo.chmod(0o755)
         self.fake_podman.chmod(0o755)
 
     def run_helper(self, image_ref, *, extra_args=(), env_overrides=None):
@@ -49,9 +72,12 @@ class PinImageDigestTests(unittest.TestCase):
         environment.update(
             {
                 "PODMAN_BIN": str(self.fake_podman),
-                "PODMAN_CALL_LOG": str(self.call_log),
-                "PODMAN_DIGEST": VALID_DIGEST,
+                "PODMAN_CALL_LOG": str(self.podman_log),
                 "PODMAN_PULL_STATUS": "0",
+                "SKOPEO_BIN": str(self.fake_skopeo),
+                "SKOPEO_CALL_LOG": str(self.skopeo_log),
+                "SKOPEO_DIGEST": VALID_DIGEST,
+                "SKOPEO_INSPECT_STATUS": "0",
             }
         )
         if env_overrides:
@@ -64,30 +90,37 @@ class PinImageDigestTests(unittest.TestCase):
             env=environment,
         )
 
-    def test_pins_each_supported_image_variant_to_the_pulled_digest(self):
+    def test_pins_each_supported_image_variant_to_the_registry_manifest_digest(self):
         for image_ref in VALID_IMAGES:
             with self.subTest(image_ref=image_ref):
-                self.output_file.write_text("", encoding="utf-8")
-                self.call_log.unlink(missing_ok=True)
+                self.output_file.unlink(missing_ok=True)
+                self.podman_log.unlink(missing_ok=True)
+                self.skopeo_log.unlink(missing_ok=True)
                 result = self.run_helper(
                     image_ref, extra_args=(str(self.output_file),)
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 repository = image_ref.rsplit(":", 1)[0]
+                immutable_ref = f"{repository}@{VALID_DIGEST}"
                 self.assertEqual(
                     self.output_file.read_text(encoding="utf-8"),
-                    f"ref={repository}@{VALID_DIGEST}\n"
+                    f"ref={immutable_ref}\n"
                     f"tag_ref={image_ref}\n",
                 )
-                calls = self.call_log.read_text(encoding="utf-8").splitlines()
-                self.assertEqual(len(calls), 2)
+                podman_calls = self.podman_log.read_text(encoding="utf-8").splitlines()
                 self.assertEqual(
-                    calls[0],
-                    f"pull --authfile {self.authfile} {image_ref}",
+                    podman_calls,
+                    [
+                        f"pull --authfile {self.authfile} {immutable_ref}",
+                        f"tag {immutable_ref} {image_ref}",
+                    ],
                 )
+                skopeo_calls = self.skopeo_log.read_text(encoding="utf-8").splitlines()
                 self.assertEqual(
-                    calls[1],
-                    f"image inspect --format {{{{.Digest}}}} {image_ref}",
+                    skopeo_calls,
+                    [
+                        f"inspect --authfile {self.authfile} --format {{{{.Digest}}}} docker://{image_ref}"
+                    ],
                 )
 
     def test_rejects_unsupported_registry_malformed_owner_and_unexpected_images(self):
@@ -99,12 +132,12 @@ class PinImageDigestTests(unittest.TestCase):
         )
         for image_ref in invalid_refs:
             with self.subTest(image_ref=image_ref):
-                self.call_log.unlink(missing_ok=True)
                 result = self.run_helper(
                     image_ref, extra_args=(str(self.output_file),)
                 )
                 self.assertNotEqual(result.returncode, 0)
-                self.assertFalse(self.call_log.exists())
+                self.assertFalse(self.podman_log.exists())
+                self.assertFalse(self.skopeo_log.exists())
                 self.assertFalse(self.output_file.exists())
 
     def test_refuses_to_continue_without_registry_auth_file(self):
@@ -113,29 +146,44 @@ class PinImageDigestTests(unittest.TestCase):
             VALID_IMAGES[0], extra_args=(str(self.output_file),)
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(self.call_log.exists())
+        self.assertFalse(self.podman_log.exists())
+        self.assertFalse(self.skopeo_log.exists())
         self.assertFalse(self.output_file.exists())
 
-    def test_requires_an_output_destination_before_pulling(self):
+    def test_requires_an_output_destination_before_resolving_or_pulling(self):
         result = self.run_helper(VALID_IMAGES[0])
         self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(self.call_log.exists())
+        self.assertFalse(self.podman_log.exists())
+        self.assertFalse(self.skopeo_log.exists())
 
-    def test_rejects_a_missing_or_malformed_digest(self):
+    def test_rejects_a_missing_or_malformed_registry_digest(self):
         for digest in ("", "latest", "sha256:abc", "sha256:" + ("A" * 64)):
             with self.subTest(digest=digest):
-                self.call_log.unlink(missing_ok=True)
+                self.output_file.unlink(missing_ok=True)
+                self.podman_log.unlink(missing_ok=True)
+                self.skopeo_log.unlink(missing_ok=True)
                 result = self.run_helper(
                     VALID_IMAGES[0],
                     extra_args=(str(self.output_file),),
-                    env_overrides={"PODMAN_DIGEST": digest},
+                    env_overrides={"SKOPEO_DIGEST": digest},
                 )
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse(self.output_file.exists())
-                calls = self.call_log.read_text(encoding="utf-8").splitlines()
-                self.assertEqual(len(calls), 2)
+                self.assertFalse(self.podman_log.exists())
+                self.assertEqual(len(self.skopeo_log.read_text(encoding="utf-8").splitlines()), 1)
 
-    def test_propagates_registry_pull_failure_without_writing_output(self):
+    def test_propagates_skopeo_resolution_failure_without_pulling_or_writing_output(self):
+        result = self.run_helper(
+            VALID_IMAGES[0],
+            extra_args=(str(self.output_file),),
+            env_overrides={"SKOPEO_INSPECT_STATUS": "23"},
+        )
+        self.assertEqual(result.returncode, 23)
+        self.assertFalse(self.output_file.exists())
+        self.assertFalse(self.podman_log.exists())
+        self.assertEqual(len(self.skopeo_log.read_text(encoding="utf-8").splitlines()), 1)
+
+    def test_propagates_immutable_podman_pull_failure_without_writing_output(self):
         result = self.run_helper(
             VALID_IMAGES[0],
             extra_args=(str(self.output_file),),
@@ -143,9 +191,10 @@ class PinImageDigestTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 23)
         self.assertFalse(self.output_file.exists())
+        repository = VALID_IMAGES[0].rsplit(":", 1)[0]
         self.assertEqual(
-            self.call_log.read_text(encoding="utf-8").splitlines(),
-            [f"pull --authfile {self.authfile} {VALID_IMAGES[0]}"],
+            self.podman_log.read_text(encoding="utf-8").splitlines(),
+            [f"pull --authfile {self.authfile} {repository}@{VALID_DIGEST}"],
         )
 
 
