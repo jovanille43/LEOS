@@ -199,6 +199,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("--build-arg BASE_IMAGE=", workflow)
         self.assertIn("steps.pinned-base.outputs.ref", workflow)
         self.assertIn("cosign verify --key files/bazzite-cosign.pub", workflow)
+        self.assertIn("--new-bundle-format=false", workflow)
         bazzite_key = (ROOT / "files/bazzite-cosign.pub").read_text(encoding="utf-8")
         self.assertIn("BEGIN PUBLIC KEY", bazzite_key)
         self.assertIn('"installer_base_image": os.environ["BASE_IMAGE_REF"]', workflow)
