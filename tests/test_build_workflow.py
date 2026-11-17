@@ -214,6 +214,14 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("type: signing", common)
         self.assertIn("src: branding", common)
 
+    def test_leos_config_files_use_bluebuild_files_directory(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("src: config", recipe)
+        self.assertTrue((ROOT / "files/config/desktop-defaults.json").is_file())
+        self.assertTrue((ROOT / "files/config/README.md").is_file())
+        self.assertTrue((ROOT / "files/README.md").is_file())
+        self.assertFalse((ROOT / "config").exists())
+
     def test_branding_assets_are_copied_into_the_runtime_share_tree(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: branding", recipe)
