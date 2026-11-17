@@ -145,6 +145,7 @@ jobs:
           pr_event_number: ${{ github.event.number || 0 }}
           verify_install: true
           build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42
 
       - name: Build and publish LEOS (NVIDIA)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
@@ -157,6 +158,7 @@ jobs:
           pr_event_number: ${{ github.event.number || 0 }}
           verify_install: true
           build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42
 
       - name: Build and publish LEOS (NVIDIA modern)
         uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
@@ -169,3 +171,4 @@ jobs:
           pr_event_number: ${{ github.event.number || 0 }}
           verify_install: true
           build_opts: "--signing-driver sigstore"
+          cli_version: v0.9.42
