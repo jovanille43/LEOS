@@ -223,6 +223,22 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("desktop-intro.ogg", manifest)
         self.assertNotIn("gaming-intro.ogg", manifest)
 
+    def test_recipe_installs_qt_declarative_runtime_for_qml_interfaces(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("- python3-pyside6", recipe)
+        self.assertIn("- qt6-qtdeclarative", recipe)
+        self.assertIn("- qt6-qtmultimedia", recipe)
+        self.assertIn("- qt6-qtsvg", recipe)
+
+    def test_recipe_installs_kde_session_autostart_and_launcher_payload(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        entry = (ROOT / "desktop/autostart/leos-session.desktop").read_text(encoding="utf-8")
+        self.assertIn("src: launcher", recipe)
+        self.assertIn("dest: /usr/share/leos/", recipe)
+        self.assertIn("src: desktop/autostart/leos-session.desktop", recipe)
+        self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
+        self.assertIn("Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select", entry)
+
     def test_recipe_installs_qt_multimedia_for_intro_playback(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("qt6-qtmultimedia", recipe)
