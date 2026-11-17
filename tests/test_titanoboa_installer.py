@@ -43,7 +43,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
 
     def test_anaconda_uses_the_exact_image_and_separate_efi_directory(self):
         hook = (INSTALLER / "src/titanoboa_hook_postrootfs.sh").read_text(encoding="utf-8")
-        self.assertIn("efi_dir = leos", hook)
+        self.assertIn("efi_dir = fedora", hook)
         self.assertIn("ostreecontainer --url=%s --transport=containers-storage", hook)
         self.assertIn(
             'bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"',
