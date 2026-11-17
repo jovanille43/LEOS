@@ -4,17 +4,34 @@ set -Eeuo pipefail
 source /etc/os-release
 : "${VARIANT_ID:?The Bazzite Live base must expose VARIANT_ID}"
 
-target_ref="$(< /usr/share/leos-installer/install-image-ref)"
+target_local_ref="$(< /usr/share/leos-installer/install-image-local-ref)"
+target_registry_ref="$(< /usr/share/leos-installer/install-image-registry-ref)"
 target_digest="$(< /usr/share/leos-installer/install-image-digest)"
-if [[ ! "$target_ref" =~ ^ghcr\.io/jovanille43/(leos|leos-nvidia|leos-nvidia-open):[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
-  echo "::error::The embedded LEOS install image reference is invalid." >&2
+target_image_id="$(< /usr/share/leos-installer/install-image-id)"
+
+if [[ ! "$target_local_ref" =~ ^ghcr\.io/jovanille43/(leos|leos-nvidia|leos-nvidia-open):[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+  echo "::error::The embedded LEOS local image reference is invalid." >&2
   exit 1
 fi
-if [[ ! "$target_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-  echo "::error::The embedded LEOS image digest is invalid." >&2
+if [[ ! "$target_registry_ref" =~ ^ghcr\.io/jovanille43/(leos|leos-nvidia|leos-nvidia-open)@sha256:[0-9a-f]{64}$ ]]; then
+  echo "::error::The embedded LEOS registry reference is invalid." >&2
   exit 1
 fi
-podman image exists "$target_ref"
+if [[ ! "$target_digest" =~ ^sha256:[0-9a-f]{64}$ || "$target_registry_ref" != *"@$target_digest" ]]; then
+  echo "::error::The embedded LEOS manifest digest is invalid." >&2
+  exit 1
+fi
+if [[ ! "$target_image_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+  echo "::error::The embedded LEOS image ID is invalid." >&2
+  exit 1
+fi
+
+podman image exists "$target_local_ref"
+live_image_id="$(podman image inspect --format '{{.Id}}' "$target_local_ref")"
+if [[ "$live_image_id" != "$target_image_id" ]]; then
+  echo "::error::The image available to Anaconda is not the verified LEOS payload." >&2
+  exit 1
+fi
 
 dnf -qy versionlock clear || true
 dnf install -qy --enable-repo=fedora-cisco-openh264 --allowerasing \
@@ -59,7 +76,7 @@ EOF
 
 echo "LEOS installer based on Bazzite $VERSION_ID" > /etc/system-release
 
-mkdir -p /usr/share/ublue-os
+install -d -m 0755 /usr/share/ublue-os
 curl --fail --location --retry 3 \
   -o /usr/share/ublue-os/sb_pubkey.der \
   https://github.com/ublue-os/akmods/raw/main/certs/public_key.der
@@ -95,7 +112,7 @@ printf '%s\n%s\n' "$ENROLLMENT_PASSWORD" "$ENROLLMENT_PASSWORD" |
 %end
 EOF
 
-cat >> /usr/share/anaconda/interactive-defaults.ks <<EOF
+cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 
 %pre
 mkdir -p /tmp/leos-install-logs
@@ -107,18 +124,21 @@ if [[ ! -d /sys/firmware/efi ]]; then
   echo "LEOS currently supports UEFI installation only."
   exit 1
 fi
-podman image exists "$target_ref"
+if [[ ! -s /etc/containers/policy.json || ! -s /etc/pki/containers/leos-cosign.pub ]]; then
+  echo "The LEOS image-signature policy is missing."
+  exit 1
+fi
 %end
+EOF
 
-ostreecontainer --url=$target_ref --transport=containers-storage --no-signature-verification
+printf 'ostreecontainer --url=%s --transport=containers-storage --no-signature-verification\n' \
+  "$target_local_ref" >> /usr/share/anaconda/interactive-defaults.ks
+cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 %include /usr/share/anaconda/post-scripts/install-configure-upgrade.ks
 %include /usr/share/anaconda/post-scripts/leos-disable-fedora-flatpak.ks
 %include /usr/share/anaconda/post-scripts/leos-restore-selinux-labels.ks
 %include /usr/share/anaconda/post-scripts/leos-secureboot-enroll-key.ks
 
-EOF
-
-cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 %onerror
 set +e
 diagnostics_dir="/home/liveuser/Desktop/LEOS-installation-diagnostics"
@@ -153,7 +173,7 @@ cat >> /usr/share/anaconda/post-scripts/install-configure-upgrade.ks <<EOF
 set -euo pipefail
 test -s /etc/containers/policy.json
 test -s /etc/pki/containers/leos-cosign.pub
-bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_ref"
+bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"
 %end
 EOF
 
