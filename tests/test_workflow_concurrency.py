@@ -19,6 +19,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("group: leos-bluebuild-${{ github.ref }}", source)
         self.assertIn("cancel-in-progress: true", source)
         self.assertIn("timeout-minutes: 15", source)
+        self.assertIn('"files/**"', source)
 
     def test_recipe_generation_retries_transient_schema_fetch_failures(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
