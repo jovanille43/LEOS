@@ -1,4 +1,4 @@
-""""LEOS session entry point.
+"""LEOS session entry point.
 
 KDE autostart uses --select to show the mode picker after login. Without
 --select, the legacy restore path opens Gaming only when it was last selected.
