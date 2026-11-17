@@ -178,6 +178,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("Before=graphical.target", hook)
         self.assertIn('remote_digest="$(skopeo inspect --format', hook)
         self.assertIn("Connexion à GHCR requise ou image candidate modifiée", hook)
+        self.assertIn("EOF\\nchmod 0755 /usr/bin/leos-live-welcome", hook)
         self.assertIn("Exec=/usr/bin/leos-live-welcome", hook)
         self.assertIn('podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -x /usr/bin/rpm-ostree', hook)
         self.assertIn("2332319", documentation)
