@@ -36,7 +36,13 @@ fi
 
 dnf -qy versionlock clear || true
 dnf install -qy --enable-repo=fedora-cisco-openh264 --allowerasing \
-  firefox anaconda-live libblockdev-{btrfs,lvm,dm} yad
+  firefox anaconda-live anaconda-dracut libblockdev-{btrfs,lvm,dm} yad
+# Ensure Anaconda includes the Fedora fix for RHBZ 2332319 (bootc/OSTree root fstab handling).
+dnf upgrade -qy anaconda-core anaconda-live anaconda-dracut
+if ! rpm -q --changelog anaconda-dracut | grep -Eqi '2332319'; then
+  echo "::error::Anaconda lacks the systemd-remount-fs fix for RHBZ 2332319; refusing to build this Live installer." >&2
+  exit 1
+fi
 install -d -m 0755 /var/lib/rpm-state /etc/anaconda/profile.d /etc/anaconda/conf.d
 install -d -m 0755 /usr/share/anaconda/post-scripts
 
