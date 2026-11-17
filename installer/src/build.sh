@@ -36,7 +36,7 @@ printf '%s\n' "$INSTALL_IMAGE_PAYLOAD" > /usr/share/leos-installer/install-image
 printf '%s\n' "$INSTALL_IMAGE_DIGEST" > /usr/share/leos-installer/install-image-digest
 chmod 0644 /usr/share/leos-installer/install-image-ref /usr/share/leos-installer/install-image-digest
 
-"$SCRIPT_DIR/titanoboa_hook_preinitramfs.sh"
+bash "$SCRIPT_DIR/titanoboa_hook_preinitramfs.sh"
 
 dnf install -y dracut-live
 mapfile -t kernels < <(
@@ -58,7 +58,7 @@ dnf install -y livesys-scripts
 sed -i 's/^livesys_session=.*/livesys_session=kde/' /etc/sysconfig/livesys
 systemctl enable livesys.service livesys-late.service
 
-"$SCRIPT_DIR/titanoboa_hook_postrootfs.sh"
+bash "$SCRIPT_DIR/titanoboa_hook_postrootfs.sh"
 
 dnf install -y grub2-efi-x64-cdboot
 install -d -m 0755 /boot/efi
