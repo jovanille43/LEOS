@@ -138,10 +138,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
     def test_previous_iso_workflow_remains_available_for_comparison(self):
         old_workflow = ROOT / ".github/workflows/iso.yml"
         self.assertTrue(old_workflow.is_file())
-        self.assertIn(
-            "bluebuild generate-iso",
-            old_workflow.read_text(encoding="utf-8"),
-        )
+        legacy_content = old_workflow.read_text(encoding="utf-8")
+        self.assertIn("generate-iso", legacy_content)
+        self.assertIn("blue-build/cli:v0.9-installer", legacy_content)
 
 
 if __name__ == "__main__":
