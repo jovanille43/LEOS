@@ -168,7 +168,17 @@ diagnostics_dir="/home/liveuser/Desktop/LEOS-installation-diagnostics"
 mkdir -p "$diagnostics_dir"
 summary_file="$diagnostics_dir/summary.txt"
 : > "$summary_file"
-for log_file in /tmp/anaconda.log /tmp/packaging.log /tmp/program.log /tmp/storage.log /tmp/syslog; do
+mkdir -p /tmp/leos-install-logs
+journalctl -b -n 1000 > /tmp/leos-install-logs/journalctl.log 2>&1 || true
+log_files=(
+  /tmp/anaconda.log
+  /tmp/packaging.log
+  /tmp/program.log
+  /tmp/storage.log
+  /tmp/syslog
+  /tmp/leos-install-logs/*.log
+)
+for log_file in "${log_files[@]}"; do
   if [[ -s "$log_file" ]]; then
     printf '\n===== %s (last 200 lines) =====\n' "$log_file" >> "$summary_file"
     tail -n 200 "$log_file" >> "$summary_file"
