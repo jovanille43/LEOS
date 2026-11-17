@@ -35,8 +35,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: "#102b3a"; opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: "#321437"; opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.darker(window.accentPrimary, 2.7); opacity: 0.13 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.darker(window.accentSecondary, 2.7); opacity: 0.12 }
     }
 
     ColumnLayout {
@@ -111,7 +111,7 @@ ApplicationWindow {
             font.pixelSize: 16
             color: "white"
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: "#141B25"; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.accentPrimary : "#303A49" }
+            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.accentPrimary : window.themeColors.border }
         }
 
         RowLayout {
@@ -123,8 +123,8 @@ ApplicationWindow {
                 Layout.preferredWidth: 205
                 Layout.fillHeight: true
                 radius: 15
-                color: "#10151E"
-                border.color: "#263140"
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
@@ -137,7 +137,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.accentPrimary : "transparent" }
+                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? Qt.darker(window.accentPrimary, 2.7) : "transparent"; border.color: categoryMenuButton.down ? window.accentPrimary : "transparent" }
                             contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
                         }
                     }
@@ -151,7 +151,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 radius: 15
                 color: "#0E131B"
-                border.color: "#263140"
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 14
@@ -205,8 +205,8 @@ ApplicationWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
-                                color: appMouse.containsMouse ? "#1B2633" : "#151B25"
-                                border.color: appMouse.containsMouse ? window.accentPrimary : "#2B3544"
+                                color: appMouse.containsMouse ? Qt.darker(window.accentSecondary, 2.7) : window.themeColors.surface_elevated
+                                border.color: appMouse.containsMouse ? window.accentPrimary : window.themeColors.border
                             }
                             MouseArea {
                                 id: appMouse
