@@ -114,14 +114,27 @@ def palette_for_theme(
 
 
 def palette_for_settings(settings: Any) -> dict[str, str]:
-    """Build the live palette from the shared settings store."""
-    theme = settings.get("theme", DEFAULT_THEME)
-    if theme == CUSTOM_THEME:
-        return palette_for_theme(
-            CUSTOM_THEME,
-            settings.get("custom_accent_primary", DEFAULT_ACCENT_PRIMARY),
-            settings.get("custom_accent_secondary", DEFAULT_ACCENT_SECONDARY),
+    """Build the live palette from one consistent settings snapshot when available."""
+    snapshot_reader = getattr(settings, "snapshot", None)
+    if callable(snapshot_reader):
+        theme, accent_primary, accent_secondary = snapshot_reader((
+            "theme",
+            "custom_accent_primary",
+            "custom_accent_secondary",
+        ))
+    else:
+        # Keep compatibility with simple settings adapters used by integrations
+        # and tests that expose only the get(key, default) interface.
+        theme = settings.get("theme", DEFAULT_THEME)
+        accent_primary = settings.get(
+            "custom_accent_primary", DEFAULT_ACCENT_PRIMARY
         )
+        accent_secondary = settings.get(
+            "custom_accent_secondary", DEFAULT_ACCENT_SECONDARY
+        )
+
+    if theme == CUSTOM_THEME:
+        return palette_for_theme(CUSTOM_THEME, accent_primary, accent_secondary)
     return palette_for_theme(str(theme))
 
 
