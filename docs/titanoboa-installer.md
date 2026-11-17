@@ -9,14 +9,18 @@ Titanoboa est présenté par son projet comme un constructeur expérimental d’
 ## Flux de construction
 
 1. Le workflow sélectionne explicitement une variante LEOS et un tag publié.
-2. Il résout le digest SHA-256 immuable de l’image LEOS et vérifie sa signature Cosign avec la clé publique LEOS `cosign.pub`.
-3. Il résout le digest de `ghcr.io/ublue-os/bazzite:stable` et vérifie la signature du socle Live avec `files/bazzite-cosign.pub`, clé publique publiée par le dépôt Bazzite (https://github.com/ublue-os/bazzite/blob/f8580007fb1fb4241378fd99b33800aefe62c3b5/cosign.pub).
-4. L’image Live KDE est construite depuis le digest Bazzite ; le manifeste de provenance conserve le tag et le digest exacts de la base.
-5. Le constructeur Live tire l’image LEOS par digest, lui donne un nom local pour Anaconda et compare l’identifiant de l’image après export/import.
+2. Skopeo résout le digest du manifeste OCI/index multi-architecture publié pour l’image LEOS ; Cosign vérifie ce digest avec la clé publique LEOS `cosign.pub`.
+3. Skopeo résout également le digest du manifeste Bazzite `ghcr.io/ublue-os/bazzite:stable` ; Cosign vérifie le socle Live avec `files/bazzite-cosign.pub`, clé publique publiée par le dépôt Bazzite (https://github.com/ublue-os/bazzite/blob/f8580007fb1fb4241378fd99b33800aefe62c3b5/cosign.pub).
+4. L’image Live KDE est construite depuis le digest Bazzite immuable ; le manifeste de provenance conserve le tag et le digest exacts de la base.
+5. Le constructeur Live tire l’image LEOS par digest, la donne un nom local pour Anaconda et enregistre son ID de configuration local ; l’ID doit rester identique après export/import.
 6. Le précontrôle inspecte le contrat Titanoboa sur l’image Live, puis Titanoboa construit l’ISO. Le workflow vérifie ensuite le SHA-256, le catalogue UEFI, la signature de l’ISO et le manifeste de provenance.
 Le secret SIGNING_SECRET reste exclusivement dans GitHub Actions. La clé privée de signature n’est ni copiée dans l’image Live, ni enregistrée dans le dépôt, ni incluse dans l’ISO.
 
 Le workflow exécute maintenant `.github/scripts/verify-live-installer-image.sh` juste après la construction de l’image Live et avant Titanoboa. Ce précontrôle monte l’image avec Podman et vérifie la présence d’un seul noyau, de son initramfs, des modules GRUB PC, des binaires EFI Fedora dans les deux emplacements attendus par le contrat, du fichier `iso.yaml` et des métadonnées/du stockage Podman qui embarquent l’image LEOS. Ce contrôle statique ne remplace pas un démarrage de l’ISO : il prouve seulement que l’image source contient les éléments nécessaires au générateur.
+
+### Digests multi-architecture
+
+Le digest publié par un registre peut désigner un index OCI multi-architecture, alors que le digest local affiché par Podman peut désigner le manifeste enfant sélectionné pour l’architecture du runner. Le workflow résout donc le digest distant avec `skopeo inspect`, puis tire l’image par cette référence immuable. À l’intérieur de l’image Live, l’intégrité de l’image locale est vérifiée par son ID de configuration, pas en comparant ce digest local au digest de l’index. Voir la documentation [Skopeo inspect](https://github.com/containers/skopeo/blob/main/docs/skopeo-inspect.1.md) et le cas documenté [Podman issue 24858](https://github.com/containers/podman/issues/24858).
 
 ### Pourquoi conserver le parcours Anaconda actuel
 
