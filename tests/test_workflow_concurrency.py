@@ -68,7 +68,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn('tag "$immutable_ref" "$image_ref"', helper)
         self.assertNotIn('image inspect --format "{{.Digest}}"', helper)
         self.assertIn(r"^sha256:[0-9a-f]{64}$", helper)
-        self.assertIn(r"printf 'ref=%s\\n'", helper)
+        self.assertIn(r"printf 'ref=%s\n'", helper)
         self.assertIn("leos-nvidia-open", helper)
 
 
