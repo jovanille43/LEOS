@@ -159,14 +159,19 @@ set -euo pipefail
 boot_source="$(findmnt --raw --noheadings --output SOURCE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
 boot_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
 boot_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
+root_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot 2>/dev/null || true)"
 esp_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"
 esp_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"
-if [[ -z "$boot_source" || -z "$boot_device" ]]; then
-  echo "LEOS requires /boot to be an explicitly mounted, dedicated partition."
+if [[ -z "$boot_source" || -z "$boot_device" || -z "$root_device" ]]; then
+  echo "LEOS requires explicit root and dedicated /boot mount points."
   exit 1
 fi
 if [[ "$boot_fstype" != "ext4" ]]; then
   echo "LEOS requires /boot on ext4; detected: ${boot_fstype:-unknown}"
+  exit 1
+fi
+if [[ "$boot_device" == "$root_device" ]]; then
+  echo "LEOS requires /boot to be on a partition separate from the root filesystem."
   exit 1
 fi
 if [[ -z "$esp_device" ]]; then
