@@ -8,6 +8,8 @@ Titanoboa est présenté par son projet comme un constructeur expérimental d’
 
 ## Flux de construction
 
+Le workflow manuel **Build LEOS** reconstruit les trois variantes sur la branche courante. Pour chaque variante, il publie un fichier digest et ajoute au résumé GitHub le tag immuable associé au commit (préfixe SHA court) ainsi que son digest signé. Copier le même tag de commit dans le champ `image_tag` du workflow Titanoboa ; ne pas utiliser `stable` pour ce candidat.
+
 1. Le workflow sélectionne explicitement une variante LEOS et un tag publié.
 2. Skopeo résout le digest du manifeste OCI/index multi-architecture publié pour l’image LEOS ; Cosign vérifie ce digest avec la clé publique LEOS `cosign.pub`.
 3. Skopeo résout également le digest du manifeste Bazzite `ghcr.io/ublue-os/bazzite:stable` ; Cosign vérifie le socle Live avec `files/bazzite-cosign.pub`, clé publique publiée par le dépôt Bazzite (https://github.com/ublue-os/bazzite/blob/f8580007fb1fb4241378fd99b33800aefe62c3b5/cosign.pub).
