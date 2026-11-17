@@ -420,13 +420,20 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: "../../branding/gaming-logo-alpha.png"
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
                         Layout.preferredWidth: 118
                         Layout.preferredHeight: 58
                         visible: status === Image.Ready
+                        layer.enabled: true
+                        layer.smooth: true
+                        layer.effect: ShaderEffect {
+                            property color accentA: window.accentPrimary
+                            property color accentB: window.accentSecondary
+                            fragmentShader: "../../branding/shaders/recolor.frag.qsb"
+                        }
                     }
                     Label {
                         text: "LEOS"
@@ -1230,6 +1237,13 @@ ApplicationWindow {
             id: desktopIntroVideoOutput
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
+            layer.enabled: true
+            layer.smooth: true
+            layer.effect: ShaderEffect {
+                property color accentA: window.accentPrimary
+                property color accentB: window.accentSecondary
+                fragmentShader: "../../branding/shaders/recolor.frag.qsb"
+            }
         }
         MouseArea {
             anchors.fill: parent
