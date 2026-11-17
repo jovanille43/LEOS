@@ -14,6 +14,7 @@ La vue d'ensemble du Centre de contrôle réutilise `gaming.backend.system_monit
 - `/usr/share/leos/controller_center` : détection, test et préférences locales des manettes.
 - `/usr/share/leos/shop` : catalogue et interface de la boutique LEOS.
 - `/usr/share/leos/leos_core` : préférences partagées.
+- `/usr/share/leos/config` : profil déclaratif LEOS et paramètres communs, provenant de `files/config/` dans le dépôt.
 - `/usr/share/leos/branding` : ressources visuelles officielles.
 - `/usr/share/applications/leos-mode-selector.desktop` : entrée du sélecteur.
 - `/usr/share/applications/leos-control-center.desktop` : entrée du Centre de contrôle.
