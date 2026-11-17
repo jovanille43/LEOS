@@ -206,6 +206,8 @@ def generate_user_theme_assets(
 ) -> dict[str, str]:
     """Generate matching Plasma Style and Aurorae assets in the user's XDG data."""
     root = Path(data_root) if data_root is not None else xdg_data_home()
+    if root.is_symlink():
+        raise OSError(f"LEOS theme data root cannot be a symbolic link: {root}")
     package_root = Path(source_root) if source_root is not None else Path(__file__).resolve().parents[1]
     palette = palette_for_settings(settings)
     accent_a = normalize_hex_color(palette.get("accent_primary"))
