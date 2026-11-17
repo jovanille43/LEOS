@@ -152,7 +152,7 @@ jobs:
 
       - name: Validate Titanoboa Live image contract
         env:
-          LIVE_IMAGE_TAG: ${{ steps.image.outputs.tag_ref && format('localhost/leos-live-installer:{0}-{1}', github.run_id, github.run_attempt) }}
+          LIVE_IMAGE_TAG: localhost/leos-live-installer:${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -euo pipefail
           sudo bash .github/scripts/verify-live-installer-image.sh "$LIVE_IMAGE_TAG"
