@@ -106,7 +106,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             self.assertIn(f"tag {immutable_ref} {image_tag}", podman_calls)
             self.assertNotIn("inspect", podman_calls)
             self.assertIn(
-                f"inspect --authfile {authfile} --format {{.Digest}} docker://{image_tag}",
+                f"inspect --authfile {authfile} --format {{{{.Digest}}}} docker://{image_tag}",
                 (root / "skopeo.log").read_text(encoding="utf-8"),
             )
 
