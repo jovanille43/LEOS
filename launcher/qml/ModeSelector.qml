@@ -10,11 +10,12 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS — Choix du mode"
-    color: "#07080c"
+    property var themeColors: modeSelectorController.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color accentPrimary: themeColors.accent_primary
+    property color accentSecondary: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
@@ -143,7 +144,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.cyan
+                    color: window.accentPrimary
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -153,60 +154,97 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 104
+                Layout.preferredHeight: 154
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
-                color: "#101923"
-                border.color: "#254253"
+                color: themeColors.surface
+                border.color: themeColors.border
 
-                RowLayout {
+                ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 18
-                    spacing: 16
-
-                    ColumnLayout {
+                    anchors.margins: 14
+                    spacing: 8
+                    RowLayout {
                         Layout.fillWidth: true
-                        spacing: 5
-
-                        Label {
-                            text: "BIENVENUE DANS LEOS"
-                            color: window.cyan
-                            font.pixelSize: 11
-                            font.weight: Font.Bold
-                            font.letterSpacing: 1.5
-                        }
-                        Label {
-                            text: "Un seul système, deux expériences : Desktop pour le quotidien et Gaming pour jouer."
-                            color: "white"
-                            font.pixelSize: 13
-                            wrapMode: Text.WordWrap
+                        spacing: 16
+                        ColumnLayout {
                             Layout.fillWidth: true
+                            spacing: 4
+                            Label {
+                                text: "BIENVENUE DANS LEOS"
+                                color: window.accentPrimary
+                                font.pixelSize: 11
+                                font.weight: Font.Bold
+                                font.letterSpacing: 1.5
+                            }
+                            Label {
+                                text: "Un seul système, deux expériences. Personnalise aussi les couleurs A et B de LEOS."
+                                color: themeColors.text
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
                         }
-                        Label {
-                            text: "Tes applications restent ouvertes. Aucun réglage KDE ni logiciel facultatif n'est modifié sans ton accord."
-                            color: window.muted
-                            font.pixelSize: 10
-                            wrapMode: Text.WordWrap
-                            Layout.fillWidth: true
+                        Button {
+                            text: "COMPRIS"
+                            Layout.minimumWidth: 100
+                            onClicked: modeSelectorController.completeOnboarding()
+                            background: Rectangle {
+                                radius: 8
+                                color: Qt.darker(window.accentPrimary, 2.2)
+                                border.color: window.accentPrimary
+                            }
+                            contentItem: Label {
+                                text: "COMPRIS"
+                                color: "white"
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                         }
                     }
-
-                    Button {
-                        text: "COMPRIS"
-                        Layout.minimumWidth: 112
-                        onClicked: modeSelectorController.completeOnboarding()
-                        background: Rectangle {
-                            radius: 8
-                            color: "#17313d"
-                            border.color: window.cyan
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label { text: "A"; color: themeColors.text; font.bold: true }
+                        TextField {
+                            id: onboardingAccentA
+                            text: modeSelectorController.customAccentPrimary
+                            placeholderText: "#00D9FF"
+                            maximumLength: 7
+                            Layout.preferredWidth: 118
+                            color: themeColors.text
+                            background: Rectangle { radius: 7; color: themeColors.surface_elevated; border.color: themeColors.border }
                         }
-                        contentItem: Label {
-                            text: "COMPRIS"
-                            color: "white"
-                            font.pixelSize: 10
-                            font.weight: Font.Bold
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        Label { text: "B"; color: themeColors.text; font.bold: true }
+                        TextField {
+                            id: onboardingAccentB
+                            text: modeSelectorController.customAccentSecondary
+                            placeholderText: "#E33BFF"
+                            maximumLength: 7
+                            Layout.preferredWidth: 118
+                            color: themeColors.text
+                            background: Rectangle { radius: 7; color: themeColors.surface_elevated; border.color: themeColors.border }
+                        }
+                        Rectangle { width: 18; height: 18; radius: 9; color: themeColors.accent_primary }
+                        Rectangle { width: 18; height: 18; radius: 9; color: themeColors.accent_secondary }
+                        Button {
+                            text: "APPLIQUER A / B"
+                            enabled: !modeSelectorController.onboardingComplete
+                            onClicked: {
+                                onboardingThemeStatus.text =
+                                    modeSelectorController.setCustomAccentColors(onboardingAccentA.text, onboardingAccentB.text)
+                                    ? "Couleurs enregistrées"
+                                    : "Format attendu : #RRGGBB"
+                            }
+                        }
+                        Label {
+                            id: onboardingThemeStatus
+                            text: ""
+                            color: themeColors.accent_secondary
+                            font.pixelSize: 9
+                            Layout.fillWidth: true
                         }
                     }
                 }
@@ -227,7 +265,7 @@ ApplicationWindow {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.accentPrimary : "#303a49"
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -275,7 +313,7 @@ ApplicationWindow {
                         radius: 22
                         color: gamingCard.down ? "#25172a" : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.accentSecondary : "#3a2b43"
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -317,7 +355,7 @@ ApplicationWindow {
 
             Label {
                 text: modeManager.status
-                color: window.magenta
+                color: window.accentSecondary
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -432,7 +470,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentPrimary }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
