@@ -26,8 +26,17 @@ if [[ ! "$target_image_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
   echo "::error::The embedded LEOS image ID is invalid." >&2
   exit 1
 fi
+if [[ "$target_registry_ref" != "${target_local_ref%:*}@$target_digest" ]]; then
+  echo "::error::The embedded tag and digest references do not identify the same LEOS repository." >&2
+  exit 1
+fi
 
 podman image exists "$target_local_ref"
+live_digest="$(podman image inspect --format '{{.Digest}}' "$target_local_ref")"
+if [[ "$live_digest" != "$target_digest" ]]; then
+  echo "::error::The embedded LEOS tag no longer resolves to the digest verified during the ISO build." >&2
+  exit 1
+fi
 live_image_id="$(podman image inspect --format '{{.Id}}' "$target_local_ref")"
 if [[ "$live_image_id" != "$target_image_id" ]]; then
   echo "::error::The image available to Anaconda is not the verified LEOS payload." >&2
