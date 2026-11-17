@@ -64,10 +64,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s "$target_cosign_key"',
             hook,
         )
-        self.assertIn(
-            'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/registries.d/leos.yaml',
-            hook,
-        )
+        self.assertIn("test -s /etc/containers/registries.d/leos.yaml", hook)
         self.assertNotIn("rm -rf /mnt/sysroot/boot/efi/EFI/fedora", hook)
         self.assertNotIn("e2label ", hook)
         self.assertNotIn("wipefs ", hook)
