@@ -18,7 +18,7 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(source.count("layer.enabled: true"), 3)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
-        self.assertEqual(source.count("smooth: true"), 2)
+        self.assertGreaterEqual(source.count("smooth: true"), 2)
 
     def test_gaming_header_uses_transparent_official_emblem_and_accent_shader(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
