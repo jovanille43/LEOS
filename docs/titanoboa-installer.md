@@ -23,7 +23,7 @@ Anaconda déploie d’abord l’image LEOS embarquée via ostreecontainer et le 
 
 Un bootc switch final utilise ensuite la référence GHCR par digest et exige la politique de signature des conteneurs. Les trois dépôts LEOS (standard, NVIDIA legacy et NVIDIA open) sont associés à la clé publique LEOS ; les autres images de conteneurs conservent le comportement par défaut standard pour ne pas empêcher des usages comme Distrobox.
 
-Le profil Anaconda utilise un dossier EFI distinct, EFI/leos. Les hooks LEOS ne suppriment pas EFI/fedora, ne renomment pas de partition /boot et ne lancent aucune commande de formatage ou d’effacement de disque. Cela réduit le risque d’écraser une entrée de démarrage existante, mais ne constitue pas une garantie de dual boot : le partitionnement choisi dans Anaconda doit encore être testé et validé.
+Le profil Anaconda conserve le chemin EFI standard `EFI/fedora`, comme Bazzite, pour rester cohérent avec son intégration bootc/bootupd. Sur une installation Ubuntu existante, `EFI/ubuntu` est distinct et les hooks LEOS ne le suppriment pas. Ils ne suppriment pas non plus `EFI/fedora`, ne renomment pas de partition `/boot` et ne lancent aucune commande de formatage ou d’effacement de disque. Un système Fedora déjà présent pourrait toutefois partager ce chemin : le dual boot n'est donc pas garanti. Le partitionnement choisi dans Anaconda doit encore être testé et validé.
 
 ## Journaux en cas d’échec
 
