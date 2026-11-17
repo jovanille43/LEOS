@@ -15,7 +15,8 @@ Le workflow manuel **Build LEOS** reconstruit les trois variantes sur la branche
 3. Skopeo résout également le digest du manifeste Bazzite `ghcr.io/ublue-os/bazzite:stable` ; Cosign vérifie le socle Live avec `files/bazzite-cosign.pub`, clé publique publiée par le dépôt Bazzite (https://github.com/ublue-os/bazzite/blob/f8580007fb1fb4241378fd99b33800aefe62c3b5/cosign.pub).
 4. L’image Live KDE est construite depuis le digest Bazzite immuable ; le manifeste de provenance conserve le tag et le digest exacts de la base.
 5. Le constructeur Live tire l’image LEOS par digest, la donne un nom local pour Anaconda et enregistre son ID de configuration local ; l’ID doit rester identique après export/import.
-6. Le précontrôle inspecte le contrat Titanoboa sur l’image Live, puis Titanoboa construit l’ISO. Le workflow vérifie ensuite le SHA-256, le catalogue UEFI, la signature de l’ISO et le manifeste de provenance.
+6. Le précontrôle inspecte le contrat Titanoboa sur l’image Live, puis Titanoboa construit l’ISO. Le workflow vérifie ensuite le SHA-256, le catalogue UEFI, démarre le Live sous QEMU/OVMF en UEFI, puis signe l’ISO et son manifeste de provenance.
+
 Le secret SIGNING_SECRET reste exclusivement dans GitHub Actions. La clé privée de signature n’est ni copiée dans l’image Live, ni enregistrée dans le dépôt, ni incluse dans l’ISO.
 
 Le workflow exécute maintenant `.github/scripts/verify-live-installer-image.sh` juste après la construction de l’image Live et avant Titanoboa. Ce précontrôle monte l’image avec Podman et vérifie la présence d’un seul noyau, de son initramfs, des modules GRUB PC, des binaires EFI Fedora dans les deux emplacements attendus par le contrat, du fichier `iso.yaml` et des métadonnées/du stockage Podman qui embarquent l’image LEOS. Ce contrôle statique ne remplace pas un démarrage de l’ISO : il prouve seulement que l’image source contient les éléments nécessaires au générateur.
