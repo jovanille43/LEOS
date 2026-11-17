@@ -295,7 +295,34 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Authenticate to GitHub Container Registry", source)
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("cosign verify --key cosign.pub", source)
-        self.assertIn("Resolve and verify immutable LEOS image", source)
+        self.assertIn("Resolve and verify LEOS image tag", source)
+
+    def test_iso_generation_checks_the_signed_digest_before_and_after_build(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("sudo apt-get install -y podman skopeo", source)
+        self.assertIn('skopeo inspect --authfile /root/.docker/config.json', source)
+        self.assertIn('^sha256:[a-f0-9]{64}$', source)
+        self.assertIn('image_repository="${IMAGE_REF%:*}"', source)
+        self.assertIn('immutable_ref="${image_repository}@${digest}"', source)
+        self.assertIn('cosign verify --key cosign.pub "${immutable_ref}"', source)
+        self.assertIn('digest=${digest}', source)
+        self.assertIn('VERIFIED_DIGEST: ${{ steps.verified.outputs.digest }}', source)
+        self.assertIn('IMAGE_REF: ${{ steps.image.outputs.ref }}', source)
+        self.assertIn('if [[ "$before_digest" != "$VERIFIED_DIGEST" ]]', source)
+        self.assertIn('if [[ "$after_digest" != "$VERIFIED_DIGEST" ]]', source)
+        self.assertIn('echo "::error::The image tag changed during ISO generation; refusing to publish the ISO artifact."', source)
+        self.assertIn('printf \'%s\\n\' "$VERIFIED_DIGEST" > "$ISO_NAME.source-digest"', source)
+        self.assertIn('${{ steps.image.outputs.filename }}.source-digest', source)
+        self.assertNotIn('IMAGE_REF: ${{ steps.verified.outputs.image_ref }}', source)
+        self.assertLess(
+            source.index("Resolve and verify LEOS image tag"),
+            source.index("Generate bootable installer ISO"),
+        )
+        self.assertLess(
+            source.index('cosign verify --key cosign.pub "${immutable_ref}"'),
+            source.index('generate-iso --iso-name'),
+        )
+
 
     def test_iso_generation_uses_the_exact_verified_image_digest(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
