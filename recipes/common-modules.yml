@@ -5,6 +5,7 @@ modules:
     install:
       packages:
         - python3-pyside6
+        - qt6-qtdeclarative
         - python3-psutil
         - python3-evdev
         - vulkan-tools
