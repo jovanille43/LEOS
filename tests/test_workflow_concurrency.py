@@ -66,6 +66,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
             ".github/workflows/recipe-checks.yml": (
                 "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
                 "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0",
+                "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3",
             ),
             ".github/workflows/python-checks.yml": (
                 "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
@@ -87,6 +88,20 @@ class WorkflowConcurrencyTests(unittest.TestCase):
                             line,
                             r"@([0-9a-f]{40})(?:\s+# v[0-9.]+)?$",
                         )
+
+    def test_recipe_checks_verify_the_pinned_bluebuild_cli_before_using_it(self):
+        source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("Install Cosign", source)
+        self.assertIn("Install Skopeo", source)
+        self.assertIn("Verify and install BlueBuild CLI", source)
+        self.assertIn("tools/trust/blue-build-cli.pub", source)
+        self.assertIn('CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer', source)
+        self.assertIn('skopeo inspect --format', source)
+        verify = source.index('cosign verify --key tools/trust/blue-build-cli.pub')
+        pull = source.index('docker pull "${cli_immutable_ref}"')
+        extract = source.index('docker cp bluebuild-cli:/out/bluebuild')
+        self.assertLess(verify, pull)
+        self.assertLess(pull, extract)
 
     def test_checkout_actions_do_not_persist_github_token_credentials(self):
         for path in (
