@@ -74,8 +74,8 @@ if [[ ! -s "$rootfs/usr/lib/grub/i386-pc/normal.mod" ]]; then
 fi
 
 efi_sources=("$rootfs"/usr/lib/efi/shim/*/EFI/fedora)
-if [[ "${#efi_sources[@]}" -lt 1 ]]; then
-  echo "No Fedora UEFI vendor directory was found under /usr/lib/efi/shim/*/EFI." >&2
+if [[ "${#efi_sources[@]}" -ne 1 ]]; then
+  echo "Titanoboa requires exactly one Fedora UEFI vendor directory; found ${#efi_sources[@]}." >&2
   exit 1
 fi
 for efi_dir in "${efi_sources[@]}"; do
