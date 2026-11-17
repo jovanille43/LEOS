@@ -131,7 +131,7 @@ La boutique proposera jeux, émulateurs, applications, utilitaires et éléments
 LEOS/
 ├── .github/workflows/   # Automatisation et vérifications
 ├── branding/            # Logos, animations, sons et ressources
-├── config/              # Configuration partagée de LEOS
+├── files/config/        # Configuration partagée de LEOS
 ├── controller_center/   # Gestion et test des manettes
 ├── control_center/      # Paramètres LEOS
 ├── desktop/             # Personnalisation du Desktop Mode
