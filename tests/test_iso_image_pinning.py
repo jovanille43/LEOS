@@ -114,7 +114,7 @@ class IsoImagePinningTests(unittest.TestCase):
         result = self.run_helper(digest="not-a-digest")
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("valid top-level SHA-256 manifest digest", result.stderr)
+        self.assertIn("valid top-level SHA-256 manifest digest", result.stdout)
         self.assertFalse(self.output_file.exists())
         self.assertFalse(self.podman_log.exists())
 
