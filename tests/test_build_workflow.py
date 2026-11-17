@@ -169,7 +169,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
         self.assertEqual(
             source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"),
-            4,  # one preflight step and the three BlueBuild signing steps
+            5,  # prerequisite check, preflight step, and three BlueBuild signing steps
         )
         self.assertNotIn(
             "    env:\n      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.",
