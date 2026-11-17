@@ -120,7 +120,8 @@ jobs:
           image_repository="${IMAGE_REF%:*}"
           immutable_ref="${image_repository}@${digest}"
           echo "Verifying image digest: ${immutable_ref}"
-          sudo env DOCKER_CONFIG=/root/.docker cosign verify --key cosign.pub "${immutable_ref}"
+          cosign_bin="$(command -v cosign)"
+          sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --key cosign.pub "${immutable_ref}"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Generate bootable installer ISO
