@@ -18,10 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python for pre-build tests
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
@@ -117,7 +119,7 @@ jobs:
           fi
 
       - name: Validate Cosign key pair
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       - name: Verify private and public signing keys match
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
@@ -132,7 +134,7 @@ jobs:
           bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub
 
       - name: Build and publish LEOS (AMD / Intel)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
@@ -142,7 +144,7 @@ jobs:
           pr_event_number: ${{ github.event.number || 0 }}
 
       - name: Build and publish LEOS (NVIDIA)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
@@ -152,7 +154,7 @@ jobs:
           pr_event_number: ${{ github.event.number || 0 }}
 
       - name: Build and publish LEOS (NVIDIA modern)
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@fb86c457fd3d0e13d5e9c1875c6305cf28b09234 # v1.14.0
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         with:
