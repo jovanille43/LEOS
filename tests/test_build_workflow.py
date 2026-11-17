@@ -476,5 +476,26 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(path, source)
 
 
+    def test_each_hardware_image_build_uses_an_isolated_runner(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("  preflight:", source)
+        self.assertEqual(source.count("blue-build/github-action@"), 3)
+        for job_name in (
+            "build-amd-intel",
+            "build-nvidia-legacy",
+            "build-nvidia-modern",
+        ):
+            with self.subTest(job=job_name):
+                start = source.index(f"  {job_name}:")
+                end = source.find("\n  build-", start + 1)
+                if end == -1:
+                    end = len(source)
+                job = source[start:end]
+                self.assertIn("needs: preflight", job)
+                self.assertIn("runs-on: ubuntu-latest", job)
+                self.assertIn("skip_checkout: true", job)
+                self.assertEqual(job.count("blue-build/github-action@"), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
