@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends podman btrfs-progs
+          sudo apt-get install -y --no-install-recommends podman skopeo btrfs-progs
 
       - name: Prepare large Btrfs container storage
         run: |
@@ -120,14 +120,15 @@ jobs:
           BASE_IMAGE_TAG_REF: ghcr.io/ublue-os/bazzite:stable
         run: |
           set -euo pipefail
-          sudo podman pull --authfile /root/.docker/config.json "$BASE_IMAGE_TAG_REF"
-          digest="$(sudo podman image inspect --format '{{.Digest}}' "$BASE_IMAGE_TAG_REF")"
+          digest="$(sudo skopeo inspect --authfile /root/.docker/config.json --format '{{.Digest}}' "docker://$BASE_IMAGE_TAG_REF")"
           if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "::error::Podman did not return a valid Bazzite base image digest."
+            echo "::error::Skopeo did not return a valid Bazzite registry manifest digest."
             exit 1
           fi
           repository="${BASE_IMAGE_TAG_REF%:*}"
-          echo "ref=$repository@$digest" >> "$GITHUB_OUTPUT"
+          immutable_ref="$repository@$digest"
+          sudo podman pull --authfile /root/.docker/config.json "$immutable_ref"
+          echo "ref=$immutable_ref" >> "$GITHUB_OUTPUT"
           echo "tag_ref=$BASE_IMAGE_TAG_REF" >> "$GITHUB_OUTPUT"
 
       - name: Verify the signed Bazzite Live base
@@ -195,8 +196,7 @@ jobs:
           IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
         run: |
           set -euo pipefail
-          sudo podman pull --authfile /root/.docker/config.json "$IMAGE_TAG_REF"
-          after_digest="$(sudo podman image inspect --format '{{.Digest}}' "$IMAGE_TAG_REF")"
+          after_digest="$(sudo skopeo inspect --authfile /root/.docker/config.json --format '{{.Digest}}' "docker://$IMAGE_TAG_REF")"
           expected_digest="${IMAGE_REF##*@}"
           if [[ "$after_digest" != "$expected_digest" ]]; then
             echo "::error::The LEOS image tag changed while the ISO was being generated."
