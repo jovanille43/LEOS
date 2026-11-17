@@ -136,6 +136,20 @@ def _serialize_wallpaper(
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
+def user_wallpaper_directory(
+    settings: Any,
+    destination: Path | None = None,
+) -> Path:
+    """Return the stable directory for the current normalized A/B pair."""
+    output_root = destination or data_home() / "leos" / "wallpapers"
+    palette = palette_for_settings(settings)
+    accent_a = normalize_hex_color(palette.get("accent_primary"))
+    accent_b = normalize_hex_color(palette.get("accent_secondary"))
+    if accent_a is None or accent_b is None:
+        raise ValueError("LEOS A/B theme accents are invalid")
+    return output_root / f"A-{accent_a[1:]}__B-{accent_b[1:]}"
+
+
 def generate_user_wallpapers(
     settings: Any,
     destination: Path | None = None,
@@ -163,7 +177,7 @@ def generate_user_wallpapers(
     if accent_a is None or accent_b is None:
         raise ValueError("LEOS A/B theme accents are invalid")
 
-    variant_dir = output_root / f"A-{accent_a[1:]}__B-{accent_b[1:]}"
+    variant_dir = user_wallpaper_directory(settings, output_root)
     if variant_dir.is_symlink():
         raise OSError("LEOS wallpaper variant directory cannot be a symbolic link")
     variant_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
