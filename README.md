@@ -2,7 +2,7 @@
 
 **LEOS est un projet de distribution Linux fondé sur Bazzite KDE.** Il réunit un bureau KDE adapté à l’usage quotidien et une interface Gaming plein écran, dans une seule installation et une seule session système.
 
-> **Statut : prototype en validation.** Les trois images LEOS (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites et signées dans GHCR. Une première ISO standard a également été générée et signée. Elle n’est pas publiée : les premiers essais physiques n’ont pas abouti, avec un échec du contrôle média puis un échec de l’installateur pendant l’installation des logiciels. La cause n’est pas encore établie ; l’intégrité du fichier téléchargé et la lecture de la clé USB doivent être vérifiées avant tout nouvel essai. Aucune compatibilité matérielle générale ni installation en dual boot n’est encore certifiée.
+> **Statut : prototype en validation.** Les trois images LEOS (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites et signées dans GHCR. Une première ISO standard a également été générée et signée. Elle n’est pas publiée : les premiers essais physiques n’ont pas abouti, avec un échec du contrôle média puis un échec de l’installateur pendant l’installation des logiciels. La cause n’est pas encore établie ; l’intégrité du fichier téléchargé et la lecture de la clé USB doivent être vérifiées avant tout nouvel essai. Une chaîne d’installation Live fondée sur Titanoboa est en cours de prototypage sur une branche séparée ; elle n’a pas encore produit d’ISO validée. Aucune compatibilité matérielle générale ni installation en dual boot n’est encore certifiée.
 
 [![Python checks](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/python-checks.yml)
 [![BlueBuild recipe checks](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml/badge.svg?branch=feature/custom-two-color-themes)](https://github.com/jovanille43/LEOS/actions/workflows/recipe-checks.yml)
@@ -225,7 +225,8 @@ Un workflow de construction manuelle de l’image existe également. Il exécute
 | Tests Python et lint QML | Automatisés par GitHub Actions |
 | Recettes BlueBuild standard et NVIDIA | Présentes ; validation automatisée disponible |
 | Images LEOS publiées et signées | Trois variantes disponibles dans GHCR (tag e33a010-45) |
-| ISO installateur standard | Générée et signée ; validation physique non concluante |
+| ISO installateur standard (ancienne chaîne) | Générée et signée ; validation physique non concluante |
+| Nouvelle chaîne Titanoboa Live | Candidate sur une branche dédiée ; construction et tests VM à effectuer |
 | ISO NVIDIA legacy / moderne | À générer |
 | Validation sur plusieurs PC physiques | À effectuer |
 | Validation sur plusieurs PC physiques | À effectuer |
@@ -249,12 +250,12 @@ Le workflow GitHub Actions **Build LEOS** est déclenché manuellement. Il lance
 
 ### 3. Générer l’ISO
 
-Après publication et vérification de la signature de l’image, le workflow **Generate LEOS installer ISO** peut être déclenché manuellement. Il faut choisir :
+Le workflow historique **Generate LEOS installer ISO** utilise encore l’ancien générateur BlueBuild et reste uniquement pour comparaison. La branche `feature/titanoboa-installer` ajoute le workflow **Generate LEOS Titanoboa Live installer ISO**. Après avoir reconstruit les trois images LEOS sur cette branche (elles incluent une nouvelle politique de signatures), ce workflow candidat permet de choisir :
 
 - la variante matérielle ;
 - le tag de l’image publiée.
 
-Le workflow vérifie la signature Cosign, génère l’ISO d’installation et produit un fichier de somme SHA-256. L’ISO et son empreinte sont fournis comme artefacts GitHub Actions.
+Le workflow Titanoboa vérifie la signature Cosign, embarque l’image LEOS dans un environnement Live KDE basé sur Bazzite, génère l’ISO et produit un fichier de somme SHA-256 ainsi qu’un manifeste signé. Cette chaîne reste expérimentale : aucun démarrage ni aucune installation VM ne sont encore validés. Voir [la conception de l’installateur Titanoboa](docs/titanoboa-installer.md).
 
 Les images sont déjà construites et signées, et l’ISO standard candidate a été générée puis signée par GitHub Actions (run 43946765765). Cela ne constitue pas une validation de l’installation : le contrôle de structure UEFI et les sommes cryptographiques ne remplacent pas un démarrage en machine virtuelle, une installation sur disque de test et des essais sur matériel réel.
 
@@ -272,6 +273,7 @@ L’ISO candidate ne doit pas être utilisée sur le seul ordinateur principal n
 - [Validation de l’ISO et du support USB](docs/iso-validation.md)
 - [Packaging](docs/packaging.md)
 - [Installation](docs/installation.md)
+- [Architecture de l’installateur Titanoboa](docs/titanoboa-installer.md)
 
 ## Structure du dépôt
 
@@ -289,6 +291,7 @@ LEOS/
 ├── files/leos-config/   # Configuration système déployée dans l’image
 ├── gaming/              # Interface Gaming et bibliothèque
 ├── icons/               # Icônes LEOS
+├── installer/           # Image Live et hooks Anaconda/Titanoboa
 ├── launcher/            # Sélecteur de modes et transitions
 ├── leos_core/           # Préférences et fonctions communes
 ├── packaging/           # Intégration et métadonnées de paquetage

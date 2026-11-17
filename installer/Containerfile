@@ -1,0 +1,15 @@
+ARG BASE_IMAGE=ghcr.io/ublue-os/bazzite:stable
+FROM ${BASE_IMAGE}
+
+ARG INSTALL_IMAGE_REF
+ARG INSTALL_IMAGE_TAG_REF
+ARG INSTALL_IMAGE_DIGEST
+
+RUN --mount=type=bind,source=src,target=/src \
+    --mount=type=secret,id=ghcr-auth,dst=/run/secrets/ghcr-auth \
+    env \
+      INSTALL_IMAGE_REF="$INSTALL_IMAGE_REF" \
+      INSTALL_IMAGE_TAG_REF="$INSTALL_IMAGE_TAG_REF" \
+      INSTALL_IMAGE_DIGEST="$INSTALL_IMAGE_DIGEST" \
+      REGISTRY_AUTH_FILE=/run/secrets/ghcr-auth \
+      /usr/bin/bash /src/build.sh

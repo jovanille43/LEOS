@@ -1,0 +1,7 @@
+docker:
+  ghcr.io/jovanille43/leos:
+    use-sigstore-attachments: true
+  ghcr.io/jovanille43/leos-nvidia:
+    use-sigstore-attachments: true
+  ghcr.io/jovanille43/leos-nvidia-open:
+    use-sigstore-attachments: true

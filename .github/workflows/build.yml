@@ -136,6 +136,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          digestfile: ${{ runner.temp }}/leos-standard-digests.json
 
       - name: Build and publish LEOS (NVIDIA)
         uses: blue-build/github-action@v1
@@ -144,6 +145,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          digestfile: ${{ runner.temp }}/leos-nvidia-digests.json
 
       - name: Build and publish LEOS (NVIDIA modern)
         uses: blue-build/github-action@v1
@@ -152,3 +154,59 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number || 0 }}
+          digestfile: ${{ runner.temp }}/leos-nvidia-open-digests.json
+
+      - name: Summarize immutable candidate image tags for ISO generation
+        env:
+          STANDARD_DIGESTS: ${{ runner.temp }}/leos-standard-digests.json
+          NVIDIA_DIGESTS: ${{ runner.temp }}/leos-nvidia-digests.json
+          NVIDIA_OPEN_DIGESTS: ${{ runner.temp }}/leos-nvidia-open-digests.json
+          BUILD_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          short_sha = os.environ["BUILD_COMMIT"][:7]
+          variants = (
+              ("Standard AMD / Intel", "STANDARD_DIGESTS"),
+              ("NVIDIA legacy", "NVIDIA_DIGESTS"),
+              ("NVIDIA moderne", "NVIDIA_OPEN_DIGESTS"),
+          )
+          lines = [
+              "## Images candidates LEOS publiées",
+              "",
+              f"Commit de construction : `{os.environ['BUILD_COMMIT']}`",
+              "",
+              "Utiliser le même `image_tag` dans le workflow **Generate LEOS Titanoboa Live installer ISO**.",
+              "",
+              "| Variante | Image GHCR | Tag candidat | Digest signé |",
+              "|---|---|---|---|",
+          ]
+
+          for variant, variable in variants:
+              path = Path(os.environ[variable])
+              if not path.is_file():
+                  raise SystemExit(f"BlueBuild digest file is missing: {path}")
+              records = json.loads(path.read_text(encoding="utf-8"))
+              candidates = []
+              for image_ref, digest in records.items():
+                  tag = image_ref.rsplit(":", 1)[-1]
+                  if tag.startswith(short_sha + "-"):
+                      candidates.append((image_ref, tag, digest))
+              if len(candidates) != 1:
+                  raise SystemExit(
+                      f"Expected one immutable {short_sha}-* tag for {variant}, found {len(candidates)}."
+                  )
+              image_ref, tag, digest = candidates[0]
+              if not digest.startswith("sha256:") or len(digest) != 71:
+                  raise SystemExit(f"Invalid digest for {variant}: {digest}")
+              lines.append(f"| {variant} | `{image_ref}` | `{tag}` | `{digest}` |")
+
+          summary_text = "\n".join(lines) + "\n"
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as stream:
+              stream.write(summary_text)
+          print(summary_text)
+          PY

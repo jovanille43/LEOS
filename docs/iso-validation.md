@@ -29,11 +29,15 @@ Références amont :
 - [Erreur d’installation OSTree / Unicode, BlueBuild issue #310](https://github.com/blue-build/cli/issues/310).
 - [Erreur générique de déploiement Anaconda, build-container-installer issue #150](https://github.com/JasonN3/build-container-installer/issues/150).
 
-### Alternative à évaluer, pas à adopter sans test
+### Chaîne candidate Titanoboa
 
-\`ublue-os/titanoboa\` est une piste de remplacement à étudier : son objectif est de produire une ISO Live et un installateur bootc. Le projet se présente lui-même comme une expérimentation et exige un contrat d’image bootc spécifique, notamment \`/usr/lib/bootc-image-builder/iso.yaml\`. Il ne doit donc pas être substitué directement à la chaîne actuelle sans confirmer la compatibilité avec la base Bazzite/OSTree de LEOS, le partitionnement et la stratégie de dual boot.
+Une implémentation séparée existe maintenant sur `feature/titanoboa-installer`, dans `.github/workflows/iso-titanoboa.yml`. Elle reprend la méthode Live de Bazzite : image Live KDE basée sur Bazzite, image LEOS explicitement embarquée dans le stockage Podman, puis génération par Titanoboa. L'action Titanoboa est épinglée sur le commit `5c457c3d0518bd17e754be0fd98a60d29d26abb4`.
 
-Référence : [ublue-os/titanoboa](https://github.com/ublue-os/titanoboa).
+Le déclenchement manuel du workflow ISO ne sera disponible dans GitHub Actions qu'après que le fichier soit présent sur la branche par défaut ; la PR de migration est pour le moment un brouillon non fusionné.
+
+Cette intégration est une candidate, pas une validation. Les trois nouvelles images LEOS doivent d'abord être reconstruites sur cette branche pour contenir la politique Sigstore et la clé publique. Ensuite seulement le workflow ISO peut être lancé. La première étape à valider est une installation complète sur une VM UEFI avec disque vierge ; aucun test matériel ni dual boot n'est enregistré. Voir [le détail du flux et ses critères de validation](titanoboa-installer.md).
+
+Référence amont : [ublue-os/titanoboa](https://github.com/ublue-os/titanoboa).
 
 ## 1. Vérifier le fichier téléchargé
 

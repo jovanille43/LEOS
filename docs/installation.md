@@ -8,6 +8,16 @@ Cette ISO est une image d’installation basée sur l’installateur Fedora/Anac
 
 La première validation physique n’a pas abouti : le contrôle média a affiché FAIL et une tentative d’installation a ensuite échoué pendant l’étape « Installation des logiciels ». La cause n’est pas établie. Le fichier ISO téléchargé et la clé USB doivent être contrôlés avant tout nouvel essai. Ne considère pas un build GitHub réussi comme une preuve qu’une installation fonctionne.
 
+## Nouvelle chaîne Live Titanoboa — candidate, non validée
+
+La branche `feature/titanoboa-installer` contient une nouvelle chaîne expérimentale : elle construit un environnement Live KDE à partir de Bazzite, y embarque l'image LEOS cible, puis génère l'ISO avec Titanoboa. Anaconda déploie l'image embarquée, puis vérifie sa signature en revenant à sa référence GHCR. Le profil Anaconda conserve le répertoire EFI `fedora` utilisé par Bazzite ; le dossier Ubuntu `EFI/ubuntu` reste distinct. Les hooks LEOS ne suppriment aucun dossier EFI existant. Un double démarrage avec une installation Fedora déjà présente n'est toutefois pas garanti. Le précontrôle d'installation exige aussi une partition `/boot` dédiée en ext4, séparée de `/boot/efi`. Si ce montage n'est pas détecté ou n'est pas en ext4, Anaconda s'arrête avant le déploiement. Pour un essai avec Ubuntu, il faudrait réserver une partition `/boot` ext4 distincte dans l'espace libre et réutiliser l'ESP existante sans la formater ; ce scénario reste à valider dans une VM.
+
+**Important :** les images précédemment publiées avec le tag `e33a010-45` ne contiennent pas la nouvelle politique de signatures installée par cette branche. Il faut d'abord relancer le workflow **Build LEOS** sur `feature/titanoboa-installer` pour publier trois nouvelles images signées, puis utiliser le workflow **Generate LEOS Titanoboa Live installer ISO** avec le tag correspondant. Ne lance pas l'ancien tag avec le nouveau workflow.
+
+Le workflow Titanoboa est encore dans une PR en brouillon. GitHub ne propose son déclenchement manuel qu'une fois le fichier de workflow disponible sur la branche par défaut du dépôt ; il faudra donc attendre l'intégration de cette PR dans le flux principal avant de lancer la génération ISO.
+
+Cette chaîne n'a pas encore été construite ni démarrée dans une VM. Elle n'est pas prête pour une installation sur le ThinkPad. L'installation automatique ou le dual boot ne sont pas garantis ; le partitionnement doit rester vérifié à la main. Voir [l'architecture et les critères de validation Titanoboa](titanoboa-installer.md).
+
 ## Matériel et variante
 
 LEOS cible les PC x86_64 démarrant en UEFI. Les variantes partagent les mêmes fonctions Desktop et Gaming ; seule la base et la pile graphique varient.
