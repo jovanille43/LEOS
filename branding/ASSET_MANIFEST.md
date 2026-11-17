@@ -12,7 +12,7 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 | `branding/gaming-logo-alpha.png` | Copie dérivée de `gaming-logo.jpeg` (fond noir rendu transparent), utilisée par le fond Gaming |
 | `branding/reference-comparison.jpeg` | Référence interne uniquement |
 
-Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
+Les PNG alpha sont générés de façon reproductible par `tools/derive_emblem_alpha.py` à partir des JPEG officiels. Le script retire le fond noir selon un seuil documenté sans réencoder ni remplacer les JPEG sources. Le sélecteur QML et les fonds d'écran personnalisés utilisent les copies PNG transparentes ; les libellés textuels restent visibles si une image est absente ou illisible.
 
 ## Fonds d'écran Desktop et Gaming
 
