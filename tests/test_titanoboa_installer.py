@@ -342,6 +342,12 @@ EOF
         self.assertEqual(content.count("root=live:CDLABEL=LEOS-Live"), 2)
         self.assertIn("rd.live.image", content)
         self.assertIn("nomodeset", content)
+        self.assertEqual(content.count("systemd.show_status=1"), 2)
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("Boot LEOS Live ISO in UEFI QEMU smoke test", workflow)
+        self.assertIn("qemu-system-x86_64", workflow)
+        self.assertIn("OVMF_CODE", workflow)
+        self.assertIn("Reached target (Graphical Interface|Multi-User System)", workflow)
         self.assertNotIn("  default:", content)
 
     def test_installed_images_require_only_leos_signed_ghcr_repositories(self):
