@@ -61,10 +61,14 @@ class WorkflowConcurrencyTests(unittest.TestCase):
     def test_iso_digest_pinning_helper_validates_and_emits_sha256_reference(self):
         helper = (ROOT / ".github/scripts/pin-image-digest.sh").read_text(encoding="utf-8")
         self.assertIn('podman_bin="${PODMAN_BIN:-podman}"', helper)
-        self.assertIn('pull --authfile "$authfile" "$image_ref"', helper)
-        self.assertIn("image inspect --format '{{.Digest}}'", helper)
+        self.assertIn('skopeo_bin="${SKOPEO_BIN:-skopeo}"', helper)
+        self.assertIn('inspect --authfile "$authfile" --format', helper)
+        self.assertIn('docker://$image_ref', helper)
+        self.assertIn('pull --authfile "$authfile" "$immutable_ref"', helper)
+        self.assertIn('tag "$immutable_ref" "$image_ref"', helper)
+        self.assertNotIn('image inspect --format "{{.Digest}}"', helper)
         self.assertIn(r"^sha256:[0-9a-f]{64}$", helper)
-        self.assertIn(r"printf 'ref=%s@%s\n'", helper)
+        self.assertIn(r"printf 'ref=%s\\n'", helper)
         self.assertIn("leos-nvidia-open", helper)
 
 
