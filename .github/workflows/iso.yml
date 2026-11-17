@@ -22,7 +22,7 @@ permissions:
   packages: read
 
 concurrency:
-  group: leos-iso-${{ github.ref }}-${{ inputs.variant }}
+  group: leos-image-pipeline
   cancel-in-progress: false
 
 jobs:
