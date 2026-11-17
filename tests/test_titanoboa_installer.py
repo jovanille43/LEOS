@@ -16,6 +16,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
             INSTALLER / "src/build.sh",
             INSTALLER / "src/titanoboa_hook_preinitramfs.sh",
             INSTALLER / "src/titanoboa_hook_postrootfs.sh",
+            ROOT / ".github/scripts/verify-live-installer-image.sh",
         ):
             with self.subTest(script=script):
                 result = subprocess.run(
@@ -25,6 +26,24 @@ class TitanoboaInstallerTests(unittest.TestCase):
                     text=True,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_live_image_contract_check_covers_titanoboa_inputs(self):
+        checker = (ROOT / ".github/scripts/verify-live-installer-image.sh").read_text(encoding="utf-8")
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        for required in (
+            "/usr/lib/bootc-image-builder/iso.yaml",
+            "/usr/lib/modules/*/vmlinuz",
+            "initramfs.img",
+            "/usr/lib/grub/i386-pc/normal.mod",
+            "/usr/lib/efi/shim/*/EFI/fedora",
+            "/boot/efi/EFI/fedora",
+            "install-image-id",
+            "/var/lib/containers/storage",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, checker)
+        self.assertIn("Validate Titanoboa Live image contract", workflow)
+        self.assertIn("verify-live-installer-image.sh", workflow)
 
     def test_live_payload_is_pulled_by_digest_and_verified_after_import(self):
         containerfile = (INSTALLER / "Containerfile").read_text(encoding="utf-8")
