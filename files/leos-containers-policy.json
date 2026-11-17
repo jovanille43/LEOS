@@ -1,0 +1,38 @@
+{
+  "default": [
+    {
+      "type": "reject"
+    }
+  ],
+  "transports": {
+    "docker": {
+      "ghcr.io/jovanille43/leos": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/leos-cosign.pub",
+          "signedIdentity": {
+            "type": "matchRepository"
+          }
+        }
+      ],
+      "ghcr.io/jovanille43/leos-nvidia": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/leos-cosign.pub",
+          "signedIdentity": {
+            "type": "matchRepository"
+          }
+        }
+      ],
+      "ghcr.io/jovanille43/leos-nvidia-open": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/leos-cosign.pub",
+          "signedIdentity": {
+            "type": "matchRepository"
+          }
+        }
+      ]
+    }
+  }
+}
