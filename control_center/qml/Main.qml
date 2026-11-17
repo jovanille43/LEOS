@@ -557,7 +557,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Deux fonds 4K assortis à chaque mode. Les aperçus utilisent les emblèmes officiels ; rien n'est appliqué sans ton choix dans KDE."
+                                        text: "Deux fonds 4K assortis à chaque mode. Génère des variantes A/B pour recolorer aussi leurs halos ; rien n'est appliqué sans ton choix dans KDE."
                                         color: window.muted
                                         font.pixelSize: 11
                                         wrapMode: Text.WordWrap
@@ -579,7 +579,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    source: controlCenter.desktopWallpaperPreviewUrl !== "" ? controlCenter.desktopWallpaperPreviewUrl : "../../branding/wallpapers/desktop-leos.svg"
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -614,7 +614,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    source: controlCenter.gamingWallpaperPreviewUrl !== "" ? controlCenter.gamingWallpaperPreviewUrl : "../../branding/wallpapers/gaming-leos.svg"
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -640,11 +640,24 @@ ApplicationWindow {
                                     RowLayout {
                                         Layout.fillWidth: true
                                         Button {
+                                            text: "GÉNÉRER LES FONDS A/B"
+                                            onClicked: {
+                                                const ok = controlCenter.generateThemeWallpapers()
+                                                window.wallpaperNotice = ok
+                                                    ? "Fonds A/B générés dans " + controlCenter.customWallpaperDirectory + ". Les aperçus viennent d'être actualisés."
+                                                    : "La génération a échoué ; les fonds officiels n'ont pas été modifiés."
+                                            }
+                                        }
+                                        Button {
                                             text: "CHOISIR DANS LES PARAMÈTRES KDE"
                                             onClicked: {
+                                                const generated = controlCenter.desktopWallpaperPreviewUrl !== ""
+                                                const directory = generated
+                                                    ? controlCenter.customWallpaperDirectory
+                                                    : "/usr/share/leos/branding/wallpapers"
                                                 const opened = controlCenter.openSettingsModule("wallpaper")
                                                 window.wallpaperNotice = opened
-                                                    ? "Paramètres KDE ouverts. Dans le sélecteur, ouvre /usr/share/leos/branding/wallpapers/ puis choisis desktop-leos.svg ou gaming-leos.svg."
+                                                    ? "Paramètres KDE ouverts. Dans le sélecteur, ouvre " + directory + " puis choisis desktop-leos.svg ou gaming-leos.svg."
                                                     : "Le module de fond d'écran KDE n'est pas disponible sur cette session."
                                             }
                                         }
