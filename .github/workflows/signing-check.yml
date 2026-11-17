@@ -39,6 +39,7 @@ jobs:
       - name: Verify private and public signing keys match
         env:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
           workdir="$(mktemp -d)"
