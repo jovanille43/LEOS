@@ -80,8 +80,11 @@ jobs:
           python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
           python -m unittest discover -s tests -v
 
-      - name: Check LEOS first-run shell script
-        run: bash -n packaging/leos-default-apps-setup
+      - name: Check LEOS shell scripts
+        run: |
+          set -euo pipefail
+          bash -n packaging/leos-default-apps-setup
+          bash -n tools/verify-cosign-key-pair.sh
 
       - name: Validate branding video and audio streams
         run: |
