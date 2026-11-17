@@ -320,7 +320,7 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]', source)
         self.assertIn("Unknown image variant.", source)
         self.assertIn("Authenticate to GitHub Container Registry", source)
-        self.assertIn("sigstore/cosign-installer@v3", source)
+        self.assertIn("sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3", source)
         self.assertIn("cosign verify --key cosign.pub", source)
         self.assertIn("Resolve and verify LEOS image tag", source)
 
