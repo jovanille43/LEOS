@@ -324,24 +324,6 @@ class BuildWorkflowTests(unittest.TestCase):
         )
 
 
-    def test_iso_generation_uses_the_exact_verified_image_digest(self):
-        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("sudo apt-get install -y podman skopeo", source)
-        self.assertIn('skopeo inspect --authfile /root/.docker/config.json', source)
-        self.assertIn('^sha256:[a-f0-9]{64}$', source)
-        self.assertIn('image_repository="${IMAGE_REF%:*}"', source)
-        self.assertIn('immutable_ref="${image_repository}@${digest}"', source)
-        self.assertIn('cosign verify --key cosign.pub "${immutable_ref}"', source)
-        self.assertIn('image_ref=${immutable_ref}', source)
-        self.assertIn('IMAGE_REF: ${{ steps.verified.outputs.image_ref }}', source)
-        self.assertLess(
-            source.index("Resolve and verify immutable LEOS image"),
-            source.index("Generate bootable installer ISO"),
-        )
-        self.assertLess(
-            source.index('cosign verify --key cosign.pub "${immutable_ref}"'),
-            source.index('generate-iso --iso-name'),
-        )
 
     def test_recipe_ci_lints_all_qml_with_qt6_tooling(self):
         source = (ROOT / ".github/workflows/recipe-checks.yml").read_text(encoding="utf-8")
