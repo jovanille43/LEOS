@@ -11,13 +11,14 @@ LEOS est une seule installation basée sur Bazzite KDE Desktop. Desktop Mode et 
 - **Gaming Mode** : application LEOS plein écran lancée au-dessus de KDE ; KDE reste actif en arrière-plan.
 - **LEOS Control Center** : accès simplifié aux fonctions spécifiques LEOS et aux outils Linux avancés.
 - **LEOS Store** : catalogue unifié s'appuyant sur les sources et gestionnaires existants.
-- **Moteur de thèmes A/B** : deux accents utilisateurs partagés par tous les écrans LEOS, ainsi que recoloration GPU des emblèmes et intros ; export KDE `.colors` distinct et soumis à confirmation.
+- **Moteur de thèmes A/B** : deux accents utilisateurs partagés par tous les écrans LEOS, recoloration GPU des emblèmes et intros, génération à la demande de fonds SVG 4K personnalisés dans l'espace utilisateur ; export KDE `.colors` distinct et soumis à confirmation. Les fonds ne sont jamais appliqués sans sélection manuelle dans KDE.
 
 ## 3. Technologies
 
 - **Qt 6 / QML** pour l'interface Gaming et ses animations.
 - **PySide6** pour la logique applicative et les intégrations Python de la première version.
 - **Qt Shader Tools / QSB** pour compiler un filtre GPU Qt 6 qui transpose le dégradé néon des emblèmes et vidéos vers les couleurs A/B tout en préservant luminance et transparence.
+- **Générateur SVG LEOS** pour produire les variantes A/B des fonds d'écran 4K à partir des sources officielles, en conservant leur géométrie et en isolant chaque paire de couleurs dans son propre dossier utilisateur.
 - Des services et outils Linux existants pour les fonctions système ; ne pas réimplémenter les mécanismes déjà fournis par Bazzite/KDE.
 
 Le choix d'une couche C++ dédiée pourra être réévalué si un composant nécessite des performances ou une intégration que PySide6 ne fournit pas suffisamment.
