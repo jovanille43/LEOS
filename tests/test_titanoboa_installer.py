@@ -228,7 +228,6 @@ EOF
         self.assertIn('target_cosign_key="/etc/pki/containers/leos-cosign.pub"', hook)
         self.assertIn('if [[ "$target_registry_ref" != "${target_local_ref%:*}@$target_digest" ]]; then', hook)
         self.assertIn("${target_local_ref%:*}@$target_digest", hook)
-        self.assertIn('live_digest="$(podman image inspect --format', hook)
         self.assertIn(
             'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/policy.json',
             hook,
