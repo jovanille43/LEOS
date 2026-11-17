@@ -90,6 +90,7 @@ jobs:
         run: |
           bash -n .github/scripts/pin-image-digest.sh
           bash -n .github/scripts/sign-iso-artifacts.sh
+          bash -n .github/scripts/verify-live-installer-image.sh
           bash -n installer/src/build.sh
           bash -n installer/src/titanoboa_hook_preinitramfs.sh
           bash -n installer/src/titanoboa_hook_postrootfs.sh
