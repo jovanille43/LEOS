@@ -167,7 +167,14 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("sigstore/cosign-installer@v3", source)
         self.assertIn("Verify private and public signing keys match", source)
         self.assertIn('bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub', source)
-        self.assertIn("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}", source)
+        self.assertEqual(
+            source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"),
+            4,  # one preflight step and the three BlueBuild signing steps
+        )
+        self.assertNotIn(
+            "    env:\n      # The encrypted Cosign key is consumed by both the preflight and BlueBuild.",
+            source,
+        )
         self.assertIn("--tlog-upload=false", helper)
         self.assertIn("--insecure-ignore-tlog", helper)
         self.assertNotIn("--output-signature", source)
