@@ -112,6 +112,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn('esp_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"', hook)
         self.assertIn('if [[ "$esp_fstype" != "vfat" ]]; then', hook)
         self.assertIn('boot_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"', hook)
+        self.assertIn('root_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot 2>/dev/null || true)"', hook)
+        self.assertIn('if [[ "$boot_device" == "$root_device" ]]; then', hook)
         self.assertIn('esp_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"', hook)
         self.assertIn('if [[ "$boot_device" == "$esp_device" ]]; then', hook)
         self.assertIn('if [[ "$boot_fstype" != "ext4" ]]; then', hook)
