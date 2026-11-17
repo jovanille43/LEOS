@@ -44,6 +44,23 @@ for file in "${required_files[@]}"; do
   fi
 done
 
+local_ref="$(< "$rootfs/usr/share/leos-installer/install-image-local-ref")"
+registry_ref="$(< "$rootfs/usr/share/leos-installer/install-image-registry-ref")"
+payload_digest="$(< "$rootfs/usr/share/leos-installer/install-image-digest")"
+payload_image_id="$(< "$rootfs/usr/share/leos-installer/install-image-id")"
+if [[ ! "$local_ref" =~ ^ghcr\.io/jovanille43/(leos|leos-nvidia|leos-nvidia-open):[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+  echo "The embedded LEOS tag reference is invalid." >&2
+  exit 1
+fi
+if [[ ! "$payload_digest" =~ ^sha256:[0-9a-f]{64}$ || "$registry_ref" != "${local_ref%:*}@$payload_digest" ]]; then
+  echo "The embedded LEOS digest and tag references do not match." >&2
+  exit 1
+fi
+if [[ ! "$payload_image_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+  echo "The embedded LEOS image ID is invalid." >&2
+  exit 1
+fi
+
 iso_config="$rootfs/usr/lib/bootc-image-builder/iso.yaml"
 iso_label="$(awk -F: '/^label:/ { value=$2; gsub(/[ "]/, "", value); print value; exit }' "$iso_config")"
 if [[ -z "$iso_label" ]]; then
