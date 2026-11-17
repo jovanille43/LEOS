@@ -114,6 +114,22 @@ jobs:
             sudo podman login --authfile /root/.docker/config.json ghcr.io \
               --username "$GITHUB_ACTOR" --password-stdin
 
+      - name: Resolve and pin the Bazzite Live base digest
+        id: pinned-base
+        env:
+          BASE_IMAGE_TAG_REF: ghcr.io/ublue-os/bazzite:stable
+        run: |
+          set -euo pipefail
+          sudo podman pull --authfile /root/.docker/config.json "$BASE_IMAGE_TAG_REF"
+          digest="$(sudo podman image inspect --format '{{.Digest}}' "$BASE_IMAGE_TAG_REF")"
+          if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::Podman did not return a valid Bazzite base image digest."
+            exit 1
+          fi
+          repository="${BASE_IMAGE_TAG_REF%:*}"
+          echo "ref=$repository@$digest" >> "$GITHUB_OUTPUT"
+          echo "tag_ref=$BASE_IMAGE_TAG_REF" >> "$GITHUB_OUTPUT"
+
       - name: Resolve and pin the signed LEOS image digest
         id: pinned-image
         env:
@@ -136,6 +152,7 @@ jobs:
         env:
           INSTALL_IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
           INSTALL_IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
+          BASE_IMAGE_REF: ${{ steps.pinned-base.outputs.ref }}
           LIVE_IMAGE_TAG: localhost/leos-live-installer:${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -euo pipefail
@@ -144,7 +161,7 @@ jobs:
             --cap-add sys_admin \
             --security-opt label=disable \
             --secret id=ghcr-auth,src=/root/.docker/config.json \
-            --build-arg BASE_IMAGE=ghcr.io/ublue-os/bazzite:stable \
+            --build-arg BASE_IMAGE="$BASE_IMAGE_REF" \
             --build-arg INSTALL_IMAGE_REF="$INSTALL_IMAGE_REF" \
             --build-arg INSTALL_IMAGE_TAG_REF="$INSTALL_IMAGE_TAG_REF" \
             --build-arg INSTALL_IMAGE_DIGEST="$expected_digest" \
@@ -185,6 +202,8 @@ jobs:
           MANIFEST_NAME: ${{ steps.image.outputs.manifest }}
           IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
           IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
+          BASE_IMAGE_REF: ${{ steps.pinned-base.outputs.ref }}
+          BASE_IMAGE_TAG_REF: ${{ steps.pinned-base.outputs.tag_ref }}
           VARIANT: ${{ inputs.variant }}
           IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
@@ -212,6 +231,8 @@ jobs:
               "image_tag": os.environ["IMAGE_TAG"],
               "source_image": os.environ["IMAGE_REF"],
               "source_image_tag": os.environ["IMAGE_TAG_REF"],
+              "installer_base_image": os.environ["BASE_IMAGE_REF"],
+              "installer_base_image_tag": os.environ["BASE_IMAGE_TAG_REF"],
               "iso_file": os.environ["ISO_NAME"],
               "iso_sha256": os.environ["ISO_SHA256"],
               "workflow_repository": os.environ["GITHUB_REPOSITORY"],
