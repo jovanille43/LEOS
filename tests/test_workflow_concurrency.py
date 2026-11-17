@@ -122,12 +122,25 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertEqual(source.count("blue-build/github-action@"), 3)
         self.assertEqual(source.count('build_opts: "--signing-driver sigstore"'), 3)
         self.assertEqual(source.count("cli_version: v0.9.42"), 3)
-        self.assertEqual(source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"), 4)
+        self.assertEqual(source.count("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}"), 5)
         self.assertLess(
             source.index("Run LEOS Python test suite"),
             source.index("Build and publish LEOS"),
         )
         self.assertIn("timeout-minutes: 360", source)
+
+    def test_build_checks_cosign_password_before_key_pair_validation(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        start = source.index("      - name: Check signing prerequisites")
+        end = source.index("      - name: Validate Cosign key pair", start)
+        prerequisites = source[start:end]
+        self.assertIn("COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}", prerequisites)
+        self.assertIn('if [[ -z "${COSIGN_PASSWORD}" ]]', prerequisites)
+        self.assertIn("The COSIGN_PASSWORD repository secret is not configured.", prerequisites)
+        self.assertLess(
+            source.index("Check signing prerequisites"),
+            source.index("Verify private and public signing keys match"),
+        )
 
     def test_workflow_groups_are_separate(self):
         python = (ROOT / ".github/workflows/python-checks.yml").read_text(encoding="utf-8")
