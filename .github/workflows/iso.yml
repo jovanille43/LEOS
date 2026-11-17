@@ -32,10 +32,12 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Check out LEOS public verification key
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
 
       - name: Install Podman and BlueBuild CLI
         run: |
@@ -131,7 +133,7 @@ jobs:
           sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
 
       - name: Upload installer ISO and checksum
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: LEOS-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
           path: |
