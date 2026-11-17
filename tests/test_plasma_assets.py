@@ -117,7 +117,7 @@ class DynamicPlasmaAssetTests(unittest.TestCase):
             def apply_command(arguments, **_kwargs):
                 self.assertEqual(arguments, ["plasma-apply-desktoptheme", "leos"])
                 (config / "plasmarc").write_text(
-                    "[Theme]\\nname=leos\\n", encoding="utf-8"
+                    "[Theme]\nname=leos\n", encoding="utf-8"
                 )
                 return SimpleNamespace(returncode=0, stderr="")
 
