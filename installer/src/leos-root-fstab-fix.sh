@@ -2,10 +2,13 @@
 set -Eeuo pipefail
 
 readonly service_name="leos-root-fstab-fix.service"
-readonly fstab="/etc/fstab"
+readonly fstab="${LEOS_ROOT_FSTAB_PATH:-/etc/fstab}"
+readonly run_dir="${LEOS_RUN_DIR:-/run}"
+readonly systemctl_bin="${LEOS_SYSTEMCTL_BIN:-systemctl}"
+readonly rpm_ostree_bin="${LEOS_RPM_OSTREE_BIN:-rpm-ostree}"
 
 disable_service() {
-  systemctl disable "$service_name" || true
+  "$systemctl_bin" disable "$service_name" || true
 }
 
 if [[ ! -f "$fstab" ]]; then
@@ -14,8 +17,8 @@ if [[ ! -f "$fstab" ]]; then
   exit 0
 fi
 
-rootflags_file="$(mktemp /run/leos-rootflags.XXXXXX)"
-root_count_file="$(mktemp /run/leos-root-count.XXXXXX)"
+rootflags_file="$(mktemp "$run_dir/leos-rootflags.XXXXXX")"
+root_count_file="$(mktemp "$run_dir/leos-root-count.XXXXXX")"
 cleanup() {
   rm -f "$rootflags_file" "$root_count_file"
 }
@@ -67,12 +70,12 @@ fi
 
 rootflags="$(< "$rootflags_file")"
 if [[ -n "$rootflags" ]]; then
-  if ! command -v rpm-ostree >/dev/null 2>&1; then
+  if ! command -v "$rpm_ostree_bin" >/dev/null 2>&1; then
     echo "rpm-ostree is required to preserve non-default root mount options."
     exit 1
   fi
 
-  current_kargs="$(rpm-ostree kargs)"
+  current_kargs="$("$rpm_ostree_bin" kargs)"
   mapfile -t existing_rootflags < <(
     grep -oE '(^|[[:space:]])rootflags=[^[:space:]]+' <<< "$current_kargs" |
       sed -E 's/^[[:space:]]*rootflags=//'
@@ -82,9 +85,9 @@ if [[ -n "$rootflags" ]]; then
     exit 1
   fi
   if [[ "${#existing_rootflags[@]}" -eq 1 && "${existing_rootflags[0]}" != "$rootflags" ]]; then
-    rpm-ostree kargs --delete-if-present="rootflags=${existing_rootflags[0]}"
+    "$rpm_ostree_bin" kargs --delete-if-present="rootflags=${existing_rootflags[0]}"
   fi
-  rpm-ostree kargs --append-if-missing="rootflags=$rootflags"
+  "$rpm_ostree_bin" kargs --append-if-missing="rootflags=$rootflags"
 fi
 
 # Remove only the root filesystem row. Keep /boot, /boot/efi, swap and data mounts.
@@ -113,4 +116,4 @@ PY
 
 disable_service
 echo "LEOS root mount options have been moved to kernel arguments; rebooting once."
-systemctl reboot
+"$systemctl_bin" reboot
