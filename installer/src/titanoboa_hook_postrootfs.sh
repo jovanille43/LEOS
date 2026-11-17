@@ -137,99 +137,40 @@ mkdir -p /tmp/leos-install-logs
 EOF
 
 cat > /usr/share/anaconda/post-scripts/leos-fstab-rootflags.ks <<'EOF'
-%post --erroronfail --log=/tmp/leos-install-logs/root-fstab-workaround.log
+%post --nochroot --erroronfail --log=/tmp/leos-install-logs/root-fstab-workaround-setup.log
 set -euo pipefail
 
-fstab=/etc/fstab
-rootflags_file=/run/leos-rootflags
-if [[ ! -f "$fstab" ]]; then
-  echo "The installed system has no /etc/fstab; cannot apply the bootc root mount workaround."
+target_root="/mnt/sysroot"
+if [[ ! -d "$target_root/etc" ]]; then
+  echo "Anaconda did not mount the target system at /mnt/sysroot."
   exit 1
 fi
 
-# Preserve non-default root filesystem options as kernel rootflags. The bug
-# report documents deleting the Anaconda-generated root fstab row; non-default
-# options (notably Btrfs subvolume/compression) must move to the kernel command
-# line first.
-python3 - "$fstab" "$rootflags_file" <<'PY'
-from pathlib import Path
-import sys
+install -D -m 0755 \
+  /usr/share/leos-installer/leos-root-fstab-fix.sh \
+  "$target_root/etc/leos/root-fstab-fix.sh"
 
-fstab = Path(sys.argv[1])
-destination = Path(sys.argv[2])
-matches = []
-for line in fstab.read_text(encoding="utf-8").splitlines():
-    stripped = line.strip()
-    if not stripped or stripped.startswith("#"):
-        continue
-    fields = stripped.split()
-    if len(fields) >= 4 and fields[1] == "/":
-        matches.append(fields[3])
+cat > "$target_root/etc/systemd/system/leos-root-fstab-fix.service" <<'UNIT'
+[Unit]
+Description=LEOS first-boot bootc root filesystem compatibility fix
+After=multi-user.target systemd-remount-fs.service bootc-fstab-edit.service
+Before=graphical.target
+ConditionPathExists=/etc/fstab
 
-if len(matches) > 1:
-    raise SystemExit("More than one / entry exists in the installed /etc/fstab.")
+[Service]
+Type=oneshot
+ExecStart=/etc/leos/root-fstab-fix.sh
+TimeoutStartSec=10min
 
-flags = []
-if matches:
-    flags = [
-        option for option in matches[0].split(",")
-        if option and option not in {"defaults", "ro", "rw"}
-    ]
-destination.write_text(",".join(flags), encoding="utf-8")
-PY
+[Install]
+WantedBy=graphical.target
+UNIT
 
-rootflags="$(< "$rootflags_file")"
-if [[ -n "$rootflags" ]]; then
-  if ! command -v rpm-ostree >/dev/null 2>&1; then
-    echo "rpm-ostree is required to preserve non-default root mount options as kernel arguments."
-    exit 1
-  fi
-  current_kargs="$(rpm-ostree kargs)"
-  mapfile -t existing_rootflags < <(
-    grep -oE '(^|[[:space:]])rootflags=[^[:space:]]+' <<< "$current_kargs" |
-      sed -E 's/^[[:space:]]*rootflags=//'
-  )
-  if [[ "${#existing_rootflags[@]}" -gt 1 ]]; then
-    echo "Multiple rootflags kernel arguments exist; refusing to guess which one to replace."
-    exit 1
-  fi
-  if [[ "${#existing_rootflags[@]}" -eq 1 && "${existing_rootflags[0]}" != "$rootflags" ]]; then
-    rpm-ostree kargs --delete-if-present="rootflags=${existing_rootflags[0]}"
-  fi
-  rpm-ostree kargs --append-if-missing="rootflags=$rootflags"
-fi
-
-# Remove only the root filesystem line. /boot, /boot/efi, swap, and all data
-# mounts remain untouched.
-python3 - "$fstab" <<'PY'
-from pathlib import Path
-import sys
-
-fstab = Path(sys.argv[1])
-lines = fstab.read_text(encoding="utf-8").splitlines(keepends=True)
-kept = []
-removed = 0
-for line in lines:
-    stripped = line.strip()
-    fields = stripped.split() if stripped and not stripped.startswith("#") else []
-    if len(fields) >= 2 and fields[1] == "/":
-        removed += 1
-    else:
-        kept.append(line)
-
-if removed > 1:
-    raise SystemExit("More than one / entry was found; refusing to rewrite /etc/fstab.")
-if removed == 1:
-    fstab.write_text("".join(kept), encoding="utf-8")
-    print("Moved root mount options to the kernel command line and removed only the / fstab row.")
-else:
-    print("No root fstab row remained; nothing to change.")
-PY
-
-rm -f "$rootflags_file"
+install -d -m 0755 "$target_root/etc/systemd/system/graphical.target.wants"
+ln -sfn ../leos-root-fstab-fix.service \
+  "$target_root/etc/systemd/system/graphical.target.wants/leos-root-fstab-fix.service"
 %end
 EOF
-
 cat >> /usr/share/anaconda/interactive-defaults.ks <<EOF
 %pre --erroronfail --log=/tmp/leos-install-logs/preflight.log
 set -euo pipefail
