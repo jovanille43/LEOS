@@ -297,6 +297,17 @@ cat > /usr/bin/leos-live-welcome <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ ! -d /sys/firmware/efi ]]; then
+  message="LEOS nécessite un démarrage UEFI. Redémarrez en mode UEFI avant de lancer l'installation."
+  if command -v yad >/dev/null 2>&1; then
+    yad --title="Mode UEFI requis" --center --width=600 \
+      --text="$message" --button="Fermer":0 || true
+  else
+    printf '%s\n' "$message"
+  fi
+  exit 0
+fi
+
 image_tag_file="/usr/share/leos-installer/install-image-local-ref"
 digest_file="/usr/share/leos-installer/install-image-digest"
 if [[ ! -s "$image_tag_file" || ! -s "$digest_file" ]] || ! command -v skopeo >/dev/null 2>&1; then
@@ -327,7 +338,7 @@ fi
 status=0
 if command -v yad >/dev/null 2>&1; then
   yad --title="Bienvenue dans LEOS" --center --width=560 \
-    --text="Bienvenue dans l'environnement Live de LEOS.\n\nImage vérifiée : $image_tag_ref\n\nVous pouvez examiner le matériel avant de lancer l'installation. L'installation ne démarre qu'après votre choix." \
+    --text="Bienvenue dans l'environnement Live de LEOS.\n\nImage vérifiée : $image_tag_ref\n\nAvant de continuer : faites une sauvegarde de vos données. En dual boot, sélectionnez uniquement l'espace libre et ne formatez pas l'ESP du système existant. LEOS exige un /boot ext4 séparé et une ESP FAT distincte. Le dual boot reste à valider.\n\nVous pouvez examiner le matériel avant de lancer l'installation. L'installation ne démarre qu'après votre choix." \
     --button="Installer LEOS":10 --button="Fermer":0 || status=$?
   if [[ "$status" -eq 10 ]]; then
     liveinst
