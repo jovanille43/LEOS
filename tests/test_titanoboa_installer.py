@@ -65,6 +65,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
             hook,
         )
         self.assertIn("test -s /etc/containers/registries.d/leos.yaml", hook)
+        self.assertIn('boot_fstype="$(blkid -o value -s TYPE "$boot_dev" || true)"', hook)
+        self.assertIn('if [[ "$boot_fstype" != "ext4" ]]; then', hook)
+        self.assertNotIn("e2label ", hook)
         self.assertNotIn("rm -rf /mnt/sysroot/boot/efi/EFI/fedora", hook)
         self.assertNotIn("e2label ", hook)
         self.assertNotIn("wipefs ", hook)
