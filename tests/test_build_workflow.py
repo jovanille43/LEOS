@@ -28,11 +28,16 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("packages: write", source)
         self.assertNotIn("blue-build/github-action", source)
         self.assertNotIn("generate-iso", source)
-        self.assertIn("cosign sign-blob", source)
-        self.assertIn("cosign verify-blob", source)
+        self.assertIn("tools/verify-cosign-key-pair.sh", source)
         self.assertIn('chmod 700 "$workdir"', source)
         self.assertIn('chmod 600 "$workdir/cosign.key"', source)
         self.assertIn("trap 'rm -rf \"$workdir\"' EXIT", source)
+        helper = (ROOT / "tools/verify-cosign-key-pair.sh").read_text(encoding="utf-8")
+        self.assertIn("cosign sign-blob", helper)
+        self.assertIn("cosign verify-blob", helper)
+        self.assertIn('trap \'rm -rf "$workdir"\' EXIT', helper)
+        self.assertIn("|| -L \"$private_key\"", helper)
+        self.assertIn("|| -L \"$public_key\"", helper)
 
 
     def test_manual_image_build_runs_python_suite_before_publishing(self):
