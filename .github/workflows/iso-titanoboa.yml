@@ -130,6 +130,14 @@ jobs:
           echo "ref=$repository@$digest" >> "$GITHUB_OUTPUT"
           echo "tag_ref=$BASE_IMAGE_TAG_REF" >> "$GITHUB_OUTPUT"
 
+      - name: Verify the signed Bazzite Live base
+        env:
+          BASE_IMAGE_REF: ${{ steps.pinned-base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          test -s files/bazzite-cosign.pub
+          sudo env PATH="$PATH" cosign verify --key files/bazzite-cosign.pub "$BASE_IMAGE_REF"
+
       - name: Resolve and pin the signed LEOS image digest
         id: pinned-image
         env:
