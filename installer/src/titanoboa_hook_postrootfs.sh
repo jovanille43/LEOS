@@ -159,6 +159,7 @@ set -euo pipefail
 boot_source="$(findmnt --raw --noheadings --output SOURCE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
 boot_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
 boot_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
+esp_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"
 esp_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"
 if [[ -z "$boot_source" || -z "$boot_device" ]]; then
   echo "LEOS requires /boot to be an explicitly mounted, dedicated partition."
@@ -170,6 +171,10 @@ if [[ "$boot_fstype" != "ext4" ]]; then
 fi
 if [[ -z "$esp_device" ]]; then
   echo "LEOS requires the EFI System Partition to be mounted at /boot/efi."
+  exit 1
+fi
+if [[ "$esp_fstype" != "vfat" ]]; then
+  echo "LEOS requires the EFI System Partition to use FAT (vfat); detected: ${esp_fstype:-unknown}"
   exit 1
 fi
 if [[ "$boot_device" == "$esp_device" ]]; then
