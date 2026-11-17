@@ -15,11 +15,11 @@ Les deux modes partagent le même système, les mêmes fichiers, applications, p
 
 ## Identité visuelle
 
-L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta, une typographie dédiée et un fond noir.
+L'identité LEOS repose sur un lion métallique, une typographie dédiée et un fond sombre. L'utilisateur choisit deux couleurs d'accent indépendantes (A et B) qui pilotent les interfaces, les halos, les emblèmes et les animations ; le duo cyan/magenta reste uniquement la palette LEOS Original par défaut.
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
-- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés.
+- Les animations et sons LEOS sont configurables indépendamment et peuvent être désactivés. Les deux couleurs A/B recolorent les néons des emblèmes transparents et des vidéos d'introduction sans modifier les fichiers sources.
 
 Les références visuelles fournies pour le projet doivent être respectées. L'image comparative des deux emblèmes sert de référence et ne doit pas devenir le visuel principal d'un écran.
 
@@ -80,7 +80,7 @@ Ces éléments sont des prototypes source. Les tests automatisés et les contrô
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les profils de dock peuvent être appliqués au panneau Plasma après sauvegarde et confirmation ; les favoris ordonnés du menu LEOS sont synchronisés aux lanceurs du gestionnaire de tâches, et les configurations multi-panneaux restent protégées.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
-- Palettes LEOS configurables dans les interfaces LEOS ; le schéma de couleurs KDE et le Plasma Style peuvent être appliqués séparément après confirmation. Les fonds d'écran Desktop et Gaming 4K sont présents, leurs aperçus sont accessibles dans le Centre de contrôle et le choix passe par les paramètres natifs KDE. Le rendu des SVG avec JPEG liés et leur application restent à valider sur une session Bazzite réelle. Les animations Desktop/Gaming sont raccordées ; leur lecture vidéo et audio reste également à valider sur Bazzite.
+- Cinq palettes prédéfinies et une paire A/B entièrement personnalisable sont partagées par les sept interfaces LEOS : sélecteur de modes, Desktop, Gaming, Centre de contrôle, Centre des manettes, Notifications et Boutique. Les logos transparents et les vidéos de transition utilisent un filtre GPU compilé pour Qt 6 ; les schémas KDE personnalisés peuvent être appliqués séparément après confirmation. Les fonds d'écran 4K restent des ressources SVG statiques aux couleurs de la palette originale : leur adaptation à A/B est encore à développer. La lecture vidéo, les couleurs GPU et l'intégration complète doivent être validées sur une session Bazzite réelle.
 
 ## Compatibilité matérielle et philosophie universelle
 
