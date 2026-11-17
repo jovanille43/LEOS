@@ -124,8 +124,12 @@ if [[ ! -d /sys/firmware/efi ]]; then
   echo "LEOS currently supports UEFI installation only."
   exit 1
 fi
-if [[ ! -s /etc/containers/policy.json || ! -s /etc/pki/containers/leos-cosign.pub ]]; then
-  echo "The LEOS image-signature policy is missing."
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/policy.json; then
+  echo "The LEOS image-signature policy is missing from the install payload."
+  exit 1
+fi
+if ! podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/pki/containers/leos-cosign.pub; then
+  echo "The LEOS public verification key is missing from the install payload."
   exit 1
 fi
 %end
@@ -173,7 +177,7 @@ cat >> /usr/share/anaconda/post-scripts/install-configure-upgrade.ks <<EOF
 set -euo pipefail
 test -s /etc/containers/policy.json
 test -s /etc/pki/containers/leos-cosign.pub
-bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_registry_ref"
+bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry "$target_local_ref"
 %end
 EOF
 
