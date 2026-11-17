@@ -19,6 +19,8 @@ from shop.flatpak_inventory import (
 )
 from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
+from leos_core.settings import SettingsStore
+from desktop.themes import palette_for_settings
 
 
 MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024
@@ -41,9 +43,18 @@ class StoreController(QObject):
     operationFinished = Signal(bool, str)
     catalogUpdated = Signal()
     verificationDetailsChanged = Signal()
+    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
+        self.settings = SettingsStore()
+        self._theme_snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        self._theme_timer = QTimer(self)
+        self._theme_timer.setInterval(1500)
+        self._theme_timer.timeout.connect(self.refreshThemePalette)
+        self._theme_timer.start()
         self.catalog = CatalogModel(self)
         self._status = (
             self.catalog.load_error
@@ -65,6 +76,19 @@ class StoreController(QObject):
         self._stdout = bytearray()
         self._stderr = bytearray()
         self._output_overflowed = False
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self.settings)
+
+    @Slot()
+    def refreshThemePalette(self) -> None:
+        snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        if snapshot != self._theme_snapshot:
+            self._theme_snapshot = snapshot
+            self.themeChanged.emit()
 
     @Property(str, notify=statusChanged)
     def status(self) -> str:
