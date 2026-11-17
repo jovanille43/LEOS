@@ -114,14 +114,19 @@ class DynamicPlasmaAssetTests(unittest.TestCase):
             (config / "plasmarc").write_text(
                 "[Theme]\nname=breeze\n", encoding="utf-8"
             )
+            def apply_command(arguments, **_kwargs):
+                self.assertEqual(arguments, ["plasma-apply-desktoptheme", "leos"])
+                (config / "plasmarc").write_text(
+                    "[Theme]\\nname=leos\\n", encoding="utf-8"
+                )
+                return SimpleNamespace(returncode=0, stderr="")
+
             manager = PlasmaStyleManager(
                 data_home=root / "data",
                 config_home=config,
                 state_home=root / "state",
                 apply_executable="plasma-apply-desktoptheme",
-                runner=lambda *args, **kwargs: SimpleNamespace(
-                    returncode=0, stderr=""
-                ),
+                runner=apply_command,
                 settings=settings,
             )
             message = manager.apply_style()
