@@ -156,14 +156,24 @@ EOF
 cat >> /usr/share/anaconda/interactive-defaults.ks <<'EOF'
 %pre-install --erroronfail --log=/tmp/leos-install-logs/boot-partition-check.log
 set -euo pipefail
-boot_dev="$(findmnt -o SOURCE --nofsroot --noheadings -f --target /mnt/sysroot/boot)"
-if [[ -z "$boot_dev" ]]; then
-  echo "LEOS requires a dedicated /boot partition formatted as ext4."
+boot_source="$(findmnt --raw --noheadings --output SOURCE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
+boot_fstype="$(findmnt --raw --noheadings --output FSTYPE --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
+boot_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot 2>/dev/null || true)"
+esp_device="$(findmnt --raw --noheadings --output MAJ:MIN --mountpoint /mnt/sysroot/boot/efi 2>/dev/null || true)"
+if [[ -z "$boot_source" || -z "$boot_device" ]]; then
+  echo "LEOS requires /boot to be an explicitly mounted, dedicated partition."
   exit 1
 fi
-boot_fstype="$(blkid -o value -s TYPE "$boot_dev" || true)"
 if [[ "$boot_fstype" != "ext4" ]]; then
-  echo "LEOS requires /boot on ext4 (separate from /boot/efi); detected: ${boot_fstype:-unknown}"
+  echo "LEOS requires /boot on ext4; detected: ${boot_fstype:-unknown}"
+  exit 1
+fi
+if [[ -z "$esp_device" ]]; then
+  echo "LEOS requires the EFI System Partition to be mounted at /boot/efi."
+  exit 1
+fi
+if [[ "$boot_device" == "$esp_device" ]]; then
+  echo "LEOS requires /boot and /boot/efi to be separate partitions."
   exit 1
 fi
 %end
