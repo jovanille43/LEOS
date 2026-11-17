@@ -42,6 +42,9 @@ class TitanoboaInstallerTests(unittest.TestCase):
             "/boot/efi/EFI/fedora",
             "exactly one Fedora UEFI vendor directory",
             "install-image-id",
+            "payload_digest",
+            "payload_image_id",
+            'registry_ref != "${local_ref%:*}@$payload_digest"',
             "/var/lib/containers/storage",
         ):
             with self.subTest(required=required):
@@ -91,6 +94,8 @@ class TitanoboaInstallerTests(unittest.TestCase):
             hook,
         )
         self.assertIn('target_cosign_key="/etc/pki/containers/leos-cosign.pub"', hook)
+        self.assertIn('target_registry_ref != "${target_local_ref%:*}@$target_digest"', hook)
+        self.assertIn('live_digest="$(podman image inspect --format', hook)
         self.assertIn(
             'podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -s /etc/containers/policy.json',
             hook,
