@@ -16,6 +16,7 @@ from pathlib import Path
 from desktop.notification_store import NotificationStore
 from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
+from desktop.themes import palette_for_settings
 
 from .library import GameLibraryModel
 from .system_monitor import SystemMonitor
@@ -63,6 +64,7 @@ class GamingController(QObject):
     mangoHudChanged = Signal()
     launchStatusChanged = Signal()
     launcherStatusChanged = Signal()
+    themeChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -84,6 +86,13 @@ class GamingController(QObject):
         self._power_profile_refresh_timer.start()
         QTimer.singleShot(0, self.refreshPowerProfiles)
         self.settings = SettingsStore()
+        self._theme_snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        self._theme_refresh_timer = QTimer(self)
+        self._theme_refresh_timer.setInterval(1500)
+        self._theme_refresh_timer.timeout.connect(self.refreshThemePalette)
+        self._theme_refresh_timer.start()
         self._mangohud_path = find_mangohud()
         self._mangohud_enabled = bool(
             self.settings.get("gaming_mangohud_enabled", False)
@@ -114,6 +123,19 @@ class GamingController(QObject):
         self._gamepad_poll_timer.start()
         self._gamepad_refresh_timer.start()
 
+
+    @Property("QVariantMap", notify=themeChanged)
+    def themePalette(self) -> dict[str, str]:
+        return palette_for_settings(self.settings)
+
+    @Slot()
+    def refreshThemePalette(self) -> None:
+        snapshot = self.settings.snapshot((
+            "theme", "custom_accent_primary", "custom_accent_secondary"
+        ))
+        if snapshot != self._theme_snapshot:
+            self._theme_snapshot = snapshot
+            self.themeChanged.emit()
 
     @Property(bool, constant=False)
     def animationsEnabled(self) -> bool:
