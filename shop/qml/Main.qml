@@ -95,8 +95,8 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
                     ListView {
                         id: appList
                         anchors.fill: parent
@@ -122,8 +122,8 @@ ApplicationWindow {
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
-                            color: window.selectedRow === index ? "#182a36" : "#151b25"
-                            border.color: window.selectedRow === index ? window.accentPrimary : "#28313e"
+                            color: window.selectedRow === index ? Qt.darker(window.accentPrimary, 2.7) : window.themeColors.surface_elevated
+                            border.color: window.selectedRow === index ? window.accentPrimary : window.themeColors.border
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 12
@@ -186,8 +186,8 @@ ApplicationWindow {
                     Layout.preferredWidth: 360
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
 
                     ColumnLayout {
                         anchors.fill: parent
@@ -208,7 +208,7 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
                         Label { text: "SOURCE"; color: window.accentPrimary; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
                         Label { text: "COMPATIBILITÉ"; color: window.accentPrimary; font.pixelSize: 9 }
