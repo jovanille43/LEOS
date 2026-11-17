@@ -1,4 +1,4 @@
-""""LEOS Gaming Mode — Qt Quick application entry point."""
+"""LEOS Gaming Mode — Qt Quick application entry point."""
 
 from __future__ import annotations
 
