@@ -106,6 +106,7 @@ class TitanoboaInstallerTests(unittest.TestCase):
         self.assertIn("leos-root-fstab-fix.service", hook)
         self.assertIn("graphical.target.wants", hook)
         self.assertIn("Before=graphical.target", hook)
+        self.assertIn('podman run --rm --network=none --entrypoint /usr/bin/test "$target_local_ref" -x /usr/bin/rpm-ostree', hook)
         self.assertIn("2332319", documentation)
         self.assertIn("systemd-remount-fs", documentation)
 
