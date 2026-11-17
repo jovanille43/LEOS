@@ -55,8 +55,6 @@ modules:
       - source: leos-config
         destination: /usr/share/leos
 
-      - source: leos-registries.yaml
-        destination: /etc/containers/registries.d/leos.yaml
 
   - type: copy
     src: packaging/leos-default-apps-setup
