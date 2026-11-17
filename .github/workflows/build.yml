@@ -8,6 +8,12 @@ permissions:
   packages: write
   id-token: write
 
+# All three recipes publish stable image names; never run two publication
+# pipelines concurrently against the same registry namespace.
+concurrency:
+  group: leos-image-publication
+  cancel-in-progress: false
+
 jobs:
   bluebuild:
     name: Build LEOS image
