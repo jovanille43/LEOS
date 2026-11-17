@@ -1,4 +1,4 @@
-"""LEOS session entry point.
+""""LEOS session entry point.
 
 KDE autostart uses --select to show the mode picker after login. Without
 --select, the legacy restore path opens Gaming only when it was last selected.
@@ -65,6 +65,8 @@ def main() -> int:
             except OSError as error:
                 manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
                 return
+            # Gaming marks onboarding complete itself, but only after its QML
+            # window has loaded. A child-process spawn is not proof of readiness.
             selected_mode["value"] = "gaming"
         if mode == "desktop":
             selected_mode["value"] = "desktop"
@@ -75,7 +77,7 @@ def main() -> int:
                 else "Le bureau est actif, mais le choix de démarrage n'a pas pu être enregistré.",
                 "success" if remembered else "warning",
             )
-        selector_controller.completeOnboarding()
+            selector_controller.completeOnboarding()
         app.quit()
 
     selected_mode = {"value": ""}
