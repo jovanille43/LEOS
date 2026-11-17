@@ -36,6 +36,7 @@ required_files=(
   "$rootfs/usr/share/leos-installer/install-image-registry-ref"
   "$rootfs/usr/share/leos-installer/install-image-digest"
   "$rootfs/usr/share/leos-installer/install-image-id"
+  "$rootfs/usr/bin/skopeo"
 )
 for file in "${required_files[@]}"; do
   if [[ ! -s "$file" ]]; then
