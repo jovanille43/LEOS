@@ -8,6 +8,10 @@ permissions:
   packages: write
   id-token: write
 
+concurrency:
+  group: leos-image-pipeline
+  cancel-in-progress: false
+
 jobs:
   bluebuild:
     name: Build LEOS image
