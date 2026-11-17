@@ -8,11 +8,12 @@ ApplicationWindow {
     height: 790
     visible: true
     title: "LEOS — Boutique"
-    color: "#080a0f"
+    property var themeColors: store.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color accentPrimary: themeColors.accent_primary
+    property color accentSecondary: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedRow: -1
 
     function normalizedSearchText(value) {
@@ -55,7 +56,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "BOUTIQUE"
-                        color: window.cyan
+                        color: window.accentPrimary
                         font.pixelSize: 10
                         font.letterSpacing: 4
                     }
@@ -122,7 +123,7 @@ ApplicationWindow {
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
                             color: window.selectedRow === index ? "#182a36" : "#151b25"
-                            border.color: window.selectedRow === index ? window.cyan : "#28313e"
+                            border.color: window.selectedRow === index ? window.accentPrimary : "#28313e"
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 12
@@ -131,11 +132,11 @@ ApplicationWindow {
                                     Layout.preferredWidth: 42
                                     Layout.preferredHeight: 42
                                     radius: 10
-                                    color: "#202c3b"
+                                    color: window.themeColors.surface_elevated
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
-                                        color: window.cyan
+                                        color: window.accentPrimary
                                         font.pixelSize: 20
                                         font.weight: Font.Bold
                                     }
@@ -148,7 +149,7 @@ ApplicationWindow {
                                 }
                                 Label {
                                     text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME") : installed ? "INSTALLÉE" : "DISPONIBLE"
-                                    color: installed ? window.cyan : window.muted
+                                    color: installed ? window.accentPrimary : window.muted
                                     font.pixelSize: 9
                                 }
                             }
@@ -192,7 +193,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 20
                         spacing: 12
-                        Label { text: "FICHE APPLICATION"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                        Label { text: "FICHE APPLICATION"; color: window.accentPrimary; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
                             color: "white"
@@ -208,9 +209,9 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
-                        Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
+                        Label { text: "SOURCE"; color: window.accentPrimary; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
-                        Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
+                        Label { text: "COMPATIBILITÉ"; color: window.accentPrimary; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
                             color: window.muted
@@ -228,7 +229,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             visible: detailsPane.installedScope === "system"
                             text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
-                            color: window.cyan
+                            color: window.accentPrimary
                             font.pixelSize: 10
                             wrapMode: Text.WordWrap
                         }
@@ -241,8 +242,8 @@ ApplicationWindow {
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 8
-                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? "#33202a" : "#12313b"
-                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
+                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? Qt.darker(window.accentSecondary, 2.8) : Qt.darker(window.accentPrimary, 2.8)
+                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.accentSecondary : window.accentPrimary
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
