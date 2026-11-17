@@ -1,0 +1,255 @@
+name: Generate LEOS Titanoboa Live installer ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Hardware image variant to install
+        required: true
+        type: choice
+        options:
+          - standard
+          - nvidia-legacy
+          - nvidia-modern
+      image_tag:
+        description: Exact tag from a successful LEOS image build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: leos-titanoboa-iso-${{ github.ref }}-${{ inputs.variant }}
+  cancel-in-progress: false
+
+jobs:
+  generate-iso:
+    name: Generate LEOS Live installer (${{ inputs.variant }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Free runner disk space
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6
+        with:
+          tool-cache: true
+
+      - name: Check out LEOS
+        uses: actions/checkout@v7
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Check signing prerequisites and verify Cosign key pair
+        env:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$SIGNING_SECRET" ]]; then
+            echo "::error::The SIGNING_SECRET repository secret is not configured."
+            exit 1
+          fi
+          test -s cosign.pub
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          chmod 700 "$workdir"
+          printf '%s' "$SIGNING_SECRET" > "$workdir/cosign.key"
+          chmod 600 "$workdir/cosign.key"
+          unset SIGNING_SECRET
+          printf 'LEOS Titanoboa ISO signing-key preflight\n' > "$workdir/challenge.txt"
+          cosign sign-blob --yes --key "$workdir/cosign.key" --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
+          cosign verify-blob --key cosign.pub --bundle "$workdir/challenge.sigstore.json" "$workdir/challenge.txt"
+
+      - name: Install Podman and Btrfs tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends podman btrfs-progs
+
+      - name: Prepare large Btrfs container storage
+        run: |
+          set -euo pipefail
+          sudo truncate -s 110G /mnt/podman-storage.img
+          sudo mkfs.btrfs -f -m single -d single /mnt/podman-storage.img
+          sudo podman system reset --force
+          sudo systemctl stop podman.service
+          loop_device="$(sudo losetup --find --show --direct-io=on /mnt/podman-storage.img)"
+          sudo mkdir -p /mnt/podman-storage
+          sudo mount -o compress-force=zstd:2,discard=async,noatime "$loop_device" /mnt/podman-storage
+          sudo mkdir -p /mnt/podman-storage/storage /mnt/podman-storage/tmp
+          sudo mount --bind /mnt/podman-storage/storage /var/lib/containers/storage
+          sudo systemctl start podman.service
+
+      - name: Select published LEOS image
+        id: image
+        env:
+          VARIANT: ${{ inputs.variant }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::Invalid image tag."
+            exit 1
+          fi
+          case "$VARIANT" in
+            standard) image_name="leos" ;;
+            nvidia-legacy) image_name="leos-nvidia" ;;
+            nvidia-modern) image_name="leos-nvidia-open" ;;
+            *) echo "::error::Unknown image variant."; exit 1 ;;
+          esac
+          owner="${OWNER,,}"
+          echo "tag_ref=ghcr.io/$owner/$image_name:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
+          echo "manifest=LEOS-$VARIANT-$IMAGE_TAG.iso.json" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to GitHub Container Registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sudo install -d -m 0700 /root/.docker
+          printf '%s' "$GH_TOKEN" |
+            sudo podman login --authfile /root/.docker/config.json ghcr.io \
+              --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Resolve and pin the signed LEOS image digest
+        id: pinned-image
+        env:
+          IMAGE_TAG_REF: ${{ steps.image.outputs.tag_ref }}
+        run: |
+          set -euo pipefail
+          sudo env PODMAN_BIN=podman GITHUB_OUTPUT="$GITHUB_OUTPUT" \
+            bash .github/scripts/pin-image-digest.sh \
+              "$IMAGE_TAG_REF" /root/.docker/config.json
+
+      - name: Verify the published LEOS image signature
+        env:
+          IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          sudo env PATH="$PATH" DOCKER_CONFIG=/root/.docker \
+            cosign verify --key cosign.pub "$IMAGE_REF"
+
+      - name: Build Bazzite-based LEOS Live payload
+        env:
+          INSTALL_IMAGE_PAYLOAD: ${{ steps.pinned-image.outputs.tag_ref }}
+          INSTALL_IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+          LIVE_IMAGE_TAG: localhost/leos-live-installer:${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          expected_digest="${INSTALL_IMAGE_REF##*@}"
+          sudo env TMPDIR=/mnt/podman-storage/tmp podman build \
+            --cap-add sys_admin \
+            --security-opt label=disable \
+            --secret id=ghcr-auth,src=/root/.docker/config.json \
+            --build-arg BASE_IMAGE=ghcr.io/ublue-os/bazzite:stable \
+            --build-arg INSTALL_IMAGE_PAYLOAD="$INSTALL_IMAGE_PAYLOAD" \
+            --build-arg INSTALL_IMAGE_DIGEST="$expected_digest" \
+            -t "$LIVE_IMAGE_TAG" installer/
+
+      - name: Generate bootable ISO with Titanoboa
+        id: titanoboa
+        uses: ublue-os/titanoboa@5c457c3d0518bd17e754be0fd98a60d29d26abb4
+        with:
+          image-ref: localhost/leos-live-installer:${{ github.run_id }}-${{ github.run_attempt }}
+          iso-dest: ${{ github.workspace }}/LEOS-titanoboa-build-${{ github.run_id }}.iso
+
+      - name: Verify immutable source image did not change during the build
+        env:
+          IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
+          IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+        run: |
+          set -euo pipefail
+          sudo podman pull --authfile /root/.docker/config.json "$IMAGE_TAG_REF"
+          after_digest="$(sudo podman image inspect --format '{{.Digest}}' "$IMAGE_TAG_REF")"
+          expected_digest="${IMAGE_REF##*@}"
+          if [[ "$after_digest" != "$expected_digest" ]]; then
+            echo "::error::The LEOS image tag changed while the ISO was being generated."
+            exit 1
+          fi
+
+      - name: Create checksum and provenance manifest
+        env:
+          ISO_PATH: ${{ steps.titanoboa.outputs.iso-dest }}
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          MANIFEST_NAME: ${{ steps.image.outputs.manifest }}
+          IMAGE_REF: ${{ steps.pinned-image.outputs.ref }}
+          IMAGE_TAG_REF: ${{ steps.pinned-image.outputs.tag_ref }}
+          VARIANT: ${{ inputs.variant }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          test -s "$ISO_PATH"
+          mkdir -p dist/iso
+          mv "$ISO_PATH" "dist/iso/$ISO_NAME"
+          (
+            cd dist/iso
+            sha256sum -- "$ISO_NAME" > "$ISO_NAME.sha256"
+            sha256sum --check --strict "$ISO_NAME.sha256"
+          )
+          export ISO_SHA256="$(sha256sum "dist/iso/$ISO_NAME" | cut -d ' ' -f 1)"
+          export IMAGE_REF IMAGE_TAG_REF VARIANT IMAGE_TAG ISO_NAME MANIFEST_NAME
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = {
+              "schema_version": 1,
+              "product": "LEOS",
+              "installer": "Titanoboa",
+              "variant": os.environ["VARIANT"],
+              "image_tag": os.environ["IMAGE_TAG"],
+              "source_image": os.environ["IMAGE_REF"],
+              "source_image_tag": os.environ["IMAGE_TAG_REF"],
+              "iso_file": os.environ["ISO_NAME"],
+              "iso_sha256": os.environ["ISO_SHA256"],
+              "workflow_repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_commit": os.environ["GITHUB_SHA"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "titanoboa_action": "ublue-os/titanoboa@5c457c3d0518bd17e754be0fd98a60d29d26abb4",
+          }
+          destination = Path("dist/iso") / os.environ["MANIFEST_NAME"]
+          with destination.open("x", encoding="utf-8") as stream:
+              json.dump(manifest, stream, indent=2, sort_keys=True)
+              stream.write("\n")
+          PY
+
+      - name: Install ISO inspection tooling
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xorriso
+
+      - name: Verify ISO checksum and UEFI boot catalog
+        run: |
+          set -euo pipefail
+          bash .github/scripts/verify-installer-iso.sh \
+            "dist/iso/${{ steps.image.outputs.filename }}"
+
+      - name: Sign and verify LEOS ISO and provenance artifacts
+        env:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          MANIFEST_NAME: ${{ steps.image.outputs.manifest }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/sign-iso-artifacts.sh \
+            "dist/iso/$ISO_NAME" "dist/iso/$MANIFEST_NAME" "$GITHUB_WORKSPACE/cosign.pub"
+
+      - name: Upload Titanoboa installer ISO and verification files
+        uses: actions/upload-artifact@v7
+        with:
+          name: LEOS-titanoboa-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
+          path: |
+            dist/iso/${{ steps.image.outputs.filename }}
+            dist/iso/${{ steps.image.outputs.filename }}.sha256
+            dist/iso/${{ steps.image.outputs.filename }}.sigstore.json
+            dist/iso/${{ steps.image.outputs.manifest }}
+            dist/iso/${{ steps.image.outputs.manifest }}.sigstore.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
