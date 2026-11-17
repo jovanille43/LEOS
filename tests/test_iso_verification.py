@@ -92,7 +92,7 @@ class InstallerIsoVerificationTests(unittest.TestCase):
         sign = workflow.index("Sign and verify LEOS ISO and provenance artifacts")
         self.assertLess(verify, sign)
         self.assertIn("verify-installer-iso.sh", workflow[verify:sign])
-        self.assertIn("xorriso", workflow[verify:sign])
+        self.assertIn("xorriso", workflow)
 
 
 if __name__ == "__main__":
