@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools
 
       - name: Verify and install BlueBuild CLI
         env:
@@ -163,6 +163,14 @@ jobs:
 
           printf '%s\n' "$VERIFIED_DIGEST" > "$ISO_NAME.source-digest"
           sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
+
+      - name: Validate ISO boot structure, checksum, and source digest
+        env:
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          VERIFIED_DIGEST: ${{ steps.verified.outputs.digest }}
+        run: |
+          set -euo pipefail
+          bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"
 
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
