@@ -34,6 +34,10 @@ from .retroarch import (
 from .mangohud import build_launch_command
 from .install_state import installation_status
 from .emulator_inventory import detect_emulator_installations
+from .emulator_games import (
+    MAX_SOURCE_FOLDERS, PLATFORM_SPECS, build_emulator_launch_prefix,
+    build_emulator_launch_command, scan_emulator_folder,
+)
 
 
 MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
@@ -77,6 +81,7 @@ class GameLibraryModel(QAbstractListModel):
         self._manual_file = data_dir / "library.json"
         self._favorites_file = data_dir / "favorites.json"
         self._recent_file = data_dir / "recent.json"
+        self._emulator_sources_file = xdg_config_home() / "leos" / "emulator-sources.json"
         self._games: list[dict[str, Any]] = []
         self._duplicate_metadata: dict[str, dict[str, Any]] = {}
         self._visible_games: list[dict[str, Any]] = []
@@ -251,6 +256,78 @@ class GameLibraryModel(QAbstractListModel):
                         candidates.append((path, runner))
         return candidates
 
+    def _load_emulator_source_folders(self) -> list[dict[str, str]]:
+        raw = read_bounded_json(self._emulator_sources_file)
+        if not isinstance(raw, list):
+            return []
+        sources: list[dict[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+        for item in raw[:MAX_SOURCE_FOLDERS]:
+            if not isinstance(item, dict) or set(item) != {"platform", "path"}:
+                continue
+            platform_key, folder = item.get("platform"), item.get("path")
+            if platform_key not in PLATFORM_SPECS or not isinstance(folder, str):
+                continue
+            path = Path(folder)
+            if not path.is_absolute() or path.is_symlink():
+                continue
+            key = (platform_key, str(path))
+            if key in seen:
+                continue
+            seen.add(key)
+            sources.append({"platform": platform_key, "path": str(path)})
+        return sources
+
+    def addEmulatorFolder(self, platform_key: str, folder: str) -> bool:
+        """Persist one directory explicitly chosen by the user, then refresh Gaming."""
+        if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
+            return False
+        if not isinstance(folder, str) or not folder.strip() or "\\x00" in folder:
+            return False
+        selected = Path(folder).expanduser()
+        if selected.is_symlink() or not selected.is_dir():
+            return False
+        try:
+            resolved = selected.resolve(strict=True)
+        except (OSError, RuntimeError):
+            return False
+        if not resolved.is_dir():
+            return False
+        if self._emulator_sources_file.is_symlink() or self._emulator_sources_file.parent.is_symlink():
+            return False
+
+        if self._emulator_sources_file.exists():
+            raw = read_bounded_json(self._emulator_sources_file)
+            if not isinstance(raw, list) or len(raw) > MAX_SOURCE_FOLDERS:
+                return False
+            existing = [
+                item for item in raw
+                if isinstance(item, dict)
+                and item.get("platform") in PLATFORM_SPECS
+                and isinstance(item.get("path"), str)
+            ]
+        else:
+            existing = []
+        record = {"platform": platform_key, "path": str(resolved)}
+        if not any(
+            item.get("platform") == platform_key and item.get("path") == str(resolved)
+            for item in existing
+        ):
+            if len(existing) >= MAX_SOURCE_FOLDERS:
+                return False
+            existing.append(record)
+            try:
+                write_bounded_json(self._emulator_sources_file, existing)
+            except (OSError, ValueError):
+                return False
+        self.refresh()
+        return True
+
+    def emulatorPlatformAvailable(self, platform_key: str, folder: str) -> bool:
+        if platform_key not in PLATFORM_SPECS:
+            return False
+        return bool(build_emulator_launch_prefix(platform_key, Path(folder)))
+
     def _retroarch_playlist_directories(self) -> list[Path]:
         return find_retroarch_playlist_directories(
             xdg_config_home=xdg_config_home()
@@ -420,6 +497,23 @@ class GameLibraryModel(QAbstractListModel):
                 ):
                     discovered.setdefault(game["id"], game)
 
+        # Only scan console folders that the user explicitly selected in Gaming Mode.
+        for source in self._load_emulator_source_folders():
+            platform_key = source["platform"]
+            selected_root = Path(source["path"])
+            try:
+                launch_prefix = build_emulator_launch_prefix(
+                    platform_key, selected_root, data_home=xdg_data_home()
+                )
+                if not launch_prefix:
+                    continue
+                for game in scan_emulator_folder(
+                    platform_key, selected_root, launch_prefix=launch_prefix
+                ):
+                    discovered.setdefault(game["id"], game)
+            except (OSError, RuntimeError, ValueError):
+                continue
+
         for game in self._load_manual_games():
             discovered.setdefault(game["id"], game)
 
@@ -511,7 +605,7 @@ class GameLibraryModel(QAbstractListModel):
             "artwork": str(game.get("artwork", "")),
             "installStatus": (
                 installation_status(game)
-                if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:"))
+                if str(game.get("id", "")).startswith(("steam:", "heroic:", "lutris:", "retroarch:", "emulator:"))
                 else "Ajout manuel"
             ),
             "appId": str(game.get("app_id", "")),
@@ -579,7 +673,21 @@ class GameLibraryModel(QAbstractListModel):
             self._last_launch_status = "Sélection de jeu invalide."
             return False
         game = self._visible_games[row]
-        launch = game.get("launch", [])
+        if game.get("emulator_platform"):
+            launch = build_emulator_launch_command(
+                str(game.get("emulator_platform", "")),
+                Path(str(game.get("content_path", ""))),
+                Path(str(game.get("selected_root", ""))),
+                data_home=xdg_data_home(),
+            )
+            if not launch:
+                self._last_launch_status = (
+                    "Le fichier du jeu a disparu ou l'émulateur n'est plus installé. "
+                    "Actualise la bibliothèque et vérifie la boutique LEOS."
+                )
+                return False
+        else:
+            launch = game.get("launch", [])
         if not launch or not all(isinstance(part, str) for part in launch):
             self._last_launch_status = "Aucune commande de lancement valide n'est enregistrée."
             return False
