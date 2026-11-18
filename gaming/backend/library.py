@@ -331,7 +331,11 @@ class GameLibraryModel(QAbstractListModel):
     def emulatorPlatformAvailable(self, platform_key: str, folder: str) -> bool:
         if platform_key not in PLATFORM_SPECS:
             return False
-        return bool(build_emulator_launch_prefix(platform_key, Path(folder)))
+        return bool(
+            build_emulator_launch_prefix(
+                platform_key, Path(folder), data_home=xdg_data_home()
+            )
+        )
 
     def _retroarch_playlist_directories(self) -> list[Path]:
         return find_retroarch_playlist_directories(
