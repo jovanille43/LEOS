@@ -187,6 +187,19 @@ class EmulatorGameFolderTests(unittest.TestCase):
             [],
         )
 
+    def test_extensions_match_upstream_supported_game_formats(self):
+        self.assertEqual(PLATFORM_SPECS["gamecube_wii"]["extensions"], {
+            ".iso", ".gcm", ".gcz", ".ciso", ".wbfs", ".wia", ".nfs", ".rvz"
+        })
+        self.assertEqual(PLATFORM_SPECS["ps2"]["extensions"], {
+            ".bin", ".iso", ".cue", ".mdf", ".chd", ".cso", ".zso"
+        })
+        self.assertEqual(PLATFORM_SPECS["psp"]["extensions"], {
+            ".iso", ".cso", ".chd", ".pbp"
+        })
+        self.assertNotIn(".nrg", PLATFORM_SPECS["ps2"]["extensions"])
+        self.assertNotIn(".wad", PLATFORM_SPECS["gamecube_wii"]["extensions"])
+
     def test_supported_platforms_are_deliberately_limited_to_confirmed_cli_paths(self):
         self.assertEqual(set(PLATFORM_SPECS), {"gamecube_wii", "ps2", "psp"})
 
