@@ -37,10 +37,14 @@ Ces applications sont proposées à la demande ; aucune ne doit être installée
 
 ### V2-B — Détection des émulateurs installés
 
-- Détecter les installations Flatpak utilisateur et système sans supposer qu'une application catalogue est forcément installée.
-- Détecter les exécutables natifs uniquement lorsqu'ils sont connus et identifiés.
-- Montrer dans Gaming quels émulateurs sont disponibles, indisponibles ou nécessitent une configuration.
-- Ne jamais afficher « prêt » uniquement parce que le Flatpak est présent : séparer installation, configuration et capacité de lancement.
+- [x] Détecter les déploiements Flatpak utilisateur et système via les dossiers d'applications effectivement déployés.
+- [x] Détecter les exécutables natifs connus pour les six émulateurs de la sélection.
+- [x] Afficher dans le panneau rapide Gaming l'état « disponible » ou « non détecté », avec le type d'installation lorsqu'elle est trouvée.
+- [x] Garder la détection strictement en lecture seule : aucun scan ROM, aucune installation et aucun lancement pendant la détection.
+- [ ] Distinguer la configuration d'un émulateur (BIOS/firmware/cœurs) de sa seule présence.
+- [ ] Ajouter des tests fonctionnels d'installation et de lancement sur Bazzite réel.
+
+La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement que l'application est détectée. Elle ne certifie ni la configuration, ni la disponibilité d'un BIOS/firmware, ni la capacité à lancer un titre.
 
 ### V2-C — Import facultatif des jeux
 
