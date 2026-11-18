@@ -43,7 +43,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 
 ### Composants source présents dans le dépôt
 
-- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette.
+- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette. La V2 prépare la détection et le lancement directs des jeux console depuis les émulateurs installés.
 - **Cohérence de bibliothèque** : titres nettoyés sans réécriture de leur capitalisation, recherche tolérante aux accents et aux espaces répétés, signalement prudent des titres identiques entre sources. Les entrées ne sont jamais fusionnées ou supprimées automatiquement.
 - **Métadonnées de jeu** : source, identifiant de catalogue, jaquette locale lorsqu'elle existe et état d'installation vérifié. Les chemins privés et commandes de lancement ne sont pas exposés dans la fiche QML.
 - **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
@@ -62,17 +62,17 @@ Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard g�
 
 - Application LEOS plein écran au-dessus de KDE ; KDE reste actif en arrière-plan.
 - Interface utilisable à la manette, au clavier et à la souris.
-- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade. LEOS ne parcourt pas les dossiers ROM, ne télécharge aucun jeu et n'installe ni émulateur ni cœur.
+- Bibliothèque locale organisée en catégories PC Gaming, Nintendo, PlayStation, SEGA et Arcade. Les playlists RetroArch locales alimentent les catégories Nintendo, PlayStation, SEGA et Arcade. La boutique V2 propose maintenant six émulateurs installables à la demande ; ils ne sont pas préinstallés dans l'image. La détection automatique des ROM et leur lancement direct depuis la bibliothèque restent à réaliser.
 - Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
 - Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
 - Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
-- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement.
+- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement. Les autres émulateurs sont proposés séparément dans la boutique LEOS, sans scan ROM implicite.
 - Jaquettes recherchées dans les caches locaux Steam/Lutris et les fichiers explicitement référencés par Heroic. Aucune image distante n'est téléchargée.
 - Fiche de jeu : titre, plateforme, source, statut des fichiers locaux et identifiant catalogue ; chemins privés et arguments de lancement restent masqués.
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
 - Panneau rapide, statistiques système réelles et profils d'énergie natifs disponibles lorsque les services matériels correspondants existent.
 - MangoHud peut être ajouté aux commandes de lancement direct lorsqu'il est installé et activé. LEOS ne présente pas de compteur FPS interne fictif.
-- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge ; les autres intégrations d'émulateurs et de catalogues console restent à développer.
+- Les introductions vidéo Desktop/Gaming sont raccordées à Qt Multimedia, avec son intégré, réglage sonore indépendant et repli en cas d'erreur. Les trois vidéos sont présentes dans `branding/animations/` (Desktop en MOV, Gaming en MP4) ; leur décodage et leur restitution audio doivent encore être validés sur Bazzite. L'import des playlists RetroArch est pris en charge. La boutique V2 propose RetroArch, Dolphin, PCSX2, PPSSPP, melonDS et RPCS3 ; l'intégration complète de leurs bibliothèques, le scan ROM facultatif et le lancement depuis Gaming restent en développement. Voir [l'état de l'intégration des émulateurs](docs/emulator-integration.md).
 
 ## Desktop Mode
 
@@ -113,7 +113,7 @@ Les préférences sont enregistrées dans le compte Linux de l'utilisateur et ap
 
 Après la sélection de Desktop Mode, le lanceur peut proposer Brave, LibreOffice et VLC dans une fenêtre de consentement KDE. Rien n'est installé sans acceptation explicite. L'offre est mémorisée après acceptation complète ou refus ; en cas d'échec partiel, seules les applications manquantes pourront être retentées. Une désinstallation ultérieure depuis la boutique n'entraîne pas de réinstallation automatique. Steam est déjà fourni par la base Bazzite Desktop. La boutique distingue les applications utilisateur et système : les deux peuvent être désinstallées depuis la boutique après confirmation ; les applications système peuvent demander une authentification administrateur. Les composants RPM/OSTree constitutifs de Bazzite restent gérés par les outils système.
 
-La boutique proposera jeux, émulateurs, applications, utilitaires et éléments de personnalisation. Elle s'appuiera sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
+La boutique propose jeux, émulateurs, applications, utilitaires et éléments de personnalisation. La première sélection V2 comprend RetroArch, Dolphin, PCSX2, PPSSPP, melonDS et RPCS3 depuis Flathub ; chaque installation reste facultative et exige une confirmation. Elle s'appuie sur Flatpak/Flathub, les mécanismes natifs de Bazzite et les intégrations de lanceurs compatibles.
 
 **Toute installation ou désinstallation exige une confirmation explicite.** Chaque fiche doit préciser le contenu de l'opération, sa source, sa compatibilité et ses éventuelles dépendances.
 

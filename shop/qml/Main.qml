@@ -80,7 +80,7 @@ ApplicationWindow {
                 }
                 ComboBox {
                     id: categoryFilter
-                    model: ["Toutes", "Gaming", "Multimedia", "Internet", "Productivité", "Création"]
+                    model: ["Toutes", "Gaming", "Émulation", "Multimedia", "Internet", "Productivité", "Création"]
                     enabled: !store.busy
                 }
             }

@@ -22,3 +22,21 @@ Premier prototype de boutique applicative Qt Quick / PySide6.
 - Le code n'a pas encore été exécuté sur Bazzite. Le comportement de Flatpak, les modules QML et l'affichage des sorties doivent être testés dans l'image LEOS.
 
 La boutique ne remplace ni Discover, ni Flatpak, ni les intégrations de lanceurs. Elle prépare une interface LEOS unifiée et transparente.
+
+
+## Sélection d'émulation V2
+
+La catégorie **Émulation** référence les applications suivantes, installables séparément à la demande :
+
+| Application | Plateforme principale | Identifiant Flathub |
+| --- | --- | --- |
+| RetroArch | Multi-systèmes / libretro | `org.libretro.RetroArch` |
+| Dolphin Emulator | GameCube / Wii | `org.DolphinEmu.dolphin-emu` |
+| PCSX2 | PlayStation 2 | `net.pcsx2.PCSX2` |
+| PPSSPP | PlayStation Portable | `org.ppsspp.PPSSPP` |
+| melonDS | Nintendo DS / DSi | `net.kuribo64.melonDS` |
+| RPCS3 | PlayStation 3 | `net.rpcs3.RPCS3` |
+
+Les six fiches ne sont pas marquées comme préinstallées. Chaque installation passe par le contrôle Flathub et les confirmations existantes de la boutique. Dolphin et RPCS3 utilisent des paquets communautaires Flathub non vérifiés par les projets amont ; cet avertissement est visible dans leur fiche.
+
+La boutique n'installe aucun jeu, ROM, BIOS, firmware, clé ou cœur RetroArch. La présence d'un émulateur installé ne signifie pas encore que LEOS importe automatiquement ses jeux dans Gaming Mode. Le plan des prochaines étapes (détection explicite des dossiers, validation des chemins, lancement sans shell et précontrôles de BIOS/firmware) est suivi dans [la feuille de route d'intégration](../docs/emulator-integration.md).
