@@ -82,5 +82,59 @@
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
     "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+  },
+  {
+    "id": "org.libretro.RetroArch",
+    "name": "RetroArch",
+    "category": "Émulation",
+    "description": "Centre multi-systèmes libretro pour lancer des jeux rétro avec des cœurs compatibles.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub vérifié par Flathub. Les cœurs libretro, leurs versions et leur compatibilité restent à gérer dans RetroArch ; LEOS ne les installe pas automatiquement.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Les jeux et fichiers BIOS doivent provenir de tes propres copies ; LEOS ne télécharge aucun contenu."
+  },
+  {
+    "id": "org.DolphinEmu.dolphin-emu",
+    "name": "Dolphin Emulator",
+    "category": "Émulation",
+    "description": "Émulateur Nintendo GameCube et Wii avec prise en charge des manettes et du rendu amélioré.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub communautaire non vérifié par le projet Dolphin. Compatibilité et performances dépendantes du matériel et des jeux.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le paquet est fourni par la communauté Flathub ; les jeux et fichiers système doivent être fournis légalement par l'utilisateur."
+  },
+  {
+    "id": "net.pcsx2.PCSX2",
+    "name": "PCSX2",
+    "category": "Émulation",
+    "description": "Émulateur PlayStation 2 avec rendu amélioré, sauvegardes et prise en charge des contrôleurs.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub x86_64 publié au nom de PCSX2 Team. Les performances dépendent fortement du CPU, du GPU et de la compatibilité de chaque titre.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le BIOS et les jeux ne sont pas fournis par LEOS et doivent provenir de tes propres copies."
+  },
+  {
+    "id": "org.ppsspp.PPSSPP",
+    "name": "PPSSPP",
+    "category": "Émulation",
+    "description": "Émulateur PlayStation Portable avec mise à l'échelle HD et prise en charge des contrôleurs.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub x86_64/aarch64 publié par le projet PPSSPP. La compatibilité varie selon les titres et le matériel.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. LEOS ne fournit ni jeux ni contenus protégés."
+  },
+  {
+    "id": "net.kuribo64.melonDS",
+    "name": "melonDS",
+    "category": "Émulation",
+    "description": "Émulateur Nintendo DS et DSi avec prise en charge du rendu 3D, des sauvegardes et des manettes.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub x86_64/aarch64. L'émulation DSi et certaines fonctions réseau restent expérimentales selon le projet.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Les jeux et fichiers système doivent être fournis par l'utilisateur."
+  },
+  {
+    "id": "net.rpcs3.RPCS3",
+    "name": "RPCS3",
+    "category": "Émulation",
+    "description": "Émulateur expérimental PlayStation 3 utilisant notamment Vulkan et OpenGL.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub communautaire non vérifié par le projet RPCS3. Émulation exigeante et compatibilité variable ; un GPU et des pilotes Vulkan adaptés sont recommandés.",
+    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le firmware officiel et les jeux doivent être obtenus légalement par l'utilisateur ; LEOS ne les télécharge pas."
   }
 ]
