@@ -334,6 +334,22 @@ ApplicationWindow {
             }
             return
         }
+        if (emulatorImportDialog.visible) {
+            if (action === "back") {
+                emulatorImportDialog.close()
+            } else if (action === "confirm") {
+                emulatorImportDialog.close()
+                emulatorFolderDialog.open()
+            }
+            return
+        }
+        if (emulatorFolderDialog.visible) {
+            if (action === "back")
+                emulatorFolderDialog.reject()
+            else if (action === "confirm")
+                emulatorFolderDialog.accept()
+            return
+        }
         if (addDialog.visible) {
             if (action === "back")
                 addDialog.close()
@@ -1404,6 +1420,7 @@ ApplicationWindow {
         id: emulatorFolderDialog
         title: "Choisir le dossier des jeux"
         acceptLabel: "Sélectionner ce dossier"
+        options: FolderDialog.ReadOnly
         onAccepted: {
             const platformKeys = ["gamecube_wii", "ps2", "psp"]
             leos.importEmulatorFolder(platformKeys[emulatorPlatformCombo.currentIndex],
