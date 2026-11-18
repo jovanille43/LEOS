@@ -282,7 +282,7 @@ class GameLibraryModel(QAbstractListModel):
         """Persist one directory explicitly chosen by the user, then refresh Gaming."""
         if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
             return False
-        if not isinstance(folder, str) or not folder.strip() or "\\x00" in folder:
+        if not isinstance(folder, str) or not folder.strip() or "\x00" in folder:
             return False
         selected = Path(folder).expanduser()
         if selected.is_symlink() or not selected.is_dir():
