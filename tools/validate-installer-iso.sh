@@ -61,7 +61,7 @@ if ! grep -Eiq 'Platform Id[[:space:]]*:[[:space:]]*0xef([[:space:]]|$)' "$tmp_d
   die "The ISO does not advertise a UEFI El Torito boot entry."
 fi
 
-if ! bsdtar -tf "$iso_path" >"$tmp_dir/iso-contents.txt"; then
+if ! bsdtar -tf "$iso_path" | sed -E "s#^\\./##; s#^/##" >"$tmp_dir/iso-contents.txt"; then
   die "The ISO9660 filesystem could not be listed."
 fi
 
