@@ -2,13 +2,13 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit une image basée sur Bazzite KDE Desktop. Les contrôles automatisés GitHub Actions ont réussi : compilation des sources Python, lint Qt 6 de toutes les interfaces QML, validation des vidéos (flux audio/vidéo et décodage complet), vérification SHA-256 des huit ressources déployées, validation BlueBuild et génération du Containerfile. Le workflow de construction/publication reste manuel (`workflow_dispatch`) ; aucune image LEOS n'a encore été compilée. Il ne doit pas être déclenché avant d'avoir vérifié la clé de signature et préparé un environnement de test.
+La recette BlueBuild `recipes/recipe.yml` décrit l'image basée sur Bazzite KDE Desktop. Au 18 novembre 2026, les trois variantes de l'image (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées dans GHCR et signées avec Cosign. Le workflow manuel de build a réussi (run 44193417485). L'ISO installateur standard a ensuite été générée avec succès (run 44257827294) après vérification de la signature et du digest de l'image. Les workflows CI ont également validé les sources Python, les interfaces QML, les vidéos, les empreintes des ressources et les recettes BlueBuild. **La construction est acquise ; la validation en exécution ne l'est pas encore** : l'ISO standard doit être testée en machine virtuelle, puis les fonctions matérielles sur PC de test. Les ISO NVIDIA restent à générer.
 
 ## Base retenue
 
 La recette utilise `ghcr.io/ublue-os/bazzite:stable`, c'est-à-dire la variante Desktop KDE de Bazzite. Elle correspond à notre choix : KDE reste le bureau, tandis que Gaming Mode est une application LEOS plein écran au-dessus de KDE. Nous ne sélectionnons pas l'image `bazzite-deck`, qui apporte sa propre session Steam Gaming Mode. La documentation Bazzite distingue bien les images Desktop sans Steam Gaming Mode des images Deck conçues pour démarrer dans cette session.
 
-La variante Bazzite standard vise les GPU AMD/Intel ; les images NVIDIA sont séparées en variantes dédiées. LEOS dispose maintenant de trois recettes partageant les mêmes modules : standard AMD/Intel, NVIDIA legacy et NVIDIA open pour les générations récentes. Leur construction et leur validation sur GPU réels restent obligatoires avant toute certification.
+La variante Bazzite standard vise les GPU AMD/Intel ; les images NVIDIA sont séparées en variantes dédiées. Les trois variantes partageant les mêmes modules — standard AMD/Intel, NVIDIA legacy et NVIDIA open — ont été construites, publiées et signées. Elles doivent encore être validées sur GPU réels avant toute certification.
 
 ## Contenu prévu de l'image
 
@@ -18,7 +18,7 @@ La recette ajoute les paquets Fedora `python3-pyside6`, `python3-psutil`, `pytho
 
 ## Bluetooth
 
-Le Bluetooth est un prérequis fonctionnel pour LEOS, dans les deux modes. La stratégie retenue est de conserver la pile BlueZ, l'intégration KDE et PipeWire fournies par la base Bazzite lorsque présentes. La première image de test devra confirmer la présence et le démarrage de `bluetooth.service`, la disponibilité des paramètres KDE et le fonctionnement des périphériques audio et manettes. Aucun ajout de paquet ou override BlueZ ne doit être introduit sans preuve d'un composant manquant : des régressions BlueZ/KDE ont déjà été signalées en amont, ce qui renforce la nécessité de tester les versions réellement embarquées plutôt que de figer arbitrairement une version. Voir [la checklist Bluetooth](bluetooth.md).
+Le Bluetooth est un prérequis fonctionnel pour LEOS, dans les deux modes. La stratégie retenue est de conserver la pile BlueZ, l'intégration KDE et PipeWire fournies par la base Bazzite lorsque présentes. La validation sur PC physique devra confirmer la présence et le démarrage de `bluetooth.service`, la disponibilité des paramètres KDE et le fonctionnement des périphériques audio et manettes. Une VM standard ne suffit pas à certifier le Bluetooth matériel. Aucun ajout de paquet ou override BlueZ ne doit être introduit sans preuve d'un composant manquant : des régressions BlueZ/KDE ont déjà été signalées en amont, ce qui renforce la nécessité de tester les versions réellement embarquées plutôt que de figer arbitrairement une version. Voir [la checklist Bluetooth](bluetooth.md).
 
 ## Signature de l'image
 
@@ -33,27 +33,30 @@ Le contrôle manuel de correspondance des clés a réussi le 17 novembre 2026. L
 
 Le module BlueBuild `signing` est présent dans la recette afin de configurer les règles de vérification de l'image. Avant la compilation, le workflow installe Cosign, signe un petit fichier temporaire avec la clé privée fournie par le secret, puis vérifie cette signature avec `cosign.pub`. Cette vérification confirme que les deux clés forment bien une paire. Le fichier privé temporaire est limité aux permissions utilisateur et supprimé à la fin de l'étape ; la clé privée n'est jamais écrite dans le dépôt ni affichée volontairement dans les logs.
 
-## Avant la première compilation
+## Contrôles de construction et de publication
 
-- Vérifier le contenu du workflow `.github/workflows/build.yml`, notamment le contrôle cryptographique de correspondance entre la clé privée et `cosign.pub`.
-- [x] Valider `recipes/recipe.yml` avec le CLI BlueBuild (`bluebuild validate`) et générer un Containerfile (`bluebuild generate`) dans le workflow GitHub Actions.
-- Vérifier la présence des trois logos, des trois vidéos et des deux fonds d'écran 4K aux chemins indiqués dans `branding/ASSET_MANIFEST.md`. Le workflow de validation contrôle la présence des flux vidéo/audio et décode intégralement les trois vidéos avec FFmpeg ; les SHA-256 de `branding/SHA256SUMS` identifient les originaux transmis dans la conversation et ne certifient pas les copies vidéo actuellement hébergées.
-- Confirmer que les secrets `SIGNING_SECRET` et `COSIGN_PASSWORD` sont configurés et que la clé publique correspondante est disponible.
-- Déclencher le workflow manuellement seulement après ces contrôles.
+- [x] Vérification du workflow `.github/workflows/build.yml`, y compris le précontrôle cryptographique de correspondance entre la clé fournie par le secret et `cosign.pub`.
+- [x] Validation des trois recettes BlueBuild et génération des Containerfiles par GitHub Actions.
+- [x] Vérification de présence des ressources officielles, décodage des flux audio/vidéo et contrôle des huit empreintes déployées.
+- [x] Contrôle cryptographique de la paire Cosign et vérification des prérequis de signature par GitHub Actions. Les valeurs des secrets restent privées et ne sont pas affichées.
+- [x] Publication et signature des trois images conteneur dans GHCR ; génération de l'ISO standard depuis l'image publiée.
 
-La documentation BlueBuild recommande de valider/générer la recette avec son CLI avant de construire l'image. La compilation et surtout le premier démarrage doivent ensuite être testés sur une machine de test, jamais directement sur le seul poste de travail principal.
+La validation BlueBuild de la recette et la génération des Containerfiles ont réussi. L'étape suivante est la validation en exécution de l'ISO dans une VM UEFI avec un disque virtuel dédié, puis sur du matériel physique de test. Ne jamais effectuer le premier essai d'installation sur le seul poste de travail principal.
 
 Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module systemd](https://blue-build.org/reference/modules/systemd/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
-## Prérequis encore bloquants
+## État des validations restantes
 
 - [x] Le fichier public `cosign.pub` est présent à la racine du dépôt.
-- [x] La paire de clés a passé le contrôle cryptographique GitHub Actions ; les secrets `SIGNING_SECRET` et `COSIGN_PASSWORD` ont été utilisés par ce contrôle sans exposer leurs valeurs.
-- [x] Le workflow de build vérifie de nouveau la présence des deux secrets et la correspondance cryptographique avec `cosign.pub` avant de publier une image.
-- Les logos officiels, les trois vidéos d'introduction/référence et les deux fonds d'écran 4K sont présents dans `branding/`. Le rendu des fonds SVG et JPEG liés, la restitution vidéo/audio et les transitions doivent encore être validés sur une session Bazzite réelle.
-- Une image de test devra être démarrée sur une machine de test Bazzite pour confirmer les paquets RPM, les modules QML, le Bluetooth, les manettes et les transitions. Les contrôles Python et la génération du Containerfile ne remplacent pas cette validation matérielle.
+- [x] La paire Cosign a passé le contrôle cryptographique GitHub Actions ; les secrets n'ont pas été exposés.
+- [x] Le workflow de build vérifie la présence des deux secrets et la correspondance cryptographique avec `cosign.pub` avant publication.
+- [x] Les ressources déployées sont présentes et leurs empreintes sont contrôlées. Le rendu des fonds, la restitution vidéo/audio et les transitions restent à valider en session Bazzite réelle.
+- [ ] Valider le démarrage et l'installation de l'ISO standard dans une VM UEFI, sur un disque virtuel dédié.
+- [ ] Vérifier les transitions Desktop/Gaming, le premier démarrage, les services, la vidéo et l'audio dans cette VM.
+- [ ] Valider le Bluetooth, les manettes, les GPU réels, la veille et les écrans sur PC physique de test.
+- [ ] Générer puis tester les ISO NVIDIA legacy et NVIDIA open.
 
-Le workflow `.github/workflows/build.yml` est manuel : aucun build ni publication ne doit être déclenché tant que la signature, les ressources officielles et la machine de test ne sont pas prêts. Avant l'étape de signature, il vérifie la présence des six ressources d'origine (trois emblèmes et trois vidéos) et des deux fonds SVG, puis contrôle les huit empreintes réellement déployées via `branding/DEPLOYED_SHA256SUMS`. Le workflow de validation de recette vérifie séparément que chaque vidéo contient un flux vidéo et un flux audio décodables. Le build vérifie ensuite les secrets `SIGNING_SECRET` et `COSIGN_PASSWORD`, ainsi que le fichier `cosign.pub`, avant de lancer la vérification de la paire et d'appeler BlueBuild.
+Le workflow `.github/workflows/build.yml` reste manuel. Il n'est pas nécessaire de reconstruire les trois images pour tester l'ISO standard : celle-ci est générée à partir de l'image déjà publiée et de son digest vérifié. Pour toute nouvelle version, le workflow vérifie les ressources et leurs empreintes, les vidéos et les recettes, puis contrôle les secrets `SIGNING_SECRET` et `COSIGN_PASSWORD` ainsi que `cosign.pub` avant publication.
 
 ## Validation sur matériel réel
 
@@ -61,6 +64,6 @@ La checklist détaillée du premier démarrage, des transitions, du Bluetooth, d
 
 ## Construction ISO
 
-Le workflow manuel `.github/workflows/iso.yml` prépare désormais cette étape à partir d'une image LEOS déjà publiée dans GHCR. Il demande explicitement la variante matérielle (standard, NVIDIA legacy ou NVIDIA moderne) et le tag de l'image, valide le format du tag, s'authentifie au registre puis appelle `bluebuild generate-iso` sur l'image distante. L'ISO et sa somme SHA-256 sont conservées comme artefacts GitHub Actions pendant 14 jours. Ce workflow ne publie pas automatiquement une ISO et ne doit être lancé qu'après la réussite du build signé correspondant.
+Le workflow manuel `.github/workflows/iso.yml` génère une ISO à partir d'une image déjà publiée dans GHCR. Il demande la variante matérielle et le tag, résout le digest, vérifie la signature Cosign avec la clé publique LEOS, puis génère l'ISO depuis l'image distante. L'artefact comprend l'ISO, son fichier SHA-256 et le digest source, conservés pendant 14 jours. La génération standard a réussi dans le run 44257827294 ; les deux variantes NVIDIA restent à produire.
 
 Cette méthode suit la documentation BlueBuild : générer l'ISO à partir de l'image publiée est le flux recommandé lorsque les images sont construites et publiées dans le cloud. L'ISO générée doit encore être testée en machine virtuelle UEFI puis sur matériel physique avant toute diffusion publique. Voir [le guide d'installation](installation.md) et [la procédure BlueBuild de génération ISO](https://blue-build.org/how-to/generate-iso/).

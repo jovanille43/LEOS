@@ -8,7 +8,7 @@ Le code source reste organisé dans le dépôt ; BlueBuild le copie dans l'image
 - `/usr/share/leos/launcher` : sélecteur de mode et démarrage de session.
 - `/usr/share/leos/control_center` : Centre de contrôle LEOS et raccourcis allowlistés vers les modules KDE natifs.
 
-Le fichier `control_center/settings_modules.py` contient l'association entre les clés de l'interface et les modules KCM KDE. La construction de commande est testée sans dépendre d'une session Plasma ; le lancement utilise `QProcess` avec une liste d'arguments explicite, jamais un shell. Les modules sont ouverts via `kcmshell6` lorsque disponible, sinon via `systemsettings`. La disponibilité exacte des modules KCM sera contrôlée sur la première image LEOS.
+Le fichier `control_center/settings_modules.py` contient l'association entre les clés de l'interface et les modules KCM KDE. La construction de commande est testée sans dépendre d'une session Plasma ; le lancement utilise `QProcess` avec une liste d'arguments explicite, jamais un shell. Les modules sont ouverts via `kcmshell6` lorsque disponible, sinon via `systemsettings`. La disponibilité exacte des modules KCM reste à contrôler dans l'ISO installateur LEOS lors du premier démarrage en VM, puis sur la session KDE d'un PC de test.
 
 La vue d'ensemble du Centre de contrôle réutilise `gaming.backend.system_monitor.SystemMonitor` au lieu de lancer un deuxième collecteur. Elle affiche l'utilisation CPU et mémoire, la température CPU lorsque le capteur est exposé, l'occupation de la racine `/` et les débits réseau agrégés en réception/émission. Les vitesses réseau nécessitent deux échantillons avant d'être calculées. Le moniteur actualise ses données toutes les deux secondes et reste strictement en lecture seule. Les valeurs indisponibles ne sont pas estimées.
 - `/usr/share/leos/controller_center` : détection, test et préférences locales des manettes.
@@ -28,7 +28,7 @@ Le prototype utilise les paquets Fedora `python3-pyside6`, `python3-psutil`, `py
 
 Le backend ouvre les périphériques en lecture seule et utilise leur descripteur non bloquant pour que la surveillance périodique ne bloque pas l'interface Qt. Lorsque `InputDevice(readonly=True)` est disponible (python-evdev 2.0+), il utilise l'API publique. Pour la branche Fedora 1.9.x, qui ne propose pas encore cet argument, un adaptateur ouvre explicitement le fichier avec `O_RDONLY | O_NONBLOCK` et initialise les métadonnées nécessaires à partir des helpers ioctl de python-evdev. LEOS n'envoie aucun événement, ne saisit pas le périphérique avec `EVIOCGRAB` et ne modifie ni permissions udev ni mappings système.
 
-La base KDE fournit déjà le framework Qt et les composants QML habituels. Le module Qt Multimedia est explicitement installé par la recette ; sa découverte QML, les codecs AAC/H.264 et la sortie audio/vidéo doivent encore être vérifiés sur l'image Bazzite réelle.
+La base KDE fournit déjà le framework Qt et les composants QML habituels. Le module Qt Multimedia est explicitement installé par la recette ; sa découverte QML, les codecs AAC/H.264 et la sortie audio/vidéo doivent encore être vérifiés dans l'ISO standard, d'abord en VM puis sur Bazzite physique.
 
 ## Bluetooth
 
@@ -42,7 +42,7 @@ Le profil « Automatique » est sélectionné par défaut. LEOS s'appuie sur le 
 
 ## Prudence
 
-La recette de référence se trouve dans `recipes/recipe.yml`. L'action officielle BlueBuild recherche le fichier dans `recipes/` ou `config/`. La recette référence les paquets Fedora et copie les sources du dépôt dans l'image. Elle doit néanmoins être validée avec la version exacte du CLI BlueBuild et de Bazzite avant la première compilation. Les entrées menu/autostart ne seront actives qu'après installation effective du code par le workflow.
+La recette de référence se trouve dans `recipes/recipe.yml`. L'action officielle BlueBuild recherche le fichier dans `recipes/` ou `config/`. La recette référence les paquets Fedora et copie les sources du dépôt dans l'image ; les contrôles BlueBuild et la génération des Containerfiles ont déjà réussi avec la version du CLI utilisée pour la livraison initiale. Toute modification ultérieure de la recette doit repasser ces contrôles. Les entrées menu/autostart sont empaquetées dans les images publiées, mais leur comportement doit encore être vérifié après démarrage de l'ISO.
 
 
 ## Bibliothèque multi-lanceurs
