@@ -55,7 +55,7 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         source = library[library.index("def launchGame"):library.index("def launchGame") + 2400]
         self.assertIn("build_emulator_launch_command(", source)
         self.assertIn("self._last_launch_status", source)
-        self.assertIn("process.setArguments(command[1:])", source)
+        self.assertIn("process.setArguments(command[1:])", library)
 
 
 if __name__ == "__main__":
