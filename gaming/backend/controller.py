@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QRunnable, QProcess, QThreadPool, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QRunnable, QProcess, QThreadPool, QTimer, Signal, Slot, QUrl
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
@@ -323,6 +323,26 @@ class GamingController(QObject):
         repeated_action = self._gamepad_mapper.repeat_action()
         if repeated_action:
             self.gamepadAction.emit(repeated_action)
+
+    @Slot(str, str, result=bool)
+    def importEmulatorFolder(self, platform_key: str, folder_url: str) -> bool:
+        """Remember a locally selected console folder without touching its files."""
+        url = QUrl(folder_url)
+        if not url.isValid() or not url.isLocalFile():
+            self._message = "Sélectionne un dossier local accessible."
+            self.messageChanged.emit(self._message)
+            return False
+        folder = url.toLocalFile()
+        if not self.library.addEmulatorFolder(platform_key, folder):
+            self._message = "Impossible d'ajouter ce dossier. Vérifie la sélection et les droits d'accès."
+            self.messageChanged.emit(self._message)
+            return False
+        if self.library.emulatorPlatformAvailable(platform_key, folder):
+            self._message = "Dossier ajouté. Les jeux pris en charge seront importés dans la bibliothèque LEOS."
+        else:
+            self._message = "Dossier mémorisé. Installe d'abord l'émulateur correspondant depuis la boutique LEOS, puis actualise la bibliothèque."
+        self.messageChanged.emit(self._message)
+        return True
 
     @Slot(str, str, str, result=bool)
     def addGame(self, title: str, platform: str, command: str) -> bool:
