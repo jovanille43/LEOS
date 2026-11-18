@@ -8,15 +8,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class EmulatorFolderIntegrationTests(unittest.TestCase):
-    def test_user_must_select_a_folder_in_gaming_mode(self):
+    def test_user_can_browse_and_choose_a_local_folder_in_gaming_mode(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
-        self.assertIn("import QtQuick.Dialogs", qml)
-        self.assertIn("FolderDialog", qml)
-        self.assertIn("selectedFolder.toString()", qml)
-        self.assertIn("leos.importEmulatorFolder", qml)
-        self.assertIn("url.isLocalFile()", controller)
-        self.assertIn("url.toLocalFile()", controller)
+        self.assertIn("id: emulatorFolderDialog", qml)
+        self.assertIn("leos.beginEmulatorFolderBrowse", qml)
+        self.assertIn("leos.emulatorFolderDirectories", qml)
+        self.assertIn("leos.enterEmulatorFolder", qml)
+        self.assertIn("leos.useCurrentEmulatorFolder", qml)
+        self.assertIn("def beginEmulatorFolderBrowse", controller)
+        self.assertIn("def useCurrentEmulatorFolder", controller)
 
     def test_only_persisted_user_selected_sources_are_added_to_library(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
@@ -50,13 +51,16 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         self.assertIn("addGameButton.forceActiveFocus()", qml)
         self.assertIn("emulatorImportDialog.open()", qml)
 
-    def test_gamepad_can_confirm_or_cancel_the_emulator_folder_dialog(self):
+    def test_gamepad_and_keyboard_can_navigate_the_custom_folder_browser(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("if (emulatorImportDialog.visible)", qml)
-        self.assertIn("if (emulatorFolderDialog.visible)", qml)
-        self.assertIn("emulatorFolderDialog.accept()", qml)
-        self.assertIn("emulatorFolderDialog.reject()", qml)
-        self.assertIn("options: FolderDialog.ReadOnly", qml)
+        self.assertIn('action === "up" || action === "down"', qml)
+        self.assertIn('action === "left"', qml)
+        self.assertIn('action === "confirm" || action === "right"', qml)
+        self.assertIn('action === "menu"', qml)
+        self.assertIn("Keys.onUpPressed", qml)
+        self.assertIn("Keys.onDownPressed", qml)
+        self.assertIn("leos.browseEmulatorFolderParent()", qml)
+        self.assertIn("leos.useCurrentEmulatorFolder()", qml)
 
     def test_game_launch_revalidates_emulator_and_source_file(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
