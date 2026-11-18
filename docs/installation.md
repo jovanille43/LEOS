@@ -6,10 +6,11 @@ La première **ISO installateur LEOS standard** a été générée avec succès 
 
 - Artefact GitHub Actions : `LEOS-installer-standard-latest`.
 - Fichier ISO attendu dans l'archive : `LEOS-standard-latest.iso`.
-- Exécution de génération : [Generate LEOS installer ISO — run 44257827294](https://github.com/jovanille43/LEOS/actions/runs/44257827294).
+- Historique des générations : [workflow Generate LEOS installer ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml).
+- N'utiliser qu'un artefact provenant d'une exécution qui a terminé avec succès l'étape **Validate ISO boot structure, checksum, and source digest**.
 - Les trois images conteneur (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées et signées dans GHCR.
 - À ce stade, seule la variante ISO **standard** a été générée. Les variantes ISO NVIDIA restent à produire.
-- L'ISO est un artefact de validation, pas une version stable certifiée. Elle n'a pas encore été validée dans une machine virtuelle ni sur du matériel physique.
+- L'ISO reste un artefact de validation, pas une version stable certifiée. Les contrôles structurels automatisés ne remplacent pas un démarrage et une installation testés dans une machine virtuelle, puis des essais matériels.
 
 Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
 
@@ -44,11 +45,11 @@ Le parcours du premier démarrage, y compris l'offre d'applications facultatives
 
 La première étape est décrite dans le [guide de validation en machine virtuelle](virtual-machine-validation.md). Elle permet de vérifier le démarrage et le parcours d'installation sans toucher aux partitions du PC hôte.
 
-1. Télécharger l'artefact `LEOS-installer-standard-latest` depuis l'exécution GitHub Actions indiquée plus haut et extraire l'archive ZIP.
+1. Ouvrir l'historique du workflow ISO, choisir sa dernière exécution réussie qui contient l'étape **Validate ISO boot structure, checksum, and source digest** et télécharger l'artefact `LEOS-installer-standard-latest` ; extraire l'archive ZIP.
 2. Vérifier l'ISO avec `sha256sum --check LEOS-standard-latest.iso.sha256`, depuis le dossier contenant les deux fichiers.
 3. Créer une machine virtuelle UEFI avec un disque virtuel dédié ; ne jamais connecter un disque physique de l'hôte.
 4. Démarrer sur l'ISO, vérifier l'environnement proposé, puis installer uniquement sur le disque virtuel de la VM.
-5. Effectuer les contrôles de premier démarrage, KDE, réseau virtuel, audio virtuel et transitions Desktop/Gaming.
+5. Vérifier que l'installateur Anaconda WebUI s'ouvre, que la connexion réseau virtuelle est détectée, puis installer uniquement sur le disque virtuel. Effectuer ensuite les contrôles KDE, réseau, audio et transitions Desktop/Gaming.
 6. Consigner les anomalies et conserver l'ISO ainsi que le fichier SHA-256 utilisés.
 
 ## Validation sur matériel physique

@@ -8,7 +8,7 @@ Cette étape sert à vérifier que l'ISO démarre, que l'installation aboutit su
 
 ## 1. Préparer et vérifier l'ISO
 
-1. Télécharger l'artefact `LEOS-installer-standard-latest` depuis [l'exécution GitHub Actions](https://github.com/jovanille43/LEOS/actions/runs/44257827294).
+1. Ouvrir l'[historique du workflow ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml) et choisir la dernière exécution réussie qui contient l'étape **Validate ISO boot structure, checksum, and source digest**. Ne pas réutiliser un ancien artefact produit avant l'ajout de ce contrôle.
 2. Extraire le ZIP dans un dossier dédié.
 3. Vérifier que l'ISO et son fichier `.sha256` sont présents.
 4. Depuis ce dossier, exécuter :
@@ -19,7 +19,7 @@ sha256sum --check LEOS-standard-latest.iso.sha256
 
 Le résultat attendu est `LEOS-standard-latest.iso: OK`. En cas d'échec, ne pas démarrer l'ISO : extraire à nouveau l'archive ou la télécharger de nouveau.
 
-Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO.
+Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation structurelle confirme le checksum, le digest source, l'entrée UEFI et les principaux fichiers Anaconda ; elle ne prouve pas encore que l'interface Web démarre.
 
 ## 2. Créer la machine virtuelle
 
@@ -41,9 +41,9 @@ Ne pas activer le passthrough d'un disque physique, d'un contrôleur SATA/NVMe o
 ## 3. Démarrer et installer dans la VM
 
 1. Démarrer la VM sur l'ISO.
-2. Vérifier que l'environnement d'installation se charge et que l'affichage reste utilisable.
-3. Avant de confirmer le partitionnement, vérifier que le seul disque proposé est le disque virtuel QCOW2 de 80 Gio créé pour `LEOS-VM-test`.
-4. Si un disque réel de l'ordinateur hôte apparaît ou si le disque cible n'est pas clairement identifiable, annuler et arrêter l'installation.
+2. Vérifier que l'environnement d'installation se charge, que l'interface Anaconda WebUI apparaît et que l'affichage reste utilisable. Attendre jusqu'à 5 minutes au premier démarrage ; si une erreur critique ou une boucle apparaît, arrêter le test et conserver les journaux au lieu de relancer une installation.
+3. Vérifier que la connexion réseau NAT est détectée. Avant de confirmer le partitionnement, vérifier que le seul disque proposé est le disque virtuel QCOW2 de 80 Gio créé pour `LEOS-VM-test`.
+4. Si le réseau est absent, si un disque réel de l'ordinateur hôte apparaît ou si le disque cible n'est pas clairement identifiable, annuler et arrêter l'installation.
 5. Une fois le disque virtuel confirmé, effectuer l'installation dans la VM.
 6. Redémarrer sur le disque virtuel installé et retirer/détacher l'ISO si nécessaire pour éviter de relancer l'installateur.
 
