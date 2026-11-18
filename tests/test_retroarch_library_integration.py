@@ -23,6 +23,19 @@ class RetroArchLibraryIntegrationTests(unittest.TestCase):
         self.assertIn("native_executable=native_retroarch", source)
         self.assertIn("flatpak_available=flatpak_retroarch", source)
 
+    def test_launcher_status_panel_includes_read_only_emulator_detection(self):
+        library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        inventory = (ROOT / "gaming/backend/emulator_inventory.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("detect_emulator_installations", library)
+        self.assertIn('emulator["status"]', library)
+        self.assertIn("launcherStatuses", controller)
+        self.assertIn("model: leos.launcherStatuses", qml)
+        self.assertIn("def detect_emulator_installations", inventory)
+        self.assertNotIn("os.walk(", inventory)
+        self.assertNotIn("subprocess", inventory)
+
     def test_game_library_discovery_runs_off_the_qml_thread(self):
         source = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         self.assertIn("class _LibraryScanTask(QRunnable)", source)
