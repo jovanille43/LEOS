@@ -85,3 +85,17 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 ## Critère de disponibilité V2
 
 L'intégration Gaming des émulateurs ne sera déclarée terminée que lorsque l'utilisateur pourra installer un émulateur depuis la boutique, choisir un dossier de jeux, voir ses titres pris en charge dans la bibliothèque, connaître clairement les prérequis manquants et lancer un jeu sans sortie de la session LEOS ni accès disque excessif.
+
+
+## Références techniques amont
+
+Les formats et options de lancement de la première intégration s'appuient sur les documentations et interfaces des projets :
+
+- **Dolphin — formats de dumps** : https://dolphin-emu.org/docs/faq/
+- **Dolphin — arguments de ligne de commande** : https://github.com/dolphin-emu/dolphin/blob/master/Readme.md
+- **PCSX2 — options CLI** : https://pcsx2.net/docs/advanced/cli/
+- **PCSX2 — filtre des fichiers de jeu accepté par l'interface** : https://github.com/PCSX2/pcsx2/blob/master/pcsx2-qt/MainWindow.cpp
+- **PPSSPP — formats de jeux et copies personnelles** : https://www.ppsspp.org/getgames/
+- **PPSSPP — arguments de ligne de commande** : https://www.ppsspp.org/docs/reference/command-line/
+
+Lors de toute évolution des formats ou des arguments, mettre à jour les tests de contrat et revérifier les options sur les versions Flatpak réellement prises en charge. La liste déclarée par un projet amont ne remplace pas les essais de lancement sur Bazzite.
