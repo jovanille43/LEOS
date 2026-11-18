@@ -13,8 +13,6 @@ import stat
 from pathlib import Path
 from typing import Callable, Iterable
 
-from .emulator_inventory import detect_emulator_installations
-
 
 MAX_SCAN_DEPTH = 6
 MAX_SCAN_ENTRIES = 20_000
@@ -132,6 +130,43 @@ def _iter_candidate_files(root: Path) -> Iterable[Path]:
             continue
 
 
+def build_emulator_launch_command(
+    platform_key: str,
+    content_path: Path,
+    selected_root: Path,
+    *,
+    which: Callable[[str], str | None] | None = None,
+    data_home: Path | None = None,
+    system_flatpak_root: Path = Path("/var/lib/flatpak/app"),
+) -> list[str]:
+    """Rebuild a safe emulator launch command immediately before starting a game."""
+    content_path = Path(content_path)
+    selected_root = Path(selected_root)
+    if content_path.is_symlink() or selected_root.is_symlink():
+        return []
+    try:
+        root = selected_root.resolve(strict=True)
+        game_file = content_path.resolve(strict=True)
+        game_file.relative_to(root)
+        if not root.is_dir() or not game_file.is_file():
+            return []
+    except (OSError, RuntimeError, ValueError):
+        return []
+    prefix = build_emulator_launch_prefix(
+        platform_key,
+        root,
+        which=which,
+        data_home=data_home,
+        system_flatpak_root=system_flatpak_root,
+    )
+    if not prefix:
+        return []
+    spec = PLATFORM_SPECS.get(platform_key)
+    if spec is None:
+        return []
+    return prefix + list(spec["arguments"](game_file))
+
+
 def scan_emulator_folder(
     platform_key: str,
     selected_folder: Path,
@@ -188,6 +223,7 @@ def scan_emulator_folder(
             "app_id": str(spec["emulator_id"]),
             "content_path": path_text,
             "emulator_id": str(spec["emulator_id"]),
+            "emulator_platform": platform_key,
             "selected_root": str(root),
             "launch": list(launch_prefix) + arguments,
             "artwork": "",
