@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtMultimedia
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -150,12 +151,14 @@ ApplicationWindow {
     }
 
     function focusToolbar(index) {
-        toolbarFocusIndex = Math.max(0, Math.min(2, index))
+        toolbarFocusIndex = Math.max(0, Math.min(3, index))
         navigationArea = "toolbar"
         if (toolbarFocusIndex === 0)
             searchField.forceActiveFocus()
         else if (toolbarFocusIndex === 1)
             refreshLibraryButton.forceActiveFocus()
+        else if (toolbarFocusIndex === 2)
+            importEmulatorFolderButton.forceActiveFocus()
         else
             addGameButton.forceActiveFocus()
     }
@@ -179,6 +182,8 @@ ApplicationWindow {
             leos.refreshLibrary()
             navigationArea = "games"
             gameGrid.forceActiveFocus()
+        } else if (toolbarFocusIndex === 2) {
+            emulatorImportDialog.open()
         } else {
             addDialog.open()
         }
@@ -812,8 +817,8 @@ ApplicationWindow {
                             }
                         }
                         Button {
-                            id: addGameButton
-                            text: "+ AJOUTER UN JEU"
+                            id: importEmulatorFolderButton
+                            text: "IMPORTER UN DOSSIER"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
@@ -823,13 +828,41 @@ ApplicationWindow {
                             onClicked: {
                                 window.navigationArea = "toolbar"
                                 window.toolbarFocusIndex = 2
+                                emulatorImportDialog.open()
+                            }
+                            background: Rectangle {
+                                radius: 9
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "#1a2c38" : "#151a24"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
+                            }
+                            contentItem: Label {
+                                text: importEmulatorFolderButton.text
+                                color: "white"
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+                        Button {
+                            id: addGameButton
+                            text: "+ AJOUTER UN JEU"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 3
+                                }
+                            }
+                            onClicked: {
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 3
                                 addDialog.open()
                             }
                             background: Rectangle {
                                 radius: 9
                                 color: "#17313d"
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.cyan
                             }
                             contentItem: Label {
                                 text: addGameButton.text
@@ -1306,6 +1339,78 @@ ApplicationWindow {
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
+        }
+    }
+
+    Dialog {
+        id: emulatorImportDialog
+        title: "Importer des jeux console"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 470
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 12
+            Label {
+                text: "Choisis la plateforme correspondant aux fichiers du dossier."
+                color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            ComboBox {
+                id: emulatorPlatformCombo
+                Layout.fillWidth: true
+                model: [
+                    "Nintendo GameCube / Wii",
+                    "PlayStation 2",
+                    "PlayStation Portable (PSP)"
+                ]
+            }
+            Label {
+                text: "LEOS parcourra uniquement le dossier que tu sélectionnes et ses sous-dossiers (limites de profondeur et de fichiers). Les jeux ne seront ni modifiés ni déplacés."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                font.pixelSize: 10
+            }
+            Label {
+                text: "Les émulateurs correspondants doivent être installés depuis la boutique LEOS. Les BIOS et jeux ne sont pas fournis."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                font.pixelSize: 10
+            }
+            Button {
+                text: "CHOISIR LE DOSSIER"
+                Layout.fillWidth: true
+                onClicked: {
+                    emulatorImportDialog.close()
+                    emulatorFolderDialog.open()
+                }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                contentItem: Label {
+                    text: "CHOISIR LE DOSSIER"
+                    color: "white"
+                    font.weight: Font.Bold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    FolderDialog {
+        id: emulatorFolderDialog
+        title: "Choisir le dossier des jeux"
+        acceptLabel: "Sélectionner ce dossier"
+        onAccepted: {
+            const platformKeys = ["gamecube_wii", "ps2", "psp"]
+            leos.importEmulatorFolder(platformKeys[emulatorPlatformCombo.currentIndex],
+                                      selectedFolder.toString())
+            window.clearSelection()
+            window.navigationArea = "games"
+            gameGrid.forceActiveFocus()
         }
     }
 
