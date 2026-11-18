@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo xorriso libarchive-tools
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools
 
       - name: Verify and install BlueBuild CLI
         env:
