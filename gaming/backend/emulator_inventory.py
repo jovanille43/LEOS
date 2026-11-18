@@ -56,8 +56,13 @@ def _flatpak_ref_is_deployed(app_root: Path) -> bool:
             if architecture.is_symlink() or not architecture.is_dir():
                 continue
             for branch in architecture.iterdir():
-                if branch.is_dir():
-                    return True
+                if not branch.is_dir():
+                    continue
+                # A deployed Flatpak app contains a deployment directory with
+                # its files/ tree (including the active deployment symlink).
+                for deployment in branch.iterdir():
+                    if deployment.is_dir() and (deployment / "files").is_dir():
+                        return True
     except OSError:
         return False
     return False
