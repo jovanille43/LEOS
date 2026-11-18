@@ -33,6 +33,7 @@ from .retroarch import (
 )
 from .mangohud import build_launch_command
 from .install_state import installation_status
+from .emulator_inventory import detect_emulator_installations
 
 
 MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
@@ -133,14 +134,16 @@ class GameLibraryModel(QAbstractListModel):
              or self._flatpak_app_available("com.heroicgameslauncher.hgl")),
             ("LUTRIS", bool(shutil.which("lutris"))
              or self._flatpak_app_available("net.lutris.Lutris")),
-            ("RETROARCH", bool(shutil.which("retroarch"))
-             or (bool(shutil.which("flatpak"))
-                 and self._flatpak_app_available(RETROARCH_FLATPAK_ID))),
         ]
-        return [
+        statuses = [
             f"{name} · {'DISPONIBLE' if available else 'NON DÉTECTÉ'}"
             for name, available in launchers
         ]
+        statuses.extend(
+            emulator["status"]
+            for emulator in detect_emulator_installations(data_home=xdg_data_home())
+        )
+        return statuses
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [
