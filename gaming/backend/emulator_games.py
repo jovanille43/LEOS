@@ -104,10 +104,15 @@ def _iter_candidate_files(root: Path) -> Iterable[Path]:
     pending: list[tuple[Path, int]] = [(root, 0)]
     visited_entries = 0
 
+    canonical_root = root.resolve()
     while pending and visited_entries < MAX_SCAN_ENTRIES:
         directory, depth = pending.pop()
         try:
-            with os.scandir(directory) as iterator:
+            if directory.is_symlink() or not directory.is_dir():
+                continue
+            resolved_directory = directory.resolve(strict=True)
+            resolved_directory.relative_to(canonical_root)
+            with os.scandir(resolved_directory) as iterator:
                 for entry in iterator:
                     visited_entries += 1
                     if visited_entries > MAX_SCAN_ENTRIES:
