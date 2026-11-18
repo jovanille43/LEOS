@@ -333,9 +333,14 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6", provenance)
         self.assertNotIn("PRIVATE KEY", public_key)
 
-    def test_iso_workflow_is_manual_and_selects_all_hardware_variants(self):
+    def test_iso_workflow_is_manual_and_auto_builds_standard_on_main_workflow_changes(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", source)
+        self.assertIn("  push:", source)
+        self.assertIn("      - main", source)
+        self.assertIn('      - ".github/workflows/iso.yml"', source)
+        self.assertIn("inputs.variant || 'standard'", source)
+        self.assertIn("inputs.image_tag || 'latest'", source)
         self.assertIn("type: choice", source)
         for variant in ("standard", "nvidia-legacy", "nvidia-modern"):
             with self.subTest(variant=variant):
