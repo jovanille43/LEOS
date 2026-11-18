@@ -346,7 +346,7 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_iso_workflow_uses_published_image_and_generates_checksum(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("generate-iso --iso-name", source)
+        self.assertIn("generate-iso --web-ui --iso-name", source)
         self.assertIn('image "$IMAGE_REF"', source)
         self.assertIn('sha256sum "$ISO_NAME"', source)
         self.assertIn("actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2", source)
@@ -387,7 +387,7 @@ class BuildWorkflowTests(unittest.TestCase):
         )
         self.assertLess(
             source.index('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --insecure-ignore-tlog --check-claims --key cosign.pub "${immutable_ref}"'),
-            source.index('generate-iso --iso-name'),
+            source.index('generate-iso --web-ui --iso-name'),
         )
 
 
