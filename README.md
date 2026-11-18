@@ -43,7 +43,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 
 ### Composants source présents dans le dépôt
 
-- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette. La V2 prépare la détection et le lancement directs des jeux console depuis les émulateurs installés.
+- **Gaming Mode** : bibliothèque locale unifiée avec imports Steam, Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales (`.lpl`), ajout manuel, favoris, jeux récents, recherche et navigation clavier/manette. La base V2 catalogue six émulateurs et détecte leur présence (natif/Flatpak) dans le panneau rapide ; l'import des jeux hors playlists RetroArch et leur lancement direct restent à développer.
 - **Cohérence de bibliothèque** : titres nettoyés sans réécriture de leur capitalisation, recherche tolérante aux accents et aux espaces répétés, signalement prudent des titres identiques entre sources. Les entrées ne sont jamais fusionnées ou supprimées automatiquement.
 - **Métadonnées de jeu** : source, identifiant de catalogue, jaquette locale lorsqu'elle existe et état d'installation vérifié. Les chemins privés et commandes de lancement ne sont pas exposés dans la fiche QML.
 - **Télémétrie Gaming** : mesures CPU/RAM et informations GPU/VRAM/température uniquement lorsque les interfaces DRM/hwmon du pilote les exposent. L'overlay FPS repose sur MangoHud s'il est présent ; LEOS n'invente pas de mesures.
@@ -66,7 +66,7 @@ Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard g�
 - Recherche par titre, plateforme ou source, insensible à la casse et aux accents, et tolérante aux espaces répétés.
 - Favoris et historique des jeux récemment lancés, conservés dans le profil utilisateur.
 - Navigation clavier et manette, avec confirmation/retour et commandes adaptées aux profils contrôleur pris en charge.
-- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement. Les autres émulateurs sont proposés séparément dans la boutique LEOS, sans scan ROM implicite.
+- Imports Steam (bibliothèques principales et secondaires), Heroic (Epic, GOG et Amazon Games), Lutris et playlists RetroArch locales ; ajout manuel de commandes de lancement. La présence de RetroArch, Dolphin, PCSX2, PPSSPP, melonDS et RPCS3 est détectée en lecture seule (installation native ou Flatpak) et affichée dans le panneau rapide. Cette détection ne scanne aucun dossier de jeux ; l'import des catalogues des autres émulateurs et le lancement direct restent à intégrer.
 - Jaquettes recherchées dans les caches locaux Steam/Lutris et les fichiers explicitement référencés par Heroic. Aucune image distante n'est téléchargée.
 - Fiche de jeu : titre, plateforme, source, statut des fichiers locaux et identifiant catalogue ; chemins privés et arguments de lancement restent masqués.
 - Signalement des doublons potentiels par correspondance exacte de titre normalisé. Les éditions sont préservées et aucune entrée n'est fusionnée ou supprimée.
