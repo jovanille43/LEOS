@@ -48,20 +48,25 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 
 ### V2-C — Import facultatif des jeux
 
-- Permettre à l'utilisateur de choisir explicitement un ou plusieurs dossiers de jeux ; ne pas parcourir automatiquement tout le disque.
-- Limiter les extensions et plateformes prises en charge par des profils de détection maintenus dans le code.
-- Lire les métadonnées avec des limites de taille, de profondeur et de nombre d'entrées ; ignorer les fichiers malformés.
-- Résoudre les chemins de manière sûre, refuser les chemins sortant des dossiers autorisés et traiter prudemment les liens symboliques.
-- Ne jamais modifier, déplacer, renommer ou supprimer les fichiers de jeux.
-- Préserver les éditions et signaler les doublons potentiels sans fusion ni suppression automatique.
+- [x] Permettre à l'utilisateur de sélectionner explicitement un dossier depuis Gaming Mode ; les chemins choisis sont mémorisés dans la configuration privée LEOS.
+- [x] Scanner uniquement ce dossier et ses sous-dossiers, avec limites de profondeur, d'entrées et de jeux ; ignorer fichiers cachés et liens symboliques.
+- [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2) et PPSSPP (PSP), avec filtres d'extensions dédiés.
+- [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
+- [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
+- [ ] Ajouter les parcours d'import et de lancement pour melonDS, RPCS3, les cœurs RetroArch et d'autres plateformes ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
+- [ ] Ajouter la gestion UI de retrait des dossiers mémorisés et valider les montages externes.
+
+Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les éditions restent séparées ; les doublons potentiels ne sont ni fusionnés ni supprimés automatiquement.
 
 ### V2-D — Lancement sécurisé et sandbox
 
-- Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande construite depuis une chaîne issue d'une playlist ou d'un nom de fichier.
-- Pour Flatpak, accorder au processus uniquement un accès en lecture au dossier choisi et aux fichiers nécessaires ; ne pas ajouter d'accès global au dossier personnel.
-- Vérifier à nouveau que le jeu et l'émulateur existent avant le lancement.
-- Préserver le focus, le comportement manette et le retour vers Gaming Mode.
-- Garder les jeux installés sur des disques externes détectables sans les marquer comme absents définitivement lorsque le volume est démonté.
+- [x] Dolphin : transmettre le fichier au paramètre `-e`.
+- [x] PCSX2 : lancer en plein écran et séparer les options du chemin avec `--`.
+- [x] PPSSPP : transmettre directement le fichier de jeu à l'application.
+- [x] Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande issue d'un nom de fichier.
+- [x] Pour Flatpak, n'accorder qu'un accès en lecture au dossier choisi ; aucun accès global au dossier personnel n'est ajouté.
+- [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur immédiatement avant le lancement.
+- [ ] Tester le lancement et le retour au Gaming Mode sur Bazzite réel, avec manette et jeux sur stockage externe.
 
 ### V2-E — BIOS, firmware et cœurs
 
