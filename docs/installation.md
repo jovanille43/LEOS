@@ -1,8 +1,17 @@
 # Installation de LEOS
 
-## État actuel
+## État actuel — 18 novembre 2026
 
-LEOS est encore en développement. **Aucune image installable ni ISO LEOS n'est publiée à ce stade.** Ne tente pas d'installer les recettes de construction directement sur un ordinateur principal. La première image devra être construite, signée et testée sur une machine de test avant toute diffusion.
+La première **ISO installateur LEOS standard** a été générée avec succès par GitHub Actions après vérification de la signature de l'image publiée.
+
+- Artefact GitHub Actions : `LEOS-installer-standard-latest`.
+- Fichier ISO attendu dans l'archive : `LEOS-standard-latest.iso`.
+- Exécution de génération : [Generate LEOS installer ISO — run 44257827294](https://github.com/jovanille43/LEOS/actions/runs/44257827294).
+- Les trois images conteneur (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées et signées dans GHCR.
+- À ce stade, seule la variante ISO **standard** a été générée. Les variantes ISO NVIDIA restent à produire.
+- L'ISO est un artefact de validation, pas une version stable certifiée. Elle n'a pas encore été validée dans une machine virtuelle ni sur du matériel physique.
+
+Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
 
 ## Matériel et choix de l'image
 
@@ -31,21 +40,29 @@ Ces repères Gaming ne doivent pas être présentés comme des exigences univers
 
 Le parcours du premier démarrage, y compris l'offre d'applications facultatives, est décrit dans le [guide de premier démarrage](first-run.md).
 
-## Procédure prévue après publication
+## Première validation — machine virtuelle
 
-La procédure détaillée de retour arrière et de récupération est disponible dans [le guide de récupération](recovery.md). Lis-la avant le premier essai d'installation : LEOS repose sur les déploiements OSTree de Bazzite et ne fournit pas encore de mécanisme de réparation autonome.
+La première étape est décrite dans le [guide de validation en machine virtuelle](virtual-machine-validation.md). Elle permet de vérifier le démarrage et le parcours d'installation sans toucher aux partitions du PC hôte.
 
-1. Vérifier qu'une image LEOS signée a été publiée avec succès dans GHCR.
-2. Dans GitHub Actions, lancer manuellement le workflow « Generate LEOS installer ISO » et choisir la variante matérielle ainsi que le tag de l'image publiée.
-3. Récupérer l'ISO et son fichier SHA-256 dans les artefacts du workflow, puis vérifier la somme dans le même dossier avec `sha256sum --check LEOS-standard-latest.iso.sha256` (adapter le nom au fichier récupéré).
-4. Sauvegarder les données importantes et préparer une clé USB d'installation avec Fedora Media Writer ; l'écriture de l'image efface le contenu de la clé choisie.
-5. Démarrer la machine sur la clé en mode UEFI et choisir explicitement la variante correspondant au GPU principal.
-6. Tester d'abord le démarrage live, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
-7. Avant toute installation, identifier précisément le disque cible (modèle et capacité), vérifier la sauvegarde et lire l'écran de partitionnement. Ne pas poursuivre si le disque ou les conséquences ne sont pas parfaitement compris.
-8. Installer uniquement après validation du mode live et en ayant vérifié le disque cible. L'installation peut modifier ou effacer les partitions sélectionnées.
-9. Au premier démarrage, vérifier que KDE, le réseau et le GPU fonctionnent avant de choisir Desktop ou Gaming depuis le sélecteur LEOS.
-10. Les applications facultatives proposées par LEOS restent optionnelles : aucune installation ne sera effectuée sans confirmation.
-11. Avant la première mise à jour, consulter le guide de récupération et vérifier qu'un déploiement précédent est disponible avec `rpm-ostree status`.
+1. Télécharger l'artefact `LEOS-installer-standard-latest` depuis l'exécution GitHub Actions indiquée plus haut et extraire l'archive ZIP.
+2. Vérifier l'ISO avec `sha256sum --check LEOS-standard-latest.iso.sha256`, depuis le dossier contenant les deux fichiers.
+3. Créer une machine virtuelle UEFI avec un disque virtuel dédié ; ne jamais connecter un disque physique de l'hôte.
+4. Démarrer sur l'ISO, vérifier l'environnement proposé, puis installer uniquement sur le disque virtuel de la VM.
+5. Effectuer les contrôles de premier démarrage, KDE, réseau virtuel, audio virtuel et transitions Desktop/Gaming.
+6. Consigner les anomalies et conserver l'ISO ainsi que le fichier SHA-256 utilisés.
+
+## Validation sur matériel physique
+
+La procédure physique vient **après** la validation VM. La procédure détaillée de retour arrière et de récupération est disponible dans [le guide de récupération](recovery.md). Lis-la avant tout essai sur un PC de test.
+
+1. Sauvegarder les données et préparer un support de récupération connu comme fonctionnel.
+2. Choisir explicitement la variante correspondant au GPU principal.
+3. Démarrer sur la clé USB en mode UEFI et tester le démarrage, l'affichage, le réseau, le son, le Bluetooth et les périphériques essentiels.
+4. Avant toute installation, identifier précisément le disque cible (modèle et capacité), vérifier la sauvegarde et lire l'écran de partitionnement. Ne pas poursuivre si le disque ou les conséquences ne sont pas parfaitement compris.
+5. Installer uniquement sur un PC ou un disque de test, après validation du mode live et du disque cible.
+6. Au premier démarrage, vérifier KDE, le réseau et le GPU avant de choisir Desktop ou Gaming.
+7. Les applications facultatives proposées par LEOS restent optionnelles : aucune installation ne sera effectuée sans confirmation.
+8. Avant la première mise à jour, consulter le guide de récupération et vérifier qu'un déploiement précédent est disponible avec `rpm-ostree status`.
 
 ## Validation avant diffusion
 
