@@ -24,6 +24,11 @@ images/pxeboot/initrd.img
 images/install.img
 """
 
+VALID_RUNTIME_CONTENTS = """squashfs-root/usr/lib/systemd/system/webui-cockpit-ws.service
+squashfs-root/usr/libexec/anaconda/webui-desktop
+squashfs-root/usr/share/cockpit/anaconda-webui/index.html
+"""
+
 
 class InstallerIsoValidatorTests(unittest.TestCase):
     def setUp(self):
@@ -49,16 +54,26 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         )
         bsdtar = fake_bin / "bsdtar"
         bsdtar.write_text(
-            '#!/bin/sh\nprintf "%s\\n" "$LEOS_TEST_ISO_CONTENTS"\n',
+            '#!/bin/sh\ncase "$1" in\n'
+            '  -tf) printf "%s\\n" "$LEOS_TEST_ISO_CONTENTS" ;;\n'
+            '  -xOf) printf "fake SquashFS payload\\n" ;;\n'
+            '  *) exit 2 ;;\nesac\n',
+            encoding="utf-8",
+        )
+        unsquashfs = fake_bin / "unsquashfs"
+        unsquashfs.write_text(
+            '#!/bin/sh\nprintf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS"\n',
             encoding="utf-8",
         )
         xorriso.chmod(0o755)
         bsdtar.chmod(0o755)
+        unsquashfs.chmod(0o755)
 
         self.env = os.environ.copy()
         self.env["PATH"] = str(fake_bin) + os.pathsep + self.env.get("PATH", "")
         self.env["LEOS_TEST_EL_TORITO_OUTPUT"] = VALID_EL_TORITO
         self.env["LEOS_TEST_ISO_CONTENTS"] = VALID_ISO_CONTENTS
+        self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS
 
     def run_validator(self):
         return subprocess.run(
@@ -87,6 +102,14 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("images/install.img", result.stderr)
+
+    def test_rejects_iso_missing_anaconda_webui_runtime(self):
+        self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS.replace(
+            "usr/share/cockpit/anaconda-webui/index.html\\n", ""
+        )
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("anaconda-webui/index.html", result.stderr)
 
     def test_rejects_checksum_mismatch(self):
         self.iso.write_bytes(b"corrupted ISO fixture bytes")
