@@ -22,7 +22,7 @@ class EmulatorInventoryTests(unittest.TestCase):
         return self.which_map.get(binary)
 
     def deploy(self, root, app_id):
-        (root / app_id / "x86_64" / "stable").mkdir(parents=True)
+        (root / app_id / "x86_64" / "stable" / "abcdef" / "files").mkdir(parents=True)
 
     def detect(self):
         return detect_emulator_installations(
@@ -45,6 +45,11 @@ class EmulatorInventoryTests(unittest.TestCase):
         self.assertEqual(results["org.libretro.RetroArch"]["scope"], "FLATPAK UTILISATEUR")
         self.assertEqual(results["net.pcsx2.PCSX2"]["scope"], "FLATPAK SYSTÈME")
         self.assertEqual(results["org.ppsspp.PPSSPP"]["scope"], "")
+
+    def test_ignores_flatpak_ref_directory_without_deployed_files(self):
+        (self.data_home / "flatpak/app/org.libretro.RetroArch/x86_64/stable").mkdir(parents=True)
+        results = {item["id"]: item for item in self.detect()}
+        self.assertEqual(results["org.libretro.RetroArch"]["scope"], "")
 
     def test_native_executable_takes_precedence_over_flatpak(self):
         self.deploy(self.data_home / "flatpak/app", "org.DolphinEmu.dolphin-emu")
