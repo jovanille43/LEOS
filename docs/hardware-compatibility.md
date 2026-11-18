@@ -6,7 +6,7 @@ LEOS doit fonctionner sur un large éventail de PC fixes et portables, sans êtr
 
 La cible de la première version est un PC **x86_64 démarrant en UEFI**. Les architectures ARM et le démarrage BIOS Legacy/CSM ne font pas partie de la cible actuelle, car LEOS hérite des contraintes de sa base Bazzite.
 
-Trois recettes de construction sont prévues à partir d'une liste de modules LEOS partagée : `leos` pour Bazzite standard (AMD/Intel), `leos-nvidia` pour les anciennes générations NVIDIA encore prises en charge par le pilote propriétaire legacy, et `leos-nvidia-open` pour les générations NVIDIA récentes. Ce sont trois variantes matérielles du même système LEOS, pas trois éditions fonctionnelles différentes. Le choix de l'image doit être fait selon le GPU principal ; il ne sera pas décidé silencieusement par LEOS pendant l'installation.
+Trois variantes de l'image ont été construites, publiées et signées dans GHCR à partir des modules LEOS partagés : `leos` pour Bazzite standard (AMD/Intel), `leos-nvidia` pour les anciennes générations NVIDIA encore prises en charge par le pilote propriétaire legacy, et `leos-nvidia-open` pour les générations NVIDIA récentes. Ce sont trois variantes matérielles du même système LEOS, pas trois éditions fonctionnelles différentes. Le choix de l'image doit être fait selon le GPU principal ; il ne sera pas décidé silencieusement par LEOS pendant l'installation. La première ISO installateur standard a également été générée ; les ISO NVIDIA restent à produire.
 
 ## Référence minimale pour Gaming
 
@@ -69,7 +69,7 @@ Une image qui compile ou passe les tests automatisés n'est pas pour autant cert
 ## Limites de la première version
 
 - Cible actuelle : x86_64 + UEFI.
-- Les recettes standard, NVIDIA legacy et NVIDIA open existent dans le dépôt ; leur construction, la signature et les essais matériels restent à réaliser.
+- Les images conteneur standard, NVIDIA legacy et NVIDIA open ont été construites, publiées et signées. La première ISO installateur standard a été générée ; les ISO NVIDIA restent à produire.
+- L'ISO standard doit encore être validée en machine virtuelle, puis sur un PC physique de test.
 - Le précontrôle Gaming mesure les capacités exposées par Linux, mais ne remplace pas l'inspection du support cible ni les essais physiques.
 - Aucune liste exhaustive de PC compatibles n'est revendiquée.
-- La construction d'une ISO installable et la validation sur plusieurs ordinateurs restent à effectuer.

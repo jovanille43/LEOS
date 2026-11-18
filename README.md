@@ -2,7 +2,7 @@
 
 **LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État du projet :** prototype en développement. Le dépôt contient les applications sources (Gaming, sélecteur de modes, Centre de contrôle, Centre des manettes et boutique), les ressources visuelles officielles et les introductions vidéo. Les applications doivent encore être validées sur une session Bazzite réelle et intégrées dans une image installable.
+> **État du projet :** première ISO installateur LEOS standard générée le 18 novembre 2026 ; les trois images conteneur (standard AMD/Intel, NVIDIA legacy et NVIDIA open) sont publiées et signées. LEOS reste un prototype en phase de validation : l'ISO standard doit maintenant être testée en machine virtuelle, puis les fonctions et variantes doivent être vérifiées sur matériel physique avant toute certification.
 
 ## Vision
 
@@ -39,7 +39,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 
 ### Compatibilité matérielle
 
-LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois recettes partagent les mêmes composants LEOS : `leos` sur Bazzite standard (AMD/Intel), `leos-nvidia` pour NVIDIA Maxwell/Pascal/Volta et `leos-nvidia-open` pour NVIDIA Turing et plus récent. Ce sont des variantes matérielles d'un même système, pas des éditions distinctes. Elles doivent encore être construites et validées sur des PC physiques avant certification. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
+LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois variantes matérielles du même système ont été construites, publiées et signées : `leos` (AMD/Intel), `leos-nvidia` (NVIDIA Maxwell/Pascal/Volta) et `leos-nvidia-open` (NVIDIA Turing et plus récent). La première ISO installateur standard a été générée ; les ISO NVIDIA et les validations sur PC physiques restent à effectuer. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
 
 ### Composants source présents dans le dépôt
 
@@ -56,7 +56,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
   Détails : [guide du premier démarrage](docs/first-run.md).
 - **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
-Ces éléments sont des prototypes source. Les tests automatisés et les contrôles de recette ne remplacent pas l'exécution des applications sur une session Bazzite réelle, les vérifications matérielles ni la construction d'une image installable.
+Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard générée. Ils restent à valider dans une session Bazzite réelle : les tests automatisés et les contrôles de recette ne remplacent pas les essais en machine virtuelle, les vérifications matérielles ni les tests sur PC physique.
 
 ## Gaming Mode
 
@@ -144,12 +144,11 @@ LEOS/
 
 ## Prochaines étapes
 
-1. **Finaliser Desktop Mode** — valider le dock LEOS et le rendu des fonds d'écran sur une session Bazzite, puis ajouter les raccourcis globaux KDE.
-2. **Finaliser Gaming Mode** — poursuivre les intégrations d'émulateurs et contrôler les profils de manettes ainsi que le comportement sur plusieurs matériels.
-3. **Verrouiller le packaging** — vérifier les dépendances de l'image, préparer les éléments publics/privés Cosign et garder les opérations de publication manuelles.
-4. **Première image signée** — lancer le workflow uniquement après préparation de la signature et d'une machine de test ; résoudre les éventuelles incompatibilités du build.
-5. **Validation matérielle** — tester le premier démarrage, les transitions Desktop/Gaming, la vidéo et l'audio, les manettes, le Bluetooth, le GPU, la boutique, les mises à jour et le rollback.
-6. **ISO installable** — choisir et valider le processus ISO après stabilisation de l'image bootable.
+1. **Validation VM de l'ISO standard** — vérifier le SHA-256, démarrer l'installateur dans QEMU/KVM, installer uniquement sur un disque QCOW2 et tester KDE ainsi que les transitions Desktop/Gaming.
+2. **Corrections après essais** — traiter les anomalies bloquantes révélées par le premier démarrage et relancer les contrôles automatiques.
+3. **Validation physique** — tester sur un PC ou disque de test le GPU réel, le réseau, l'audio, les manettes, le Bluetooth, la veille, les écrans et le rollback.
+4. **ISO NVIDIA** — générer séparément les ISO NVIDIA legacy et NVIDIA open après validation de la chaîne standard.
+5. **Évolution produit** — poursuivre les intégrations d'émulateurs et les améliorations Desktop/Gaming sans présenter les fonctions non testées comme certifiées.
 
 ## État actuel
 
@@ -162,12 +161,14 @@ LEOS/
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
 - [ ] Intégrations d'émulateurs.
-- [ ] Variantes matérielles — construire et tester les trois images Bazzite (standard, NVIDIA legacy et NVIDIA open), puis documenter les limites des PC hybrides.
+- [x] Construire, publier et signer les trois images conteneur Bazzite : standard, NVIDIA legacy et NVIDIA open.
+- [ ] Générer et valider les ISO installateur NVIDIA legacy et NVIDIA open ; documenter les limites des PC hybrides.
 - [x] Ajouter `cosign.pub` et configurer les secrets GitHub `SIGNING_SECRET` et `COSIGN_PASSWORD` pour la signature chiffrée.
-- [ ] Construire une image LEOS signée, puis la tester sur un PC de test Bazzite.
-- [ ] Préparer une ISO installable après validation de l'image.
+- [x] Construire, publier et signer les images conteneur LEOS avec Cosign.
+- [x] Générer l'ISO installateur LEOS standard et publier l'artefact GitHub Actions.
+- [ ] Valider l'ISO standard en machine virtuelle, puis sur un PC physique de test.
 
-**Aucune image LEOS compilée ni ISO installable n'est encore disponible.** Les contrôles Python, QML, médias, recettes BlueBuild et signatures des outils sont verts sur GitHub Actions. La chaîne de construction reste protégée et manuelle ; la compilation réelle attend la validation finale et l'autorisation explicite.
+**Une ISO installateur standard est disponible comme artefact GitHub Actions, et les trois images conteneur signées sont publiées dans GHCR.** Les contrôles automatisés Python, QML, médias et recettes BlueBuild sont verts pour la dernière livraison. La validation en machine virtuelle et sur matériel physique reste à effectuer ; la chaîne de construction et de publication demeure protégée et manuelle. Voir [le guide de validation en machine virtuelle](docs/virtual-machine-validation.md) et [la checklist matérielle](docs/hardware-validation.md).
 
 ---
 
