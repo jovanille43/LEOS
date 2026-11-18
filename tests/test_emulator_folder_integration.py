@@ -36,7 +36,7 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
 
     def test_scanner_does_not_globally_search_or_invoke_shell_commands(self):
         scanner = (ROOT / "gaming/backend/emulator_games.py").read_text(encoding="utf-8")
-        self.assertIn("os.scandir(directory)", scanner)
+        self.assertIn("os.scandir(resolved_directory)", scanner)
         self.assertIn("MAX_SCAN_DEPTH", scanner)
         self.assertIn("MAX_SCAN_ENTRIES", scanner)
         self.assertNotIn("os.walk(", scanner)
