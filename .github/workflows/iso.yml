@@ -16,6 +16,11 @@ on:
         required: true
         default: latest
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/iso.yml"
 
 permissions:
   contents: read
@@ -27,7 +32,7 @@ concurrency:
 
 jobs:
   generate-iso:
-    name: Generate LEOS installer (${{ inputs.variant }})
+    name: Generate LEOS installer (${{ inputs.variant || 'standard' }})
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -75,8 +80,8 @@ jobs:
       - name: Select published image
         id: image
         env:
-          VARIANT: ${{ inputs.variant }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          VARIANT: ${{ inputs.variant || 'standard' }}
+          IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
@@ -162,7 +167,7 @@ jobs:
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: LEOS-installer-${{ inputs.variant }}-${{ inputs.image_tag }}
+          name: LEOS-installer-${{ inputs.variant || 'standard' }}-${{ inputs.image_tag || 'latest' }}
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
