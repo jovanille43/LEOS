@@ -1,6 +1,6 @@
 # LEOS — Checklist de validation sur machine réelle
 
-Cette checklist est destinée au premier démarrage d'une image LEOS sur un **PC de test**. Elle complète les tests Python et la validation BlueBuild ; elle ne doit pas être considérée comme exécutée tant que les contrôles n'ont pas été réalisés sur le matériel.
+Cette checklist est destinée au premier démarrage d'une image LEOS sur un **PC ou disque physique de test**. Elle intervient après la première validation de l'ISO en machine virtuelle décrite dans le [guide de validation VM](virtual-machine-validation.md). Elle complète les tests Python et la validation BlueBuild ; elle ne doit pas être considérée comme exécutée tant que les contrôles n'ont pas été réalisés sur le matériel.
 
 ## Matrice de compatibilité à couvrir
 
