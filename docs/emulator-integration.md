@@ -60,11 +60,13 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 
 ### V2-D — Lancement sécurisé et sandbox
 
-- Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande construite depuis une chaîne issue d'une playlist ou d'un nom de fichier.
-- Pour Flatpak, accorder au processus uniquement un accès en lecture au dossier choisi et aux fichiers nécessaires ; ne pas ajouter d'accès global au dossier personnel.
-- Vérifier à nouveau que le jeu et l'émulateur existent avant le lancement.
-- Préserver le focus, le comportement manette et le retour vers Gaming Mode.
-- Garder les jeux installés sur des disques externes détectables sans les marquer comme absents définitivement lorsque le volume est démonté.
+- [x] Dolphin : transmettre le fichier au paramètre `-e`.
+- [x] PCSX2 : lancer en plein écran et séparer les options du chemin avec `--`.
+- [x] PPSSPP : transmettre directement le fichier de jeu à l'application.
+- [x] Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande issue d'un nom de fichier.
+- [x] Pour Flatpak, n'accorder qu'un accès en lecture au dossier choisi ; aucun accès global au dossier personnel n'est ajouté.
+- [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur immédiatement avant le lancement.
+- [ ] Tester le lancement et le retour au Gaming Mode sur Bazzite réel, avec manette et jeux sur stockage externe.
 
 ### V2-E — BIOS, firmware et cœurs
 
