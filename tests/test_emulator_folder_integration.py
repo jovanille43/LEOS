@@ -50,6 +50,14 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         self.assertIn("addGameButton.forceActiveFocus()", qml)
         self.assertIn("emulatorImportDialog.open()", qml)
 
+    def test_gamepad_can_confirm_or_cancel_the_emulator_folder_dialog(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("if (emulatorImportDialog.visible)", qml)
+        self.assertIn("if (emulatorFolderDialog.visible)", qml)
+        self.assertIn("emulatorFolderDialog.accept()", qml)
+        self.assertIn("emulatorFolderDialog.reject()", qml)
+        self.assertIn("options: FolderDialog.ReadOnly", qml)
+
     def test_game_launch_revalidates_emulator_and_source_file(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         source = library[library.index("def launchGame"):library.index("def launchGame") + 2400]
