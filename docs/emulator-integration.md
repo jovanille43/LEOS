@@ -48,7 +48,10 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 
 ### V2-C — Import facultatif des jeux
 
-- [x] Permettre à l'utilisateur de sélectionner explicitement un dossier depuis Gaming Mode ; les chemins choisis sont mémorisés dans la configuration privée LEOS.
+- [x] Permettre à l'utilisateur de sélectionner explicitement un dossier depuis Gaming Mode avec un navigateur LEOS natif, contrôlable au D-pad et au clavier (haut/bas : parcourir, droite/A : entrer, gauche : parent, Menu : utiliser le dossier courant).
+- [x] Afficher uniquement les sous-dossiers immédiats visibles, dans une liste triée et limitée à 256 entrées par niveau ; le navigateur refuse les liens symboliques, les chemins traversants et les entrées cachées.
+- [x] Démarrer dans le dossier personnel, permettre de remonter au parent, et refuser de choisir la racine système ou le dossier personnel entier comme bibliothèque de jeux.
+- [x] Mémoriser les chemins choisis dans la configuration privée LEOS.
 - [x] Scanner uniquement ce dossier et ses sous-dossiers, avec limites de profondeur, d'entrées et de jeux ; ignorer fichiers cachés et liens symboliques.
 - [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2) et PPSSPP (PSP), avec filtres d'extensions dédiés.
 - [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
