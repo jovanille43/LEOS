@@ -105,7 +105,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
 
     def test_rejects_iso_missing_anaconda_webui_runtime(self):
         self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS.replace(
-            "usr/share/cockpit/anaconda-webui/index.html\\n", ""
+            "usr/share/cockpit/anaconda-webui/index.html\n", ""
         )
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
