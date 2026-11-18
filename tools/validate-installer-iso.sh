@@ -43,7 +43,7 @@ if [[ "$recorded_source_digest" != "$expected_source_digest" ]]; then
   die "ISO source digest does not match the image digest verified before generation."
 fi
 
-for tool in xorriso bsdtar; do
+for tool in xorriso bsdtar unsquashfs; do
   command -v "$tool" >/dev/null 2>&1 || die "Required ISO inspection tool is missing: $tool"
 done
 
@@ -78,6 +78,31 @@ for path in "${required_paths[@]}"; do
     die "Required UEFI/Anaconda boot file is missing from the ISO: $path"
   fi
   echo "Verified ISO content: $path"
+done
+
+
+# Inspect the SquashFS runtime embedded in the ISO. The package transaction in
+# the build log is not sufficient: the final image must contain the WebUI.
+if ! bsdtar -xOf "$iso_path" images/install.img >"$tmp_dir/install.img"; then
+  die "Could not extract the Anaconda runtime image from the ISO."
+fi
+
+if ! unsquashfs -ll "$tmp_dir/install.img" >"$tmp_dir/runtime-contents.txt" 2>&1; then
+  cat "$tmp_dir/runtime-contents.txt" >&2
+  die "The Anaconda runtime image is not a readable SquashFS filesystem."
+fi
+
+required_webui_paths=(
+  "usr/lib/systemd/system/webui-cockpit-ws.service"
+  "usr/libexec/anaconda/webui-desktop"
+  "usr/share/cockpit/anaconda-webui/index.html"
+)
+
+for path in "${required_webui_paths[@]}"; do
+  if ! grep -Fq "$path" "$tmp_dir/runtime-contents.txt"; then
+    die "Required Anaconda WebUI runtime file is missing: $path"
+  fi
+  echo "Verified Anaconda WebUI runtime file: $path"
 done
 
 echo "LEOS installer ISO structural validation passed."
