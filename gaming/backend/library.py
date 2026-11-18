@@ -300,12 +300,17 @@ class GameLibraryModel(QAbstractListModel):
             raw = read_bounded_json(self._emulator_sources_file)
             if not isinstance(raw, list) or len(raw) > MAX_SOURCE_FOLDERS:
                 return False
-            existing = [
-                item for item in raw
-                if isinstance(item, dict)
-                and item.get("platform") in PLATFORM_SPECS
-                and isinstance(item.get("path"), str)
-            ]
+            existing = []
+            for item in raw:
+                if (
+                    not isinstance(item, dict)
+                    or set(item) != {"platform", "path"}
+                    or item.get("platform") not in PLATFORM_SPECS
+                    or not isinstance(item.get("path"), str)
+                    or not Path(item["path"]).is_absolute()
+                ):
+                    return False
+                existing.append(item)
         else:
             existing = []
         record = {"platform": platform_key, "path": str(resolved)}
