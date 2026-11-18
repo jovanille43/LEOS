@@ -293,6 +293,13 @@ class GameLibraryModel(QAbstractListModel):
             return False
         if not resolved.is_dir():
             return False
+        try:
+            home_root = Path.home().resolve(strict=True)
+        except (OSError, RuntimeError):
+            home_root = Path.home()
+        # Never accept the whole filesystem or the entire home directory as a ROM root.
+        if resolved == Path("/") or resolved == home_root:
+            return False
         if self._emulator_sources_file.is_symlink() or self._emulator_sources_file.parent.is_symlink():
             return False
 
