@@ -143,5 +143,25 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
                 load_catalog(path)
 
 
+    def test_v2_emulator_catalogue_has_curated_optional_flathub_apps(self):
+        items = load_catalog(ROOT / "shop" / "catalog.json")
+        emulators = {
+            item["id"]: item
+            for item in items
+            if item["category"] == "Émulation"
+        }
+        self.assertEqual(set(emulators), {
+            "org.libretro.RetroArch",
+            "org.DolphinEmu.dolphin-emu",
+            "net.pcsx2.PCSX2",
+            "org.ppsspp.PPSSPP",
+            "net.kuribo64.melonDS",
+            "net.rpcs3.RPCS3",
+        })
+        self.assertTrue(all(not item.get("bundled", False) for item in emulators.values()))
+        self.assertTrue(all("Flathub" == item["source"] for item in emulators.values()))
+        self.assertIn("non vérifié", emulators["org.DolphinEmu.dolphin-emu"]["compatibility"])
+        self.assertIn("non vérifié", emulators["net.rpcs3.RPCS3"]["compatibility"])
+
 if __name__ == "__main__":
     unittest.main()
