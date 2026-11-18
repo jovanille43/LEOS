@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class InstallerIsoWorkflowTests(unittest.TestCase):
     def test_iso_workflow_installs_inspection_tools_and_validates_before_upload(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("xorriso libarchive-tools", workflow)
+        self.assertIn("xorriso libarchive-tools squashfs-tools", workflow)
         self.assertIn("Validate ISO boot structure, checksum, and source digest", workflow)
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
         self.assertLess(
@@ -30,6 +30,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "images/pxeboot/vmlinuz",
             "images/pxeboot/initrd.img",
             "images/install.img",
+            "unsquashfs -ll",
+            "usr/lib/systemd/system/webui-cockpit-ws.service",
+            "usr/libexec/anaconda/webui-desktop",
+            "usr/share/cockpit/anaconda-webui/index.html",
         ):
             with self.subTest(expected=expected):
                 self.assertIn(expected, validator)
