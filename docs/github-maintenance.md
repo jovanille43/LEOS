@@ -47,9 +47,9 @@ Les Pull Requests suivantes contiennent du travail fonctionnel ou des dépendanc
 | #7 | Thèmes A/B et recoloration | À conserver en brouillon ; changement large qui nécessite une revue indépendante |
 | #8 | Installateur alternatif Titanoboa | En attente ; la première ISO standard a déjà été générée par le workflow BlueBuild. Ne pas fusionner cette voie alternative avant de comparer les deux installateurs en VM |
 
-La PR #5 sur la configuration initiale Cosign est remplacée par `docs/signing.md`, qui décrit le processus réellement déployé. Elle peut être fermée comme supersédée après la fusion de cette documentation.
+La PR #5 sur la configuration initiale Cosign a été fermée comme supersédée. Son contenu utile est remplacé par `docs/signing.md`, qui décrit le processus réellement déployé.
 
-La PR #18 a été fusionnée (documentation de l'ISO et guide VM). La PR #19 a été fusionnée (mise à jour des pages build/architecture/packaging). Les contrôles Python et BlueBuild sur ces PR ont réussi.
+La PR #18 a été fusionnée (documentation de l'ISO et guide VM), la PR #19 a été fusionnée (mise à jour des pages build/architecture/packaging), puis la PR #20 a été fusionnée (licence du code, périmètre des ressources, contribution, gouvernance, signature et processus de release). Les contrôles Python et BlueBuild des PR #18, #19 et #20 ont réussi.
 
 ## Nettoyage des branches
 
@@ -67,6 +67,8 @@ Branches de correctifs/documents déjà fusionnées qui peuvent être examinées
 - `fix/isolate-bluebuild-variants`
 - `docs/first-iso-vm-validation`
 - `docs/align-build-architecture-status`
+- `docs/repo-hygiene-release-license`
+- `docs/cosign-signing-setup` (PR #5 fermée comme supersédée)
 
 Ne pas supprimer les branches actives associées aux PR #1, #2, #3, #4, #6, #7 et #8.
 
