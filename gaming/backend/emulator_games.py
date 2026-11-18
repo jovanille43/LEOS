@@ -26,7 +26,7 @@ PLATFORM_SPECS = {
         "emulator_name": "Dolphin",
         "binaries": ("dolphin-emu", "dolphin"),
         "platform": "Nintendo",
-        "extensions": frozenset({".iso", ".gcm", ".gcz", ".wbfs", ".rvz", ".wad"}),
+        "extensions": frozenset({".iso", ".gcm", ".gcz", ".ciso", ".wbfs", ".wia", ".nfs", ".rvz"}),
         "arguments": lambda path: ["-e", str(path)],
     },
     "ps2": {
@@ -34,7 +34,7 @@ PLATFORM_SPECS = {
         "emulator_name": "PCSX2",
         "binaries": ("pcsx2-qt", "pcsx2"),
         "platform": "PlayStation",
-        "extensions": frozenset({".iso", ".chd", ".cso", ".cue", ".mdf", ".nrg"}),
+        "extensions": frozenset({".bin", ".iso", ".cue", ".mdf", ".chd", ".cso", ".zso"}),
         "arguments": lambda path: ["-fullscreen", "--", str(path)],
     },
     "psp": {
@@ -42,7 +42,7 @@ PLATFORM_SPECS = {
         "emulator_name": "PPSSPP",
         "binaries": ("PPSSPPQt", "ppsspp"),
         "platform": "PlayStation",
-        "extensions": frozenset({".iso", ".cso", ".pbp"}),
+        "extensions": frozenset({".iso", ".cso", ".chd", ".pbp"}),
         "arguments": lambda path: [str(path)],
     },
 }
