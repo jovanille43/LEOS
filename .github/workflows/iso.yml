@@ -121,7 +121,9 @@ jobs:
           immutable_ref="${image_repository}@${digest}"
           echo "Verifying image digest: ${immutable_ref}"
           cosign_bin="$(command -v cosign)"
-          sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --key cosign.pub "${immutable_ref}"
+          # BlueBuild publishes LEOS key-based signatures to GHCR without a Rekor bundle.
+          # Keep public-key signature and image-claim verification; skip only the absent tlog lookup.
+          sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --insecure-ignore-tlog --check-claims --key cosign.pub "${immutable_ref}"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Generate bootable installer ISO
