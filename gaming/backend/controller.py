@@ -18,6 +18,11 @@ from leos_core.settings import SettingsStore
 from desktop.notifications import post_notification
 
 from .library import GameLibraryModel
+from .emulator_games import PLATFORM_SPECS
+from .emulator_folder_browser import (
+    list_child_directories, parent_directory,
+    resolve_browsable_directory, resolve_child_directory,
+)
 from .system_monitor import SystemMonitor
 from .power_profiles import PowerProfileState, inspect_power_profiles, set_power_profile
 from .mangohud import find_mangohud
@@ -63,10 +68,15 @@ class GamingController(QObject):
     mangoHudChanged = Signal()
     launchStatusChanged = Signal()
     launcherStatusChanged = Signal()
+    emulatorFolderBrowserChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.library = GameLibraryModel()
+        self._emulator_folder_platform = ""
+        self._emulator_folder_path = (
+            resolve_browsable_directory(Path.home()) or Path("/")
+        )
         self._launcher_statuses = self.library.launcherStatuses()
         self._launcher_refresh_timer = QTimer(self)
         self._launcher_refresh_timer.setInterval(15000)
@@ -323,6 +333,69 @@ class GamingController(QObject):
         repeated_action = self._gamepad_mapper.repeat_action()
         if repeated_action:
             self.gamepadAction.emit(repeated_action)
+
+    @Property(str, notify=emulatorFolderBrowserChanged)
+    def emulatorFolderPath(self) -> str:
+        return str(self._emulator_folder_path)
+
+    @Property("QStringList", notify=emulatorFolderBrowserChanged)
+    def emulatorFolderDirectories(self) -> list[str]:
+        return list_child_directories(self._emulator_folder_path)
+
+    @Slot(str, result=bool)
+    def beginEmulatorFolderBrowse(self, platform_key: str) -> bool:
+        if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
+            self._message = "Plateforme d'émulation non reconnue."
+            self.messageChanged.emit(self._message)
+            return False
+        start = resolve_browsable_directory(Path.home())
+        if start is None:
+            start = Path("/")
+        self._emulator_folder_platform = platform_key
+        self._emulator_folder_path = start
+        self.emulatorFolderBrowserChanged.emit()
+        return True
+
+    @Slot(str, result=bool)
+    def enterEmulatorFolder(self, directory_name: str) -> bool:
+        target = resolve_child_directory(self._emulator_folder_path, directory_name)
+        if target is None:
+            self._message = "Ce dossier n'est plus accessible ou n'est pas autorisé."
+            self.messageChanged.emit(self._message)
+            self.emulatorFolderBrowserChanged.emit()
+            return False
+        self._emulator_folder_path = target
+        self.emulatorFolderBrowserChanged.emit()
+        return True
+
+    @Slot(result=bool)
+    def browseEmulatorFolderParent(self) -> bool:
+        parent = parent_directory(self._emulator_folder_path)
+        if parent is None:
+            return False
+        self._emulator_folder_path = parent
+        self.emulatorFolderBrowserChanged.emit()
+        return True
+
+    @Slot(result=bool)
+    def useCurrentEmulatorFolder(self) -> bool:
+        platform_key = self._emulator_folder_platform
+        folder = str(self._emulator_folder_path)
+        if not platform_key or folder == "/":
+            self._message = "Choisis un dossier de jeux précis, pas la racine du système."
+            self.messageChanged.emit(self._message)
+            return False
+        if not self.library.addEmulatorFolder(platform_key, folder):
+            self._message = "Impossible d'ajouter ce dossier. Vérifie la sélection et les droits d'accès."
+            self.messageChanged.emit(self._message)
+            return False
+        if self.library.emulatorPlatformAvailable(platform_key, folder):
+            self._message = "Dossier ajouté. Les jeux pris en charge seront importés dans la bibliothèque LEOS."
+        else:
+            self._message = "Dossier mémorisé. Installe d'abord l'émulateur correspondant depuis la boutique LEOS, puis actualise la bibliothèque."
+        self.messageChanged.emit(self._message)
+        self._emulator_folder_platform = ""
+        return True
 
     @Slot(str, str, result=bool)
     def importEmulatorFolder(self, platform_key: str, folder_url: str) -> bool:
