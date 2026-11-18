@@ -131,7 +131,7 @@ def _iter_candidate_files(root: Path) -> Iterable[Path]:
                         continue
                     if stat.S_ISREG(metadata.st_mode):
                         yield Path(entry.path)
-        except OSError:
+        except (OSError, RuntimeError, ValueError):
             continue
 
 
