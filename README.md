@@ -170,6 +170,18 @@ LEOS/
 
 **Une ISO installateur standard est disponible comme artefact GitHub Actions, et les trois images conteneur signées sont publiées dans GHCR.** Les contrôles automatisés Python, QML, médias et recettes BlueBuild sont verts pour la dernière livraison. La validation en machine virtuelle et sur matériel physique reste à effectuer ; la chaîne de construction et de publication demeure protégée et manuelle. Voir [le guide de validation en machine virtuelle](docs/virtual-machine-validation.md) et [la checklist matérielle](docs/hardware-validation.md).
 
+## Contribuer, licences et publications
+
+- [Guide de contribution](CONTRIBUTING.md)
+- [Licence du code](LICENSE) — GPL-3.0-or-later
+- [Périmètre des licences des ressources](ASSET-LICENSING.md) — les médias et éléments de marque ne sont pas automatiquement couverts par la licence du code.
+- [Journal des modifications](CHANGELOG.md)
+- [Processus de release versionnée](docs/release-process.md)
+- [Signature et vérification Cosign](docs/signing.md)
+- [Entretien et gouvernance GitHub](docs/github-maintenance.md)
+
+Aucune version taguée ni GitHub Release n'a encore été publiée. La première préversion ne sera préparée qu'après les validations VM et matérielles décrites dans le processus de release.
+
 ---
 
 *LEOS — One system. Two experiences.*
