@@ -287,13 +287,13 @@ jobs:
                 printf "\\n--- frame %s ---\\n" "$frame"
                 printf "%s\\n" "$frame_text"
               } >> "$ocr_log"
-              if grep -Eiq "Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI" "$ocr_log"; then
+              if grep -Eiq "Welcome.*install Fedora Linux now|Installation method|Storage configuration|Review and install|Anaconda WebUI" "$ocr_log"; then
                 echo "UEFI QEMU smoke test passed: Anaconda was detected on the graphical display."
                 exit 0
               fi
             done
 
-            echo "::error::Anaconda was not detected on the graphical display within six minutes."
+            echo "::error::Anaconda WebUI welcome screen was not detected on the graphical display within fifteen minutes."
             echo "--- OCR output ---"
             cat "$ocr_log" 2>/dev/null || true
             echo "--- QEMU stderr ---"
