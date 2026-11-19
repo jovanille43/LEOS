@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class InstallerIsoWorkflowTests(unittest.TestCase):
     def test_iso_workflow_installs_inspection_tools_and_validates_before_upload(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("xorriso libarchive-tools squashfs-tools qemu-system-x86 ovmf", workflow)
+        self.assertIn("xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr", workflow)
         self.assertIn("Validate ISO boot structure, checksum, and source digest", workflow)
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
         self.assertIn("Boot installer ISO with UEFI firmware in QEMU", workflow)
@@ -18,7 +18,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("qemu-system-x86_64", workflow)
         self.assertIn("OVMF_CODE", workflow)
-        self.assertIn("Reached target (Graphical Interface|Multi-User System)", workflow)
+        self.assertIn("xvfb-run", workflow)
+        self.assertIn("tesseract", workflow)
+        self.assertIn("Anaconda|Installation Summary|Installation Destination|Installation Progress", workflow)
+        self.assertIn("LEOS-installer-UEFI-screens/", workflow)
         self.assertLess(
             workflow.index("Validate ISO boot structure, checksum, and source digest"),
             workflow.index("Boot installer ISO with UEFI firmware in QEMU"),
