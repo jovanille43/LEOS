@@ -202,25 +202,29 @@ jobs:
           test -s "$ISO_NAME"
           firmware_vars="$RUNNER_TEMP/LEOS-OVMF-VARS.fd"
           serial_log="$RUNNER_TEMP/LEOS-installer-UEFI-serial.log"
+          qemu_error_log="$RUNNER_TEMP/LEOS-installer-UEFI-qemu.stderr.log"
           screenshot_dir="$RUNNER_TEMP/LEOS-installer-UEFI-screens"
           ocr_log="$RUNNER_TEMP/LEOS-installer-UEFI-ocr.log"
           mkdir -p "$screenshot_dir"
+          : > "$serial_log"
+          : > "$qemu_error_log"
+          : > "$ocr_log"
           cp "$firmware_vars_template" "$firmware_vars"
-          export ISO_NAME firmware_code firmware_vars serial_log screenshot_dir ocr_log
+          export ISO_NAME firmware_code firmware_vars serial_log qemu_error_log screenshot_dir ocr_log
 
           # Use a virtual display so the ISO boots exactly as it would on a
           # graphical machine. OCR must identify Anaconda on screen; a serial
           # console alone is not reliable unless the ISO changes its kernel
           # console mode, which could force Anaconda into text mode.
           xvfb-run -a -s "-screen 0 1280x800x24" bash -euo pipefail -c '
-            qemu-system-x86_64 \\
-              -machine q35,accel=tcg \\
-              -cpu max -m 4096 -smp 2 \\
-              -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \\
-              -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \\
-              -cdrom "$ISO_NAME" -boot order=d \\
-              -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \\
-              -display sdl -serial "file:$serial_log" -monitor none -no-reboot &
+            qemu-system-x86_64 \
+              -machine q35,accel=tcg \
+              -cpu max -m 4096 -smp 2 \
+              -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \
+              -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
+              -cdrom "$ISO_NAME" -boot order=d \
+              -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
+              -display sdl -serial "file:$serial_log" -monitor none -no-reboot 2>"$qemu_error_log" &
             qemu_pid=$!
             cleanup() {
               kill "$qemu_pid" >/dev/null 2>&1 || true
@@ -253,6 +257,8 @@ jobs:
             echo "::error::Anaconda was not detected on the graphical display within six minutes."
             echo "--- OCR output ---"
             cat "$ocr_log" 2>/dev/null || true
+            echo "--- QEMU stderr ---"
+            cat "$qemu_error_log" 2>/dev/null || true
             echo "--- Serial output ---"
             tail -n 160 "$serial_log" 2>/dev/null || true
             exit 1
@@ -265,6 +271,7 @@ jobs:
           name: LEOS-installer-uefi-diagnostics-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/LEOS-installer-UEFI-serial.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-qemu.stderr.log
             ${{ runner.temp }}/LEOS-installer-UEFI-ocr.log
             ${{ runner.temp }}/LEOS-installer-UEFI-screens/
           if-no-files-found: ignore
