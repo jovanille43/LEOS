@@ -21,7 +21,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("OVMF_CODE", workflow)
         self.assertIn("xvfb-run", workflow)
         self.assertIn("tesseract", workflow)
-        self.assertIn("Anaconda|Installation Summary|Installation Destination|Installation Progress", workflow)
+        self.assertIn("Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI", workflow)
+        self.assertIn("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", workflow)
         self.assertIn("LEOS-installer-UEFI-screens/", workflow)
         self.assertLess(
             workflow.index("Validate ISO boot structure, checksum, and source digest"),
