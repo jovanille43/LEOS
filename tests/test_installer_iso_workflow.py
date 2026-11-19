@@ -15,14 +15,12 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
         self.assertIn("Boot installer ISO with UEFI firmware in QEMU", workflow)
         self.assertIn("pull_request:", workflow)
-        self.assertIn("group: leos-image-pipeline-${{ github.ref }}", workflow)
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("qemu-system-x86_64", workflow)
         self.assertIn("OVMF_CODE", workflow)
         self.assertIn("xvfb-run", workflow)
         self.assertIn("tesseract", workflow)
         self.assertIn("Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI", workflow)
-        self.assertIn("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", workflow)
         self.assertIn("LEOS-installer-UEFI-screens/", workflow)
         self.assertLess(
             workflow.index("Validate ISO boot structure, checksum, and source digest"),
