@@ -19,7 +19,7 @@ sha256sum --check LEOS-standard-latest.iso.sha256
 
 Le résultat attendu est `LEOS-standard-latest.iso: OK`. En cas d'échec, ne pas démarrer l'ISO : extraire à nouveau l'archive ou la télécharger de nouveau.
 
-Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et la détection de l'interface Anaconda à l'écran après un démarrage UEFI dans QEMU. Elle ne réalise pas une installation complète sur disque virtuel et ne certifie pas encore la fin du parcours Anaconda.
+Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et l'apparition de l'écran d'accueil Anaconda WebUI dans QEMU (notamment « Welcome. Let's install Fedora Linux now » et les étapes « Installation method » / « Storage configuration »). Elle ne réalise pas une installation complète sur disque virtuel, ne valide pas encore les étapes suivantes du parcours Anaconda et ne certifie pas la fin de l'installation.
 
 ## 2. Créer la machine virtuelle
 
