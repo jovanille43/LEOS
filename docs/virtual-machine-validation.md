@@ -8,7 +8,7 @@ Cette étape sert à vérifier que l'ISO démarre, que l'installation aboutit su
 
 ## 1. Préparer et vérifier l'ISO
 
-1. Ouvrir l'[historique du workflow ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml) et choisir la dernière exécution réussie qui contient les étapes **Validate ISO boot structure, checksum, and source digest** et **Boot installer ISO with UEFI firmware in QEMU**. Ne pas réutiliser un ancien artefact produit avant l'ajout de ce contrôle.
+1. Ouvrir l'[historique du workflow ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml) et choisir la dernière exécution réussie déclenchée par un **push sur `main`** ou un lancement manuel (`workflow_dispatch`), pas une exécution `pull_request`. Vérifier que les étapes **Validate ISO boot structure, checksum, and source digest**, **Boot installer ISO with UEFI firmware in QEMU** et **Upload installer ISO and checksum** ont réussi. Les exécutions de pull request ignorent volontairement l'envoi de l'artefact ; ne pas télécharger l'ISO d'une telle exécution.
 2. Extraire le ZIP dans un dossier dédié.
 3. Vérifier que l'ISO et son fichier `.sha256` sont présents.
 4. Depuis ce dossier, exécuter :
