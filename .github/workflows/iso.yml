@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat
 
       - name: Verify and install BlueBuild CLI
         env:
@@ -203,14 +203,17 @@ jobs:
           firmware_vars="$RUNNER_TEMP/LEOS-OVMF-VARS.fd"
           serial_log="$RUNNER_TEMP/LEOS-installer-UEFI-serial.log"
           qemu_error_log="$RUNNER_TEMP/LEOS-installer-UEFI-qemu.stderr.log"
+          monitor_socket="$RUNNER_TEMP/LEOS-installer-UEFI-monitor.sock"
+          monitor_log="$RUNNER_TEMP/LEOS-installer-UEFI-monitor.log"
           screenshot_dir="$RUNNER_TEMP/LEOS-installer-UEFI-screens"
           ocr_log="$RUNNER_TEMP/LEOS-installer-UEFI-ocr.log"
           mkdir -p "$screenshot_dir"
           : > "$serial_log"
           : > "$qemu_error_log"
+          : > "$monitor_log"
           : > "$ocr_log"
           cp "$firmware_vars_template" "$firmware_vars"
-          export ISO_NAME firmware_code firmware_vars serial_log qemu_error_log screenshot_dir ocr_log
+          export ISO_NAME firmware_code firmware_vars serial_log qemu_error_log monitor_socket monitor_log screenshot_dir ocr_log
 
           # Use a virtual display so the ISO boots exactly as it would on a
           # graphical machine. OCR must identify Anaconda on screen; a serial
@@ -224,13 +227,48 @@ jobs:
               -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
               -cdrom "$ISO_NAME" -boot order=d \
               -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
-              -display sdl -serial "file:$serial_log" -monitor none -no-reboot 2>"$qemu_error_log" &
+              -display sdl -serial "file:$serial_log" \\
+              -monitor "unix:$monitor_socket,server=on,wait=off" -no-reboot 2>"$qemu_error_log" &
             qemu_pid=$!
             cleanup() {
               kill "$qemu_pid" >/dev/null 2>&1 || true
               wait "$qemu_pid" >/dev/null 2>&1 || true
             }
             trap cleanup EXIT
+
+            # GRUB defaults to the media-integrity check entry. Select the
+            # direct installer entry so this smoke test reaches Anaconda promptly.
+            boot_menu_deadline=$((SECONDS + 45))
+            until grep -aFq "Test this media & install" "$serial_log"; do
+              if ! kill -0 "$qemu_pid" 2>/dev/null; then
+                echo "::error::QEMU exited before the GRUB menu appeared."
+                exit 1
+              fi
+              if (( SECONDS >= boot_menu_deadline )); then
+                echo "::error::GRUB installer menu was not detected within 45 seconds."
+                exit 1
+              fi
+              sleep 1
+            done
+
+            {
+              printf "sendkey up\\n"
+              sleep 1
+              printf "sendkey ret\\n"
+            } | timeout 10s socat - "UNIX-CONNECT:$monitor_socket" >> "$monitor_log" 2>&1
+
+            install_boot_deadline=$((SECONDS + 30))
+            until grep -aEq "Booting .Install leos" "$serial_log"; do
+              if ! kill -0 "$qemu_pid" 2>/dev/null; then
+                echo "::error::QEMU exited before the direct installer entry booted."
+                exit 1
+              fi
+              if (( SECONDS >= install_boot_deadline )); then
+                echo "::error::GRUB did not boot the direct Install LEOS entry after keyboard selection."
+                exit 1
+              fi
+              sleep 1
+            done
 
             deadline=$((SECONDS + 360))
             frame=0
@@ -272,6 +310,7 @@ jobs:
           path: |
             ${{ runner.temp }}/LEOS-installer-UEFI-serial.log
             ${{ runner.temp }}/LEOS-installer-UEFI-qemu.stderr.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-monitor.log
             ${{ runner.temp }}/LEOS-installer-UEFI-ocr.log
             ${{ runner.temp }}/LEOS-installer-UEFI-screens/
           if-no-files-found: ignore
