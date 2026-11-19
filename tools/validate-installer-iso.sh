@@ -56,7 +56,10 @@ if ! xorriso -indev "$iso_path" -report_el_torito plain >"$tmp_dir/el-torito.txt
 fi
 
 # UEFI El Torito entries use Platform ID 0xef (239).
-if ! grep -Eiq 'Platform Id[[:space:]]*:[[:space:]]*0xef([[:space:]]|$)' "$tmp_dir/el-torito.txt"; then
+# xorriso versions differ: some report the EFI platform as numeric 0xef,
+# while current releases print the decoded platform name "UEFI" in the
+# El Torito boot-image table. Accept either explicit representation.
+if ! grep -Eiq 'Platform Id[[:space:]]*:[[:space:]]*0xef([[:space:]]|$)|El Torito boot img[[:space:]]*:[[:space:]]*[0-9]+[[:space:]]+UEFI([[:space:]]|$)' "$tmp_dir/el-torito.txt"; then
   cat "$tmp_dir/el-torito.txt" >&2
   die "The ISO does not advertise a UEFI El Torito boot entry."
 fi
