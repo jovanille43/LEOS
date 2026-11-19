@@ -10,11 +10,19 @@ ROOT = Path(__file__).resolve().parents[1]
 class InstallerIsoWorkflowTests(unittest.TestCase):
     def test_iso_workflow_installs_inspection_tools_and_validates_before_upload(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("xorriso libarchive-tools squashfs-tools", workflow)
+        self.assertIn("xorriso libarchive-tools squashfs-tools qemu-system-x86 ovmf", workflow)
         self.assertIn("Validate ISO boot structure, checksum, and source digest", workflow)
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
+        self.assertIn("Boot installer ISO with UEFI firmware in QEMU", workflow)
+        self.assertIn("qemu-system-x86_64", workflow)
+        self.assertIn("OVMF_CODE", workflow)
+        self.assertIn("Reached target (Graphical Interface|Multi-User System)", workflow)
         self.assertLess(
             workflow.index("Validate ISO boot structure, checksum, and source digest"),
+            workflow.index("Boot installer ISO with UEFI firmware in QEMU"),
+        )
+        self.assertLess(
+            workflow.index("Boot installer ISO with UEFI firmware in QEMU"),
             workflow.index("Upload installer ISO and checksum"),
         )
 
@@ -25,6 +33,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "source_digest_file",
             "Platform Id",
             "0xef",
+            "El Torito boot img",
+            "UEFI",
             "EFI/BOOT/BOOTX64.EFI",
             "EFI/BOOT/grub.cfg",
             "images/pxeboot/vmlinuz",
