@@ -15,6 +15,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
         self.assertIn("Boot installer ISO with UEFI firmware in QEMU", workflow)
         self.assertIn("pull_request:", workflow)
+        self.assertIn("group: leos-image-pipeline-${{ github.ref }}", workflow)
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("qemu-system-x86_64", workflow)
         self.assertIn("OVMF_CODE", workflow)
