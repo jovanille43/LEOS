@@ -19,7 +19,7 @@ sha256sum --check LEOS-standard-latest.iso.sha256
 
 Le résultat attendu est `LEOS-standard-latest.iso: OK`. En cas d'échec, ne pas démarrer l'ISO : extraire à nouveau l'archive ou la télécharger de nouveau.
 
-Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et un démarrage de l'installateur sous firmware UEFI dans QEMU jusqu'à une cible systemd. Elle ne réalise pas une installation complète et ne prouve pas encore que le parcours Anaconda aboutit.
+Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et la détection de l'interface Anaconda à l'écran après un démarrage UEFI dans QEMU. Elle ne réalise pas une installation complète sur disque virtuel et ne certifie pas encore la fin du parcours Anaconda.
 
 ## 2. Créer la machine virtuelle
 
