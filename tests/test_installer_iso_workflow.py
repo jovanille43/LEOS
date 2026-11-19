@@ -51,6 +51,11 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             workflow.index("Upload installer ISO and checksum"),
         )
 
+    def test_push_to_main_rebuilds_iso_when_validator_changes(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        push_trigger = workflow.split("\\n  push:\\n", 1)[1].split("\\npermissions:\\n", 1)[0]
+        self.assertIn('      - "tools/validate-installer-iso.sh"', push_trigger)
+
     def test_validator_checks_digest_checksum_uefi_and_installer_payload(self):
         validator = (ROOT / "tools/validate-installer-iso.sh").read_text(encoding="utf-8")
         for expected in (
