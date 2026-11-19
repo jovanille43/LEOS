@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 ovmf
 
       - name: Verify and install BlueBuild CLI
         env:
@@ -171,6 +171,66 @@ jobs:
         run: |
           set -euo pipefail
           bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"
+
+      - name: Boot installer ISO with UEFI firmware in QEMU
+        env:
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+        run: |
+          set -euo pipefail
+          firmware_code=""
+          firmware_vars_template=""
+          for firmware_dir in /usr/share/OVMF /usr/share/ovmf; do
+            for suffix in _4M ""; do
+              code="$firmware_dir/OVMF_CODE${suffix}.fd"
+              vars="$firmware_dir/OVMF_VARS${suffix}.fd"
+              if [[ -s "$code" && -s "$vars" ]]; then
+                firmware_code="$code"
+                firmware_vars_template="$vars"
+                break 2
+              fi
+            done
+          done
+          if [[ -z "$firmware_code" || -z "$firmware_vars_template" ]]; then
+            echo "::error::Could not locate a matching OVMF CODE/VARS firmware pair."
+            exit 1
+          fi
+
+          test -s "$ISO_NAME"
+          firmware_vars="$RUNNER_TEMP/LEOS-OVMF-VARS.fd"
+          serial_log="$RUNNER_TEMP/LEOS-installer-UEFI-serial.log"
+          cp "$firmware_vars_template" "$firmware_vars"
+
+          qemu_status=0
+          timeout 360s qemu-system-x86_64 \\
+            -machine q35,accel=tcg \\
+            -cpu max -m 4096 -smp 2 \\
+            -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \\
+            -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \\
+            -cdrom "$ISO_NAME" -boot order=d \\
+            -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \\
+            -display none -serial "file:$serial_log" -monitor none -no-reboot \\
+            || qemu_status=$?
+
+          if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 124 ]]; then
+            echo "::error::QEMU exited unexpectedly with status $qemu_status."
+            tail -n 200 "$serial_log" || true
+            exit 1
+          fi
+          if ! grep -Eiq 'Reached target (Graphical Interface|Multi-User System)' "$serial_log"; then
+            echo "::error::The installer did not reach a systemd graphical or multi-user target under UEFI."
+            tail -n 240 "$serial_log" || true
+            exit 1
+          fi
+          echo "UEFI QEMU smoke test passed: the installer reached a systemd target."
+
+      - name: Upload UEFI boot log when the smoke test fails
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: LEOS-installer-uefi-boot-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/LEOS-installer-UEFI-serial.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload installer ISO and checksum
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
