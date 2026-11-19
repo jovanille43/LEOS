@@ -16,6 +16,10 @@ on:
         required: true
         default: latest
         type: string
+  pull_request:
+    paths:
+      - ".github/workflows/iso.yml"
+      - "tools/validate-installer-iso.sh"
   push:
     branches:
       - main
@@ -233,6 +237,7 @@ jobs:
           retention-days: 7
 
       - name: Upload installer ISO and checksum
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: LEOS-installer-${{ inputs.variant || 'standard' }}-${{ inputs.image_tag || 'latest' }}
