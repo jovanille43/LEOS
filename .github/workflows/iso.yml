@@ -31,8 +31,8 @@ permissions:
   packages: read
 
 concurrency:
-  group: leos-image-pipeline-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: leos-image-pipeline
+  cancel-in-progress: false
 
 jobs:
   generate-iso:
