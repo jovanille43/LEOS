@@ -31,7 +31,7 @@ permissions:
   packages: read
 
 concurrency:
-  group: leos-image-pipeline
+  group: leos-image-pipeline-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
