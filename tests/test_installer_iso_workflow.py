@@ -40,7 +40,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertTrue(continuations, "QEMU command must use shell line continuations")
         self.assertFalse(any(line.endswith("\\\\") for line in continuations))
         self.assertIn('2>"$qemu_error_log" &', qemu_step)
-        self.assertIn("Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI", workflow)
+        self.assertIn("Welcome.*install Fedora Linux now|Installation method|Storage configuration|Review and install|Anaconda WebUI", workflow)
         self.assertIn("LEOS-installer-UEFI-screens/", workflow)
         self.assertLess(
             workflow.index("Validate ISO boot structure, checksum, and source digest"),
