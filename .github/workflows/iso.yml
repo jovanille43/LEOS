@@ -16,6 +16,10 @@ on:
         required: true
         default: latest
         type: string
+  pull_request:
+    paths:
+      - ".github/workflows/iso.yml"
+      - "tools/validate-installer-iso.sh"
   push:
     branches:
       - main
@@ -48,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat
 
       - name: Verify and install BlueBuild CLI
         env:
@@ -172,7 +176,149 @@ jobs:
           set -euo pipefail
           bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"
 
+      - name: Boot installer ISO with UEFI firmware in QEMU
+        env:
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+        run: |
+          set -euo pipefail
+          firmware_code=""
+          firmware_vars_template=""
+          for firmware_dir in /usr/share/OVMF /usr/share/ovmf; do
+            for suffix in _4M ""; do
+              code="$firmware_dir/OVMF_CODE${suffix}.fd"
+              vars="$firmware_dir/OVMF_VARS${suffix}.fd"
+              if [[ -s "$code" && -s "$vars" ]]; then
+                firmware_code="$code"
+                firmware_vars_template="$vars"
+                break 2
+              fi
+            done
+          done
+          if [[ -z "$firmware_code" || -z "$firmware_vars_template" ]]; then
+            echo "::error::Could not locate a matching OVMF CODE/VARS firmware pair."
+            exit 1
+          fi
+
+          test -s "$ISO_NAME"
+          firmware_vars="$RUNNER_TEMP/LEOS-OVMF-VARS.fd"
+          serial_log="$RUNNER_TEMP/LEOS-installer-UEFI-serial.log"
+          qemu_error_log="$RUNNER_TEMP/LEOS-installer-UEFI-qemu.stderr.log"
+          monitor_socket="$RUNNER_TEMP/LEOS-installer-UEFI-monitor.sock"
+          monitor_log="$RUNNER_TEMP/LEOS-installer-UEFI-monitor.log"
+          screenshot_dir="$RUNNER_TEMP/LEOS-installer-UEFI-screens"
+          ocr_log="$RUNNER_TEMP/LEOS-installer-UEFI-ocr.log"
+          mkdir -p "$screenshot_dir"
+          : > "$serial_log"
+          : > "$qemu_error_log"
+          : > "$monitor_log"
+          : > "$ocr_log"
+          cp "$firmware_vars_template" "$firmware_vars"
+          export ISO_NAME firmware_code firmware_vars serial_log qemu_error_log monitor_socket monitor_log screenshot_dir ocr_log
+
+          # Use a virtual display so the ISO boots exactly as it would on a
+          # graphical machine. OCR must identify Anaconda on screen; a serial
+          # console alone is not reliable unless the ISO changes its kernel
+          # console mode, which could force Anaconda into text mode.
+          xvfb-run -a -s "-screen 0 1280x800x24" bash -euo pipefail -c '
+            qemu-system-x86_64 \
+              -machine q35,accel=tcg \
+              -cpu max -m 6144 -smp 4 \
+              -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \
+              -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
+              -cdrom "$ISO_NAME" -boot order=d \
+              -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
+              -display sdl -serial "file:$serial_log" \
+              -monitor "unix:$monitor_socket,server=on,wait=off" -no-reboot 2>"$qemu_error_log" &
+            qemu_pid=$!
+            cleanup() {
+              kill "$qemu_pid" >/dev/null 2>&1 || true
+              wait "$qemu_pid" >/dev/null 2>&1 || true
+            }
+            trap cleanup EXIT
+
+            # GRUB defaults to the media-integrity check entry. Select the
+            # direct installer entry so this smoke test reaches Anaconda promptly.
+            boot_menu_deadline=$((SECONDS + 45))
+            until grep -aFq "Test this media & install" "$serial_log"; do
+              if ! kill -0 "$qemu_pid" 2>/dev/null; then
+                echo "::error::QEMU exited before the GRUB menu appeared."
+                exit 1
+              fi
+              if (( SECONDS >= boot_menu_deadline )); then
+                echo "::error::GRUB installer menu was not detected within 45 seconds."
+                exit 1
+              fi
+              sleep 1
+            done
+
+            {
+              printf "sendkey up\n"
+              sleep 1
+              printf "sendkey ret\n"
+            } | timeout 10s socat -t 1 - "UNIX-CONNECT:$monitor_socket" >> "$monitor_log" 2>&1
+
+            # The GRUB menu is rendered to the graphical console, not as a
+            # stable "Booting ..." line on the serial port. The captured serial
+            # trace already proves the arrow moved the highlight to "Install
+            # leos 45" and Enter cleared the menu. Give the kernel/initramfs a
+            # moment to start, then let the graphical OCR below be the actual
+            # success criterion.
+            sleep 10
+            if ! kill -0 "$qemu_pid" 2>/dev/null; then
+              echo "::error::QEMU exited immediately after selecting the direct installer entry."
+              exit 1
+            fi
+
+            # TCG emulation is substantially slower than native hardware; allow
+            # Anaconda WebUI additional time to initialize before declaring failure.
+            deadline=$((SECONDS + 900))
+            frame=0
+            while (( SECONDS < deadline )); do
+              if ! kill -0 "$qemu_pid" 2>/dev/null; then
+                break
+              fi
+              sleep 15
+              frame=$((frame + 1))
+              screenshot="$screenshot_dir/frame-$frame.png"
+              import -window root "$screenshot" 2>/dev/null || continue
+              [[ -s "$screenshot" ]] || continue
+              frame_text="$(tesseract "$screenshot" stdout 2>/dev/null || true)"
+              {
+                printf "\\n--- frame %s ---\\n" "$frame"
+                printf "%s\\n" "$frame_text"
+              } >> "$ocr_log"
+              if grep -Eiq "Welcome.*install Fedora Linux now|Installation method|Storage configuration|Review and install|Anaconda WebUI" "$ocr_log"; then
+                echo "UEFI QEMU smoke test passed: Anaconda was detected on the graphical display."
+                exit 0
+              fi
+            done
+
+            echo "::error::Anaconda WebUI welcome screen was not detected on the graphical display within fifteen minutes."
+            echo "--- OCR output ---"
+            cat "$ocr_log" 2>/dev/null || true
+            echo "--- QEMU stderr ---"
+            cat "$qemu_error_log" 2>/dev/null || true
+            echo "--- Serial output ---"
+            tail -n 160 "$serial_log" 2>/dev/null || true
+            exit 1
+          '
+
+      - name: Upload UEFI boot diagnostics when the smoke test fails
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: LEOS-installer-uefi-diagnostics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/LEOS-installer-UEFI-serial.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-qemu.stderr.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-monitor.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-ocr.log
+            ${{ runner.temp }}/LEOS-installer-UEFI-screens/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload installer ISO and checksum
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: LEOS-installer-${{ inputs.variant || 'standard' }}-${{ inputs.image_tag || 'latest' }}

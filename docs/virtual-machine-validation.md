@@ -8,7 +8,7 @@ Cette étape sert à vérifier que l'ISO démarre, que l'installation aboutit su
 
 ## 1. Préparer et vérifier l'ISO
 
-1. Ouvrir l'[historique du workflow ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml) et choisir la dernière exécution réussie qui contient l'étape **Validate ISO boot structure, checksum, and source digest**. Ne pas réutiliser un ancien artefact produit avant l'ajout de ce contrôle.
+1. Ouvrir l'[historique du workflow ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml) et choisir la dernière exécution réussie qui contient les étapes **Validate ISO boot structure, checksum, and source digest** et **Boot installer ISO with UEFI firmware in QEMU**. Ne pas réutiliser un ancien artefact produit avant l'ajout de ce contrôle.
 2. Extraire le ZIP dans un dossier dédié.
 3. Vérifier que l'ISO et son fichier `.sha256` sont présents.
 4. Depuis ce dossier, exécuter :
@@ -19,7 +19,7 @@ sha256sum --check LEOS-standard-latest.iso.sha256
 
 Le résultat attendu est `LEOS-standard-latest.iso: OK`. En cas d'échec, ne pas démarrer l'ISO : extraire à nouveau l'archive ou la télécharger de nouveau.
 
-Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation structurelle confirme le checksum, le digest source, l'entrée UEFI et les principaux fichiers Anaconda ; elle ne prouve pas encore que l'interface Web démarre.
+Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et l'apparition de l'écran d'accueil Anaconda WebUI dans QEMU (notamment « Welcome. Let's install Fedora Linux now » et les étapes « Installation method » / « Storage configuration »). Elle ne réalise pas une installation complète sur disque virtuel, ne valide pas encore les étapes suivantes du parcours Anaconda et ne certifie pas la fin de l'installation.
 
 ## 2. Créer la machine virtuelle
 
