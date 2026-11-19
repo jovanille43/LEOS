@@ -222,7 +222,7 @@ jobs:
           xvfb-run -a -s "-screen 0 1280x800x24" bash -euo pipefail -c '
             qemu-system-x86_64 \
               -machine q35,accel=tcg \
-              -cpu max -m 4096 -smp 2 \
+              -cpu max -m 6144 -smp 4 \
               -drive if=pflash,format=raw,unit=0,readonly=on,file="$firmware_code" \
               -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
               -cdrom "$ISO_NAME" -boot order=d \
@@ -269,7 +269,9 @@ jobs:
               exit 1
             fi
 
-            deadline=$((SECONDS + 360))
+            # TCG emulation is substantially slower than native hardware; allow
+            # Anaconda WebUI additional time to initialize before declaring failure.
+            deadline=$((SECONDS + 900))
             frame=0
             while (( SECONDS < deadline )); do
               if ! kill -0 "$qemu_pid" 2>/dev/null; then
