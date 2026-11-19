@@ -257,18 +257,17 @@ jobs:
               printf "sendkey ret\n"
             } | timeout 10s socat -t 1 - "UNIX-CONNECT:$monitor_socket" >> "$monitor_log" 2>&1
 
-            install_boot_deadline=$((SECONDS + 30))
-            until grep -aEq "Booting .Install leos" "$serial_log"; do
-              if ! kill -0 "$qemu_pid" 2>/dev/null; then
-                echo "::error::QEMU exited before the direct installer entry booted."
-                exit 1
-              fi
-              if (( SECONDS >= install_boot_deadline )); then
-                echo "::error::GRUB did not boot the direct Install LEOS entry after keyboard selection."
-                exit 1
-              fi
-              sleep 1
-            done
+            # The GRUB menu is rendered to the graphical console, not as a
+            # stable "Booting ..." line on the serial port. The captured serial
+            # trace already proves the arrow moved the highlight to "Install
+            # leos 45" and Enter cleared the menu. Give the kernel/initramfs a
+            # moment to start, then let the graphical OCR below be the actual
+            # success criterion.
+            sleep 10
+            if ! kill -0 "$qemu_pid" 2>/dev/null; then
+              echo "::error::QEMU exited immediately after selecting the direct installer entry."
+              exit 1
+            fi
 
             deadline=$((SECONDS + 360))
             frame=0
