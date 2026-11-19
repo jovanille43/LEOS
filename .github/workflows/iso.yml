@@ -25,6 +25,7 @@ on:
       - main
     paths:
       - ".github/workflows/iso.yml"
+      - "tools/validate-installer-iso.sh"
 
 permissions:
   contents: read
