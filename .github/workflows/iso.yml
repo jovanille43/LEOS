@@ -32,7 +32,7 @@ permissions:
 
 concurrency:
   group: leos-image-pipeline-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   generate-iso:
@@ -244,7 +244,7 @@ jobs:
                 printf "\\n--- frame %s ---\\n" "$frame"
                 printf "%s\\n" "$frame_text"
               } >> "$ocr_log"
-              if grep -Eiq "Anaconda|Installation Summary|Installation Destination|Installation Progress" "$ocr_log"; then
+              if grep -Eiq "Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI" "$ocr_log"; then
                 echo "UEFI QEMU smoke test passed: Anaconda was detected on the graphical display."
                 exit 0
               fi
