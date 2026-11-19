@@ -20,6 +20,13 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("OVMF_CODE", workflow)
         self.assertIn("xvfb-run", workflow)
         self.assertIn("tesseract", workflow)
+        qemu_step = workflow.split("      - name: Boot installer ISO with UEFI firmware in QEMU", 1)[1].split(
+            "      - name: Upload UEFI boot diagnostics", 1
+        )[0]
+        continuations = [line.rstrip() for line in qemu_step.splitlines() if line.rstrip().endswith("\\\\")]
+        self.assertTrue(continuations, "QEMU command must use shell line continuations")
+        self.assertFalse(any(line.endswith("\\\\\\\\") for line in continuations))
+        self.assertIn('2>"$qemu_error_log" &', qemu_step)
         self.assertIn("Installation Summary|Installation Destination|Installation Progress|Anaconda WebUI", workflow)
         self.assertIn("LEOS-installer-UEFI-screens/", workflow)
         self.assertLess(
