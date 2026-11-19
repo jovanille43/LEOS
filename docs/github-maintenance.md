@@ -1,6 +1,6 @@
 # Entretien et gouvernance du dépôt GitHub LEOS
 
-État observé le 18 novembre 2026. Cette page sépare les éléments déjà vérifiés des opérations qui nécessitent l'interface Settings de GitHub.
+État observé le 19 novembre 2026. Cette page sépare les éléments déjà vérifiés des opérations qui nécessitent l'interface Settings de GitHub.
 
 ## Protection de `main`
 
@@ -45,11 +45,12 @@ Les Pull Requests suivantes contiennent du travail fonctionnel ou des dépendanc
 | #4 | Détection générique des manettes | À conserver ; revue du backend matériel puis essais contrôleurs |
 | #6 | Fondations des thèmes A/B | Dépend de #2 ; comparer avec l'approche plus récente de #7 |
 | #7 | Thèmes A/B et recoloration | À conserver en brouillon ; changement large qui nécessite une revue indépendante |
-| #8 | Installateur alternatif Titanoboa | En attente ; la première ISO standard a déjà été générée par le workflow BlueBuild. Ne pas fusionner cette voie alternative avant de comparer les deux installateurs en VM |
+| #8 | Installateur alternatif Titanoboa | En attente ; dépend de #7. La chaîne standard a déjà produit une ISO ; ne pas fusionner cette voie alternative avant de comparer les deux installateurs en VM |
+| #26 | Import de dossiers de jeux console choisis | À conserver en brouillon ; valider l'import borné et le lancement sur Bazzite avant fusion |
 
 La PR #5 sur la configuration initiale Cosign a été fermée comme supersédée. Son contenu utile est remplacé par `docs/signing.md`, qui décrit le processus réellement déployé.
 
-La PR #18 a été fusionnée (documentation de l'ISO et guide VM), la PR #19 a été fusionnée (mise à jour des pages build/architecture/packaging), puis la PR #20 a été fusionnée (licence du code, périmètre des ressources, contribution, gouvernance, signature et processus de release). Les contrôles Python et BlueBuild des PR #18, #19 et #20 ont réussi.
+Les PR #18, #19 et #20 ont été fusionnées pour la documentation, l'architecture, la licence, la gouvernance, la signature et le processus de release. Le 19 novembre, la PR #30 a également été fusionnée : elle corrige la détection de l'entrée UEFI et ajoute un démarrage de l'ISO sous QEMU/OVMF avec détection graphique de l'accueil Anaconda WebUI. Les jobs Python, BlueBuild et ISO de cette PR ont tous réussi. Comme prévu, l'étape d'envoi de l'artefact est ignorée sur les exécutions `pull_request` ; seul un run `push` sur `main` ou `workflow_dispatch` réussi fournit l'ISO téléchargeable.
 
 ## Nettoyage des branches
 
