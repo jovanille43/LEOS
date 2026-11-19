@@ -17,6 +17,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("pull_request:", workflow)
         self.assertIn("github.event_name != 'pull_request'", workflow)
         self.assertIn("qemu-system-x86_64", workflow)
+        self.assertIn("-cpu max -m 6144 -smp 4", workflow)
+        self.assertIn("deadline=$((SECONDS + 900))", workflow)
         self.assertIn('-monitor "unix:$monitor_socket,server=on,wait=off"', workflow)
         self.assertIn('grep -aFq "Test this media & install" "$serial_log"', workflow)
         self.assertIn("sendkey up", workflow)
