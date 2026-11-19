@@ -38,6 +38,29 @@ Attacher `LEOS-standard-latest.iso` comme CD/DVD virtuel et placer le lecteur CD
 
 Ne pas activer le passthrough d'un disque physique, d'un contrôleur SATA/NVMe ou d'une partition de l'hôte. Ne pas sélectionner l'option d'installation sur le PC hôte.
 
+### Si GNOME Boxes affiche « No KVM »
+
+Ce message concerne la virtualisation disponible sur l'ordinateur hôte. Il ne signifie pas que l'ISO LEOS a échoué. GNOME Boxes et `virt-manager` utilisent normalement KVM pour accélérer QEMU ; changer simplement d'application ne corrige donc pas une absence de KVM.
+
+Fermer le message d'erreur, puis lancer ces commandes de diagnostic dans un terminal Ubuntu :
+
+```bash
+egrep -c '(vmx|svm)' /proc/cpuinfo
+ls -l /dev/kvm
+id -nG
+lsmod | grep -E '^kvm'
+```
+
+Interprétation :
+
+- Si la première commande renvoie `0`, redémarrer l'ordinateur dans les paramètres UEFI/BIOS et activer la virtualisation du processeur : **Intel Virtualization Technology (VT-x)** sur Intel ou **SVM Mode / AMD-V** sur AMD. Enregistrer, redémarrer Ubuntu et refaire les contrôles.
+- Si le premier résultat est supérieur à `0`, mais que `/dev/kvm` est absent, vérifier que le module KVM correspondant au processeur est chargé. Sur Intel, essayer `sudo modprobe kvm_intel` ; sur AMD, essayer `sudo modprobe kvm_amd`. Ne lancer que la commande correspondant au processeur, puis vérifier à nouveau `ls -l /dev/kvm`.
+- Si `/dev/kvm` existe mais que le compte n'a pas les droits d'accès, ajouter le compte au groupe KVM avec `sudo usermod -aG kvm "$USER"`, fermer complètement la session Ubuntu puis se reconnecter. Vérifier ensuite que `kvm` apparaît dans le résultat de `id -nG`.
+
+Ne pas appliquer de `chmod` permissif à `/dev/kvm` et ne pas modifier les disques de l'hôte. Si le message persiste, conserver les résultats des quatre commandes pour identifier précisément le blocage.
+
+Le pipeline CI de LEOS utilise aussi QEMU en émulation logicielle **TCG**, sans KVM. Un démarrage local via TCG est donc une solution de repli possible, mais il sera nettement plus lent que KVM ; le guide principal ci-dessous privilégie KVM pour l'installation interactive.
+
 ## 3. Démarrer et installer dans la VM
 
 1. Démarrer la VM sur l'ISO.
