@@ -1,6 +1,6 @@
 # Installation de LEOS
 
-## État actuel — 18 novembre 2026
+## État actuel — 19 novembre 2026
 
 La première **ISO installateur LEOS standard** a été générée avec succès par GitHub Actions après vérification de la signature de l'image publiée.
 
@@ -45,7 +45,7 @@ Le parcours du premier démarrage, y compris l'offre d'applications facultatives
 
 La première étape est décrite dans le [guide de validation en machine virtuelle](virtual-machine-validation.md). Elle permet de vérifier le démarrage et le parcours d'installation sans toucher aux partitions du PC hôte.
 
-1. Ouvrir l'historique du workflow ISO, choisir sa dernière exécution réussie qui contient l'étape **Validate ISO boot structure, checksum, and source digest** et télécharger l'artefact `LEOS-installer-standard-latest` ; extraire l'archive ZIP.
+1. Ouvrir l'historique du workflow ISO et choisir la dernière exécution réussie déclenchée par un **push sur `main`** ou par un lancement manuel (`workflow_dispatch`), jamais une exécution `pull_request`. Vérifier que les étapes **Validate ISO boot structure, checksum, and source digest**, **Boot installer ISO with UEFI firmware in QEMU** et **Upload installer ISO and checksum** ont réussi, puis télécharger l'artefact `LEOS-installer-standard-latest` et extraire l'archive ZIP. Les exécutions de pull request valident l'ISO mais ignorent volontairement l'envoi de l'artefact.
 2. Vérifier l'ISO avec `sha256sum --check LEOS-standard-latest.iso.sha256`, depuis le dossier contenant les deux fichiers.
 3. Créer une machine virtuelle UEFI avec un disque virtuel dédié ; ne jamais connecter un disque physique de l'hôte.
 4. Démarrer sur l'ISO, vérifier l'environnement proposé, puis installer uniquement sur le disque virtuel de la VM.
