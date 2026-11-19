@@ -227,7 +227,7 @@ jobs:
               -drive if=pflash,format=raw,unit=1,file="$firmware_vars" \
               -cdrom "$ISO_NAME" -boot order=d \
               -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
-              -display sdl -serial "file:$serial_log" \\
+              -display sdl -serial "file:$serial_log" \
               -monitor "unix:$monitor_socket,server=on,wait=off" -no-reboot 2>"$qemu_error_log" &
             qemu_pid=$!
             cleanup() {
@@ -252,9 +252,9 @@ jobs:
             done
 
             {
-              printf "sendkey up\\n"
+              printf "sendkey up\n"
               sleep 1
-              printf "sendkey ret\\n"
+              printf "sendkey ret\n"
             } | timeout 10s socat - "UNIX-CONNECT:$monitor_socket" >> "$monitor_log" 2>&1
 
             install_boot_deadline=$((SECONDS + 30))

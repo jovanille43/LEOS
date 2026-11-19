@@ -21,6 +21,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn('grep -aFq "Test this media & install" "$serial_log"', workflow)
         self.assertIn("sendkey up", workflow)
         self.assertIn("sendkey ret", workflow)
+        self.assertIn(r'printf "sendkey up\n"', workflow)
+        self.assertIn(r'printf "sendkey ret\n"', workflow)
         self.assertIn('grep -aEq "Booting .Install leos" "$serial_log"', workflow)
         self.assertIn("LEOS-installer-UEFI-monitor.log", workflow)
         self.assertIn("OVMF_CODE", workflow)
