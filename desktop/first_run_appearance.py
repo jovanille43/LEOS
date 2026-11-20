@@ -160,8 +160,8 @@ class DesktopAppearanceSetup:
             # Preserve the user's panel and wallpaper configuration before changing Plasma.
             backup_id = self.backups.create_backup()
             self.colors.apply_custom_theme(color_a, color_b, resolved_appearance)
-            self.style.apply_style()
-            self.icons.apply_theme()
+            self.style.apply_custom_style(color_a, color_b)
+            self.icons.apply_custom_theme(color_a, color_b)
 
             script = build_panel_management_script(
                 layout,

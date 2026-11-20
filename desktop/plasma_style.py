@@ -14,6 +14,8 @@ from typing import Any, Callable
 STYLE_ID = "leos"
 STYLE_NAME = "LEOS"
 MANAGED_BY = "LEOS Plasma Style Manager"
+from desktop.theme_asset_variants import create_recolored_theme_variant
+from desktop.themes import normalize_color
 from leos_core.paths import (
     config_home as xdg_config_home,
     data_home as xdg_data_home,
@@ -214,11 +216,11 @@ class PlasmaStyleManager:
             detail = (getattr(result, "stderr", "") or "").strip()
             raise RuntimeError(detail or "Plasma refused to apply the desktop style")
 
-    def apply_style(self) -> str:
+    def _apply_managed_style(self, style_id: str) -> str:
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-desktoptheme is unavailable")
-        if not self.style_installed():
-            raise FileNotFoundError("The LEOS Plasma Style package is not installed")
+        if not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", style_id):
+            raise ValueError("Invalid LEOS Plasma Style identifier")
         if self.state_file.is_symlink():
             raise ValueError("Symbolic-link Plasma style state files are not accepted")
         state = self._read_state()
@@ -226,26 +228,49 @@ class PlasmaStyleManager:
         if current is None:
             raise RuntimeError("The active Plasma Style cannot be identified; no change was made.")
         previous = state.get("previous_style")
-        if current.lower() != STYLE_ID:
+        is_leos_style = current.lower() == STYLE_ID or current.lower().startswith(f"{STYLE_ID}-ab-")
+        if not is_leos_style:
             previous = current
         elif not previous:
-            raise RuntimeError("LEOS is already active but its previous Plasma Style is unavailable.")
+            raise RuntimeError("A LEOS Plasma Style is active but its previous style is unavailable.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_style": previous,
-            "last_applied": STYLE_ID,
+            "last_applied": style_id,
             "apply_pending": True,
         })
-        self._apply(STYLE_ID)
+        self._apply(style_id)
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_style": previous,
-            "last_applied": STYLE_ID,
+            "last_applied": style_id,
             "apply_pending": False,
         })
-        return "Style Plasma LEOS appliqué."
+        return "Style Plasma LEOS personnalisé appliqué." if style_id != STYLE_ID else "Style Plasma LEOS appliqué."
+
+    def apply_style(self) -> str:
+        """Apply the packaged legacy LEOS Plasma Style."""
+        if not self.style_installed():
+            raise FileNotFoundError("The LEOS Plasma Style package is not installed")
+        return self._apply_managed_style(STYLE_ID)
+
+    def apply_custom_style(self, color_a: str, color_b: str) -> str:
+        """Generate and activate an immutable user-scoped A/B Plasma Style variant."""
+        first = normalize_color(color_a)
+        second = normalize_color(color_b)
+        if not self.style_installed():
+            raise FileNotFoundError("The LEOS Plasma Style package is not installed")
+        style_id = create_recolored_theme_variant(
+            self.system_theme_root / STYLE_ID,
+            self.user_theme_root,
+            STYLE_ID,
+            first,
+            second,
+            metadata_kind="plasma",
+        )
+        return self._apply_managed_style(style_id)
 
     def restore_previous_style(self) -> str:
         state = self._read_state()

@@ -12,6 +12,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
+from desktop.theme_asset_variants import create_recolored_theme_variant
+from desktop.themes import normalize_color
 from leos_core.paths import config_home as xdg_config_home, data_home as xdg_data_home, state_home as xdg_state_home
 
 ICON_THEME = "leos"
@@ -164,40 +166,62 @@ class PlasmaIconThemeManager:
             detail = (getattr(result, "stderr", "") or "").strip()
             raise RuntimeError(detail or "KDE a refusé d'appliquer le thème d'icônes.")
 
-    def apply_theme(self) -> str:
+    def _apply_managed_theme(self, theme_id: str) -> str:
         if not self.tool_available():
             raise FileNotFoundError("plasma-changeicons is unavailable")
-        if not self.theme_installed():
-            raise FileNotFoundError("Le paquet du thème d'icônes LEOS n'est pas installé.")
-        if self.state_file.is_symlink():
-            raise ValueError("LEOS icon-theme state path cannot be a symbolic link")
+        if not _THEME_RE.fullmatch(theme_id):
+            raise ValueError("Identifiant de thème d'icônes KDE invalide")
         current = self.current_theme()
         if current is None:
             raise RuntimeError("Le thème d'icônes KDE actuel ne peut pas être identifié ; aucun changement n'a été effectué.")
         state = self._read_state()
         previous = state.get("previous_theme")
-        if current.lower() != ICON_THEME:
+        is_leos_theme = current.lower() == ICON_THEME or current.lower().startswith(f"{ICON_THEME}-ab-")
+        if not is_leos_theme:
             previous = current
         elif not previous:
-            raise RuntimeError("Les icônes LEOS sont déjà actives, mais le thème précédent est indisponible.")
+            raise RuntimeError("Un thème d'icônes LEOS est déjà actif, mais le thème précédent est indisponible.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_theme": previous,
-            "last_applied": ICON_THEME,
+            "last_applied": theme_id,
             "apply_pending": True,
         })
-        self._apply(ICON_THEME)
-        if self.current_theme() != ICON_THEME:
-            raise RuntimeError("KDE did not confirm activation of the LEOS icon theme.")
+        self._apply(theme_id)
+        if self.current_theme() != theme_id:
+            raise RuntimeError("KDE n'a pas confirmé l'activation du thème d'icônes LEOS.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_theme": previous,
-            "last_applied": ICON_THEME,
+            "last_applied": theme_id,
             "apply_pending": False,
         })
-        return "Thème d'icônes LEOS appliqué."
+        return "Thème d'icônes LEOS personnalisé appliqué." if theme_id != ICON_THEME else "Thème d'icônes LEOS appliqué."
+
+    def apply_theme(self) -> str:
+        """Apply the packaged legacy LEOS icon theme."""
+        if not self.theme_installed():
+            raise FileNotFoundError("Le paquet du thème d'icônes LEOS n'est pas installé.")
+        return self._apply_managed_theme(ICON_THEME)
+
+    def apply_custom_theme(self, color_a: str, color_b: str) -> str:
+        """Generate and activate an immutable user-scoped A/B icon-theme variant."""
+        first = normalize_color(color_a)
+        second = normalize_color(color_b)
+        source = self.system_icon_root / ICON_THEME
+        if not (source / "index.theme").is_file() or (source / "index.theme").is_symlink():
+            raise FileNotFoundError("Le paquet source du thème d'icônes LEOS est indisponible.")
+        theme_id = create_recolored_theme_variant(
+            source,
+            self.data_home / "icons",
+            ICON_THEME,
+            first,
+            second,
+            metadata_kind="icons",
+        )
+        return self._apply_managed_theme(theme_id)
 
     def restore_previous_theme(self) -> str:
         previous = self._read_state().get("previous_theme")
