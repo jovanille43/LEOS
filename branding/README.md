@@ -13,7 +13,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - L’utilisateur choisit deux accents indépendants A et B avec le sélecteur natif ou un code HEX `#RRGGBB`.
 - Les couleurs peuvent être identiques ou proches ; un contraste faible déclenche un avertissement de lisibilité, sans changer A ni B.
 - Les surfaces sombres, les tons neutres et les reflets métalliques restent préservés.
-- Les cyan/magenta historiques sont uniquement des valeurs de prévisualisation héritées, jamais une paire obligatoire.
+- Les accents présents dans les visuels d'origine sont uniquement des points techniques de transformation ; ils ne sont jamais imposés comme couleurs utilisateur.
 - Les variantes de logos, de fonds et, lorsque l’encodeur est disponible, d’introductions sont générées dans le cache privé utilisateur. Les sources officielles restent intactes.
 
 ## Organisation
@@ -26,7 +26,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 - `animations/gaming-roar-reference.mp4` — variante secondaire de référence.
 - `wallpapers/desktop-leos.svg` — fond Desktop 4K (3840 × 2160), avec l'emblème officiel référencé depuis `desktop-logo.jpeg` sans modification.
 - `wallpapers/gaming-leos.svg` — fond Gaming 4K (3840 × 2160), avec l'emblème officiel référencé depuis `gaming-logo.jpeg` sans modification.
-- Les deux fonds sont des ressources sélectionnables ; aucun n'est appliqué automatiquement.
+- Le fond Desktop personnalisé est appliqué après consentement explicite et sauvegarde Plasma ; le fond Gaming reste une ressource officielle disponible pour l'interface correspondante.
 - `icons/` — icônes et éléments graphiques.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.

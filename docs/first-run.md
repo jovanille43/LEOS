@@ -1,5 +1,11 @@
 # Premier démarrage de LEOS
 
+## Choix obligatoire de l'identité A/B
+
+À la toute première ouverture, avant que Desktop ou Gaming puisse être lancé, le sélecteur ouvre un écran LEOS de choix des couleurs. L'utilisateur choisit séparément A et B ; aucune palette cyan/magenta historique n'est proposée ni appliquée par défaut. Les tons métalliques visibles avant ce choix sont de simples repères neutres. La validation enregistre la paire dans les paramètres LEOS, puis le même dégradé est transmis aux interfaces et aux ressources graphiques qui peuvent être recolorées. Si une couleur manque ou si l'enregistrement échoue, le sélecteur reste ouvert et aucun mode n'est lancé.
+
+Les couleurs source présentes dans les anciennes ressources graphiques sont conservées uniquement pour calculer la transformation des visuels ; elles ne sont pas exposées comme palette de l'utilisateur.
+
 ## Guide d'accueil
 
 Lors de la première ouverture du sélecteur, LEOS affiche un guide non bloquant qui rappelle :
@@ -17,7 +23,7 @@ Lors du premier choix de **Desktop Mode**, le sélecteur propose séparément d'
 
 - Le choix **Activer l'apparence LEOS** vérifie la présence des outils et ressources, inspecte la disposition Plasma et refuse les configurations multi-panneaux ou non inspectables.
 - Avant toute modification du panneau ou du fond d'écran, LEOS crée une sauvegarde vérifiée de `plasma-org.kde.plasma.desktop-appletsrc`.
-- Après confirmation, LEOS applique le schéma couleur **LEOS Original**, le Plasma Style **LEOS**, le thème d'icônes **LEOS**, le fond officiel Desktop et le dock inférieur centré avec les applications disponibles.
+- Après confirmation, LEOS génère puis applique le schéma de couleurs, le Plasma Style, les icônes et le fond Desktop à partir de la paire A/B choisie, puis configure le dock inférieur centré avec les applications disponibles.
 - Les gestionnaires de couleurs et de style conservent chacun le thème précédent pour restauration. Si une étape échoue, LEOS tente de restaurer la disposition, le style et les couleurs précédents ; le choix reste en attente pour permettre une nouvelle tentative.
 - Le choix **Garder mon bureau actuel** enregistre `desktop_appearance_setup=skipped` et ne modifie aucun réglage KDE. Le Centre de contrôle reste disponible pour une personnalisation ultérieure.
 - Une application réussie enregistre `desktop_appearance_setup=applied`.

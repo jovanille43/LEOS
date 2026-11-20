@@ -28,8 +28,23 @@ ApplicationWindow {
     property string pendingMode: ""
     property bool transitionInProgress: false
     property int appearanceDialogFocusIndex: 0
+    property int identityDialogFocusIndex: 0
+
+    Component.onCompleted: {
+        if (!leosTheme.themeColorsConfigured) {
+            Qt.callLater(function() {
+                identityDialog.open()
+                identityColorAButton.forceActiveFocus()
+            })
+        }
+    }
 
     function requestDesktopMode() {
+        if (!leosTheme.themeColorsConfigured) {
+            identityDialog.open()
+            identityColorAButton.forceActiveFocus()
+            return
+        }
         if (modeSelectorController.desktopAppearanceStatus === "pending") {
             appearanceDialogFocusIndex = 0
             appearanceDialog.open()
@@ -71,6 +86,29 @@ ApplicationWindow {
         }
     }
 
+    function requestGamingMode() {
+        if (!leosTheme.themeColorsConfigured) {
+            identityDialog.open()
+            identityColorAButton.forceActiveFocus()
+            return
+        }
+        transitionDialog.open()
+    }
+
+    function applyIdentityColors() {
+        if (!draftColorAChosen || !draftColorBChosen) {
+            identityStatusText.text = "Choisis les deux couleurs A et B pour définir l'identité de LEOS."
+            return false
+        }
+        themeColorNotice = leosTheme.setThemeColors(draftColorA, draftColorB)
+        if (leosTheme.themeColorsConfigured) {
+            identityDialog.close()
+            return true
+        }
+        identityStatusText.text = themeColorNotice
+        return false
+    }
+
     function requestModeWithIntro(mode) {
         if (transitionInProgress)
             return
@@ -104,6 +142,25 @@ ApplicationWindow {
     function handleGamepadAction(action) {
         if (transitionInProgress)
             return
+        if (identityDialog.visible) {
+            if (action === "left" || action === "right" || action === "up" || action === "down") {
+                identityDialogFocusIndex = (identityDialogFocusIndex + 1) % 3
+                if (identityDialogFocusIndex === 0)
+                    identityColorAButton.forceActiveFocus()
+                else if (identityDialogFocusIndex === 1)
+                    identityColorBButton.forceActiveFocus()
+                else
+                    identityApplyButton.forceActiveFocus()
+            } else if (action === "confirm") {
+                if (identityDialogFocusIndex === 0)
+                    initialColorADialog.open()
+                else if (identityDialogFocusIndex === 1)
+                    initialColorBDialog.open()
+                else
+                    applyIdentityColors()
+            }
+            return
+        }
         if (appearanceDialog.visible) {
             if (modeSelectorController.appearanceSetupRunning)
                 return
@@ -148,7 +205,7 @@ ApplicationWindow {
                 desktopCard.forceActiveFocus()
         } else if (action === "confirm") {
             if (gamingCard.activeFocus)
-                transitionDialog.open()
+                window.requestGamingMode()
             else
                 window.requestDesktopMode()
         }
@@ -190,12 +247,12 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: "#102b3a"; opacity: 0.18
+            color: window.colorA; opacity: 0.14
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: "#321437"; opacity: 0.15
+            color: window.colorB; opacity: 0.12
         }
 
         ColumnLayout {
@@ -253,8 +310,8 @@ ApplicationWindow {
                 Layout.preferredHeight: 104
                 visible: !modeSelectorController.onboardingComplete
                 radius: 15
-                color: "#101923"
-                border.color: "#254253"
+                color: window.themeColors.surface
+                border.color: window.colorA
 
                 RowLayout {
                     anchors.fill: parent
@@ -294,7 +351,7 @@ ApplicationWindow {
                         onClicked: modeSelectorController.completeOnboarding()
                         background: Rectangle {
                             radius: 8
-                            color: "#17313d"
+                            color: window.themeColors.surface_elevated
                             border.color: window.colorA
                         }
                         contentItem: Label {
@@ -322,9 +379,9 @@ ApplicationWindow {
                     onClicked: window.requestDesktopMode()
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? "#1a2630" : "#111720"
+                        color: desktopCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.colorA : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.colorA : window.themeColors.border
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -355,7 +412,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Une expérience KDE personnalisée"
-                            color: "#687487"
+                            color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -367,12 +424,12 @@ ApplicationWindow {
                     id: gamingCard
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    onClicked: transitionDialog.open()
+                    onClicked: window.requestGamingMode()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? "#25172a" : "#15121d"
+                        color: gamingCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.colorB : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.colorB : window.themeColors.border
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -403,7 +460,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Vos jeux et lanceurs réunis au même endroit"
-                            color: "#687487"
+                            color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -419,14 +476,14 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
-                text: "Bazzite KDE · Une seule session · Aucune application ne sera fermée automatiquement"
-                color: "#667184"
+                text: "LEOS · Une seule session Desktop/Gaming · Aucune application ne sera fermée automatiquement"
+                color: window.themeColors.muted_text
                 font.pixelSize: 10
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
                 text: modeSelectorController.gamepadStatus
-                color: "#596779"
+                color: window.themeColors.muted_text
                 font.pixelSize: 9
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -437,8 +494,10 @@ ApplicationWindow {
                 event.accepted = true
                 return
             }
-            if (event.key === Qt.Key_G) {
-                transitionDialog.open()
+            if (identityDialog.visible) {
+                event.accepted = true
+            } else if (event.key === Qt.Key_G) {
+                window.requestGamingMode()
                 event.accepted = true
             } else if (event.key === Qt.Key_D) {
                 window.requestDesktopMode()
@@ -451,10 +510,6 @@ ApplicationWindow {
                 event.accepted = true
             } else if (event.key === Qt.Key_Escape && appearanceDialog.visible) {
                 appearanceDialog.close()
-                event.accepted = true
-            } else if (event.key === Qt.Key_G && appearanceDialog.visible) {
-                appearanceDialog.close()
-                transitionDialog.open()
                 event.accepted = true
             } else if (event.key === Qt.Key_Escape && transitionDialog.visible) {
                 transitionDialog.close()
@@ -519,6 +574,78 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: identityDialog
+        title: "Bienvenue dans LEOS — identité visuelle"
+        modal: true
+        anchors.centerIn: parent
+        closePolicy: Popup.NoAutoClose
+        width: 580
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
+            Label {
+                text: "Avant de choisir ton environnement, définis les deux couleurs qui signeront LEOS. Elles seront reprises dans les logos, fonds, interfaces, icônes et le style du bureau. Tu gardes le contrôle : aucune couleur n'est présélectionnée comme identité."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Button {
+                    id: identityColorAButton
+                    Layout.fillWidth: true
+                    text: window.draftColorAChosen ? "COULEUR A · " + window.draftColorA : "CHOISIR LA COULEUR A"
+                    onClicked: initialColorADialog.open()
+                    background: Rectangle { radius: 8; color: window.themeColors.surface; border.color: window.colorA }
+                    contentItem: Label { text: identityColorAButton.text; color: window.themeColors.text; horizontalAlignment: Text.AlignHCenter }
+                }
+                Button {
+                    id: identityColorBButton
+                    Layout.fillWidth: true
+                    text: window.draftColorBChosen ? "COULEUR B · " + window.draftColorB : "CHOISIR LA COULEUR B"
+                    onClicked: initialColorBDialog.open()
+                    background: Rectangle { radius: 8; color: window.themeColors.surface; border.color: window.colorB }
+                    contentItem: Label { text: identityColorBButton.text; color: window.themeColors.text; horizontalAlignment: Text.AlignHCenter }
+                }
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 12
+                radius: 6
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: window.draftColorA }
+                    GradientStop { position: 1.0; color: window.draftColorB }
+                }
+            }
+            Label {
+                id: identityStatusText
+                text: (!window.draftColorAChosen || !window.draftColorBChosen)
+                      ? "Choisis une couleur A et une couleur B. Les tons métalliques visibles ici sont de simples repères neutres."
+                      : "Ton dégradé LEOS est prêt. Tu peux maintenant choisir Desktop ou Gaming."
+                color: window.colorAText
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                id: identityApplyButton
+                text: "VALIDER L'IDENTITÉ LEOS"
+                enabled: window.draftColorAChosen && window.draftColorBChosen
+                Layout.fillWidth: true
+                onClicked: window.applyIdentityColors()
+                background: Rectangle {
+                    radius: 9
+                    color: identityApplyButton.enabled ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.color: identityApplyButton.activeFocus ? window.colorB : window.colorA
+                }
+                contentItem: Label { text: identityApplyButton.text; color: window.themeColors.text; font.weight: Font.Bold; horizontalAlignment: Text.AlignHCenter }
+            }
+        }
+    }
+
+    Dialog {
         id: appearanceDialog
         title: "Activer l'apparence LEOS"
         modal: true
@@ -576,7 +703,7 @@ ApplicationWindow {
             }
             Label {
                 text: (!window.draftColorAChosen || !window.draftColorBChosen)
-                      ? "Les couleurs visibles au départ sont un aperçu historique, pas une sélection. Choisis librement A et B."
+                      ? "L'aperçu initial reste métallique et neutre. Choisis librement A et B : aucune paire de couleurs n'est imposée."
                       : "Dégradé personnalisé LEOS · A vers B"
                 color: window.muted
                 font.pixelSize: 10
@@ -626,7 +753,7 @@ ApplicationWindow {
                 onClicked: window.activateDesktopAppearance()
                 background: Rectangle {
                     radius: 9
-                    color: applyAppearanceButton.enabled ? "#17313d" : "#17212a"
+                    color: applyAppearanceButton.enabled ? window.themeColors.surface_elevated : window.themeColors.surface
                     border.color: applyAppearanceButton.activeFocus ? window.colorB : window.colorA
                 }
                 contentItem: Label {
@@ -645,7 +772,7 @@ ApplicationWindow {
                 background: Rectangle {
                     radius: 9
                     color: "transparent"
-                    border.color: keepAppearanceButton.activeFocus ? window.colorA : "#485366"
+                    border.color: keepAppearanceButton.activeFocus ? window.colorA : window.themeColors.border
                 }
                 contentItem: Label {
                     text: keepAppearanceButton.text
@@ -681,7 +808,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.colorA }
+                background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.colorA }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
