@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fail closed if a generated LEOS installer ISO is incomplete or not UEFI bootable.
-# This is a structural check; it does not replace a real VM or hardware install test.
+# This is a structural check; it does not replace a complete VM installation test.
 
 set -euo pipefail
 
@@ -57,8 +57,7 @@ fi
 
 # UEFI El Torito entries use Platform ID 0xef (239).
 # xorriso versions differ: some report the EFI platform as numeric 0xef,
-# while current releases print the decoded platform name "UEFI" in the
-# El Torito boot-image table. Accept either explicit representation.
+# while current releases print the decoded platform name "UEFI".
 if ! grep -Eiq 'Platform Id[[:space:]]*:[[:space:]]*0xef([[:space:]]|$)|El Torito boot img[[:space:]]*:[[:space:]]*[0-9]+[[:space:]]+UEFI([[:space:]]|$)' "$tmp_dir/el-torito.txt"; then
   cat "$tmp_dir/el-torito.txt" >&2
   die "The ISO does not advertise a UEFI El Torito boot entry."
@@ -83,9 +82,7 @@ for path in "${required_paths[@]}"; do
   echo "Verified ISO content: $path"
 done
 
-
-# Inspect the SquashFS runtime embedded in the ISO. The package transaction in
-# the build log is not sufficient: the final image must contain the WebUI.
+# Inspect the Anaconda runtime embedded in the ISO, not just the build logs.
 if ! bsdtar -xOf "$iso_path" images/install.img >"$tmp_dir/install.img"; then
   die "Could not extract the Anaconda runtime image from the ISO."
 fi
@@ -108,5 +105,40 @@ for path in "${required_webui_paths[@]}"; do
   echo "Verified Anaconda WebUI runtime file: $path"
 done
 
+# BlueBuild's Server installer variant must be selected by Anaconda itself.
+# Checking only that a Fedora Server profile file exists is insufficient:
+# Anaconda chooses profiles from ID and VARIANT_ID in the live OS identity.
+server_profile="$tmp_dir/fedora-server.conf"
+fedora_profile="$tmp_dir/fedora.conf"
+installer_os_release="$tmp_dir/os-release"
+
+if ! unsquashfs -cat "$tmp_dir/install.img" usr/lib/os-release >"$installer_os_release" 2>/dev/null; then
+  die "Could not read the Anaconda installer OS identity."
+fi
+
+grep -Eq '^[[:space:]]*ID=fedora[[:space:]]*$' "$installer_os_release" ||
+  die "The installer OS identity is not Fedora."
+grep -Eq '^[[:space:]]*VARIANT_ID=server[[:space:]]*$' "$installer_os_release" ||
+  die "The installer OS identity does not select the Fedora Server Anaconda profile."
+
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora-server.conf >"$server_profile" 2>/dev/null; then
+  die "The Fedora Server Anaconda profile required for account creation is missing."
+fi
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora.conf >"$fedora_profile" 2>/dev/null; then
+  die "The base Fedora Anaconda profile required by the Server profile is missing."
+fi
+
+grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda runtime does not contain the expected fedora-server profile."
+grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*$' "$server_profile" ||
+  die "The fedora-server profile does not inherit the generic Fedora profile."
+grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda Server profile does not match VARIANT_ID=server."
+
+if grep -Eq '^[[:space:]]*anaconda-screen-accounts([[:space:]]|$)' "$server_profile" "$fedora_profile"; then
+  die "The Anaconda account page is hidden by the selected Server profile chain."
+fi
+
+echo "Verified Fedora Server installer identity, selected Anaconda profile, and visible account-setup configuration."
 echo "LEOS installer ISO structural validation passed."
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+echo "Note: complete installation, first boot, and hardware compatibility still require separate tests."

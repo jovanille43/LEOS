@@ -49,7 +49,7 @@ La première étape est décrite dans le [guide de validation en machine virtuel
 2. Vérifier l'ISO avec `sha256sum --check LEOS-standard-latest.iso.sha256`, depuis le dossier contenant les deux fichiers.
 3. Créer une machine virtuelle UEFI avec un disque virtuel dédié ; ne jamais connecter un disque physique de l'hôte.
 4. Démarrer sur l'ISO, vérifier l'environnement proposé, puis installer uniquement sur le disque virtuel de la VM.
-5. Vérifier que l'installateur Anaconda WebUI s'ouvre, que la connexion réseau virtuelle est détectée, puis installer uniquement sur le disque virtuel. Effectuer ensuite les contrôles KDE, réseau, audio et transitions Desktop/Gaming.
+5. Vérifier que l'installateur Anaconda WebUI s'ouvre, que la connexion réseau virtuelle est détectée et que la page de création du compte est proposée. Le générateur utilise volontairement le profil d'installateur Fedora Server pour laisser cette page visible ; cela ne change pas l'image cible, qui reste LEOS. Créer le compte dans Anaconda puis installer uniquement sur le disque virtuel. Si la page de création du compte est absente, arrêter le test et ne pas considérer l'ISO comme exploitable. Effectuer ensuite les contrôles KDE, réseau, audio et transitions Desktop/Gaming.
 6. Consigner les anomalies et conserver l'ISO ainsi que le fichier SHA-256 utilisés.
 
 ## Validation sur matériel physique

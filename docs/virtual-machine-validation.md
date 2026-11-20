@@ -65,7 +65,7 @@ Le pipeline CI de LEOS utilise aussi QEMU en émulation logicielle **TCG**, sans
 
 1. Démarrer la VM sur l'ISO.
 2. Vérifier que l'environnement d'installation se charge, que l'interface Anaconda WebUI apparaît et que l'affichage reste utilisable. Attendre jusqu'à 5 minutes au premier démarrage ; si une erreur critique ou une boucle apparaît, arrêter le test et conserver les journaux au lieu de relancer une installation.
-3. Vérifier que la connexion réseau NAT est détectée. Avant de confirmer le partitionnement, vérifier que le seul disque proposé est le disque virtuel QCOW2 de 80 Gio créé pour `LEOS-VM-test`.
+3. Vérifier que la connexion réseau NAT est détectée et que l'installateur propose une page de création du compte utilisateur. Le profil Server concerne uniquement l'environnement Anaconda ; l'image déployée reste LEOS. Créer le compte dans l'installateur. Si la page de création du compte est absente, annuler le test et consigner l'anomalie plutôt que poursuivre vers un système sans compte. Avant de confirmer le partitionnement, vérifier que le seul disque proposé est le disque virtuel QCOW2 de 80 Gio créé pour `LEOS-VM-test`.
 4. Si le réseau est absent, si un disque réel de l'ordinateur hôte apparaît ou si le disque cible n'est pas clairement identifiable, annuler et arrêter l'installation.
 5. Une fois le disque virtuel confirmé, effectuer l'installation dans la VM.
 6. Redémarrer sur le disque virtuel installé et retirer/détacher l'ISO si nécessaire pour éviter de relancer l'installateur.
@@ -76,6 +76,8 @@ L'opération peut effacer le disque virtuel de cette VM ; elle ne doit jamais av
 
 Cocher uniquement les tests réellement effectués :
 
+- [ ] Un compte utilisateur a été créé pendant l'installation Anaconda.
+- [ ] La connexion KDE fonctionne avec ce compte et son mot de passe.
 - [ ] L'installation se termine sans erreur.
 - [ ] Le système redémarre depuis le disque virtuel.
 - [ ] L'écran de connexion KDE apparaît.
