@@ -369,6 +369,23 @@ class GamingController(QObject):
     def emulatorFolderDirectories(self) -> list[str]:
         return list_child_directories(self._emulator_folder_path)
 
+    @Property("QVariantList", notify=emulatorFolderBrowserChanged)
+    def emulatorSourceFolders(self) -> list[dict[str, str]]:
+        return self.library.emulatorSourceFolders()
+
+    @Slot(str, str, result=bool)
+    def removeEmulatorFolder(self, platform_key: str, folder: str) -> bool:
+        removed = self.library.removeEmulatorFolder(platform_key, folder)
+        self._message = (
+            "Dossier retiré de la bibliothèque Gaming. Les fichiers du disque n'ont pas été modifiés."
+            if removed else
+            "Impossible de retirer ce dossier. Actualise la bibliothèque et réessaie."
+        )
+        self.messageChanged.emit(self._message)
+        if removed:
+            self.emulatorFolderBrowserChanged.emit()
+        return removed
+
     @Slot(str, result=bool)
     def beginEmulatorFolderBrowse(self, platform_key: str) -> bool:
         if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
