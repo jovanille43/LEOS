@@ -150,12 +150,14 @@ ApplicationWindow {
     }
 
     function focusToolbar(index) {
-        toolbarFocusIndex = Math.max(0, Math.min(2, index))
+        toolbarFocusIndex = Math.max(0, Math.min(3, index))
         navigationArea = "toolbar"
         if (toolbarFocusIndex === 0)
             searchField.forceActiveFocus()
         else if (toolbarFocusIndex === 1)
             refreshLibraryButton.forceActiveFocus()
+        else if (toolbarFocusIndex === 2)
+            importEmulatorFolderButton.forceActiveFocus()
         else
             addGameButton.forceActiveFocus()
     }
@@ -179,6 +181,8 @@ ApplicationWindow {
             leos.refreshLibrary()
             navigationArea = "games"
             gameGrid.forceActiveFocus()
+        } else if (toolbarFocusIndex === 2) {
+            emulatorImportDialog.open()
         } else {
             addDialog.open()
         }
@@ -326,6 +330,57 @@ ApplicationWindow {
                 statusText.text = leos.powerProfileStatus
             } else if (action === "back") {
                 powerProfileDialog.close()
+            }
+            return
+        }
+        if (emulatorImportDialog.visible) {
+            if (action === "back") {
+                emulatorImportDialog.close()
+            } else if (action === "confirm") {
+                emulatorImportDialog.close()
+                emulatorFolderDialog.open()
+            }
+            return
+        }
+        if (emulatorFolderDialog.visible) {
+            const directoryCount = leos.emulatorFolderDirectories.length
+            if (action === "back") {
+                emulatorFolderDialog.close()
+            } else if (action === "left") {
+                leos.browseEmulatorFolderParent()
+                folderDirectoryList.currentIndex = directoryCount > 0 ? 0 : -1
+                if (folderDirectoryList.currentItem)
+                    folderDirectoryList.currentItem.forceActiveFocus()
+            } else if (action === "up" || action === "down") {
+                if (directoryCount > 0) {
+                    const step = action === "up" ? -1 : 1
+                    folderDirectoryList.currentIndex = Math.max(
+                        0, Math.min(directoryCount - 1,
+                                    folderDirectoryList.currentIndex + step))
+                    folderDirectoryList.positionViewAtIndex(
+                        folderDirectoryList.currentIndex, ListView.Contain)
+                    if (folderDirectoryList.currentItem)
+                        folderDirectoryList.currentItem.forceActiveFocus()
+                }
+            } else if (action === "confirm" || action === "right") {
+                if (folderDirectoryList.currentIndex >= 0 &&
+                    folderDirectoryList.currentIndex < directoryCount) {
+                    const folderName = leos.emulatorFolderDirectories[
+                        folderDirectoryList.currentIndex]
+                    if (leos.enterEmulatorFolder(folderName)) {
+                        folderDirectoryList.currentIndex =
+                            leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                        if (folderDirectoryList.currentItem)
+                            folderDirectoryList.currentItem.forceActiveFocus()
+                    }
+                }
+            } else if (action === "menu") {
+                if (leos.useCurrentEmulatorFolder()) {
+                    emulatorFolderDialog.close()
+                    window.clearSelection()
+                    window.navigationArea = "games"
+                    gameGrid.forceActiveFocus()
+                }
             }
             return
         }
@@ -812,8 +867,8 @@ ApplicationWindow {
                             }
                         }
                         Button {
-                            id: addGameButton
-                            text: "+ AJOUTER UN JEU"
+                            id: importEmulatorFolderButton
+                            text: "IMPORTER UN DOSSIER"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
@@ -823,13 +878,41 @@ ApplicationWindow {
                             onClicked: {
                                 window.navigationArea = "toolbar"
                                 window.toolbarFocusIndex = 2
+                                emulatorImportDialog.open()
+                            }
+                            background: Rectangle {
+                                radius: 9
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "#1a2c38" : "#151a24"
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
+                            }
+                            contentItem: Label {
+                                text: importEmulatorFolderButton.text
+                                color: "white"
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+                        Button {
+                            id: addGameButton
+                            text: "+ AJOUTER UN JEU"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 3
+                                }
+                            }
+                            onClicked: {
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 3
                                 addDialog.open()
                             }
                             background: Rectangle {
                                 radius: 9
                                 color: "#17313d"
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "white" : window.cyan
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.cyan
                             }
                             contentItem: Label {
                                 text: addGameButton.text
@@ -1304,6 +1387,266 @@ ApplicationWindow {
                     color: "white"
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: emulatorImportDialog
+        title: "Importer des jeux console"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 470
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 12
+            Label {
+                text: "Choisis la plateforme correspondant aux fichiers du dossier."
+                color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            ComboBox {
+                id: emulatorPlatformCombo
+                Layout.fillWidth: true
+                model: [
+                    "Nintendo GameCube / Wii",
+                    "PlayStation 2",
+                    "PlayStation Portable (PSP)"
+                ]
+            }
+            Label {
+                text: "LEOS parcourra uniquement le dossier que tu sélectionnes et ses sous-dossiers (limites de profondeur et de fichiers). Les jeux ne seront ni modifiés ni déplacés."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                font.pixelSize: 10
+            }
+            Label {
+                text: "Les émulateurs correspondants doivent être installés depuis la boutique LEOS. Les BIOS et jeux ne sont pas fournis."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                font.pixelSize: 10
+            }
+            Button {
+                text: "CHOISIR LE DOSSIER"
+                Layout.fillWidth: true
+                onClicked: {
+                    const platformKeys = ["gamecube_wii", "ps2", "psp"]
+                    if (leos.beginEmulatorFolderBrowse(
+                                platformKeys[emulatorPlatformCombo.currentIndex])) {
+                        emulatorImportDialog.close()
+                        emulatorFolderDialog.open()
+                    }
+                }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                contentItem: Label {
+                    text: "CHOISIR LE DOSSIER"
+                    color: "white"
+                    font.weight: Font.Bold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: emulatorFolderDialog
+        title: "CHOISIR LE DOSSIER DES JEUX"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 80, 720)
+        height: Math.min(window.height - 100, 650)
+        standardButtons: Dialog.NoButton
+
+        onOpened: {
+            folderDirectoryList.currentIndex =
+                leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+            if (folderDirectoryList.currentItem)
+                folderDirectoryList.currentItem.forceActiveFocus()
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 12
+
+            Label {
+                text: "EMPLACEMENT"
+                color: window.cyan
+                font.pixelSize: 10
+                font.letterSpacing: 2
+            }
+            Label {
+                text: leos.emulatorFolderPath
+                color: "white"
+                font.pixelSize: 12
+                Layout.fillWidth: true
+                elide: Text.ElideMiddle
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Button {
+                    text: "← DOSSIER PARENT"
+                    onClicked: {
+                        leos.browseEmulatorFolderParent()
+                        folderDirectoryList.currentIndex =
+                            leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                    }
+                    background: Rectangle {
+                        radius: 8
+                        color: "#18232d"
+                        border.color: "#334555"
+                    }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+                Item { Layout.fillWidth: true }
+                Label {
+                    text: "A : ouvrir  ·  ← : parent  ·  Menu : choisir"
+                    color: window.muted
+                    font.pixelSize: 10
+                }
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: 10
+                color: "#101720"
+                border.color: "#293746"
+                ListView {
+                    id: folderDirectoryList
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    clip: true
+                    spacing: 4
+                    focus: true
+                    model: leos.emulatorFolderDirectories
+                    delegate: Button {
+                        required property string modelData
+                        required property int index
+                        width: ListView.view.width
+                        height: 46
+                        text: "📁  " + modelData
+                        onActiveFocusChanged: {
+                            if (activeFocus)
+                                folderDirectoryList.currentIndex = index
+                        }
+                        onClicked: {
+                            if (leos.enterEmulatorFolder(modelData)) {
+                                folderDirectoryList.currentIndex =
+                                    leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                                if (folderDirectoryList.currentItem)
+                                    folderDirectoryList.currentItem.forceActiveFocus()
+                            }
+                        }
+                        background: Rectangle {
+                            radius: 7
+                            color: folderDirectoryList.currentIndex === index
+                                   ? "#19313d" : "#151d28"
+                            border.width: folderDirectoryList.currentIndex === index ? 2 : 1
+                            border.color: folderDirectoryList.currentIndex === index
+                                          ? window.cyan : "#283543"
+                        }
+                        contentItem: Label {
+                            text: parent.text
+                            color: "white"
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 10
+                        }
+                    }
+                    Keys.onUpPressed: {
+                        if (count > 0)
+                            currentIndex = Math.max(0, currentIndex - 1)
+                        event.accepted = true
+                    }
+                    Keys.onDownPressed: {
+                        if (count > 0)
+                            currentIndex = Math.min(count - 1, currentIndex + 1)
+                        event.accepted = true
+                    }
+                    Keys.onLeftPressed: {
+                        leos.browseEmulatorFolderParent()
+                        currentIndex = leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                        event.accepted = true
+                    }
+                    Keys.onRightPressed: {
+                        if (currentIndex >= 0 && currentIndex < count) {
+                            const name = leos.emulatorFolderDirectories[currentIndex]
+                            if (leos.enterEmulatorFolder(name))
+                                currentIndex = leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                        }
+                        event.accepted = true
+                    }
+                    Keys.onReturnPressed: {
+                        if (currentIndex >= 0 && currentIndex < count) {
+                            const name = leos.emulatorFolderDirectories[currentIndex]
+                            if (leos.enterEmulatorFolder(name))
+                                currentIndex = leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                        }
+                        event.accepted = true
+                    }
+                    Keys.onEnterPressed: {
+                        if (currentIndex >= 0 && currentIndex < count) {
+                            const name = leos.emulatorFolderDirectories[currentIndex]
+                            if (leos.enterEmulatorFolder(name))
+                                currentIndex = leos.emulatorFolderDirectories.length > 0 ? 0 : -1
+                        }
+                        event.accepted = true
+                    }
+                }
+                Label {
+                    anchors.centerIn: parent
+                    visible: folderDirectoryList.count === 0
+                    text: "Aucun sous-dossier accessible à cet emplacement."
+                    color: window.muted
+                    font.pixelSize: 12
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                Button {
+                    text: "ANNULER"
+                    onClicked: emulatorFolderDialog.close()
+                    background: Rectangle {
+                        radius: 8
+                        color: "transparent"
+                        border.color: "#394657"
+                    }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+                Button {
+                    text: "UTILISER CE DOSSIER"
+                    onClicked: {
+                        if (leos.useCurrentEmulatorFolder()) {
+                            emulatorFolderDialog.close()
+                            window.clearSelection()
+                            window.navigationArea = "games"
+                            gameGrid.forceActiveFocus()
+                        }
+                    }
+                    background: Rectangle {
+                        radius: 8
+                        color: "#17313d"
+                        border.color: window.cyan
+                    }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
                 }
             }
         }
