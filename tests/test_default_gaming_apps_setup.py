@@ -20,6 +20,7 @@ EXPECTED_APPS = {
     "org.ppsspp.PPSSPP",
     "net.kuribo64.melonDS",
     "net.rpcs3.RPCS3",
+    "dev.eden_emu.eden",
 }
 
 
@@ -91,7 +92,7 @@ exit 0
 
     @property
     def marker(self):
-        return self.state_dir / "gaming-apps-seeded-v1"
+        return self.state_dir / "gaming-apps-seeded-v2"
 
     def run_setup(self, *, fail_app="", fail_remote=False, remote_url="https://dl.flathub.org/repo/"):
         env = os.environ.copy()
@@ -148,7 +149,7 @@ exit 0
         self.assertEqual(declared, EXPECTED_APPS)
         self.assertEqual(bundled, EXPECTED_APPS)
 
-    def test_installs_the_seven_starter_apps_without_an_extra_prompt(self):
+    def test_installs_the_eight_starter_apps_without_an_extra_prompt(self):
         result = self.run_setup()
         self.assert_setup_succeeded(result)
         self.assertTrue(self.marker.is_file())
@@ -156,6 +157,26 @@ exit 0
         self.assertEqual(len(self.install_ids()), len(EXPECTED_APPS))
         self.assertEqual(sum("remote-add " in line for line in self.command_lines()), 1)
         self.assertFalse(any(line.startswith("kdialog ") for line in self.command_lines()))
+
+    def test_v1_upgrade_installs_only_eden_and_preserves_prior_user_uninstalls(self):
+        old_apps = EXPECTED_APPS - {"dev.eden_emu.eden"}
+        self.state_dir.mkdir(parents=True)
+        (self.state_dir / "gaming-apps-seeded-v1").write_text(
+            "completed\\n", encoding="utf-8"
+        )
+        # Simulate an app removed by the user after the old starter set completed.
+        previously_installed = old_apps - {"net.rpcs3.RPCS3"}
+        self.installed_file.write_text(
+            "".join(f"user:{app_id}\\n" for app_id in sorted(previously_installed)),
+            encoding="utf-8",
+        )
+
+        result = self.run_setup()
+
+        self.assert_setup_succeeded(result)
+        self.assertEqual(self.install_ids(), ["dev.eden_emu.eden"])
+        self.assertTrue(self.marker.is_file())
+        self.assertTrue((self.state_dir / "gaming-apps-seeded-v1").is_file())
 
     def test_existing_user_and_system_apps_are_not_reinstalled(self):
         self.installed_file.write_text(
