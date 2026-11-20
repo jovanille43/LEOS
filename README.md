@@ -149,7 +149,7 @@ LEOS/
 2. **Corrections après essais** — traiter les anomalies bloquantes révélées par le premier démarrage et relancer les contrôles automatiques.
 3. **Validation physique** — tester sur un PC ou disque de test le GPU réel, le réseau, l'audio, les manettes, le Bluetooth, la veille, les écrans et le rollback.
 4. **ISO NVIDIA** — générer séparément les ISO NVIDIA legacy et NVIDIA open après validation de la chaîne standard.
-5. **Évolution produit** — poursuivre les intégrations d'émulateurs et les améliorations Desktop/Gaming sans présenter les fonctions non testées comme certifiées.
+5. **Validation Gaming plug-and-play** — tester l'installation automatique Flathub, les imports de jeux, les manettes, les prérequis BIOS/firmware et les bibliothèques sur disques externes, sans présenter les fonctions non testées comme certifiées.
 
 ## État actuel
 
@@ -161,7 +161,8 @@ LEOS/
 - [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
-- [ ] Intégrations d'émulateurs.
+- [x] Préparation automatique de Heroic et des six émulateurs Flatpak dans le profil utilisateur à la première session connectée ; melonDS est désormais importable et lançable depuis Gaming.
+- [ ] Intégration complète des émulateurs : imports/lancements RPCS3 et cœurs RetroArch, assistance BIOS/firmware, stockage externe et validations réelles.
 - [x] Construire, publier et signer les trois images conteneur Bazzite : standard, NVIDIA legacy et NVIDIA open.
 - [ ] Générer et valider les ISO installateur NVIDIA legacy et NVIDIA open ; documenter les limites des PC hybrides.
 - [x] Ajouter `cosign.pub` et configurer les secrets GitHub `SIGNING_SECRET` et `COSIGN_PASSWORD` pour la signature chiffrée.
