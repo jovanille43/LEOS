@@ -8,7 +8,7 @@ Le sélecteur présente les deux expériences au sein d'une seule session KDE. L
 
 ## Écran de sélection
 
-- Écran plein format sur fond noir, accents cyan et magenta et typographie LEOS.
+- Écran plein format sur fond sombre neutre, typographie LEOS et accents A/B choisis explicitement au premier démarrage.
 - Deux cartes Desktop Mode et Gaming Mode de même taille et de même importance.
 - Desktop utilise exclusivement l'emblème officiel du lion seul.
 - Gaming utilise exclusivement l'emblème officiel du lion avec manette.
@@ -52,6 +52,6 @@ Le sélecteur, l'horloge, le rappel du dernier mode, la navigation souris/clavie
 
 ## Présentation des cartes — validée
 
-- **Desktop Mode :** halo cyan, emblème officiel du lion seul, ambiance sobre et élégante.
-- **Gaming Mode :** halo cyan et magenta, emblème officiel du lion avec manette, ambiance plus énergique.
+- **Desktop Mode :** halo correspondant à la couleur A, emblème officiel du lion seul, ambiance sobre et élégante.
+- **Gaming Mode :** halo en dégradé A/B, emblème officiel du lion avec manette, ambiance plus énergique.
 - Aucun des deux modes ne doit sembler secondaire.

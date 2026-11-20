@@ -7,7 +7,7 @@ Le Mode Selector est le point d'entrée visuel permettant de choisir entre Deskt
 - Afficher deux grandes cartes côte à côte : Desktop et Gaming.
 - Utiliser exclusivement l'emblème officiel du lion seul pour Desktop.
 - Utiliser exclusivement l'emblème officiel du lion avec manette pour Gaming.
-- Respecter l'identité LEOS : fond noir, lion métallique, éclairages cyan et magenta et typographie officielle.
+- Respecter l'identité LEOS : fond sombre, lion métallique, typographie officielle et dégradé A/B choisi explicitement au premier démarrage.
 - Mettre en évidence clairement le mode sélectionné et l'action de validation.
 
 L'image comparative des deux emblèmes est une référence de conception uniquement : elle ne doit pas être utilisée comme visuel principal du sélecteur. Chaque carte utilise son emblème individuel.

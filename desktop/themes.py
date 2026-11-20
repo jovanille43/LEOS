@@ -10,8 +10,8 @@ from datetime import datetime
 
 DEFAULT_THEME = "leos-original"  # retained for older settings and KDE schemes
 # Neutral metallic placeholders are used only until the user chooses A and B.
-DEFAULT_COLOR_A = "#9AA4B2"
-DEFAULT_COLOR_B = "#D8DEE7"
+DEFAULT_COLOR_A = "#A0A0A0"
+DEFAULT_COLOR_B = "#D0D0D0"
 # Original artwork endpoints are transform inputs only, never user defaults.
 SOURCE_COLOR_A = "#00D9FF"
 SOURCE_COLOR_B = "#E33BFF"
