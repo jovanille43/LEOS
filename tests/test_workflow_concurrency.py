@@ -44,11 +44,12 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("--insecure-ignore-tlog --check-claims --key cosign.pub", source)
         self.assertIn("sha256sum", source)
 
-    def test_image_build_and_iso_generation_share_a_registry_lock(self):
+    def test_image_build_and_iso_generation_use_independent_concurrency_groups(self):
         build = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("group: leos-image-pipeline", build)
-        self.assertIn("group: leos-image-pipeline", iso)
+        self.assertIn("group: leos-container-build", build)
+        self.assertIn("group: leos-installer-iso", iso)
+        self.assertNotEqual("leos-container-build", "leos-installer-iso")
         self.assertIn("cancel-in-progress: false", build)
         self.assertIn("cancel-in-progress: false", iso)
 

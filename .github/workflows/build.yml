@@ -25,8 +25,10 @@ on:
 permissions:
   contents: read
 
+# Keep container builds independent from the downstream ISO workflow_run.
+# A long-running ISO must never cancel or replace a queued image build.
 concurrency:
-  group: leos-image-pipeline
+  group: leos-container-build
   cancel-in-progress: false
 
 jobs:
