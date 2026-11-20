@@ -11,7 +11,7 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 ## Direction visuelle Desktop
 
 - Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
-- Fond d'écran 4K disponible dans `branding/wallpapers/desktop-leos.svg`, avec l'emblème officiel du lion seul, fond noir et halos cyan/magenta. Il est empaqueté sous `/usr/share/leos/branding/wallpapers/desktop-leos.svg` et peut être sélectionné manuellement ; il n'est pas imposé au profil KDE existant.
+- Fond d'écran 4K officiel disponible dans `branding/wallpapers/desktop-leos.svg`. Au premier choix de Desktop, le parcours LEOS peut l'appliquer avec le profil couleur, le Plasma Style, le thème d'icônes et le dock après consentement explicite et sauvegarde de la disposition KDE.
 - Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
@@ -20,19 +20,19 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 ## Règles de personnalisation
 
-Le profil JSON est une référence de conception, pas une configuration Plasma directement applicable. Il ne doit pas être présenté comme un thème déjà installé ou actif. L'application future devra sauvegarder les réglages KDE existants, vérifier les applications disponibles et demander le consentement avant toute modification du profil personnel.
+Le profil JSON décrit les valeurs du profil LEOS Original. Le parcours de premier démarrage les applique uniquement après consentement explicite, vérification de la configuration Plasma et création d'une sauvegarde. Les dispositions multi-panneaux ou impossibles à inspecter sont laissées intactes ; l'utilisateur peut garder son bureau actuel.
 
 Aucune configuration Plasma existante ne sera écrasée silencieusement.
 
 ## À finaliser
 
-- Valider le rendu du fond d'écran SVG et son lien vers l'emblème dans une session Bazzite ; proposer ensuite son application explicite depuis le Centre de contrôle.
-- Application automatique des profils de disposition au véritable panneau Plasma (l'adaptateur de panneau existe mais reste inactif) ; dock et widgets encore non intégrés.
+- Valider sur une session Bazzite réelle le parcours d'activation initial : fond d'écran, schéma couleur, Plasma Style, dock et retour arrière.
+- Le profil de dock est maintenant proposé lors du premier démarrage après consentement et sauvegarde. Les widgets de bureau restent facultatifs et non appliqués.
 - Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).
 - Tests de session sur une vraie installation Bazzite KDE.
 
-Le packaging installe les ressources de référence sous `/usr/share/leos/`. Les personnalisations Plasma avancées seront appliquées au profil utilisateur uniquement après validation explicite.
+Le packaging installe les ressources et outils LEOS sous `/usr/share/leos/`. Le profil Desktop est appliqué au compte utilisateur uniquement après un choix explicite ; le refus conserve la configuration KDE existante.
 
 
 ## Moteur de thèmes LEOS
@@ -153,7 +153,7 @@ Le Centre de contrôle affiche les aperçus des deux SVG 4K :
 - `/usr/share/leos/branding/wallpapers/desktop-leos.svg`
 - `/usr/share/leos/branding/wallpapers/gaming-leos.svg`
 
-Le bouton **Choisir dans les paramètres KDE** ouvre le module natif `kcm_wallpaper`. L'utilisateur choisit le SVG dans `/usr/share/leos/branding/wallpapers/` puis valide dans KDE. LEOS ne change pas le papier peint sans cette action explicite. Le rendu des SVG avec JPEG liés en chemin relatif reste à confirmer sur une session Bazzite réelle.
+Au premier choix de Desktop, le sélecteur peut appliquer le fond officiel après consentement, avec sauvegarde de la disposition Plasma. Depuis le Centre de contrôle, le bouton **Choisir dans les paramètres KDE** ouvre toujours le module natif `kcm_wallpaper` pour modifier ensuite le fond. Le rendu des SVG avec JPEG liés en chemin relatif reste à confirmer sur une session Bazzite réelle.
 
 ## Schémas de couleurs KDE
 
@@ -197,9 +197,7 @@ La commande native de KDE est appelée sans shell ; aucun fichier système ou
 constituent pas encore un habillage exhaustif. Les icônes, boutons et contrôles
 Qt continuent d'utiliser leurs styles existants. L'emblème officiel du lion
 n'est pas encore intégré, car les ressources graphiques originales ne sont
-pas présentes dans le dépôt. Le style est installé mais n'est pas sélectionné
-automatiquement. Son rendu doit encore être contrôlé sur une vraie session
-Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
+pas présentes dans le dépôt. Le style est installé et peut être activé lors du premier choix de Desktop après consentement. Son rendu doit encore être contrôlé sur une vraie session Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
 
 Références KDE : [création d'un Plasma Style](https://develop.kde.org/docs/plasma/theme/quickstart/),
 [structure et emplacements](https://develop.kde.org/docs/plasma/theme/theme-details/)

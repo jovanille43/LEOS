@@ -62,13 +62,18 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 - Il présente l'heure, la date, le dernier mode utilisé et deux grandes cartes Desktop/Gaming.
 - Desktop ferme uniquement le sélecteur et laisse apparaître le bureau KDE déjà actif ; Gaming lance l'application LEOS plein écran au-dessus de la même session.
 - Le dernier mode choisi est mémorisé et présenté au prochain démarrage, sans imposer de lancement automatique.
+- Si le profil visuel Desktop est encore en attente, le retour depuis Gaming rouvre le sélecteur afin que l'utilisateur puisse activer l'identité LEOS avant d'arriver sur le bureau.
 - L'entrée vers Gaming demande une confirmation ; le retour vers Desktop demande également une confirmation depuis Gaming.
 - Aucune application ouverte n'est terminée automatiquement. Les applications KDE restent en arrière-plan pendant Gaming, sous réserve de leur propre comportement.
 - Le sélecteur ne remplace pas SDDM : il apparaît après l'authentification de l'utilisateur.
 - Il accepte la souris, le clavier et les manettes reconnues via evdev en lecture seule ; il réutilise les profils contrôleur LEOS sans modifier globalement les entrées Linux.
 - Les raccourcis globaux KDE pour passer directement d'un mode à l'autre restent à intégrer et à valider.
 
-## 8. Compatibilité matérielle
+## 8. Activation visuelle Desktop
+
+Au premier choix de Desktop depuis le sélecteur, LEOS propose d'activer le profil visuel officiel ou de conserver le bureau KDE existant. L'activation vérifie les outils, les ressources, la configuration Plasma et l'éligibilité du dock. Elle crée une sauvegarde de `plasma-org.kde.plasma.desktop-appletsrc` avant d'appliquer le fond Desktop, le schéma LEOS Original, le Plasma Style LEOS et le dock inférieur centré. Les dispositions multi-panneaux ou non inspectables sont refusées sans modification. Les schémas de couleurs et le Plasma Style conservent leurs propres cibles de restauration. Cette transaction doit encore être validée de bout en bout sur Bazzite KDE en VM.
+
+## 9. Compatibilité matérielle
 
 LEOS ne doit pas dépendre d'un seul modèle de processeur ou de carte graphique. La cible initiale suit la base Bazzite : x86_64 et démarrage UEFI. La référence Gaming publiée par Bazzite inclut 8 Go de RAM, un processeur quadricœur à 2 GHz, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés).
 
@@ -76,7 +81,7 @@ Trois variantes d'image partagent les mêmes modules LEOS : Bazzite standard pou
 
 Le Centre de contrôle expose un précontrôle Gaming indicatif : architecture, UEFI, RAM, estimation des cœurs physiques, espace libre sur / et version Vulkan par GPU lorsque disponible. Il ne certifie pas la fréquence CPU, le type de SSD, la destination d'installation, les pilotes ou la compatibilité réelle des périphériques ; les données absentes restent non vérifiables et ne bloquent pas Desktop Mode. La politique et la matrice de tests sont détaillées dans [hardware-compatibility.md](hardware-compatibility.md).
 
-## 9. Principes de développement
+## 10. Principes de développement
 
 1. Construire d'abord une version minimale fonctionnelle.
 2. Préserver la stabilité et les mécanismes natifs de Bazzite.

@@ -97,6 +97,22 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('panel.location = before.location', script)
         self.assertIn('panel.alignment = before.alignment', script)
 
+    def test_desktop_wallpaper_is_applied_and_rolled_back_in_the_same_transaction(self):
+        uri = "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg"
+        script = build_panel_management_script(self.store.get(), ["leos-menu.desktop"], wallpaper_uri=uri)
+        self.assertIn('var wallpaperUri = "' + uri + '"', script)
+        self.assertIn('var availableDesktops = desktops()', script)
+        self.assertIn('wallpaperDesktop.wallpaperPlugin = "org.kde.image"', script)
+        self.assertIn('wallpaperDesktop.writeConfig("Image", wallpaperUri)', script)
+        self.assertIn('wallpaperSnapshot.desktop.wallpaperPlugin = wallpaperSnapshot.plugin', script)
+        self.assertIn('wallpaperSnapshot.desktop.writeConfig("Image", wallpaperSnapshot.image)', script)
+
+    def test_desktop_wallpaper_rejects_unapproved_paths(self):
+        with self.assertRaises(ValueError):
+            build_panel_management_script(
+                self.store.get(), wallpaper_uri="file:///home/user/private-wallpaper.jpg"
+            )
+
     def test_invalid_layout_is_rejected(self):
         with self.assertRaises(ValueError):
             build_panel_management_script({"profile": "invalid"})

@@ -2,12 +2,35 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QRunnable, QThreadPool, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
 from controller_center.profiles import ControllerProfileStore, device_profile_id
 from gaming.backend.gamepad import mapper_from_preferences, open_first_available_gamepad
 from leos_core.settings import SettingsStore
+from desktop.first_run_appearance import DesktopAppearanceSetup
+
+
+class _AppearanceSetupSignals(QObject):
+    finished = Signal(bool, str)
+
+
+class _AppearanceSetupTask(QRunnable):
+    """Apply the consented Desktop profile without blocking the mode selector."""
+
+    def __init__(self, settings: SettingsStore) -> None:
+        super().__init__()
+        self.settings = settings
+        self.signals = _AppearanceSetupSignals()
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            message = DesktopAppearanceSetup(settings=self.settings).apply()
+        except Exception as error:
+            self.signals.finished.emit(False, str(error))
+        else:
+            self.signals.finished.emit(True, message)
 
 
 class ModeSelectorController(QObject):
@@ -16,10 +39,14 @@ class ModeSelectorController(QObject):
     gamepadAction = Signal(str)
     gamepadStatusChanged = Signal()
     onboardingChanged = Signal()
+    appearanceSetupChanged = Signal()
+    appearanceSetupFinished = Signal(bool, str)
 
     def __init__(self) -> None:
         super().__init__()
         self._settings = SettingsStore()
+        self._appearance_task: _AppearanceSetupTask | None = None
+        self._appearance_setup_running = False
         self._backend = GamepadBackend()
         self._profiles = ControllerProfileStore()
         self._mapper = mapper_from_preferences({"profile": "auto"})
@@ -52,6 +79,46 @@ class ModeSelectorController(QObject):
     @Property(bool, notify=onboardingChanged)
     def onboardingComplete(self) -> bool:
         return bool(self._settings.get("onboarding_complete", False))
+
+    @Property(str, notify=appearanceSetupChanged)
+    def desktopAppearanceStatus(self) -> str:
+        return str(self._settings.get("desktop_appearance_setup", "pending"))
+
+    @Property(bool, notify=appearanceSetupChanged)
+    def appearanceSetupRunning(self) -> bool:
+        return self._appearance_setup_running
+
+    @Slot(result=bool)
+    def beginDesktopAppearanceSetup(self) -> bool:
+        """Start the backed-up, consented Desktop appearance transaction."""
+        if self._appearance_setup_running or self.desktopAppearanceStatus != "pending":
+            return False
+        task = _AppearanceSetupTask(self._settings)
+        task.signals.finished.connect(self._on_desktop_appearance_setup_finished)
+        self._appearance_task = task
+        self._appearance_setup_running = True
+        self.appearanceSetupChanged.emit()
+        QThreadPool.globalInstance().start(task)
+        return True
+
+    @Slot(result=bool)
+    def skipDesktopAppearance(self) -> bool:
+        """Remember that the user chose to keep their current KDE appearance."""
+        if self._appearance_setup_running:
+            return False
+        try:
+            DesktopAppearanceSetup(settings=self._settings).skip()
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            return False
+        self.appearanceSetupChanged.emit()
+        return True
+
+    @Slot(bool, str)
+    def _on_desktop_appearance_setup_finished(self, succeeded: bool, message: str) -> None:
+        self._appearance_setup_running = False
+        self._appearance_task = None
+        self.appearanceSetupChanged.emit()
+        self.appearanceSetupFinished.emit(succeeded, message)
 
     @Slot(result=bool)
     def completeOnboarding(self) -> bool:

@@ -117,6 +117,13 @@ class SessionFlowTests(unittest.TestCase):
         window_header = qml.split("ApplicationWindow {", 1)[1].split("id: gamingContent", 1)[0]
         self.assertNotIn("focus: true", window_header)
 
+    def test_gaming_return_reopens_selector_while_desktop_appearance_is_pending(self):
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        self.assertIn('self.settings.get("desktop_appearance_setup", "pending") == "pending"', controller)
+        self.assertIn('launcher = Path(__file__).resolve().parents[2] / "launcher" / "main.py"', controller)
+        self.assertIn('[sys.executable, str(launcher), "--select"]', controller)
+        self.assertIn("self.desktopRequested.emit()", controller)
+
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
@@ -130,6 +137,27 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("desktopIntroAudio.muted = !leos.soundsEnabled", qml)
         self.assertIn("def animationsEnabled(self)", controller)
         self.assertIn("def soundsEnabled(self)", controller)
+
+    def test_desktop_choice_offers_consent_based_first_run_appearance(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
+        setup = (ROOT / "desktop/first_run_appearance.py").read_text(encoding="utf-8")
+        self.assertIn("function requestDesktopMode()", qml)
+        self.assertIn('desktopAppearanceStatus === "pending"', qml)
+        self.assertIn('title: "Activer l\'apparence LEOS"', qml)
+        self.assertIn("ACTIVER L'APPARENCE LEOS", qml)
+        self.assertIn("GARDER MON BUREAU ACTUEL", qml)
+        self.assertIn("beginDesktopAppearanceSetup", controller)
+        self.assertIn("skipDesktopAppearance", controller)
+        self.assertIn('if (appearanceDialog.visible)', qml)
+        self.assertIn('activateDesktopAppearance()', qml)
+        self.assertIn('keepCurrentDesktopAppearance()', qml)
+        self.assertIn('window.requestDesktopMode()', qml)
+        self.assertIn('appearanceDialogFocusIndex', qml)
+        self.assertIn("build_panel_management_script", setup)
+        self.assertIn("DESKTOP_WALLPAPER_URI", setup)
+        self.assertIn("restore_backup", setup)
+        self.assertIn("desktop_appearance_setup", setup)
 
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(

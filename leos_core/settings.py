@@ -65,6 +65,7 @@ DEFAULTS: dict[str, Any] = {
     "sounds_enabled": True,
     "gaming_overlay_enabled": True,
     "onboarding_complete": False,
+    "desktop_appearance_setup": "pending",
     "transition_app_policy": "ask",
     "last_notified_system_update": "",
     "notifications_enabled": True,
@@ -79,6 +80,7 @@ ALLOWED_VALUES = {
     "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
+    "desktop_appearance_setup": {"pending", "applied", "skipped"},
     "notification_minimum_priority": {"all", "important", "critical"},
 }
 

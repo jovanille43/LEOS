@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+
 from PySide6.QtCore import QObject, Property, QRunnable, QProcess, QThreadPool, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
@@ -460,6 +463,26 @@ class GamingController(QObject):
         try:
             post_notification("Retour à Desktop Mode", message, level, native=False)
         finally:
+            # The first Desktop visit must pass through the LEOS appearance
+            # offer, even when the user chose Gaming directly at first login.
+            if self.settings.get("desktop_appearance_setup", "pending") == "pending":
+                launcher = Path(__file__).resolve().parents[2] / "launcher" / "main.py"
+                try:
+                    if not launcher.is_file():
+                        raise FileNotFoundError("Le sélecteur LEOS est absent de l'image.")
+                    subprocess.Popen(
+                        [sys.executable, str(launcher), "--select"],
+                        cwd=str(launcher.parent),
+                        start_new_session=True,
+                        close_fds=True,
+                    )
+                except OSError as error:
+                    post_notification(
+                        "Sélecteur LEOS indisponible",
+                        f"Le retour vers Desktop continue, mais le sélecteur n'a pas pu s'ouvrir : {error}",
+                        "warning",
+                        native=False,
+                    )
             # Returning to KDE is the requested action; neither a preference
             # write nor best-effort notification storage may block it.
             self.desktopRequested.emit()

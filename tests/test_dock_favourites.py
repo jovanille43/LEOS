@@ -170,7 +170,8 @@ class DockFavouritesTests(unittest.TestCase):
             self.assertTrue(store.move_by("steam.desktop", -1))
             moved = store.items()
             self.assertEqual(moved.index("steam.desktop"), original.index("steam.desktop") - 1)
-            self.assertFalse(store.move_by("org.kde.dolphin.desktop", -1))
+            # Whichever application is currently first cannot move farther up.
+            self.assertFalse(store.move_by(moved[0], -1))
             with self.assertRaises(ValueError):
                 store.move_by("org.example.Missing.desktop", 1)
             with self.assertRaises(ValueError):
