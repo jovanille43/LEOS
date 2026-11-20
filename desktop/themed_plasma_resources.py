@@ -45,7 +45,9 @@ def _files(root: Path) -> list[tuple[Path, Path]]:
         directories[:] = safe_directories
         for name in sorted(filenames):
             path = current_path / name
-            if path.is_symlink() or not path.is_file():
+            if path.is_symlink():
+                raise OSError(f"Symlink in LEOS theme source: {path}")
+            if not path.is_file():
                 raise OSError(f"Non-regular LEOS theme source file: {path}")
             relative = path.relative_to(root)
             if not relative.parts or ".." in relative.parts:
@@ -74,6 +76,19 @@ def _source_fingerprint(style_files: list[tuple[Path, Path]], icon_files: list[t
                 for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                     digest.update(chunk)
     return digest.hexdigest()
+
+
+def _assert_no_symlink_components(path: Path, stop_at: Path) -> None:
+    current = path
+    stop = stop_at
+    while True:
+        if current.is_symlink():
+            raise OSError(f"LEOS user theme path contains a symbolic link: {current}")
+        if current == stop:
+            return
+        if current.parent == current:
+            raise OSError("LEOS user theme path escaped its XDG data directory")
+        current = current.parent
 
 
 def _manifest(style_id: str, icon_id: str, color_a: str, color_b: str, fingerprint: str) -> dict[str, str]:
@@ -207,12 +222,17 @@ def install_themed_plasma_resources(
         raise ValueError("Generated LEOS theme identifier is invalid")
 
     base = Path(data_home) if data_home is not None else Path(xdg_data_home())
+    base.mkdir(parents=True, exist_ok=True, mode=0o755)
+    _assert_no_symlink_components(base, base)
     style_destination = base / "plasma" / "desktoptheme" / style_id
     icon_destination = base / "icons" / icon_id
+    _assert_no_symlink_components(style_destination.parent, base)
+    _assert_no_symlink_components(icon_destination.parent, base)
     manifest = _manifest(style_id, icon_id, first, second, fingerprint)
     matrix = build_color_matrix(first, second)
 
     lock_root = base / "leos" / "theme-resources"
+    _assert_no_symlink_components(lock_root.parent, base)
     lock_root.mkdir(parents=True, exist_ok=True, mode=0o700)
     if lock_root.is_symlink():
         raise OSError("LEOS theme-resource lock directory cannot be a symbolic link")
