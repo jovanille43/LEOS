@@ -16,6 +16,7 @@ from PySide6.QtQml import QQmlApplicationEngine  # noqa: E402
 from backend.controller import GamingController  # noqa: E402
 from backend.instance_lock import acquire_instance_lock  # noqa: E402
 from desktop.notifications import post_notification  # noqa: E402
+from desktop.theme_controller import ThemeController  # noqa: E402
 
 
 def main() -> int:
@@ -50,6 +51,7 @@ def main() -> int:
 
 def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     controller = GamingController()
+    theme = ThemeController(settings=controller.settings)
     controller.desktopRequested.connect(app.quit)
 
     engine = QQmlApplicationEngine()
@@ -57,11 +59,13 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     context.setContextProperty("leos", controller)
     context.setContextProperty("gameLibrary", controller.library)
     context.setContextProperty("systemMonitor", controller.monitor)
+    context.setContextProperty("leosTheme", theme)
 
     qml_file = Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         controller.shutdown()
+        theme.shutdown()
         return 1
 
     # Persist Gaming only after its QML window loaded successfully. A
@@ -84,6 +88,7 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
     )
     controller.monitor.start()
     app.aboutToQuit.connect(controller.shutdown)
+    app.aboutToQuit.connect(theme.shutdown)
     return app.exec()
 
 

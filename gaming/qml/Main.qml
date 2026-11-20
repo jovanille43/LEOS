@@ -10,11 +10,12 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS Gaming"
-    color: "#08090d"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property color cyan: themeColors.accent_primary
+    property color magenta: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property color focusColor: "#ffffff"
     property int fontMicro: 14
     property int fontCaption: 15
@@ -51,7 +52,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = leosTheme.desktopIntroUrl
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
