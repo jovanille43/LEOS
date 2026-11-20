@@ -5,7 +5,15 @@ SOURCE="/usr/share/leos/branding/desktop-logo.jpeg"
 THEME_DIR="/usr/share/plymouth/themes/leos"
 DESTINATION="${THEME_DIR}/watermark.png"
 
-test -s "${SOURCE}"
+if [[ ! -s "${SOURCE}" ]]; then
+    echo "::error::LEOS Desktop emblem missing at ${SOURCE}; checking copied branding paths:"
+    find /usr/share/leos -maxdepth 3 -type f -name 'desktop-logo.jpeg' -print >&2 || true
+    exit 1
+fi
+if ! python3 -c 'from PySide6.QtCore import Qt; from PySide6.QtGui import QImage' >/dev/null 2>&1; then
+    echo "::error::PySide6 QtGui image support is unavailable; cannot prepare the Plymouth watermark."
+    exit 1
+fi
 install -d -m 0755 "${THEME_DIR}"
 
 python3 - <<'PY'

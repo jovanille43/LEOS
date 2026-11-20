@@ -113,6 +113,7 @@ jobs:
           bash -n packaging/leos-default-apps-setup
           bash -n packaging/leos-default-gaming-apps-setup
           bash -n files/scripts/prepare-leos-plymouth.sh
+          bash -n files/scripts/prepare-leos-cursors.sh
 
       - name: Validate branding video and audio streams
         run: |

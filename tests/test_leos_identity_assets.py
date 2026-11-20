@@ -13,6 +13,18 @@ class LeosIdentityAssetTests(unittest.TestCase):
         metadata = (ROOT / "branding/sddm/leos/metadata.desktop").read_text(encoding="utf-8")
         qml = (ROOT / "branding/sddm/leos/Main.qml").read_text(encoding="utf-8")
         self.assertIn("QtVersion=6", metadata)
+        self.assertIn("Screen.width", qml)
+        self.assertIn("Screen.height", qml)
+        self.assertIn("Qt.formatDateTime", qml)
+        self.assertIn("keyboard.layouts", qml)
+        self.assertIn("keyboard.currentLayout", qml)
+        self.assertIn("sddm.canSuspend", qml)
+        self.assertIn("sddm.canReboot", qml)
+        self.assertIn("sddm.canPowerOff", qml)
+        self.assertIn("Dialog.Yes | Dialog.No", qml)
+        self.assertIn("sddm.suspend()", qml)
+        self.assertIn("sddm.reboot()", qml)
+        self.assertIn("sddm.powerOff()", qml)
         self.assertIn("file:///usr/share/leos/branding/desktop-logo.jpeg", qml)
         self.assertIn("sddm.login(", qml)
         self.assertIn("sessionModel", qml)
@@ -40,6 +52,13 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("#090B10", qml)
         self.assertNotIn("#00D9FF", qml)
         self.assertNotIn("#E33BFF", qml)
+
+    def test_recipe_keeps_branding_in_the_directory_expected_by_runtime_assets(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("src: branding", recipe)
+        self.assertIn("dest: /usr/share/leos/branding/", recipe)
+        self.assertIn("prepare-leos-plymouth.sh", recipe)
+        self.assertIn("prepare-leos-cursors.sh", recipe)
 
     def test_cursor_svg_has_metadata_and_safe_breeze_fallback(self):
         metadata = json.loads(

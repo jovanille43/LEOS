@@ -44,9 +44,9 @@ La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chem
 ## Identité de démarrage et de connexion
 
 - Plymouth présente l'emblème Desktop officiel sur un fond graphite neutre avant l'ouverture de session. Le watermark PNG est produit à la construction de l'image.
-- SDDM présente le logo Desktop officiel, une connexion Qt 6 avec choix de session et la typographie Noto Sans. Les accents A/B personnels ne sont pas imposés avant la connexion.
+- SDDM présente le logo Desktop officiel, une connexion Qt 6 avec choix de session, disposition clavier, horloge et commandes de veille/redémarrage/extinction confirmées. La typographie Noto Sans et la base graphite restent neutres avant le choix A/B.
 - Plasma fournit un écran de chargement LEOS post-connexion. Il est activé après le consentement au profil Desktop.
-- Le curseur LEOS ajoute une première forme SVG recolorable avec A/B ; les formes non fournies héritent de Breeze pour préserver la compatibilité.
+- Le curseur LEOS propose une famille SVG A/B cohérente : flèche, main, texte, attente, progression, viseur, interdit, déplacement et redimensionnements ; les formes rares non fournies héritent de Breeze. Les 11 formes sont générées à la construction dans le dossier cursors_scalable du thème d'icônes.
 - Les fenêtres KWin utilisent une variante Aurorae dans l'espace utilisateur : cadres, boutons et état actif/inactif sont recolorés selon A/B, sans modifier les ressources système.
 - Le fond du verrouillage KDE utilise aussi le fond Desktop A/B, tandis que la saisie du mot de passe reste celle du greeter natif.
 

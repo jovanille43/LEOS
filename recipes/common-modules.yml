@@ -75,7 +75,7 @@ modules:
 
   - type: copy
     src: branding
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/branding/
 
   - type: copy
     src: branding/sddm/leos
@@ -93,6 +93,7 @@ modules:
     source: ghcr.io/blue-build/modules/script:v1
     scripts:
       - prepare-leos-plymouth.sh
+      - prepare-leos-cursors.sh
     snippets:
       - plymouth-set-default-theme leos
 

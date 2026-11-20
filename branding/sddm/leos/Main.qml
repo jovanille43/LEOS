@@ -1,13 +1,15 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
 
 Rectangle {
     id: root
-    width: 1920
-    height: 1080
+    width: Screen.width
+    height: Screen.height
     property string statusMessage: ""
     property bool authenticating: false
+    property var clockNow: new Date()
 
     gradient: Gradient {
         GradientStop { position: 0.0; color: "#090B10" }
@@ -38,6 +40,50 @@ Rectangle {
         sddm.login(userField.text.trim(), passwordField.text, selectedSession)
     }
 
+    function requestPowerAction(action) {
+        powerConfirmation.operation = action
+        powerConfirmation.open()
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: root.clockNow = new Date()
+    }
+
+    Dialog {
+        id: powerConfirmation
+        property string operation: ""
+        modal: true
+        anchors.centerIn: Overlay.overlay
+        width: Math.min(390, root.width - 40)
+        title: operation === "poweroff" ? "Éteindre LEOS ?"
+             : operation === "reboot" ? "Redémarrer LEOS ?"
+             : "Mettre LEOS en veille ?"
+        standardButtons: Dialog.Yes | Dialog.No
+
+        contentItem: Label {
+            text: powerConfirmation.operation === "poweroff"
+                ? "L’ordinateur va s’éteindre."
+                : powerConfirmation.operation === "reboot"
+                    ? "L’ordinateur va redémarrer."
+                    : "La session sera suspendue en mémoire."
+            color: "#D0D5DC"
+            wrapMode: Text.WordWrap
+            padding: 12
+        }
+
+        onAccepted: {
+            if (operation === "poweroff")
+                sddm.powerOff()
+            else if (operation === "reboot")
+                sddm.reboot()
+            else if (operation === "suspend")
+                sddm.suspend()
+        }
+    }
+
     Rectangle {
         width: Math.max(root.width, root.height) * 0.72
         height: width
@@ -58,6 +104,130 @@ Rectangle {
         opacity: 0.12
     }
 
+    Rectangle {
+        id: utilityBar
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 24
+        height: 62
+        radius: 16
+        color: "#111720"
+        border.color: "#303A47"
+        border.width: 1
+        opacity: 0.97
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 18
+            anchors.rightMargin: 14
+            spacing: 10
+
+            ColumnLayout {
+                spacing: 1
+
+                Label {
+                    text: Qt.formatDateTime(root.clockNow, "HH:mm")
+                    color: "#F1F3F6"
+                    font.family: "Noto Sans"
+                    font.pixelSize: 19
+                    font.weight: Font.DemiBold
+                }
+
+                Label {
+                    text: Qt.formatDateTime(root.clockNow, "dddd d MMMM")
+                    color: "#A5AFBB"
+                    font.family: "Noto Sans"
+                    font.pixelSize: 10
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Label {
+                visible: keyboard.enabled && keyboard.layouts.length > 0
+                text: "CLAVIER"
+                color: "#909BA8"
+                font.family: "Noto Sans"
+                font.pixelSize: 10
+                font.weight: Font.DemiBold
+            }
+
+            ComboBox {
+                id: keyboardSelector
+                visible: keyboard.enabled && keyboard.layouts.length > 0
+                Layout.preferredWidth: 82
+                Layout.preferredHeight: 38
+                model: keyboard.layouts
+                textRole: "shortName"
+                currentIndex: keyboard.currentLayout
+                font.family: "Noto Sans"
+                font.pixelSize: 12
+                onActivated: keyboard.currentLayout = currentIndex
+            }
+
+            Button {
+                visible: sddm.canSuspend
+                text: "Veille"
+                onClicked: root.requestPowerAction("suspend")
+                font.family: "Noto Sans"
+                font.pixelSize: 11
+                background: Rectangle {
+                    radius: 9
+                    color: parent.down ? "#303B49" : "#1A232E"
+                    border.color: "#3A4654"
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "#D8DDE3"
+                    font: parent.font
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            Button {
+                visible: sddm.canReboot
+                text: "Redémarrer"
+                onClicked: root.requestPowerAction("reboot")
+                font.family: "Noto Sans"
+                font.pixelSize: 11
+                background: Rectangle {
+                    radius: 9
+                    color: parent.down ? "#303B49" : "#1A232E"
+                    border.color: "#3A4654"
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "#D8DDE3"
+                    font: parent.font
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            Button {
+                visible: sddm.canPowerOff
+                text: "Éteindre"
+                onClicked: root.requestPowerAction("poweroff")
+                font.family: "Noto Sans"
+                font.pixelSize: 11
+                background: Rectangle {
+                    radius: 9
+                    color: parent.down ? "#46343A" : "#2B2026"
+                    border.color: "#5A4149"
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "#E4D9DC"
+                    font: parent.font
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: Math.min(420, root.width - 48)
@@ -65,8 +235,8 @@ Rectangle {
 
         Image {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 206
-            Layout.preferredHeight: 206
+            Layout.preferredWidth: Math.min(206, root.height * 0.20)
+            Layout.preferredHeight: Layout.preferredWidth
             source: "file:///usr/share/leos/branding/desktop-logo.jpeg"
             fillMode: Image.PreserveAspectFit
             smooth: true
