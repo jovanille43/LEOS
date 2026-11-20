@@ -197,11 +197,23 @@ class EmulatorGameFolderTests(unittest.TestCase):
         self.assertEqual(PLATFORM_SPECS["psp"]["extensions"], {
             ".iso", ".cso", ".chd", ".pbp"
         })
+        self.assertEqual(PLATFORM_SPECS["melonds"]["extensions"], {".nds"})
         self.assertNotIn(".nrg", PLATFORM_SPECS["ps2"]["extensions"])
         self.assertNotIn(".wad", PLATFORM_SPECS["gamecube_wii"]["extensions"])
 
+    def test_melonds_uses_fullscreen_rom_argument(self):
+        game = self.root / "Nintendo DS.nds"
+        game.write_bytes(b"rom")
+        command = build_emulator_launch_command(
+            "melonds",
+            game,
+            self.root,
+            which=lambda name: "/usr/bin/melonDS" if name == "melonDS" else None,
+        )
+        self.assertEqual(command, ["/usr/bin/melonDS", "-f", str(game.resolve())])
+
     def test_supported_platforms_are_deliberately_limited_to_confirmed_cli_paths(self):
-        self.assertEqual(set(PLATFORM_SPECS), {"gamecube_wii", "ps2", "psp"})
+        self.assertEqual(set(PLATFORM_SPECS), {"gamecube_wii", "ps2", "psp", "melonds"})
 
 
 if __name__ == "__main__":
