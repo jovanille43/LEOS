@@ -20,9 +20,11 @@ from leos_core.json_utils import json_nesting_within_limit
 
 
 DEFAULT_PINNED_APPS = (
+    "leos-menu.desktop",
     "org.kde.dolphin.desktop",
     "firefox.desktop",
     "steam.desktop",
+    "leos-control-center.desktop",
 )
 MAX_PINNED_APPS = 32
 MAX_DOCK_FILE_BYTES = 16 * 1024

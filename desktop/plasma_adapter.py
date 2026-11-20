@@ -29,7 +29,7 @@ _DESKTOP_ID_RE = re.compile(r"^[A-Za-z0-9_.+-]{1,240}\.desktop$")
 
 
 def build_panel_management_script(
-    layout: object, pinned_apps: object = ()
+    layout: object, pinned_apps: object = (), wallpaper_uri: str | None = None
 ) -> str:
     """Build a Plasma 6 script with validated launcher IDs; never execute it here."""
     if not validate_layout(layout):
@@ -44,6 +44,8 @@ def build_panel_management_script(
         or len(set(pinned_apps)) != len(pinned_apps)
     ):
         raise ValueError("Invalid LEOS dock favourites")
+    if wallpaper_uri is not None and wallpaper_uri != "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg":
+        raise ValueError("Unsupported LEOS desktop wallpaper URI")
     assert isinstance(layout, dict)
     config: dict[str, Any] = {
         "enabled": layout["dock"]["enabled"],
@@ -55,10 +57,12 @@ def build_panel_management_script(
     config_json = json.dumps(config, ensure_ascii=True, separators=(",", ":"))
     widgets_json = json.dumps(PANEL_WIDGETS, ensure_ascii=True)
     launchers_json = json.dumps(list(pinned_apps), ensure_ascii=True, separators=(",", ":"))
+    wallpaper_json = json.dumps(wallpaper_uri, ensure_ascii=True)
     return (
         _SCRIPT.replace("__LEOS_CONFIG__", config_json)
         .replace("__LEOS_WIDGETS__", widgets_json)
         .replace("__LEOS_PINNED_APPS__", launchers_json)
+        .replace("__LEOS_WALLPAPER__", wallpaper_json)
     )
 
 
@@ -72,10 +76,32 @@ _SCRIPT = r'''(function () {
     var desired = __LEOS_CONFIG__;
     var widgetTypes = __LEOS_WIDGETS__;
     var pinnedApps = __LEOS_PINNED_APPS__;
+    var wallpaperUri = __LEOS_WALLPAPER__;
+    var desktopSnapshots = [];
     var markerGroup = "LEOS";
     var markerValue = "leos-panel-v1";
     var allPanels = panels();
     var existing = [];
+
+    if (wallpaperUri !== null) {
+        if (wallpaperUri !== "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg") {
+            throw new Error("Le fond d'écran LEOS demandé n'est pas autorisé.");
+        }
+        var availableDesktops = desktops();
+        if (!availableDesktops || availableDesktops.length === 0) {
+            throw new Error("Aucun bureau Plasma n'est disponible pour appliquer le fond LEOS.");
+        }
+        for (var d = 0; d < availableDesktops.length; d++) {
+            var desktop = availableDesktops[d];
+            var originalPlugin = desktop.wallpaperPlugin;
+            desktop.currentConfigGroup = ["Wallpaper", originalPlugin, "General"];
+            desktopSnapshots.push({
+                desktop: desktop,
+                plugin: originalPlugin,
+                image: desktop.readConfig("Image", "")
+            });
+        }
+    }
 
     function isLeosPanel(candidate) {
         candidate.currentConfigGroup = [markerGroup];
@@ -217,6 +243,19 @@ _SCRIPT = r'''(function () {
         panel.writeConfig("managedBy", markerValue);
         panel.writeConfig("schemaVersion", 1);
 
+        if (wallpaperUri !== null) {
+            for (var wallpaperIndex = 0; wallpaperIndex < desktopSnapshots.length; wallpaperIndex++) {
+                var wallpaperDesktop = desktopSnapshots[wallpaperIndex].desktop;
+                wallpaperDesktop.wallpaperPlugin = "org.kde.image";
+                wallpaperDesktop.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"];
+                wallpaperDesktop.writeConfig("Image", wallpaperUri);
+                wallpaperDesktop.reloadConfig();
+                if (wallpaperDesktop.wallpaperPlugin !== "org.kde.image") {
+                    throw new Error("Plasma n'a pas accepté le fond d'écran LEOS.");
+                }
+            }
+        }
+
         if (adopted) {
             print("LEOS_PANEL_ADOPTED=" + panel.id);
         } else if (created) {
@@ -247,6 +286,15 @@ _SCRIPT = r'''(function () {
                 }
                 panel.currentConfigGroup = [markerGroup];
                 panel.writeConfig("managedBy", before.managedBy);
+            }
+            for (var wallpaperRollback = 0; wallpaperRollback < desktopSnapshots.length; wallpaperRollback++) {
+                var wallpaperSnapshot = desktopSnapshots[wallpaperRollback];
+                wallpaperSnapshot.desktop.wallpaperPlugin = wallpaperSnapshot.plugin;
+                wallpaperSnapshot.desktop.currentConfigGroup = [
+                    "Wallpaper", wallpaperSnapshot.plugin, "General"
+                ];
+                wallpaperSnapshot.desktop.writeConfig("Image", wallpaperSnapshot.image);
+                wallpaperSnapshot.desktop.reloadConfig();
             }
         } catch (rollbackError) {
             print("LEOS_ROLLBACK_WARNING=" + rollbackError);
