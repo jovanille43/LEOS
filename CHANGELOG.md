@@ -17,7 +17,6 @@ Les entrées sont regroupées par version. Tant qu'aucune release qualifiée n'e
 
 ### À valider avant la première release
 - Valider les transitions Desktop/Gaming, le guide de premier démarrage, le réseau, l'audio et les redémarrages répétés dans la VM (l'installation standard et l'accès au premier bureau KDE sont déjà confirmés).
-- Fonctions Desktop/Gaming, média, audio, réseau et stabilité après installation.
 - Validation physique des variantes matérielles qui seront annoncées comme prises en charge.
 - Publication versionnée avec ISO, SHA-256, digest source et notes de version.
 
