@@ -114,6 +114,11 @@ exit 0
     def command_lines(self):
         return self.command_log.read_text(encoding="utf-8").splitlines() if self.command_log.exists() else []
 
+    def assert_setup_succeeded(self, result):
+        log_file = self.state_dir / "gaming-apps-setup.log"
+        details = log_file.read_text(encoding="utf-8") if log_file.exists() else "(journal absent)"
+        self.assertEqual(result.returncode, 0, f"{result.stderr}\\n{details}")
+
     def install_ids(self):
         result = []
         for line in self.command_lines():
@@ -141,7 +146,7 @@ exit 0
 
     def test_installs_the_seven_starter_apps_without_an_extra_prompt(self):
         result = self.run_setup()
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assert_setup_succeeded(result)
         self.assertTrue(self.marker.is_file())
         self.assertEqual(set(self.install_ids()), EXPECTED_APPS)
         self.assertEqual(len(self.install_ids()), len(EXPECTED_APPS))
@@ -171,7 +176,7 @@ exit 0
         self.assertIn(failed_app, first_installs)
 
         second = self.run_setup()
-        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assert_setup_succeeded(second)
         self.assertTrue(self.marker.is_file())
         all_installs = self.install_ids()
         self.assertEqual(all_installs.count(failed_app), 2)
@@ -195,7 +200,7 @@ exit 0
 
     def test_success_marker_prevents_reinstall_after_user_uninstalls_an_app(self):
         first = self.run_setup()
-        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assert_setup_succeeded(first)
         original_commands = self.command_lines()
         # Simulate the user uninstalling one app after the first successful setup.
         lines = self.installed_file.read_text(encoding="utf-8").splitlines()
