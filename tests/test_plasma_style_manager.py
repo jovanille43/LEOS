@@ -72,6 +72,39 @@ class PlasmaStyleManagerTests(unittest.TestCase):
     def test_detects_packaged_style(self):
         self.assertTrue(self.manager.style_installed())
 
+    def test_applies_user_scoped_custom_style_and_preserves_previous_theme(self):
+        custom = self.data / "plasma" / "desktoptheme" / "leos-custom-abcdef1234567890"
+        custom.mkdir(parents=True)
+        (custom / "metadata.json").write_text(
+            json.dumps({"KPlugin": {"Id": custom.name, "Name": "LEOS personnalisé"}}),
+            encoding="utf-8",
+        )
+        self.assertTrue(self.manager.style_installed(custom.name))
+        self.assertIn("appliqué", self.manager.apply_style(custom.name))
+        self.assertEqual(
+            self.runner.calls[0][0],
+            ["/usr/bin/plasma-apply-desktoptheme", custom.name],
+        )
+        self.assertEqual(self.manager._read_state()["last_applied"], custom.name)
+        self.assertEqual(self.manager._read_state()["previous_style"], "breeze-dark")
+
+    def test_switching_between_custom_styles_keeps_the_original_rollback_target(self):
+        custom_a = self.data / "plasma" / "desktoptheme" / "leos-custom-aaaaaaaaaaaaaaaa"
+        custom_b = self.data / "plasma" / "desktoptheme" / "leos-custom-bbbbbbbbbbbbbbbb"
+        for directory in (custom_a, custom_b):
+            directory.mkdir(parents=True)
+            (directory / "metadata.json").write_text(
+                json.dumps({"KPlugin": {"Id": directory.name, "Name": "LEOS personnalisé"}}),
+                encoding="utf-8",
+            )
+        self.manager.apply_style(custom_a.name)
+        (self.config / "plasmarc").write_text(
+            f"[Theme]\nname={custom_a.name}\n", encoding="utf-8"
+        )
+        self.manager.apply_style(custom_b.name)
+        self.assertEqual(self.manager._read_state()["previous_style"], "breeze-dark")
+        self.assertEqual(self.manager._read_state()["last_applied"], custom_b.name)
+
     def test_reads_current_style_without_modifying_config(self):
         before = (self.config / "plasmarc").read_text(encoding="utf-8")
         self.assertEqual(self.manager.current_style(), "breeze-dark")
