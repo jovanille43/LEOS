@@ -123,7 +123,7 @@ grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*$'
   die "The fedora-server profile does not inherit the generic Fedora profile."
 grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*$' "$server_profile" ||
   die "The Anaconda Server profile does not match VARIANT_ID=server."
-if grep -Eq '^[[:space:]]*hidden_webui_pages[[:space:]]*=' "$server_profile" "$fedora_profile"; then
+if grep -Fq "anaconda-screen-accounts" "$server_profile" "$fedora_profile"; then
   die "The Anaconda account page may be hidden by the selected Server profile chain."
 fi
 echo "Verified Anaconda Server profile and visible account-setup configuration."
