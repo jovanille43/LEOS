@@ -117,12 +117,9 @@ if ! unsquashfs -cat "$tmp_dir/install.img" usr/share/anaconda/profile.d/fedora-
   die "Could not read the Fedora Server Anaconda profile from the installer ISO."
 fi
 
-if ! grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
- "$server_profile"; then
+if ! grep -Fqx 'variant_id = server' "$server_profile"; then
   die "The installer ISO does not contain the expected Fedora Server Anaconda profile."
 fi
-
 if grep -Eq '^[[:space:]]*anaconda-screen-accounts([[:space:]]|$)' "$server_profile"; then
   die "The Anaconda profile hides account creation; refusing to publish this ISO."
 fi
