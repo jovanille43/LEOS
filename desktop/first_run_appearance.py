@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from desktop.dock_favourites import DockFavourites
+from desktop.branding_assets import build_themed_branding_assets, source_asset_urls
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.icon_theme import PlasmaIconThemeManager
 from desktop.layouts import DesktopLayoutStore
@@ -15,6 +16,7 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import build_layout_plan, inspect_plasma_config
 from desktop.plasma_runner import execute_plasma_script
 from desktop.plasma_style import PlasmaStyleManager
+from desktop.themes import normalize_color, resolve_appearance_mode
 from leos_core.settings import SettingsStore
 
 
@@ -74,6 +76,8 @@ class DesktopAppearanceSetup:
     def _preflight(self) -> dict[str, Any]:
         if self.status != PENDING:
             raise RuntimeError("Le choix d'apparence Desktop a déjà été enregistré.")
+        if not self.settings.get("theme_colors_configured", False):
+            raise RuntimeError("Choisis et enregistre les deux couleurs A et B avant d’activer l’apparence LEOS.")
         if not self.wallpaper.is_file():
             raise FileNotFoundError("Le fond d'écran officiel Desktop LEOS est absent de l'image.")
         if not self.command_lookup("busctl"):
@@ -131,21 +135,34 @@ class DesktopAppearanceSetup:
         return warnings
 
     def apply(self) -> str:
-        """Apply LEOS Original, its wallpaper and dock after the UI gave consent."""
+        """Apply the user-selected A/B identity and reversible Desktop profile."""
         layout = self._preflight()
+        color_a, color_b, appearance_mode = self.settings.snapshot(
+            ("theme_color_a", "theme_color_b", "appearance_mode")
+        )
+        color_a = normalize_color(str(color_a))
+        color_b = normalize_color(str(color_b))
+        resolved_appearance = resolve_appearance_mode(str(appearance_mode or "dark"))
         backup_id: str | None = None
         plasma_script_attempted = False
         try:
-            # The user's panel and wallpaper configuration is preserved first.
+            # Build only user-scoped asset variants; official source files remain immutable.
+            try:
+                assets = build_themed_branding_assets(color_a, color_b)
+            except Exception:
+                assets = source_asset_urls()
+            wallpaper_uri = assets.get("desktopWallpaperUrl") or source_asset_urls()["desktopWallpaperUrl"]
+
+            # Preserve the user's panel and wallpaper configuration before changing Plasma.
             backup_id = self.backups.create_backup()
-            self.colors.apply_theme("leos-original")
+            self.colors.apply_custom_theme(color_a, color_b, resolved_appearance)
             self.style.apply_style()
             self.icons.apply_theme()
 
             script = build_panel_management_script(
                 layout,
                 self.favourites.items(),
-                wallpaper_uri=DESKTOP_WALLPAPER_URI,
+                wallpaper_uri=wallpaper_uri,
             )
             plasma_script_attempted = True
             succeeded, message = self.script_executor(script, timeout=30.0)
@@ -154,7 +171,7 @@ class DesktopAppearanceSetup:
 
             self.settings.set(APPEARANCE_SETTING, APPLIED)
             return (
-                "L'apparence Desktop LEOS est activée : fond officiel, couleurs, "
+                "L'apparence Desktop LEOS est activée : fond personnalisé, dégradé A/B, "
                 "style Plasma, icônes LEOS et dock inférieur. Une sauvegarde de ta disposition "
                 f"précédente est conservée ({backup_id[:8]})."
             )
