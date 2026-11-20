@@ -1,31 +1,26 @@
-# LEOS Plasma Style — alpha
+# LEOS Plasma Style — base template
 
 This is an original, minimal Plasma 6 desktop theme package. It deliberately
 provides only a small set of SVG assets and lets Plasma fall back to Breeze
 for elements not yet customized.
 
+The packaged files are immutable base templates. On first-run Desktop
+activation, LEOS creates a uniquely named copy in the user's
+`XDG_DATA_HOME/plasma/desktoptheme`, recolors its SVG assets from the user's
+freely selected A/B accent pair, and applies that per-user variant. The
+metallic neutral axis and dark surfaces are preserved. The original files
+under `/usr/share/plasma/desktoptheme/leos` are never modified.
+
 - `metadata.json`: Plasma 6 style metadata.
 - `plasmarc`: subtle background contrast and blur settings.
-- `widgets/panel-background.svg`: dark glass-like panel with restrained cyan
-  to magenta edge lighting.
-- `dialogs/background.svg`: matching widget popup and KRunner surface.
-- `widgets/background.svg`: desktop widget surface.
-- `widgets/button.svg`: normal, hover, pressed and focus states, including
-  borderless toolbutton states.
-- `widgets/tooltip.svg`: matching nine-slice tooltip surface.
-- `widgets/lineedit.svg`: base, hover and focus field states.
-- `widgets/menubaritem.svg`: normal, hover and pressed menu-item states.
-- `widgets/viewitem.svg`: normal, hover and selected list/result states.
-- `widgets/arrows.svg`: cyan-violet-magenta navigation arrows.
+- `widgets/` and `dialogs/`: dark glass-like Plasma surfaces and controls.
+- Missing SVG elements intentionally use the installed Breeze fallback.
 
-The package does not include the official LEOS lion artwork because the source
-assets have not yet been added to the repository. It must not substitute a
-generic lion or fabricate a replacement emblem.
+The package does not include the official LEOS lion artwork; branding assets
+are generated separately from the official source artwork and are never
+fabricated here.
 
 Install path in the image: `/usr/share/plasma/desktoptheme/leos`.
-The style is packaged but is not automatically selected. It must first be
-tested on a real Bazzite KDE session. Missing SVG elements intentionally use
-the installed Breeze fallback.
-
-The Plasma Style affects Plasma surfaces, not all Qt application controls.
-The separate LEOS KDE color scheme continues to control compatible app colors.
+The base template is not selected directly by the first-run flow. LEOS first
+creates the user's A/B variant and then applies it. The Control Center can
+regenerate and apply a new variant after the user changes A or B.
