@@ -16,7 +16,7 @@ class FakeKdeConfig:
     def __call__(self, command, **_kwargs):
         executable = Path(command[0]).name
         args = command[1:]
-        filename = args[args.index("--file") + 1]
+        filename = Path(args[args.index("--file") + 1]).name
         group = args[args.index("--group") + 1]
         key = args[args.index("--key") + 1]
         identity = (filename, group, key)

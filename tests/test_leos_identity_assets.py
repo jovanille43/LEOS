@@ -24,7 +24,9 @@ class LeosIdentityAssetTests(unittest.TestCase):
         script = (ROOT / "files/scripts/prepare-leos-plymouth.sh").read_text(encoding="utf-8")
         self.assertIn("ModuleName=two-step", theme)
         self.assertIn("BackgroundStartColor=0x090B10", theme)
-        self.assertIn("watermark.png", theme)
+        self.assertIn("ImageDir=/usr/share/plymouth/themes/leos", theme)
+        self.assertIn("WatermarkHorizontalAlignment=.5", theme)
+        self.assertIn("watermark.png", script)
         self.assertIn("desktop-logo.jpeg", script)
         self.assertIn("QImage", script)
 
