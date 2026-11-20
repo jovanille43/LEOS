@@ -17,6 +17,16 @@ class DynamicThemeTests(unittest.TestCase):
             self.assertEqual(color[1:3], color[3:5])
             self.assertEqual(color[3:5], color[5:7])
 
+    def test_gaming_uses_selected_accents_and_shared_neutral_surfaces(self):
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("color: window.accentA; opacity: 0.14", qml)
+        self.assertIn("color: window.accentB; opacity: 0.12", qml)
+        for legacy in ('#102331', '#2a1232', '#123847', '#17313d'):
+            self.assertNotIn(legacy, qml)
+        self.assertIn("window.themeColors.surface_elevated", qml)
+        self.assertIn("window.themeColors.border", qml)
+
     def test_selected_endpoints_are_never_replaced_for_low_contrast(self):
         palette = palette_for_colors("#111111", "#111111")
         self.assertEqual(palette["accent_primary"], "#111111")

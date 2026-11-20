@@ -124,8 +124,8 @@ ApplicationWindow {
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source)
                             radius: 9
-                            color: window.selectedRow === index ? "#182a36" : "#151b25"
-                            border.color: window.selectedRow === index ? window.cyan : "#28313e"
+                            color: window.selectedRow === index ? window.themeColors.surface_elevated : window.themeColors.surface
+                            border.color: window.selectedRow === index ? window.cyan : window.themeColors.border
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 12
@@ -210,7 +210,7 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#293342" }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
                         Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
                         Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
@@ -244,7 +244,7 @@ ApplicationWindow {
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 8
-                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? "#33202a" : "#12313b"
+                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? window.themeColors.surface_elevated : window.themeColors.surface_elevated
                                 border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
                             }
                             contentItem: Label {

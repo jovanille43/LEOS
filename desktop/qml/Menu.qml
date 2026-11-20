@@ -113,7 +113,7 @@ ApplicationWindow {
             font.pixelSize: 16
             color: "white"
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : "#303A49" }
+            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : window.themeColors.border }
         }
 
         RowLayout {
@@ -139,12 +139,12 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? "#1B2A36" : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
+                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? window.themeColors.surface_elevated : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
                             contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
                         }
                     }
                     Item { Layout.fillHeight: true }
-                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: "#596678"; font.pixelSize: 8; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: window.themeColors.muted_text; font.pixelSize: 8; wrapMode: Text.WordWrap; Layout.fillWidth: true }
                 }
             }
 
@@ -152,7 +152,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 radius: 15
-                color: "#0E131B"
+                color: window.themeColors.surface
                 border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
@@ -207,8 +207,8 @@ ApplicationWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
-                                color: appMouse.containsMouse ? "#1B2633" : "#151B25"
-                                border.color: appMouse.containsMouse ? window.cyan : "#2B3544"
+                                color: appMouse.containsMouse ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.color: appMouse.containsMouse ? window.cyan : window.themeColors.border
                             }
                             MouseArea {
                                 id: appMouse
@@ -241,7 +241,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                         ToolButton {
@@ -252,7 +252,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : "#596678"; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle { color: "transparent" }
                                         }
                                     }
