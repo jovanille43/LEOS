@@ -31,9 +31,9 @@ class EmulatorInventoryTests(unittest.TestCase):
             system_flatpak_root=self.system_root,
         )
 
-    def test_reports_all_six_emulators_as_not_detected_by_default(self):
+    def test_reports_all_seven_emulators_as_not_detected_by_default(self):
         results = self.detect()
-        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results), 7)
         self.assertTrue(all(not item["scope"] for item in results))
         self.assertTrue(all("NON DÉTECTÉ" in item["status"] for item in results))
 
@@ -45,6 +45,17 @@ class EmulatorInventoryTests(unittest.TestCase):
         self.assertEqual(results["org.libretro.RetroArch"]["scope"], "FLATPAK UTILISATEUR")
         self.assertEqual(results["net.pcsx2.PCSX2"]["scope"], "FLATPAK SYSTÈME")
         self.assertEqual(results["org.ppsspp.PPSSPP"]["scope"], "")
+
+    def test_detects_eden_flatpak_deployment(self):
+        self.deploy(self.data_home / "flatpak/app", "dev.eden_emu.eden")
+        results = {item["id"]: item for item in self.detect()}
+        self.assertEqual(
+            results["dev.eden_emu.eden"]["scope"], "FLATPAK UTILISATEUR"
+        )
+        self.assertEqual(
+            results["dev.eden_emu.eden"]["status"],
+            "EDEN · DISPONIBLE (FLATPAK UTILISATEUR)",
+        )
 
     def test_ignores_flatpak_ref_directory_without_deployed_files(self):
         (self.data_home / "flatpak/app/org.libretro.RetroArch/x86_64/stable").mkdir(parents=True)
