@@ -658,7 +658,11 @@ class ControlCenterController(QObject):
 
     @Property(bool, notify=settingsChanged)
     def canRestorePlasmaStyle(self) -> bool:
-        return self.plasmaStyle.can_restore()
+        return self.plasmaStyle.can_restore() or self.plasmaIcons.can_restore()
+
+    @Property(bool, notify=settingsChanged)
+    def plasmaIconsToolAvailable(self) -> bool:
+        return self.plasmaIcons.tool_available()
 
     @Property(str, notify=settingsChanged)
     def performanceProfile(self) -> str:
