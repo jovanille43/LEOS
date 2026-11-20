@@ -858,6 +858,8 @@ class ControlCenterController(QObject):
         """Queue the dock update only after explicit UI confirmation and backup."""
         if confirmed is not True:
             return "Confirmation explicite requise ; aucune modification n'a été effectuée."
+        if self._plasma_layout_tasks:
+            return "Une application du dock est déjà en cours ; attends la fin avant de recommencer."
 
         layout = self.desktopLayout.get()
         inspection = inspect_plasma_config(self.plasmaBackups.config_path)
