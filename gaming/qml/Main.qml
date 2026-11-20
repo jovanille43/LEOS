@@ -358,12 +358,69 @@ ApplicationWindow {
                 emulatorPrerequisitesDialog.close()
             return
         }
+        if (emulatorSourcesDialog.visible) {
+            if (action === "back") {
+                emulatorSourcesDialog.close()
+            } else if (action === "up" || action === "down") {
+                const count = leos.emulatorSourceFolders.length
+                if (count > 0) {
+                    const step = action === "up" ? -1 : 1
+                    emulatorSourcesList.currentIndex = Math.max(
+                        0, Math.min(count - 1, emulatorSourcesList.currentIndex + step))
+                    if (emulatorSourcesList.currentItem)
+                        emulatorSourcesList.currentItem.forceActiveFocus()
+                }
+            } else if (action === "confirm") {
+                const index = emulatorSourcesList.currentIndex
+                const count = leos.emulatorSourceFolders.length
+                if (index >= 0 && index < count) {
+                    const source = leos.emulatorSourceFolders[index]
+                    if (leos.removeEmulatorFolder(source.platform, source.path)) {
+                        const nextCount = leos.emulatorSourceFolders.length
+                        emulatorSourcesList.currentIndex = nextCount > 0
+                            ? Math.min(index, nextCount - 1) : -1
+                        if (emulatorSourcesList.currentItem)
+                            emulatorSourcesList.currentItem.forceActiveFocus()
+                    }
+                }
+            }
+            return
+        }
         if (emulatorImportDialog.visible) {
             if (action === "back") {
                 emulatorImportDialog.close()
+            } else if (action === "up" || action === "down") {
+                const step = action === "up" ? -1 : 1
+                emulatorImportDialog.controllerFocusIndex = Math.max(
+                    0, Math.min(2, emulatorImportDialog.controllerFocusIndex + step))
+                if (emulatorImportDialog.controllerFocusIndex === 0)
+                    emulatorPlatformCombo.forceActiveFocus()
+                else if (emulatorImportDialog.controllerFocusIndex === 1)
+                    emulatorChooseFolderButton.forceActiveFocus()
+                else
+                    emulatorManageSourcesButton.forceActiveFocus()
+            } else if (action === "left" || action === "right") {
+                if (emulatorImportDialog.controllerFocusIndex === 0) {
+                    const step = action === "left" ? -1 : 1
+                    const count = emulatorPlatformCombo.count
+                    emulatorPlatformCombo.currentIndex = (
+                        emulatorPlatformCombo.currentIndex + step + count
+                    ) % count
+                }
             } else if (action === "confirm") {
-                emulatorImportDialog.close()
-                emulatorFolderDialog.open()
+                if (emulatorImportDialog.controllerFocusIndex === 0) {
+                    emulatorImportDialog.controllerFocusIndex = 1
+                    emulatorChooseFolderButton.forceActiveFocus()
+                } else if (emulatorImportDialog.controllerFocusIndex === 1) {
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
+                    if (leos.beginEmulatorFolderBrowse(
+                                platformKeys[emulatorPlatformCombo.currentIndex])) {
+                        emulatorImportDialog.close()
+                        emulatorFolderDialog.open()
+                    }
+                } else {
+                    emulatorSourcesDialog.open()
+                }
             }
             return
         }
@@ -1661,7 +1718,13 @@ ApplicationWindow {
         modal: true
         anchors.centerIn: parent
         standardButtons: Dialog.Cancel
-        width: 470
+        width: 520
+        property int controllerFocusIndex: 0
+
+        onOpened: {
+            controllerFocusIndex = 0
+            emulatorPlatformCombo.forceActiveFocus()
+        }
 
         ColumnLayout {
             width: parent.width
@@ -1675,6 +1738,10 @@ ApplicationWindow {
             ComboBox {
                 id: emulatorPlatformCombo
                 Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 0
+                }
                 model: [
                     "Nintendo GameCube / Wii",
                     "PlayStation 2",
@@ -1698,8 +1765,13 @@ ApplicationWindow {
                 font.pixelSize: window.fontMicro
             }
             Button {
+                id: emulatorChooseFolderButton
                 text: "CHOISIR LE DOSSIER"
                 Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 1
+                }
                 onClicked: {
                     const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
                     if (leos.beginEmulatorFolderBrowse(
@@ -1715,6 +1787,131 @@ ApplicationWindow {
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
+            }
+            Button {
+                id: emulatorManageSourcesButton
+                text: "GÉRER LES DOSSIERS AJOUTÉS"
+                Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 2
+                }
+                onClicked: emulatorSourcesDialog.open()
+                background: Rectangle {
+                    radius: 9
+                    color: window.themeColors.surface
+                    border.color: activeFocus ? window.focusColor : window.themeColors.border
+                    border.width: activeFocus ? 2 : 1
+                }
+                contentItem: Label {
+                    text: "GÉRER LES DOSSIERS AJOUTÉS"
+                    color: "white"
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: emulatorSourcesDialog
+        title: "GÉRER LES DOSSIERS DE JEUX"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 680)
+        height: Math.min(window.height - 80, 560)
+        standardButtons: Dialog.Close
+
+        onOpened: {
+            emulatorSourcesList.currentIndex =
+                leos.emulatorSourceFolders.length > 0 ? 0 : -1
+            if (emulatorSourcesList.currentItem)
+                emulatorSourcesList.currentItem.forceActiveFocus()
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 10
+
+            Label {
+                text: "DOSSIERS SÉLECTIONNÉS"
+                color: window.accentA
+                font.pixelSize: window.fontMicro
+                font.letterSpacing: 2
+            }
+            Label {
+                text: "Retirer un dossier le supprime uniquement de la bibliothèque LEOS. Aucun jeu et aucun fichier du disque ne sera effacé."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: 10
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
+
+                ListView {
+                    id: emulatorSourcesList
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    clip: true
+                    spacing: 5
+                    model: leos.emulatorSourceFolders
+                    delegate: Button {
+                        required property var modelData
+                        required property int index
+                        width: ListView.view.width
+                        height: 48
+                        text: "RETIRER  ·  " + modelData.label
+                        Accessible.name: "Retirer " + modelData.label + " de la bibliothèque"
+                        onActiveFocusChanged: {
+                            if (activeFocus)
+                                emulatorSourcesList.currentIndex = index
+                        }
+                        onClicked: {
+                            if (leos.removeEmulatorFolder(modelData.platform, modelData.path)) {
+                                const count = leos.emulatorSourceFolders.length
+                                emulatorSourcesList.currentIndex =
+                                    count > 0 ? Math.min(index, count - 1) : -1
+                                if (emulatorSourcesList.currentItem)
+                                    emulatorSourcesList.currentItem.forceActiveFocus()
+                            }
+                        }
+                        background: Rectangle {
+                            radius: 8
+                            color: emulatorSourcesList.currentIndex === index
+                                ? window.themeColors.surface_elevated : window.themeColors.surface
+                            border.width: activeFocus ? 2 : 1
+                            border.color: activeFocus ? window.focusColor : window.themeColors.border
+                        }
+                        contentItem: Label {
+                            text: parent.text
+                            color: "white"
+                            elide: Text.ElideMiddle
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 10
+                        }
+                    }
+                    Keys.onUpPressed: {
+                        if (count > 0)
+                            currentIndex = Math.max(0, currentIndex - 1)
+                        event.accepted = true
+                    }
+                    Keys.onDownPressed: {
+                        if (count > 0)
+                            currentIndex = Math.min(count - 1, currentIndex + 1)
+                        event.accepted = true
+                    }
+                }
+            }
+            Label {
+                visible: leos.emulatorSourceFolders.length === 0
+                text: "Aucun dossier de jeux n'est encore ajouté."
+                color: window.muted
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
             }
         }
     }
