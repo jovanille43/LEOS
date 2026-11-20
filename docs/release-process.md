@@ -54,6 +54,13 @@ Ne pas publier l'ISO uniquement comme artefact de workflow pour une distribution
 - problèmes connus et procédures de récupération ;
 - mention explicite de toute variante expérimentale.
 
-## État au 18 novembre 2026
+## État au 20 novembre 2026
 
-Les trois images conteneur standard, NVIDIA legacy et NVIDIA open ont été construites, publiées et signées. L'ISO standard a été générée avec succès et reste à tester en VM puis sur matériel physique. Les ISO NVIDIA ne sont pas encore générées. Aucun tag de release ni aucune GitHub Release LEOS n'a été publié.
+- La CI Python et BlueBuild de la branche `main` a validé l'intégration de l'import de jeux console sélectionnés (Dolphin, PCSX2, PPSSPP) et de la détection des manettes génériques Linux.
+- Les améliorations Gaming (typographie lisible, propriétés d'accessibilité Qt, états vides guidés, aide clavier/manette et protection contre l'application concurrente du dock) ont été fusionnées après validation complète de leurs contrôles Python et BlueBuild/QML.
+- L'ISO standard du run [#44729268412](https://github.com/jovanille43/LEOS/actions/runs/44729268412) a été installée avec succès dans une VM QEMU/KVM : compte Anaconda créé, installation terminée, redémarrage et bureau KDE atteints.
+- Cette ISO a été construite depuis le commit `3c97827f5c658ed246a7b96ed4a5e8e1fbb2f317` ; elle ne contient donc pas encore les nouvelles fonctions fusionnées ensuite.
+- La prochaine étape de publication technique est de lancer manuellement le workflow **Build LEOS** sur le dernier `main`, puis **Generate LEOS installer ISO** sur la même branche une fois les images signées publiées.
+- Restent à vérifier dans la VM : sélecteur et transitions Desktop/Gaming, guide de premier démarrage, réseau, audio, services et redémarrages répétés. Les périphériques physiques et performances réelles restent à tester.
+- Les ISO NVIDIA ne sont pas encore générées. Aucune release versionnée, aucun tag stable et aucune certification matérielle universelle ne sont publiés.
+
