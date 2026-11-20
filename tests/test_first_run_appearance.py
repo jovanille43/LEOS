@@ -54,6 +54,33 @@ class FakeColors:
         return "restored"
 
 
+class FakeIcons:
+    def __init__(self):
+        self.applied = 0
+        self.restored = 0
+        self.available = True
+
+    def tool_available(self):
+        return self.available
+
+    def theme_installed(self):
+        return True
+
+    def current_theme(self):
+        return "breeze"
+
+    def apply_theme(self):
+        self.applied += 1
+        return "applied"
+
+    def can_restore(self):
+        return self.applied > self.restored
+
+    def restore_previous_theme(self):
+        self.restored += 1
+        return "restored"
+
+
 class FakeStyle:
     def __init__(self):
         self.applied = 0
@@ -114,6 +141,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.backups = FakeBackups()
         self.colors = FakeColors()
         self.style = FakeStyle()
+        self.icons = FakeIcons()
         self.layout = FakeLayout()
         self.favourites = FakeFavourites()
         self.wallpaper = Path(self.temp.name) / "desktop-leos.svg"
@@ -129,6 +157,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
             backups=self.backups,
             colors=self.colors,
             style=self.style,
+            icons=self.icons,
             layout=self.layout,
             favourites=self.favourites,
             wallpaper=self.wallpaper,
@@ -148,6 +177,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.backups.created, ["backup-1"])
         self.assertEqual(self.colors.applied, ["leos-original"])
         self.assertEqual(self.style.applied, 1)
+        self.assertEqual(self.icons.applied, 1)
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
 
@@ -181,6 +211,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
             self.setup.apply()
         self.assertEqual(self.backups.restored, [("backup-12345678", True)])
         self.assertEqual(self.style.restored, 1)
+        self.assertEqual(self.icons.restored, 1)
         self.assertEqual(self.colors.restored, 1)
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
@@ -191,6 +222,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.backups.created, [])
         self.assertEqual(self.colors.applied, [])
         self.assertEqual(self.style.applied, 0)
+        self.assertEqual(self.icons.applied, 0)
 
     def test_missing_required_command_blocks_before_backup(self):
         self.setup.command_lookup = lambda name: None

@@ -17,7 +17,7 @@ Lors du premier choix de **Desktop Mode**, le sélecteur propose séparément d'
 
 - Le choix **Activer l'apparence LEOS** vérifie la présence des outils et ressources, inspecte la disposition Plasma et refuse les configurations multi-panneaux ou non inspectables.
 - Avant toute modification du panneau ou du fond d'écran, LEOS crée une sauvegarde vérifiée de `plasma-org.kde.plasma.desktop-appletsrc`.
-- Après confirmation, LEOS applique le schéma couleur **LEOS Original**, le Plasma Style **LEOS**, le fond officiel Desktop et le dock inférieur centré avec les applications disponibles.
+- Après confirmation, LEOS applique le schéma couleur **LEOS Original**, le Plasma Style **LEOS**, le thème d'icônes **LEOS**, le fond officiel Desktop et le dock inférieur centré avec les applications disponibles.
 - Les gestionnaires de couleurs et de style conservent chacun le thème précédent pour restauration. Si une étape échoue, LEOS tente de restaurer la disposition, le style et les couleurs précédents ; le choix reste en attente pour permettre une nouvelle tentative.
 - Le choix **Garder mon bureau actuel** enregistre `desktop_appearance_setup=skipped` et ne modifie aucun réglage KDE. Le Centre de contrôle reste disponible pour une personnalisation ultérieure.
 - Une application réussie enregistre `desktop_appearance_setup=applied`.

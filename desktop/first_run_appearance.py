@@ -8,6 +8,7 @@ from typing import Any, Callable
 
 from desktop.dock_favourites import DockFavourites
 from desktop.kde_colors import KdeColorSchemeManager
+from desktop.icon_theme import PlasmaIconThemeManager
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_adapter import build_panel_management_script
 from desktop.plasma_backup import PlasmaBackupManager
@@ -40,6 +41,7 @@ class DesktopAppearanceSetup:
         backups: PlasmaBackupManager | None = None,
         colors: KdeColorSchemeManager | None = None,
         style: PlasmaStyleManager | None = None,
+        icons: PlasmaIconThemeManager | None = None,
         layout: DesktopLayoutStore | None = None,
         favourites: DockFavourites | None = None,
         wallpaper: Path = DESKTOP_WALLPAPER,
@@ -50,6 +52,7 @@ class DesktopAppearanceSetup:
         self.backups = backups or PlasmaBackupManager()
         self.colors = colors or KdeColorSchemeManager()
         self.style = style or PlasmaStyleManager()
+        self.icons = icons or PlasmaIconThemeManager()
         self.layout = layout or DesktopLayoutStore()
         self.favourites = favourites or DockFavourites()
         self.wallpaper = wallpaper
@@ -83,6 +86,10 @@ class DesktopAppearanceSetup:
             raise RuntimeError("Le schéma KDE actuel ne peut pas être identifié ; aucun changement ne sera effectué.")
         if self.style.current_style() is None:
             raise RuntimeError("Le Plasma Style actuel ne peut pas être identifié ; aucun changement ne sera effectué.")
+        if not self.icons.tool_available() or not self.icons.theme_installed():
+            raise FileNotFoundError("Le thème d'icônes LEOS ou plasma-changeicons est indisponible.")
+        if self.icons.current_theme() is None:
+            raise RuntimeError("Le thème d'icônes KDE actuel ne peut pas être identifié ; aucun changement ne sera effectué.")
 
         if not self.favourites.load():
             raise RuntimeError("Les favoris du dock LEOS sont invalides ou illisibles ; aucune modification ne sera effectuée.")
@@ -106,6 +113,11 @@ class DesktopAppearanceSetup:
                 self.backups.restore_backup(backup_id, confirmed=True)
             except (OSError, RuntimeError, ValueError, PermissionError) as error:
                 warnings.append(f"la sauvegarde Plasma n'a pas pu être restaurée ({error})")
+        if self.icons.can_restore():
+            try:
+                self.icons.restore_previous_theme()
+            except (OSError, RuntimeError, ValueError, FileNotFoundError) as error:
+                warnings.append(f"le thème d'icônes précédent n'a pas pu être restauré ({error})")
         if self.style.can_restore():
             try:
                 self.style.restore_previous_style()
@@ -128,6 +140,7 @@ class DesktopAppearanceSetup:
             backup_id = self.backups.create_backup()
             self.colors.apply_theme("leos-original")
             self.style.apply_style()
+            self.icons.apply_theme()
 
             script = build_panel_management_script(
                 layout,
@@ -142,7 +155,7 @@ class DesktopAppearanceSetup:
             self.settings.set(APPEARANCE_SETTING, APPLIED)
             return (
                 "L'apparence Desktop LEOS est activée : fond officiel, couleurs, "
-                "style Plasma et dock inférieur. Une sauvegarde de ta disposition "
+                "style Plasma, icônes LEOS et dock inférieur. Une sauvegarde de ta disposition "
                 f"précédente est conservée ({backup_id[:8]})."
             )
         except Exception as error:

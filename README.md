@@ -52,7 +52,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
 - **Centre des notifications LEOS** : historique local des événements émis par les composants LEOS. Les notifications système natives et leur historique restent gérés par Plasma ; les événements LEOS en Gaming sont conservés silencieusement pour ne pas interrompre une partie.
 - **Centre des manettes** : détection, test des boutons/axes et profils de navigation LEOS, sans modifier globalement les mappings Linux ou ceux des jeux externes.
 - **Boutique LEOS** : catalogue curaté, inventaire Flatpak utilisateur/système, confirmation avant toute opération, vérification Flathub avant installation et affichage du runtime déclaré lorsqu'il est présent dans les métadonnées.
-- **Premier démarrage** : le sélecteur présente Desktop et Gaming. Au premier choix de Desktop, l'utilisateur peut activer le profil visuel LEOS (fond officiel, couleurs, Plasma Style et dock) après inspection et sauvegarde de sa configuration Plasma ; il peut aussi conserver son bureau actuel. Les applications Brave, LibreOffice et VLC sont proposées séparément et ne sont installées qu'après confirmation.
+- **Premier démarrage** : le sélecteur présente Desktop et Gaming. Au premier choix de Desktop, l'utilisateur peut activer le profil visuel LEOS (fond officiel, couleurs, Plasma Style, icônes LEOS et dock) après inspection et sauvegarde de sa configuration Plasma ; il peut aussi conserver son bureau actuel. Les applications Brave, LibreOffice et VLC sont proposées séparément et ne sont installées qu'après confirmation.
   Détails : [guide du premier démarrage](docs/first-run.md).
 - **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
@@ -77,7 +77,7 @@ Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard g�
 ## Desktop Mode
 
 - Bureau KDE personnalisé avec l'identité LEOS ; le premier choix de Desktop propose l'activation du profil officiel après confirmation.
-- Profil Desktop LEOS Original : fond noir et emblème officiel, palette sombre cyan/magenta, Plasma Style LEOS et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
+- Profil Desktop LEOS Original : fond noir et emblème officiel, palette sombre cyan/magenta, Plasma Style et icônes LEOS, et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les favoris LEOS disponibles sont proposés sur le dock.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.

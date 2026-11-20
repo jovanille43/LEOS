@@ -435,7 +435,7 @@ ApplicationWindow {
             spacing: 14
 
             Label {
-                text: "LEOS va donner à ce bureau son identité visuelle : fond officiel, couleurs cyan et magenta, style Plasma LEOS et dock inférieur. Une sauvegarde de ta disposition KDE sera créée avant toute modification."
+                text: "LEOS va donner à ce bureau son identité visuelle : fond officiel, couleurs cyan et magenta, style Plasma, icônes LEOS et dock inférieur. Une sauvegarde de ta disposition KDE sera créée avant toute modification."
                 color: "white"
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
