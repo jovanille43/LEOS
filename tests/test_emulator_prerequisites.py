@@ -126,6 +126,25 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         (cores / "linked_libretro.so").symlink_to(target)
         self.assertIn("aucun cœur détecté", self.detect()[3])
 
+    def test_gaming_toolbar_exposes_prerequisite_dialog_and_status_binding(self):
+        qml = (
+            Path(__file__).resolve().parents[1]
+            / "gaming"
+            / "qml"
+            / "Main.qml"
+        ).read_text(encoding="utf-8")
+        controller = (
+            Path(__file__).resolve().parents[1]
+            / "gaming"
+            / "backend"
+            / "controller.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('text: "PRÉREQUIS"', qml)
+        self.assertIn('id: emulatorPrerequisitesDialog', qml)
+        self.assertIn('model: leos.emulatorPrerequisiteStatuses', qml)
+        self.assertIn('def emulatorPrerequisiteStatuses(self)', controller)
+        self.assertIn('emulatorPrerequisitesChanged', controller)
+
     def test_statuses_never_read_rom_folders_or_return_private_file_paths(self):
         results = self.detect()
         self.assertEqual(len(results), 5)
