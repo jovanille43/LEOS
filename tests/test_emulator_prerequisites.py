@@ -88,7 +88,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         (directory / "bios7.bin").write_bytes(b"7" * (16 * 1024))
         (directory / "firmware.bin").write_bytes(b"f" * (256 * 1024))
         # Default filenames are checked only when no path is configured.
-        self.assertIn("BIOS et firmware DS à configurer", self.detect()[1])
+        self.assertIn("prérequis DS incomplets (2/3", self.detect()[1])
 
     def test_rpcs3_detects_the_installed_dev_flash_structure(self):
         dev_flash = (
