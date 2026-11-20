@@ -83,6 +83,29 @@ class FakeIcons:
         return "restored"
 
 
+class FakeVisualChrome:
+    def __init__(self):
+        self.applied = []
+        self.restored = 0
+        self.available = True
+
+    def tool_available(self):
+        return self.available
+
+    def splash_theme_installed(self, theme_id="org.leos.desktop"):
+        return theme_id == "org.leos.desktop"
+
+    def apply(self, splash_theme_id, cursor_theme_id):
+        self.applied.append((splash_theme_id, cursor_theme_id))
+        return "applied"
+
+    def can_restore(self):
+        return bool(self.applied) and self.restored == 0
+
+    def restore_previous(self):
+        self.restored += 1
+        return "restored"
+
 class FakeStyle:
     def __init__(self):
         self.applied = 0
@@ -150,6 +173,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.colors = FakeColors()
         self.style = FakeStyle()
         self.icons = FakeIcons()
+        self.visual_chrome = FakeVisualChrome()
         self.layout = FakeLayout()
         self.favourites = FakeFavourites()
         self.wallpaper = Path(self.temp.name) / "desktop-leos.svg"
@@ -176,6 +200,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
             colors=self.colors,
             style=self.style,
             icons=self.icons,
+            visual_chrome=self.visual_chrome,
             layout=self.layout,
             favourites=self.favourites,
             wallpaper=self.wallpaper,
@@ -201,6 +226,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.style.applied_ids, ["leos-custom-test"])
         self.assertEqual(self.icons.applied, 1)
         self.assertEqual(self.icons.applied_ids, ["leos-custom-test"])
+        self.assertEqual(self.visual_chrome.applied, [("org.leos.desktop", "leos-custom-test")])
         self.assertEqual(self.plasma_resource_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
@@ -274,6 +300,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.backups.restored, [("backup-12345678", True)])
         self.assertEqual(self.style.restored, 1)
         self.assertEqual(self.icons.restored, 1)
+        self.assertEqual(self.visual_chrome.restored, 1)
         self.assertEqual(self.colors.restored, 1)
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 

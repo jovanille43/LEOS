@@ -97,3 +97,11 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 - [ ] L'absence de `kdialog` n'entraîne aucune installation silencieuse.
 
 Le parcours est implémenté dans les sources, mais ces scénarios doivent encore être vérifiés sur une session KDE/Bazzite réelle.
+
+## Identité système avant et après connexion
+
+L'image intègre un thème Plymouth LEOS, un écran de connexion SDDM Qt 6 et un splash Plasma post-connexion. Ces trois écrans utilisent une base sombre et métallique neutre, car les couleurs A/B de l'utilisateur ne sont pas connues avant sa connexion. Noto Sans est la typographie commune à ces interfaces.
+
+Le thème de curseur LEOS fournit une première forme SVG recolorable avec les couleurs A/B ; les formes non fournies héritent de Breeze. Après consentement à l'application de l'apparence Desktop, le splash et le curseur sont configurés dans le compte utilisateur. Les valeurs précédentes sont sauvegardées et peuvent être restaurées. Les changements de splash et de curseur prennent effet à la prochaine ouverture de session.
+
+La présence des ressources dans l'image et le passage de la CI ne remplacent pas les essais visuels sur une image réellement démarrée : UEFI, écrans haute résolution, multi-écrans, reprise après veille et restauration des paramètres doivent encore être vérifiés.

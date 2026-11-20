@@ -83,7 +83,7 @@ jobs:
             fedora:45 \
             bash -euc '
               dnf install -y qt6-qtdeclarative-devel qt6-qtmultimedia qt6-qtsvg
-              mapfile -d "" qml_files < <(find launcher gaming control_center controller_center desktop shop -type f -name "*.qml" -print0)
+              mapfile -d "" qml_files < <(find launcher gaming control_center controller_center desktop shop branding/sddm plasma-theme/look-and-feel -type f -name "*.qml" -print0)
               if [[ "${#qml_files[@]}" -eq 0 ]]; then
                 echo "No QML sources found."
                 exit 1
@@ -110,6 +110,7 @@ jobs:
           set -euo pipefail
           bash -n packaging/leos-default-apps-setup
           bash -n packaging/leos-default-gaming-apps-setup
+          bash -n files/scripts/prepare-leos-plymouth.sh
 
       - name: Validate branding video and audio streams
         run: |

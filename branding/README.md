@@ -40,3 +40,12 @@ La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chem
 - Ne pas afficher l'image comparative comme emblème.
 - Préserver les fichiers sources ; toute optimisation doit produire une copie dérivée.
 - Tester le décodage vidéo et audio dans une session Bazzite réelle avant publication.
+
+## Identité de démarrage et de connexion
+
+- Plymouth présente l'emblème Desktop officiel sur un fond graphite neutre avant l'ouverture de session. Le watermark PNG est produit à la construction de l'image.
+- SDDM présente le logo Desktop officiel, une connexion Qt 6 avec choix de session et la typographie Noto Sans. Les accents A/B personnels ne sont pas imposés avant la connexion.
+- Plasma fournit un écran de chargement LEOS post-connexion. Il est activé après le consentement au profil Desktop.
+- Le curseur LEOS ajoute une première forme SVG recolorable avec A/B ; les formes non fournies héritent de Breeze pour préserver la compatibilité.
+
+Noto Sans est la famille commune des interfaces de connexion, de démarrage et de chargement. Les emblèmes restent ceux des ressources graphiques officielles.

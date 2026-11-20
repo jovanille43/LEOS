@@ -70,3 +70,14 @@ Métadonnées relevées par CI pour les vidéos :
 - Gaming utilise le lion avec la manette.
 - La référence comparative n'est jamais affichée comme logo de mode.
 - Préserver les fichiers présents ; toute optimisation future doit produire une copie dérivée, sans écraser la source.
+
+## Identité système avant et après connexion
+
+| Ressource | Rôle |
+| --- | --- |
+| branding/plymouth/leos/leos.plymouth | Plymouth sombre et métallique, sans accents A/B imposés |
+| branding/sddm/leos/Main.qml | Écran de connexion SDDM Qt 6 |
+| plasma-theme/look-and-feel/org.leos.desktop/contents/splash/Splash.qml | Écran de chargement après connexion |
+| icons/leos/cursors_scalable/default/default.svg | Première forme de curseur LEOS recolorable |
+
+Le script files/scripts/prepare-leos-plymouth.sh convertit l'emblème Desktop officiel en watermark PNG pendant la construction. L'initramfs est régénéré par BlueBuild pour embarquer le thème Plymouth. SDDM utilise le thème Qt 6 fourni par LEOS. Les paramètres personnels de splash Plasma et de curseur sont appliqués uniquement lorsque l'utilisateur accepte le profil Desktop ; leurs anciennes valeurs restent restaurables.

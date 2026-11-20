@@ -17,6 +17,7 @@ from desktop.plasma_inspector import build_layout_plan, inspect_plasma_config
 from desktop.plasma_runner import execute_plasma_script
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.themed_plasma_resources import install_themed_plasma_resources
+from desktop.visual_chrome import PlasmaVisualChromeManager
 from desktop.themes import normalize_color, resolve_appearance_mode
 from leos_core.settings import SettingsStore
 
@@ -52,6 +53,7 @@ class DesktopAppearanceSetup:
         script_executor: Callable[..., tuple[bool, str]] | None = None,
         branding_asset_builder: Callable[[str, str], dict[str, str]] | None = None,
         plasma_resource_builder: Callable[[str, str], dict[str, str]] | None = None,
+        visual_chrome: PlasmaVisualChromeManager | None = None,
     ) -> None:
         self.settings = settings or SettingsStore()
         self.backups = backups or PlasmaBackupManager()
@@ -65,6 +67,7 @@ class DesktopAppearanceSetup:
         self.script_executor = script_executor or execute_plasma_script
         self.branding_asset_builder = branding_asset_builder or build_themed_branding_assets
         self.plasma_resource_builder = plasma_resource_builder or install_themed_plasma_resources
+        self.visual_chrome = visual_chrome or PlasmaVisualChromeManager()
 
     @property
     def status(self) -> str:
@@ -99,6 +102,10 @@ class DesktopAppearanceSetup:
             raise FileNotFoundError("Le thème d'icônes LEOS ou plasma-changeicons est indisponible.")
         if self.icons.current_theme() is None:
             raise RuntimeError("Le thème d'icônes KDE actuel ne peut pas être identifié ; aucun changement ne sera effectué.")
+        if not self.visual_chrome.tool_available():
+            raise FileNotFoundError("Les outils KDE de configuration de l'écran de chargement et du curseur sont indisponibles.")
+        if not self.visual_chrome.splash_theme_installed():
+            raise FileNotFoundError("L'écran de chargement Plasma LEOS est absent de l'image.")
 
         if not self.favourites.load():
             raise RuntimeError("Les favoris du dock LEOS sont invalides ou illisibles ; aucune modification ne sera effectuée.")
@@ -122,6 +129,11 @@ class DesktopAppearanceSetup:
                 self.backups.restore_backup(backup_id, confirmed=True)
             except (OSError, RuntimeError, ValueError, PermissionError) as error:
                 warnings.append(f"la sauvegarde Plasma n'a pas pu être restaurée ({error})")
+        if self.visual_chrome.can_restore():
+            try:
+                self.visual_chrome.restore_previous()
+            except (OSError, RuntimeError, ValueError, FileNotFoundError) as error:
+                warnings.append(f"l'écran de chargement ou le curseur précédent n'a pas pu être restauré ({error})")
         if self.icons.can_restore():
             try:
                 self.icons.restore_previous_theme()
@@ -173,6 +185,7 @@ class DesktopAppearanceSetup:
             self.colors.apply_custom_theme(color_a, color_b, resolved_appearance)
             self.style.apply_style(plasma_style_id)
             self.icons.apply_theme(icon_theme_id)
+            self.visual_chrome.apply("org.leos.desktop", icon_theme_id)
 
             script = build_panel_management_script(
                 layout,
@@ -187,7 +200,7 @@ class DesktopAppearanceSetup:
             self.settings.set(APPEARANCE_SETTING, APPLIED)
             return (
                 "L'apparence Desktop LEOS est activée : fond personnalisé, dégradé A/B, "
-                "style Plasma et icônes LEOS assortis à tes couleurs A/B, plus le dock inférieur. Une sauvegarde de ta disposition "
+                "style Plasma, icônes et curseur LEOS assortis à tes couleurs A/B, plus l'écran de chargement LEOS et le dock inférieur. Une sauvegarde de ta disposition "
                 f"précédente est conservée ({backup_id[:8]})."
             )
         except Exception as error:
