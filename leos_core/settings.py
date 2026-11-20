@@ -5,16 +5,19 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import tempfile
 import stat
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from leos_core.paths import config_home as xdg_config_home
 from leos_core.json_utils import json_nesting_within_limit
 
 
 MAX_SETTINGS_BYTES = 256 * 1024
+_THEME_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
+_THEME_COLOR_KEYS = frozenset({"theme_color_a", "theme_color_b"})
 
 
 def _read_settings_file(path: Path) -> dict[str, Any]:
@@ -60,12 +63,16 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
+    "theme_color_a": "#00D9FF",
+    "theme_color_b": "#E33BFF",
+    "theme_colors_configured": False,
+    "desktop_appearance_setup": "pending",
+    "appearance_mode": "dark",
     "performance_profile": "balanced",
     "animations_enabled": True,
     "sounds_enabled": True,
     "gaming_overlay_enabled": True,
     "onboarding_complete": False,
-    "desktop_appearance_setup": "pending",
     "transition_app_policy": "ask",
     "last_notified_system_update": "",
     "notifications_enabled": True,
@@ -78,11 +85,42 @@ DEFAULTS: dict[str, Any] = {
 ALLOWED_VALUES = {
     "last_mode": {"desktop", "gaming"},
     "theme": {"leos-original", "light", "cyan", "magenta", "gaming"},
+    "appearance_mode": {"dark", "light", "auto"},
     "performance_profile": {"performance", "balanced", "quiet", "battery-saver"},
     "transition_app_policy": {"ask"},
     "desktop_appearance_setup": {"pending", "applied", "skipped"},
     "notification_minimum_priority": {"all", "important", "critical"},
 }
+
+
+def validate_settings_values(
+    values: object,
+    *,
+    require_complete: bool = False,
+) -> dict[str, Any]:
+    """Validate known LEOS preferences without reading or modifying a file."""
+    if not isinstance(values, dict) or not values:
+        raise ValueError("LEOS settings must be a non-empty dictionary")
+    if require_complete and set(values) != set(DEFAULTS):
+        raise ValueError("A complete LEOS settings snapshot must contain every known key")
+
+    validated: dict[str, Any] = {}
+    for key, value in values.items():
+        if key not in DEFAULTS:
+            raise KeyError(f"Unknown LEOS setting: {key}")
+        if not isinstance(value, type(DEFAULTS[key])):
+            raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
+        if key in _THEME_COLOR_KEYS:
+            if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                raise ValueError(f"Invalid hex color for {key}")
+            value = value.strip().upper()
+        allowed = ALLOWED_VALUES.get(key)
+        if allowed is not None and value not in allowed:
+            raise ValueError(f"Invalid value for {key}: {value}")
+        if key == "notification_duration_seconds" and value not in {3, 5, 8}:
+            raise ValueError(f"Invalid value for {key}: {value}")
+        validated[key] = value
+    return validated
 
 
 class SettingsStore:
@@ -92,6 +130,18 @@ class SettingsStore:
         self.path = path or xdg_config_home() / "leos" / "settings.json"
         self._values = DEFAULTS.copy()
         self.load()
+
+    def validate_current_file(self) -> None:
+        """Raise when an existing settings file cannot be read safely as JSON.
+
+        A missing file is valid and represents first-run defaults. This check is
+        intentionally separate from load(), which falls back to defaults for UI
+        resilience and must not be mistaken for a verified backup source.
+        """
+        if self.path.is_symlink() or self.path.parent.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
+        if self.path.exists():
+            _read_settings_file(self.path)
 
     def load(self) -> None:
         # Never retain stale values when another LEOS process replaces the
@@ -110,6 +160,10 @@ class SettingsStore:
             value = loaded.get(key, default)
             if not isinstance(value, type(default)):
                 continue
+            if key in _THEME_COLOR_KEYS:
+                if _THEME_COLOR_PATTERN.fullmatch(value.strip()) is None:
+                    continue
+                value = value.strip().upper()
             allowed = ALLOWED_VALUES.get(key)
             if allowed is not None and value not in allowed:
                 continue
@@ -130,15 +184,15 @@ class SettingsStore:
         return tuple(self._values.get(key) for key in keys)
 
     def set(self, key: str, value: Any) -> None:
-        if key not in DEFAULTS:
-            raise KeyError(f"Unknown LEOS setting: {key}")
-        if not isinstance(value, type(DEFAULTS[key])):
-            raise TypeError(f"{key} must be {type(DEFAULTS[key]).__name__}")
-        allowed = ALLOWED_VALUES.get(key)
-        if allowed is not None and value not in allowed:
-            raise ValueError(f"Invalid value for {key}: {value}")
-        if key == "notification_duration_seconds" and value not in {3, 5, 8}:
-            raise ValueError(f"Invalid value for {key}: {value}")
+        """Validate and persist one preference."""
+        self.set_many({key: value})
+
+    def set_many(self, updates: dict[str, Any]) -> None:
+        """Atomically validate and persist a group of shared preferences."""
+        if not isinstance(updates, dict) or not updates:
+            raise ValueError("LEOS settings updates must be a non-empty dictionary")
+
+        validated = validate_settings_values(updates)
 
         # Serialize read-modify-write across Desktop, Gaming and Control Center.
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -159,8 +213,54 @@ class SettingsStore:
                             "LEOS settings file is unreadable or too large; it was left untouched"
                         ) from exc
                 self.load()
-                self._values[key] = value
+                self._values.update(validated)
                 self.save()
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+    def replace_all(
+        self,
+        values: dict[str, Any],
+        *,
+        confirmed: bool = False,
+        before_replace: Callable[[], None] | None = None,
+    ) -> None:
+        """Atomically replace the complete preference set after explicit confirmation.
+
+        This recovery-only operation deliberately bypasses a corrupt existing JSON
+        file, but still validates the replacement and serializes access with the
+        same lock used by normal settings writes. The optional pre-replacement
+        callback runs while that lock is held so callers can preserve the exact
+        pre-restore state before the atomic replacement.
+        """
+        if confirmed is not True:
+            raise PermissionError("Explicit confirmation is required to replace LEOS preferences")
+        validated = validate_settings_values(values, require_complete=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.path.parent.is_symlink() or self.path.is_symlink():
+            raise OSError("LEOS settings path cannot be a symbolic link")
+        lock_path = self.path.with_name(self.path.name + ".lock")
+        if lock_path.is_symlink():
+            raise OSError("LEOS settings lock cannot be a symbolic link")
+        with lock_path.open("a", encoding="utf-8") as lock:
+            os.chmod(lock_path, 0o600)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            previous = self._values
+            try:
+                # Refresh only after acquiring the cross-process lock. The
+                # recovery callback and replacement observe one serialized
+                # pre-restore settings state.
+                self.load()
+                if before_replace is not None:
+                    if not callable(before_replace):
+                        raise TypeError("before_replace must be callable")
+                    before_replace()
+                previous = self._values
+                self._values = {**DEFAULTS, **validated}
+                self.save()
+            except Exception:
+                self._values = previous
+                raise
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
