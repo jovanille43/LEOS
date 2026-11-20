@@ -42,8 +42,9 @@ class PlasmaVisualChromeManagerTests(unittest.TestCase):
         self.icons = root / "system-icons"
         self.look_and_feel = root / "look-and-feel"
         self.aurorae = self.data / "aurorae" / "themes"
-        for directory in (self.config, self.data, self.icons, self.look_and_feel, self.aurorae):
+        for directory in (self.config, self.data, self.icons, self.look_and_feel):
             directory.mkdir()
+        self.aurorae.mkdir(parents=True)
 
         self.splash = self.look_and_feel / "org.leos.desktop"
         (self.splash / "contents" / "splash").mkdir(parents=True)

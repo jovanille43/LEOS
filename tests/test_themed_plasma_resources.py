@@ -1,5 +1,6 @@
 """Tests for user-scoped, recolored Plasma Style and icon resources."""
 
+import configparser
 import json
 import tempfile
 import unittest
@@ -101,8 +102,9 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
         self.assertEqual((style_root / ".leos-theme.json").is_file(), True)
         self.assertEqual((icon_root / ".leos-theme.json").is_file(), True)
         self.assertEqual((aurorae_root / ".leos-theme.json").is_file(), True)
-        aurorae_metadata = aurorae_root / "metadata.desktop"
-        self.assertIn(f"X-KDE-PluginInfo-Name={aurorae_id}", aurorae_metadata.read_text(encoding="utf-8"))
+        aurorae_metadata = configparser.ConfigParser(interpolation=None)
+        aurorae_metadata.read(aurorae_root / "metadata.desktop", encoding="utf-8")
+        self.assertEqual(aurorae_metadata["Desktop Entry"]["X-KDE-PluginInfo-Name"], aurorae_id)
         self.assertTrue((aurorae_root / f"{aurorae_id}rc").is_file())
         self.assertFalse((aurorae_root / "leosrc").exists())
         aurorae_svg = ET.parse(aurorae_root / "decoration.svg").getroot()

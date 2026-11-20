@@ -17,7 +17,7 @@ A near-black metallic frame with a restrained accent line. The packaged artwork 
 
 System-wide image path: `/usr/share/aurorae/themes/leos/`.
 
-The Desktop profile creates a matching user-scoped Aurorae variant alongside the Plasma Style and icon theme, then activates it after explicit consent. The Control Center updates the decoration when A/B changes and offers a guarded restoration to the previous theme. The original source under /usr/share remains untouched.
+The packaged Aurorae template is not selected automatically. The Desktop profile creates a matching user-scoped Aurorae variant alongside the Plasma Style and icon theme, then activates it only after explicit consent. The Control Center updates the decoration when A/B changes and offers a guarded restoration to the previous theme. The original source under /usr/share remains untouched.
 
 ## Scope and validation
 
