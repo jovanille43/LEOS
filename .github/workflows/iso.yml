@@ -57,7 +57,7 @@ jobs:
 
       - name: Verify and install BlueBuild CLI
         env:
-          CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer
+          CLI_IMAGE: ghcr.io/blue-build/cli:v0.9.42-installer
         run: |
           set -euo pipefail
           test -s tools/trust/blue-build-cli.pub
