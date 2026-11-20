@@ -193,7 +193,7 @@ class PlasmaIconThemeManager:
             "apply_pending": True,
         })
         self._apply(theme_id)
-        if self.current_theme() != theme_id
+        if self.current_theme() != theme_id:
             raise RuntimeError("KDE did not confirm activation of the LEOS icon theme.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
