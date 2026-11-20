@@ -723,7 +723,7 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             text: "Appliquer à KDE"
-                                            enabled: controlCenter.kdeColorSchemeToolAvailable
+                                            enabled: controlCenter.kdeColorSchemeToolAvailable && controlCenter.themeColorsConfigured
                                             onClicked: {
                                                 kdeThemeConfirmation.action = "apply"
                                                 kdeThemeConfirmation.open()
@@ -741,7 +741,9 @@ ApplicationWindow {
                                     Label {
                                         text: !controlCenter.kdeColorSchemeToolAvailable
                                             ? "Outil plasma-apply-colorscheme indisponible sur cette session."
-                                            : window.kdeThemeNotice
+                                            : (!controlCenter.themeColorsConfigured
+                                               ? "Choisis et enregistre d’abord les couleurs A et B."
+                                               : window.kdeThemeNotice)
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
@@ -785,7 +787,7 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             text: "Appliquer le style LEOS"
-                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled
+                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled && controlCenter.themeColorsConfigured
                                             onClicked: {
                                                 plasmaStyleConfirmation.action = "apply"
                                                 plasmaStyleConfirmation.open()
@@ -805,7 +807,9 @@ ApplicationWindow {
                                             ? "Paquet Plasma Style LEOS indisponible."
                                             : !controlCenter.plasmaStyleToolAvailable
                                                 ? "Outil plasma-apply-desktoptheme indisponible."
-                                                : window.plasmaStyleNotice
+                                                : (!controlCenter.themeColorsConfigured
+                                                   ? "Choisis et enregistre d’abord les couleurs A et B."
+                                                   : window.plasmaStyleNotice)
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap

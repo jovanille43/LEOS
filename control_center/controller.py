@@ -764,6 +764,8 @@ class ControlCenterController(QObject):
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
         """Apply the currently selected LEOS colors after a confirmed UI action."""
+        if not self.settings.get("theme_colors_configured", False):
+            return "Choisis et enregistre les deux couleurs A et B avant d’appliquer le thème KDE."
         try:
             color_a, color_b, appearance = self.settings.snapshot(
                 ("theme_color_a", "theme_color_b", "appearance_mode")
@@ -808,6 +810,8 @@ class ControlCenterController(QObject):
     @Slot(result=str)
     def applyPlasmaStyle(self) -> str:
         """Apply the LEOS Plasma Style only after explicit UI confirmation."""
+        if not self.settings.get("theme_colors_configured", False):
+            return "Choisis et enregistre les deux couleurs A et B avant d’appliquer le Plasma Style."
         try:
             color_a, color_b = self.settings.snapshot(("theme_color_a", "theme_color_b"))
             message = self.plasmaStyle.apply_custom_style(color_a, color_b)
