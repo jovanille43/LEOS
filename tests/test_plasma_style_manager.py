@@ -72,6 +72,24 @@ class PlasmaStyleManagerTests(unittest.TestCase):
     def test_detects_packaged_style(self):
         self.assertTrue(self.manager.style_installed())
 
+    def test_applies_user_scoped_custom_style_id_and_restores_original(self):
+        custom = self.data / "plasma" / "desktoptheme" / "leos-custom-abcdef0123456789"
+        custom.mkdir(parents=True)
+        (custom / "metadata.json").write_text(
+            json.dumps({"KPlugin": {"Id": custom.name, "Name": "LEOS personnalisé"}}),
+            encoding="utf-8",
+        )
+        self.assertTrue(self.manager.style_installed(custom.name))
+        self.assertIn("appliqué", self.manager.apply_style(custom.name))
+        self.assertEqual(self.runner.calls[0][0], [
+            "/usr/bin/plasma-apply-desktoptheme", custom.name
+        ])
+        self.assertEqual(self.manager._read_state()["previous_style"], "breeze-dark")
+        self.manager.restore_previous_style()
+        self.assertEqual(self.runner.calls[-1][0], [
+            "/usr/bin/plasma-apply-desktoptheme", "breeze-dark"
+        ])
+
     def test_reads_current_style_without_modifying_config(self):
         before = (self.config / "plasmarc").read_text(encoding="utf-8")
         self.assertEqual(self.manager.current_style(), "breeze-dark")
@@ -168,6 +186,8 @@ class PlasmaStyleManagerTests(unittest.TestCase):
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("PlasmaStyleManager()", controller)
+        self.assertIn("PlasmaIconThemeManager()", controller)
+        self.assertIn("install_themed_plasma_resources(color_a, color_b)", controller)
         self.assertIn("def applyPlasmaStyle(self)", controller)
         self.assertIn("def restorePreviousPlasmaStyle(self)", controller)
         self.assertIn("plasmaStyleConfirmation.open()", qml)
