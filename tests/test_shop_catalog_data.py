@@ -157,12 +157,15 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
             "org.ppsspp.PPSSPP",
             "net.kuribo64.melonDS",
             "net.rpcs3.RPCS3",
+            "dev.eden_emu.eden",
         })
         self.assertTrue(all(item.get("bundled") is True for item in emulators.values()))
         self.assertTrue(all("automatiquement" in item["operation_note"].casefold() for item in emulators.values()))
         self.assertTrue(all("Flathub" == item["source"] for item in emulators.values()))
         self.assertIn("non vérifié", emulators["org.DolphinEmu.dolphin-emu"]["compatibility"])
         self.assertIn("non vérifié", emulators["net.rpcs3.RPCS3"]["compatibility"])
+        self.assertIn("non vérifié", emulators["dev.eden_emu.eden"]["compatibility"])
+        self.assertIn("x86_64-v3", emulators["dev.eden_emu.eden"]["compatibility"])
 
 if __name__ == "__main__":
     unittest.main()
