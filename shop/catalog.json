@@ -143,5 +143,15 @@
     "compatibility": "Paquet Flathub communautaire non vérifié par le projet RPCS3. Émulation exigeante et compatibilité variable ; un GPU et des pilotes Vulkan adaptés sont recommandés.",
     "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Le firmware officiel PS3 et les jeux doivent être obtenus légalement par l'utilisateur. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
     "bundled": true
+  },
+  {
+    "id": "dev.eden_emu.eden",
+    "name": "Eden (Nintendo Switch)",
+    "category": "Émulation",
+    "description": "Émulateur Nintendo Switch pour les jeux et applications compatibles.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub communautaire non vérifié, non affilié et non pris en charge par Eden Contributors. La compilation x86_64 nécessite un processeur x86-64-v3 ; compatibilité et performances variables selon le matériel et les titres.",
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant la première session LEOS (connexion Internet requise). LEOS ne fournit ni jeux, ni clés prod.keys/title.keys, ni firmware Switch. Tu dois utiliser tes propres copies obtenues légalement. Le paquet Flathub Eden est communautaire et non vérifié ; tu peux le désinstaller depuis la boutique.",
+    "bundled": true
   }
 ]
