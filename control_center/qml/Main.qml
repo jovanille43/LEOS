@@ -543,7 +543,10 @@ ApplicationWindow {
                                             window.themeColorNotice = controlCenter.setThemeColors(
                                                 window.draftColorA, window.draftColorB
                                             )
-                                            window.draftColorsDirty = false
+                                            if (controlCenter.themeColorsConfigured
+                                                    && controlCenter.themeColorA === window.draftColorA
+                                                    && controlCenter.themeColorB === window.draftColorB)
+                                                window.draftColorsDirty = false
                                         }
                                     }
                                     Label {

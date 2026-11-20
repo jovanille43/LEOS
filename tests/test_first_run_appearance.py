@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from desktop.branding_assets import source_asset_urls
+from desktop.branding_assets import source_asset_urls
 from desktop.first_run_appearance import (
     APPLIED,
     PENDING,
