@@ -27,6 +27,22 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
             qml,
         )
 
+    def test_selected_sources_can_be_removed_without_deleting_game_files(self):
+        library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def emulatorSourceFolders", library)
+        self.assertIn("def removeEmulatorFolder", library)
+        self.assertIn("write_bounded_json(self._emulator_sources_file, remaining)", library)
+        self.assertNotIn("unlink(", library[library.index("def removeEmulatorFolder"):library.index("def emulatorPlatformAvailable")])
+        self.assertIn('def emulatorSourceFolders(self)', controller)
+        self.assertIn('def removeEmulatorFolder(self, platform_key: str, folder: str)', controller)
+        self.assertIn('id: emulatorSourcesDialog', qml)
+        self.assertIn('model: leos.emulatorSourceFolders', qml)
+        self.assertIn('leos.removeEmulatorFolder(modelData.platform, modelData.path)', qml)
+        self.assertIn('GÉRER LES DOSSIERS AJOUTÉS', qml)
+        self.assertIn('emulatorSourcesDialog.visible', qml)
+
     def test_only_persisted_user_selected_sources_are_added_to_library(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         self.assertIn("def addEmulatorFolder", library)
