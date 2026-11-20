@@ -1,5 +1,19 @@
 # Première validation LEOS en machine virtuelle
 
+## Résultat confirmé — 20 novembre 2026
+
+La première installation interactive de l'ISO standard a abouti dans une machine virtuelle QEMU/KVM :
+- l'écran Anaconda de création du compte utilisateur a été présenté et le compte a été créé ;
+- l'installation s'est terminée et la machine a redémarré depuis son disque virtuel ;
+- la connexion KDE a fonctionné et la session Plasma est arrivée jusqu'au bureau ;
+- `rpm-ostree status` a identifié l'image déployée comme `ostree-image-signed:docker://ghcr.io/jovanille43/leos:latest`.
+
+L'ISO utilisée provenait de l'exécution [Generate LEOS installer ISO #44729268412](https://github.com/jovanille43/LEOS/actions/runs/44729268412), basée sur le commit `3c97827f5c658ed246a7b96ed4a5e8e1fbb2f317`. Le statut rpm-ostree photographié par l'utilisateur affichait le digest `sha256:83a710a01526c94e1b637a72ef8f74f96e3da58b45bc238cdfb6995b3a2106dc`.
+
+**Interprétation de l'identité système :** `/etc/os-release` peut continuer d'afficher Bazzite, car LEOS est construit sur cette base et conserve ses métadonnées de version. Ce seul fichier ne permet pas de conclure que l'installation est Bazzite au lieu de LEOS. Vérifier la source de déploiement dans `rpm-ostree status` et rechercher `ghcr.io/jovanille43/leos`.
+
+Cette validation confirme l'installation complète et l'accès au premier bureau KDE dans la VM. Elle ne valide pas encore les transitions Desktop/Gaming, le réseau, l'audio, les services après plusieurs redémarrages, les périphériques physiques ni les performances de jeux. Les commits ultérieurs de `main` ne sont pas inclus dans l'ISO utilisée pour ce test tant qu'une nouvelle image et une nouvelle ISO n'ont pas été générées.
+
 ## Objectif et limites
 
 Cette étape sert à vérifier que l'ISO démarre, que l'installation aboutit sur un disque virtuel et que les premiers écrans LEOS sont utilisables. Elle ne certifie pas les pilotes GPU, le Wi-Fi, le Bluetooth, la veille, les manettes ni les performances d'un PC physique.
@@ -76,12 +90,12 @@ L'opération peut effacer le disque virtuel de cette VM ; elle ne doit jamais av
 
 Cocher uniquement les tests réellement effectués :
 
-- [ ] Un compte utilisateur a été créé pendant l'installation Anaconda.
-- [ ] La connexion KDE fonctionne avec ce compte et son mot de passe.
-- [ ] L'installation se termine sans erreur.
-- [ ] Le système redémarre depuis le disque virtuel.
-- [ ] L'écran de connexion KDE apparaît.
-- [ ] La session KDE Desktop s'ouvre et reste utilisable.
+- [x] Un compte utilisateur a été créé pendant l'installation Anaconda.
+- [x] La connexion KDE fonctionne avec ce compte et son mot de passe.
+- [x] L'installation se termine sans erreur.
+- [x] Le système redémarre depuis le disque virtuel.
+- [x] L'écran de connexion KDE apparaît.
+- [x] La session KDE Desktop s'ouvre et reste utilisable.
 - [ ] Le logo Desktop affiche le lion seul.
 - [ ] Le sélecteur LEOS s'ouvre.
 - [ ] Le guide de premier démarrage apparaît et peut être refermé.
@@ -94,6 +108,8 @@ Cocher uniquement les tests réellement effectués :
 - [ ] Le son via le périphérique audio virtuel fonctionne.
 - [ ] Le système redémarre une seconde fois sans erreur.
 - [ ] `systemctl --failed` ne signale aucun service essentiel en échec.
+
+Dans cette base Bazzite immuable, il est normal que `cat /etc/os-release` conserve le nom Bazzite. Pour confirmer le système effectivement déployé, la ligne `ostree-image-signed:docker://ghcr.io/jovanille43/leos:latest` de `rpm-ostree status` est le contrôle déterminant.
 
 Pour les contrôles système, ouvrir un terminal dans la VM et lancer :
 
