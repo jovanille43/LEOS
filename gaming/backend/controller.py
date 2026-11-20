@@ -30,7 +30,6 @@ from .emulator_folder_browser import (
 from .system_monitor import SystemMonitor
 from .power_profiles import PowerProfileState, inspect_power_profiles, set_power_profile
 from .mangohud import find_mangohud
-from .emulator_prerequisites import detect_emulator_prerequisite_statuses
 
 
 class _PowerProfileTaskSignals(QObject):
