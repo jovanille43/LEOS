@@ -77,8 +77,6 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
-            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
             if (!window.draftColorsDirty) {
                 window.draftColorA = controlCenter.themeColorA
                 window.draftColorB = controlCenter.themeColorB
@@ -506,19 +504,12 @@ ApplicationWindow {
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
-                                    ComboBox {
-                                        id: themeBox
+                                    Label {
+                                        text: "Les anciennes palettes prédéfinies ne sont pas imposées : choisis directement A et B ci-dessous."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
-                                        Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
-                                        }
-                                        onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            window.draftColorsDirty = false
-                                            controlCenter.setTheme(values[currentIndex])
-                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true

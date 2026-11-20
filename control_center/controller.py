@@ -809,7 +809,8 @@ class ControlCenterController(QObject):
     def applyPlasmaStyle(self) -> str:
         """Apply the LEOS Plasma Style only after explicit UI confirmation."""
         try:
-            message = self.plasmaStyle.apply_style()
+            color_a, color_b = self.settings.snapshot(("theme_color_a", "theme_color_b"))
+            message = self.plasmaStyle.apply_custom_style(color_a, color_b)
         except FileNotFoundError:
             message = "Style LEOS ou outil KDE introuvable : aucun changement appliqué."
             post_notification("Style Plasma non appliqué", message, "error")
