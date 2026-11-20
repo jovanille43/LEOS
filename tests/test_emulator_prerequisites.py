@@ -94,14 +94,17 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         dev_flash = (
             self.flatpak_config("net.rpcs3.RPCS3", "rpcs3") / "dev_flash"
         )
-        (dev_flash / "vsh").mkdir()
-        self.assertIn("structure du firmware PS3 détectée", self.detect()[2])
+        firmware_module = dev_flash / "sys" / "external" / "liblv2.sprx"
+        firmware_module.parent.mkdir(parents=True)
+        firmware_module.write_bytes(b"firmware module")
+        self.assertIn("module firmware PS3 détecté", self.detect()[2])
 
-    def test_rpcs3_does_not_treat_an_empty_dev_flash_directory_as_installed_firmware(self):
+    def test_rpcs3_does_not_treat_an_empty_or_partial_dev_flash_as_firmware(self):
         dev_flash = (
             self.flatpak_config("net.rpcs3.RPCS3", "rpcs3") / "dev_flash"
         )
-        dev_flash.mkdir()
+        (dev_flash / "vsh").mkdir()
+        (dev_flash / "sys" / "external").mkdir(parents=True)
         self.assertIn("firmware PS3 à installer", self.detect()[2])
 
     def test_retroarch_detects_user_selected_cores_folder_from_config(self):
