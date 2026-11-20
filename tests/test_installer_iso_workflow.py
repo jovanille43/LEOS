@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class InstallerIsoWorkflowTests(unittest.TestCase):
     def test_iso_workflow_installs_inspection_tools_and_validates_before_upload(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("CLI_IMAGE: ghcr.io/blue-build/cli:v0.9.42-installer", workflow)
         self.assertIn("xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat", workflow)
         self.assertIn("Validate ISO boot structure, checksum, and source digest", workflow)
         self.assertIn("generate-iso --variant server --web-ui", workflow)
