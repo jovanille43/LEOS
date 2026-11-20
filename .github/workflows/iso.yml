@@ -156,7 +156,7 @@ jobs:
 
           # Fedora 45 Atomic installer media use Anaconda WebUI. Enable the
           # matching package in the installer runtime instead of the legacy GTK UI.
-          sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --web-ui --iso-name "$ISO_NAME" image "$IMAGE_REF"
+          sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --variant server --web-ui --iso-name "$ISO_NAME" image "$IMAGE_REF"
           test -s "$ISO_NAME"
 
           after_digest="$(sudo skopeo inspect --authfile /root/.docker/config.json --format '{{.Digest}}' "docker://$IMAGE_REF")"
