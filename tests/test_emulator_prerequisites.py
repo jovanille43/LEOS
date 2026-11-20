@@ -146,6 +146,8 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         self.assertIn('text: "PRÉREQUIS"', qml)
         self.assertIn('id: emulatorPrerequisitesDialog', qml)
         self.assertIn('model: leos.emulatorPrerequisiteStatuses', qml)
+        self.assertIn('if (emulatorPrerequisitesDialog.visible)', qml)
+        self.assertIn('action === "back" || action === "confirm"', qml)
         self.assertIn('def emulatorPrerequisiteStatuses(self)', controller)
         self.assertIn('emulatorPrerequisitesChanged', controller)
 
