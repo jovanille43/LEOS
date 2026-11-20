@@ -62,6 +62,21 @@ class PlasmaIconThemeManagerTests(unittest.TestCase):
         self.assertFalse(self.manager.can_restore())
         self.assertEqual([command[0][1] for command in self.commands], ["leos", "breeze"])
 
+    def test_applies_user_scoped_custom_icon_theme_and_restores_original(self):
+        custom = self.data / "icons" / "leos-custom-abcdef1234567890"
+        custom.mkdir(parents=True)
+        (custom / "index.theme").write_text(
+            "[Icon Theme]\nName=LEOS personnalisé\nInherits=breeze,hicolor\n",
+            encoding="utf-8",
+        )
+        self.assertTrue(self.manager.theme_installed(custom.name))
+        self.assertIn("personnalisé", self.manager.apply_theme(custom.name))
+        self.assertEqual(self.manager.current_theme(), custom.name)
+        self.assertEqual(self.manager._read_state()["previous_theme"], "breeze")
+        self.assertEqual(self.manager._read_state()["last_applied"], custom.name)
+        self.assertIn("breeze", self.manager.restore_previous_theme())
+        self.assertEqual(self.manager.current_theme(), "breeze")
+
     def test_cannot_apply_when_active_theme_cannot_be_identified(self):
         self.config_file.write_text("[General]\nColorScheme=BreezeDark\n", encoding="utf-8")
         with self.assertRaisesRegex(RuntimeError, "ne peut pas être identifié"):

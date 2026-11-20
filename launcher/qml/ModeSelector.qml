@@ -14,8 +14,8 @@ ApplicationWindow {
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
 
-    property color colorA: themeColors.accent_primary
-    property color colorB: themeColors.accent_secondary
+    property color colorA: Qt.color(draftColorA)
+    property color colorB: Qt.color(draftColorB)
     property color colorAText: themeColors.accent_primary_text
     property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text
@@ -542,7 +542,7 @@ ApplicationWindow {
                 Button {
                     id: appearanceColorAButton
                     Layout.fillWidth: true
-                    text: "Couleur A · " + window.draftColorA
+                    text: window.draftColorAChosen ? "Couleur A · " + window.draftColorA : "CHOISIR LA COULEUR A"
                     onClicked: initialColorADialog.open()
                     background: Rectangle {
                         radius: 8
@@ -559,7 +559,7 @@ ApplicationWindow {
                 Button {
                     id: appearanceColorBButton
                     Layout.fillWidth: true
-                    text: "Couleur B · " + window.draftColorB
+                    text: window.draftColorBChosen ? "Couleur B · " + window.draftColorB : "CHOISIR LA COULEUR B"
                     onClicked: initialColorBDialog.open()
                     background: Rectangle {
                         radius: 8
@@ -573,6 +573,15 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
+            }
+            Label {
+                text: (!window.draftColorAChosen || !window.draftColorBChosen)
+                      ? "Les couleurs visibles au départ sont un aperçu historique, pas une sélection. Choisis librement A et B."
+                      : "Dégradé personnalisé LEOS · A vers B"
+                color: window.muted
+                font.pixelSize: 10
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
             }
             Rectangle {
                 Layout.fillWidth: true

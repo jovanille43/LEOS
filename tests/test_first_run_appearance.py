@@ -70,8 +70,9 @@ class FakeIcons:
     def current_theme(self):
         return "breeze"
 
-    def apply_theme(self):
+    def apply_theme(self, theme_id="leos"):
         self.applied += 1
+        self.applied_ids = getattr(self, "applied_ids", []) + [theme_id]
         return "applied"
 
     def can_restore(self):
@@ -97,8 +98,9 @@ class FakeStyle:
     def current_style(self):
         return "Breeze"
 
-    def apply_style(self):
+    def apply_style(self, style_id="leos"):
         self.applied += 1
+        self.applied_ids = getattr(self, "applied_ids", []) + [style_id]
         return "applied"
 
     def can_restore(self):
@@ -154,6 +156,11 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.wallpaper.write_text("<svg/>", encoding="utf-8")
         self.scripts = []
         self.brand_asset_calls = []
+        self.plasma_resource_calls = []
+
+        def build_plasma_resources(color_a, color_b):
+            self.plasma_resource_calls.append((color_a, color_b))
+            return {"plasmaStyleId": "leos-custom-test", "iconThemeId": "leos-custom-test"}
 
         def build_assets(color_a, color_b):
             self.brand_asset_calls.append((color_a, color_b))
@@ -175,6 +182,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
             command_lookup=lambda name: "/usr/bin/" + name,
             script_executor=execute,
             branding_asset_builder=build_assets,
+            plasma_resource_builder=build_plasma_resources,
         )
 
     def tearDown(self):
@@ -190,7 +198,10 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.colors.applied, [("#FF8800", "#0055CC", "dark")])
         self.assertEqual(self.brand_asset_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.style.applied, 1)
+        self.assertEqual(self.style.applied_ids, ["leos-custom-test"])
         self.assertEqual(self.icons.applied, 1)
+        self.assertEqual(self.icons.applied_ids, ["leos-custom-test"])
+        self.assertEqual(self.plasma_resource_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
 
@@ -201,6 +212,21 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.backups.created, [])
         self.assertEqual(self.colors.applied, [])
         self.assertEqual(self.brand_asset_calls, [])
+        self.assertEqual(self.plasma_resource_calls, [])
+        self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
+
+    @patch("desktop.first_run_appearance.inspect_plasma_config", return_value={"available": True})
+    @patch("desktop.first_run_appearance.build_layout_plan", return_value={"can_apply": True})
+    def test_custom_plasma_resource_generation_failure_aborts_before_backup(self, *_mocks):
+        self.setup.plasma_resource_builder = lambda color_a, color_b: (_ for _ in ()).throw(
+            FileNotFoundError("generated theme sources missing")
+        )
+        with self.assertRaisesRegex(RuntimeError, "generated theme sources missing"):
+            self.setup.apply()
+        self.assertEqual(self.backups.created, [])
+        self.assertEqual(self.colors.applied, [])
+        self.assertEqual(self.style.applied, 0)
+        self.assertEqual(self.icons.applied, 0)
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
     @patch("desktop.first_run_appearance.inspect_plasma_config", return_value={"available": True})

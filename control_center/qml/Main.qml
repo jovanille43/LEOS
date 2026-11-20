@@ -77,8 +77,6 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
-            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
             if (!window.draftColorsDirty) {
                 window.draftColorA = controlCenter.themeColorA
                 window.draftColorB = controlCenter.themeColorB
@@ -131,8 +129,8 @@ ApplicationWindow {
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
             text: plasmaStyleConfirmation.action === "apply"
-                ? "LEOS va demander à Plasma d'utiliser son style de bureau. Cela modifie l'apparence des panneaux, widgets et fenêtres contextuelles Plasma, sans remplacer les icônes ni les réglages de disposition."
-                : "LEOS va réappliquer le style Plasma enregistré avant le premier changement LEOS."
+                ? "LEOS va générer une variante utilisateur du Plasma Style et des icônes avec tes deux couleurs A/B, puis l'activer. Les ressources système officielles restent intactes."
+                : "LEOS va restaurer les styles Plasma et icônes précédents."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
             width: 420
@@ -506,19 +504,12 @@ ApplicationWindow {
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
-                                    ComboBox {
-                                        id: themeBox
+                                    Label {
+                                        text: "Le dégradé personnalisé A/B est la palette principale. Les anciennes palettes prédéfinies ne sont pas imposées."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
-                                        Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
-                                        }
-                                        onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            window.draftColorsDirty = false
-                                            controlCenter.setTheme(values[currentIndex])
-                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -793,8 +784,8 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         spacing: 8
                                         Button {
-                                            text: "Appliquer le style LEOS"
-                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled
+                                            text: "Appliquer le style et les icônes LEOS A/B"
+                                            enabled: controlCenter.themeColorsConfigured && controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaIconsToolAvailable && controlCenter.plasmaStyleInstalled
                                             onClicked: {
                                                 plasmaStyleConfirmation.action = "apply"
                                                 plasmaStyleConfirmation.open()
@@ -810,11 +801,15 @@ ApplicationWindow {
                                         }
                                     }
                                     Label {
-                                        text: !controlCenter.plasmaStyleInstalled
+                                        text: !controlCenter.themeColorsConfigured
+                                            ? "Choisis puis enregistre les deux couleurs A et B avant l’application."
+                                            : !controlCenter.plasmaStyleInstalled
                                             ? "Paquet Plasma Style LEOS indisponible."
                                             : !controlCenter.plasmaStyleToolAvailable
                                                 ? "Outil plasma-apply-desktoptheme indisponible."
-                                                : window.plasmaStyleNotice
+                                                : !controlCenter.plasmaIconsToolAvailable
+                                                    ? "Outil plasma-changeicons indisponible."
+                                                    : window.plasmaStyleNotice
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap

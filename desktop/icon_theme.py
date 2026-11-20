@@ -71,9 +71,11 @@ class PlasmaIconThemeManager:
     def tool_available(self) -> bool:
         return self._executable() is not None
 
-    def theme_installed(self) -> bool:
+    def theme_installed(self, theme_id: str = ICON_THEME) -> bool:
+        if not isinstance(theme_id, str) or not _THEME_RE.fullmatch(theme_id):
+            return False
         for root in (self.data_home / "icons", self.system_icon_root):
-            directory = root / ICON_THEME
+            directory = root / theme_id
             metadata = directory / "index.theme"
             if directory.is_symlink() or metadata.is_symlink() or not metadata.is_file():
                 continue
@@ -164,11 +166,13 @@ class PlasmaIconThemeManager:
             detail = (getattr(result, "stderr", "") or "").strip()
             raise RuntimeError(detail or "KDE a refusé d'appliquer le thème d'icônes.")
 
-    def apply_theme(self) -> str:
+    def apply_theme(self, theme_id: str = ICON_THEME) -> str:
+        if not isinstance(theme_id, str) or not _THEME_RE.fullmatch(theme_id):
+            raise ValueError("Identifiant de thème d'icônes KDE invalide")
         if not self.tool_available():
             raise FileNotFoundError("plasma-changeicons is unavailable")
-        if not self.theme_installed():
-            raise FileNotFoundError("Le paquet du thème d'icônes LEOS n'est pas installé.")
+        if not self.theme_installed(theme_id):
+            raise FileNotFoundError("Le paquet du thème d'icônes LEOS demandé n'est pas installé.")
         if self.state_file.is_symlink():
             raise ValueError("LEOS icon-theme state path cannot be a symbolic link")
         current = self.current_theme()
@@ -176,7 +180,8 @@ class PlasmaIconThemeManager:
             raise RuntimeError("Le thème d'icônes KDE actuel ne peut pas être identifié ; aucun changement n'a été effectué.")
         state = self._read_state()
         previous = state.get("previous_theme")
-        if current.lower() != ICON_THEME:
+        last_applied = state.get("last_applied", ICON_THEME)
+        if current.lower() != str(last_applied).lower():
             previous = current
         elif not previous:
             raise RuntimeError("Les icônes LEOS sont déjà actives, mais le thème précédent est indisponible.")
@@ -184,20 +189,20 @@ class PlasmaIconThemeManager:
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_theme": previous,
-            "last_applied": ICON_THEME,
+            "last_applied": theme_id,
             "apply_pending": True,
         })
-        self._apply(ICON_THEME)
-        if self.current_theme() != ICON_THEME:
+        self._apply(theme_id)
+        if self.current_theme() != theme_id:
             raise RuntimeError("KDE did not confirm activation of the LEOS icon theme.")
         self._write_state({
             "schema_version": SCHEMA_VERSION,
             "managed_by": MANAGED_BY,
             "previous_theme": previous,
-            "last_applied": ICON_THEME,
+            "last_applied": theme_id,
             "apply_pending": False,
         })
-        return "Thème d'icônes LEOS appliqué."
+        return "Thème d'icônes LEOS personnalisé appliqué."
 
     def restore_previous_theme(self) -> str:
         previous = self._read_state().get("previous_theme")

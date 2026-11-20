@@ -16,6 +16,7 @@ from desktop.plasma_backup import PlasmaBackupManager
 from desktop.plasma_inspector import build_layout_plan, inspect_plasma_config
 from desktop.plasma_runner import execute_plasma_script
 from desktop.plasma_style import PlasmaStyleManager
+from desktop.themed_plasma_resources import install_themed_plasma_resources
 from desktop.themes import normalize_color, resolve_appearance_mode
 from leos_core.settings import SettingsStore
 
@@ -50,6 +51,7 @@ class DesktopAppearanceSetup:
         command_lookup: Callable[[str], str | None] | None = None,
         script_executor: Callable[..., tuple[bool, str]] | None = None,
         branding_asset_builder: Callable[[str, str], dict[str, str]] | None = None,
+        plasma_resource_builder: Callable[[str, str], dict[str, str]] | None = None,
     ) -> None:
         self.settings = settings or SettingsStore()
         self.backups = backups or PlasmaBackupManager()
@@ -62,6 +64,7 @@ class DesktopAppearanceSetup:
         self.command_lookup = command_lookup or shutil.which
         self.script_executor = script_executor or execute_plasma_script
         self.branding_asset_builder = branding_asset_builder or build_themed_branding_assets
+        self.plasma_resource_builder = plasma_resource_builder or install_themed_plasma_resources
 
     @property
     def status(self) -> str:
@@ -157,11 +160,19 @@ class DesktopAppearanceSetup:
                     "Le fond personnalisé A/B n’a pas pu être généré ; le bureau existant est conservé."
                 )
 
+            # Plasma loads themes from XDG_DATA_HOME, so install a uniquely named
+            # user-scoped variant generated from the same A/B pair.
+            plasma_resources = self.plasma_resource_builder(color_a, color_b)
+            plasma_style_id = plasma_resources.get("plasmaStyleId")
+            icon_theme_id = plasma_resources.get("iconThemeId")
+            if not plasma_style_id or not icon_theme_id:
+                raise RuntimeError("Les variantes Plasma et icônes personnalisées ne sont pas disponibles.")
+
             # Preserve the user's panel and wallpaper configuration before changing Plasma.
             backup_id = self.backups.create_backup()
             self.colors.apply_custom_theme(color_a, color_b, resolved_appearance)
-            self.style.apply_style()
-            self.icons.apply_theme()
+            self.style.apply_style(plasma_style_id)
+            self.icons.apply_theme(icon_theme_id)
 
             script = build_panel_management_script(
                 layout,
@@ -176,7 +187,7 @@ class DesktopAppearanceSetup:
             self.settings.set(APPEARANCE_SETTING, APPLIED)
             return (
                 "L'apparence Desktop LEOS est activée : fond personnalisé, dégradé A/B, "
-                "style Plasma, icônes LEOS et dock inférieur. Une sauvegarde de ta disposition "
+                "style Plasma et icônes LEOS assortis à tes couleurs A/B, plus le dock inférieur. Une sauvegarde de ta disposition "
                 f"précédente est conservée ({backup_id[:8]})."
             )
         except Exception as error:
