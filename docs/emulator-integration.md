@@ -8,8 +8,8 @@ Faire des émulateurs une fonction de première classe de LEOS : préparer autom
 
 - La bibliothèque LEOS importe les manifestes Steam, Heroic, Lutris et les playlists RetroArch locales `.lpl`.
 - Elle ne réalise aucun scan global de ROM : seuls les dossiers explicitement sélectionnés par l'utilisateur sont parcourus.
-- Au premier démarrage d'une session KDE, LEOS lance en tâche de fond un bootstrap Flatpak à usage utilisateur ; il installe Heroic et les six émulateurs listés ci-dessous si Internet et Flathub sont disponibles.
-- Le bootstrap enregistre un marqueur uniquement lorsque les sept applications sont vérifiées comme installées. En cas d'échec, il réessaie à la prochaine connexion ; après succès, il respecte les désinstallations ultérieures et ne réinstalle pas les applications supprimées par l'utilisateur.
+- Au premier démarrage d'une session KDE, LEOS lance en tâche de fond un bootstrap Flatpak à usage utilisateur ; il installe Heroic et les sept émulateurs listés ci-dessous si Internet et Flathub sont disponibles.
+- Le bootstrap enregistre un marqueur uniquement lorsque les huit applications sont vérifiées comme installées. En cas d'échec, il réessaie à la prochaine connexion ; après succès, il respecte les désinstallations ultérieures et ne réinstalle pas les applications supprimées par l'utilisateur.
 - Steam et Lutris sont fournis par l'image Bazzite de base ; LEOS n'en installe pas une seconde copie.
 - La boutique garde la possibilité de réinstaller manuellement une application après confirmation.
 - Les BIOS, firmwares, clés, jeux et cœurs ne sont ni inclus ni téléchargés par LEOS.
@@ -25,24 +25,25 @@ Faire des émulateurs une fonction de première classe de LEOS : préparer autom
 | PPSSPP | PSP | `org.ppsspp.PPSSPP` | Paquet publié par le projet PPSSPP |
 | melonDS | Nintendo DS / DSi | `net.kuribo64.melonDS` | Paquet vérifié Flathub ; l'import des ROM Nintendo DS est relié à Gaming, les prérequis BIOS/firmware restent à renseigner |
 | RPCS3 | PlayStation 3 | `net.rpcs3.RPCS3` | Paquet Flathub communautaire non vérifié par le projet amont |
+| Eden | Nintendo Switch | `dev.eden_emu.eden` | Paquet Flathub communautaire non vérifié, non affilié au projet Eden ; la compilation x86_64 exige x86-64-v3 |
 
-Heroic et les six émulateurs sont installés automatiquement dans le profil de l'utilisateur, jamais dans l'image système ni avec les droits administrateur. La première session nécessite une connexion Internet. Si l'installation échoue, LEOS la retente à la prochaine connexion ; une fois le lot terminé, une désinstallation volontaire est respectée. Les paquets Flathub communautaires non vérifiés restent clairement identifiés dans la boutique.
+Heroic et les sept émulateurs sont installés automatiquement dans le profil de l'utilisateur, jamais dans l'image système ni avec les droits administrateur. La première session nécessite une connexion Internet. Si l'installation échoue, LEOS la retente à la prochaine connexion ; une fois le lot terminé, une désinstallation volontaire est respectée. Les paquets Flathub communautaires non vérifiés restent clairement identifiés dans la boutique.
 
 ## Étapes d'intégration
 
 ### V2-A — Catalogue et installation automatique
 
-- [x] Ajouter les six fiches d'émulation et celle de Heroic dans la boutique.
+- [x] Ajouter les sept fiches d'émulation et celle de Heroic dans la boutique.
 - [x] Utiliser les identifiants d'applications Flathub du catalogue et distinguer les paquets vérifiés des paquets communautaires.
 - [x] Indiquer les limites des paquets communautaires.
 - [x] Préciser que jeux, BIOS, firmwares et cœurs ne sont pas fournis.
 - [x] Ajouter un bootstrap utilisateur automatique, avec contrôle de Flathub, vérification après installation, reprise après échec et respect des désinstallations ultérieures.
-- [ ] Tester réellement l'installation des sept applications sur Bazzite/LEOS avec réseau disponible et indisponible.
+- [ ] Tester réellement l'installation des huit applications sur Bazzite/LEOS avec réseau disponible et indisponible.
 
 ### V2-B — Détection des émulateurs installés
 
 - [x] Détecter les déploiements Flatpak utilisateur et système via les dossiers d'applications effectivement déployés.
-- [x] Détecter les exécutables natifs connus pour les six émulateurs de la sélection et le lanceur Heroic.
+- [x] Détecter les exécutables natifs connus pour les sept émulateurs de la sélection et le lanceur Heroic.
 - [x] Afficher dans le panneau rapide Gaming l'état « disponible » ou « non détecté », avec le type d'installation lorsqu'elle est trouvée.
 - [x] Garder la détection strictement en lecture seule : aucun scan ROM, aucune installation et aucun lancement pendant la détection.
 - [ ] Distinguer la configuration d'un émulateur (BIOS/firmware/cœurs) de sa seule présence.
@@ -57,7 +58,7 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 - [x] Démarrer dans le dossier personnel, permettre de remonter au parent, et refuser de choisir la racine système ou le dossier personnel entier comme bibliothèque de jeux.
 - [x] Mémoriser les chemins choisis dans la configuration privée LEOS.
 - [x] Scanner uniquement ce dossier et ses sous-dossiers, avec limites de profondeur, d'entrées et de jeux ; ignorer fichiers cachés et liens symboliques.
-- [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2), PPSSPP (PSP) et melonDS (Nintendo DS), avec filtres d'extensions dédiés et lancement melonDS en plein écran.
+- [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2), PPSSPP (PSP) et melonDS (Nintendo DS) et Eden (Nintendo Switch), avec filtres d'extensions dédiés et lancement melonDS/Eden en plein écran.
 - [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
 - [x] Actualiser automatiquement la bibliothèque lorsqu'un émulateur est installé/désinstallé et rescanner périodiquement les dossiers sélectionnés pour suivre les jeux ajoutés et les disques amovibles remontés au même chemin.
@@ -72,6 +73,7 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 - [x] PCSX2 : lancer en plein écran et séparer les options du chemin avec `--`.
 - [x] PPSSPP : transmettre directement le fichier de jeu à l'application.
 - [x] melonDS : transmettre une ROM Nintendo DS en argument et demander le plein écran (`-f`).
+- [x] Eden : transmettre un fichier Switch/homebrew comme argument de jeu avec le plein écran (`-f`) ; le Flatpak reçoit uniquement le dossier sélectionné en lecture seule.
 - [x] Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande issue d'un nom de fichier.
 - [x] Pour Flatpak, n'accorder qu'un accès en lecture au dossier choisi ; aucun accès global au dossier personnel n'est ajouté.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur immédiatement avant le lancement.
@@ -84,11 +86,12 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 - [x] melonDS : lire le petit fichier de configuration TOML et vérifier la présence ainsi que les tailles attendues des trois dumps DS configurés (BIOS9, BIOS7, firmware).
 - [x] RPCS3 : vérifier le module `dev_flash/sys/external/liblv2.sprx`, utilisé par le projet pour reconnaître le firmware installé.
 - [x] RetroArch : lire le dossier de cœurs configuré et compter uniquement les fichiers de cœur Linux réguliers non vides.
+- [x] Eden : détecter par métadonnées la présence de fichiers de clés `.keys` et de contenus firmware `.nca` dans les emplacements locaux connus, sans lire ni transmettre leur contenu.
 - [x] Ne jamais afficher les chemins privés, lire le contenu des BIOS/firmwares/cœurs, ni les téléverser. Une présence détectée n'atteste pas l'authenticité ou le bon fonctionnement.
 - [ ] Ajouter des assistants de configuration guidés avec sélection contrôlée des dossiers et essais de lancement.
 - [ ] Valider sur les versions Flatpak réellement installées et documenter les cas natifs spécifiques.
 
-LEOS ne fournit, ne distribue, n'extrait et ne télécharge aucun BIOS, firmware, clé, jeu ou cœur protégé. L'utilisateur doit fournir les fichiers qu'il est autorisé à utiliser. RetroArch conserve le choix des cœurs par système ; aucun cœur n'est installé automatiquement parce que les besoins dépendent des consoles que l'utilisateur souhaite émuler.
+LEOS ne fournit, ne distribue, n'extrait et ne télécharge aucun BIOS, firmware, clé, jeu ou cœur protégé. L'utilisateur doit fournir les fichiers qu'il est autorisé à utiliser. Eden nécessite des clés Switch et un firmware obtenus depuis sa propre console ; LEOS vérifie uniquement la présence des fichiers et ne peut en certifier l'authenticité ou le fonctionnement. La version Flathub d'Eden est un paquet communautaire non vérifié et non affilié au projet amont ; l'amont distribue ses builds Linux sous forme d'AppImage. RetroArch conserve le choix des cœurs par système ; aucun cœur n'est installé automatiquement parce que les besoins dépendent des consoles que l'utilisateur souhaite émuler.
 
 ### V2-F — Validation
 
@@ -118,5 +121,9 @@ Les formats et options de lancement de la première intégration s'appuient sur 
 - **PCSX2 Flatpak — dossier BIOS et configuration initiale** : https://github.com/flathub/net.pcsx2.PCSX2
 - **RetroArch — installation des cœurs dans le dossier indiqué par Settings > Directory > Cores** : https://docs.libretro.com/guides/download-cores/
 - **RPCS3 — vérification du module liblv2.sprx et installation via File > Install Firmware** : https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/Cell/PPUModule.cpp
+- **Eden — arguments CLI et option plein écran** : https://git.eden-emu.dev/eden-emu/eden/src/branch/master/docs/user/CommandLine.md
+- **Eden — guide officiel d'installation des clés et du firmware** : https://git.eden-emu.dev/eden-emu/eden/src/branch/master/docs/user/QuickStart.md
+- **Eden — paquet Flathub communautaire non vérifié** : https://flathub.org/en/apps/dev.eden_emu.eden
+- **Eden — manifest communautaire Flathub et architectures prises en charge** : https://github.com/flathub/dev.eden_emu.eden/blob/master/dev.eden_emu.eden.yml
 
 Lors de toute évolution des formats ou des arguments, mettre à jour les tests de contrat et revérifier les options sur les versions Flatpak réellement prises en charge. La liste déclarée par un projet amont ne remplace pas les essais de lancement sur Bazzite.
