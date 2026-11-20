@@ -216,10 +216,54 @@ def _retroarch_status(home: Path, config_home: Path) -> str:
     return "RetroArch · aucun cœur détecté — choisir les systèmes dans RetroArch"
 
 
+def _count_matching_files(directory: Path, suffixes: set[str]) -> int:
+    """Count bounded, non-empty regular files by suffix; never read their contents."""
+    if not _is_directory(directory):
+        return 0
+    count = 0
+    try:
+        with os.scandir(directory) as entries:
+            for index, entry in enumerate(entries):
+                if index >= MAX_DIRECTORY_ENTRIES:
+                    break
+                if (
+                    entry.name.casefold().endswith(tuple(suffixes))
+                    and entry.is_file(follow_symlinks=False)
+                    and _is_regular_file(Path(entry.path))
+                ):
+                    count += 1
+    except OSError:
+        return 0
+    return count
+
+
+def _eden_status(home: Path, data_home: Path) -> str:
+    roots = (
+        home / ".var" / "app" / "dev.eden_emu.eden" / "data" / "eden",
+        data_home / "eden",
+    )
+    for root in roots:
+        if not _is_directory(root):
+            continue
+        keys_present = _count_matching_files(root / "keys", {".keys"}) > 0
+        firmware_present = _count_matching_files(
+            root / "nand" / "system" / "Contents" / "registered",
+            {".nca"},
+        ) > 0
+        if keys_present and firmware_present:
+            return "Eden · fichiers de clés et firmware Switch détectés — test dans Eden requis"
+        if keys_present:
+            return "Eden · clés Switch détectées — firmware à installer dans Eden"
+        if firmware_present:
+            return "Eden · firmware détecté — clés Switch à ajouter dans Eden"
+    return "Eden · clés prod.keys/title.keys et firmware Switch à configurer"
+
+
 def detect_emulator_prerequisite_statuses(
     *,
     home: Path | None = None,
     config_home: Path | None = None,
+    data_home: Path | None = None,
 ) -> list[str]:
     """Return short, read-only prerequisite statuses for the Gaming quick panel.
 
@@ -228,10 +272,12 @@ def detect_emulator_prerequisite_statuses(
     """
     home = Path(home) if home is not None else Path.home()
     config_home = Path(config_home) if config_home is not None else home / ".config"
+    data_home = Path(data_home) if data_home is not None else home / ".local" / "share"
     return [
         _pcsx2_status(home, config_home),
         _melonds_status(home, config_home),
         _rpcs3_status(home, config_home),
         _retroarch_status(home, config_home),
         "Dolphin / PPSSPP · aucun BIOS séparé requis pour un lancement standard",
+        _eden_status(home, data_home),
     ]
