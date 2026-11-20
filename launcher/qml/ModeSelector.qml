@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtMultimedia
 
@@ -10,11 +11,19 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS — Choix du mode"
-    color: "#07080c"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color colorA: themeColors.accent_primary
+    property color colorB: themeColors.accent_secondary
+    property color colorAText: themeColors.accent_primary_text
+    property color colorBText: themeColors.accent_secondary_text
+    property color muted: themeColors.muted_text
+    property string draftColorA: leosTheme.themeColorA
+    property string draftColorB: leosTheme.themeColorB
+    property bool draftColorAChosen: leosTheme.themeColorsConfigured
+    property bool draftColorBChosen: leosTheme.themeColorsConfigured
+    property string themeColorNotice: ""
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
@@ -24,13 +33,30 @@ ApplicationWindow {
         if (modeSelectorController.desktopAppearanceStatus === "pending") {
             appearanceDialogFocusIndex = 0
             appearanceDialog.open()
-            applyAppearanceButton.forceActiveFocus()
+            appearanceColorAButton.forceActiveFocus()
             return
         }
         requestModeWithIntro("desktop")
     }
 
+    function colorToHex(color) {
+        function byteHex(value) {
+            const valueHex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return valueHex.length === 1 ? "0" + valueHex : valueHex
+        }
+        return "#" + byteHex(color.r) + byteHex(color.g) + byteHex(color.b)
+    }
+
     function activateDesktopAppearance() {
+        if (!draftColorAChosen || !draftColorBChosen) {
+            appearanceStatusText.text = "Choisis d’abord les deux couleurs A et B. Elles restent entièrement libres."
+            return
+        }
+        themeColorNotice = leosTheme.setThemeColors(draftColorA, draftColorB)
+        if (!leosTheme.themeColorsConfigured) {
+            appearanceStatusText.text = themeColorNotice
+            return
+        }
         appearanceStatusText.text = "Sauvegarde du bureau et application du profil LEOS…"
         if (!modeSelectorController.beginDesktopAppearanceSetup())
             appearanceStatusText.text = "L'activation ne peut pas démarrer. Vérifie l'état du premier démarrage."
@@ -55,11 +81,9 @@ ApplicationWindow {
         }
         transitionInProgress = true
         introOverlay.visible = true
-        introPlayer.source = Qt.resolvedUrl(
-            mode === "gaming"
-                ? "../../branding/animations/gaming-intro.mp4"
-                : "../../branding/animations/desktop-intro.mov"
-        )
+        introPlayer.source = mode === "gaming"
+            ? leosTheme.gamingIntroUrl
+            : leosTheme.desktopIntroUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
         introPlayer.play()
@@ -84,13 +108,21 @@ ApplicationWindow {
             if (modeSelectorController.appearanceSetupRunning)
                 return
             if (action === "left" || action === "right" || action === "up" || action === "down") {
-                appearanceDialogFocusIndex = 1 - appearanceDialogFocusIndex
+                appearanceDialogFocusIndex = (appearanceDialogFocusIndex + 1) % 4
                 if (appearanceDialogFocusIndex === 0)
+                    appearanceColorAButton.forceActiveFocus()
+                else if (appearanceDialogFocusIndex === 1)
+                    appearanceColorBButton.forceActiveFocus()
+                else if (appearanceDialogFocusIndex === 2)
                     applyAppearanceButton.forceActiveFocus()
                 else
                     keepAppearanceButton.forceActiveFocus()
             } else if (action === "confirm") {
                 if (appearanceDialogFocusIndex === 0)
+                    initialColorADialog.open()
+                else if (appearanceDialogFocusIndex === 1)
+                    initialColorBDialog.open()
+                else if (appearanceDialogFocusIndex === 2)
                     activateDesktopAppearance()
                 else
                     keepCurrentDesktopAppearance()
@@ -119,6 +151,26 @@ ApplicationWindow {
                 transitionDialog.open()
             else
                 window.requestDesktopMode()
+        }
+    }
+
+    ColorDialog {
+        id: initialColorADialog
+        title: "Choisir librement la couleur A"
+        selectedColor: Qt.color(window.draftColorA)
+        onAccepted: {
+            window.draftColorA = window.colorToHex(selectedColor)
+            window.draftColorAChosen = true
+        }
+    }
+
+    ColorDialog {
+        id: initialColorBDialog
+        title: "Choisir librement la couleur B"
+        selectedColor: Qt.color(window.draftColorB)
+        onAccepted: {
+            window.draftColorB = window.colorToHex(selectedColor)
+            window.draftColorBChosen = true
         }
     }
 
@@ -188,7 +240,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.cyan
+                    color: window.colorA
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -215,7 +267,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.cyan
+                            color: window.colorA
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -243,7 +295,7 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 8
                             color: "#17313d"
-                            border.color: window.cyan
+                            border.color: window.colorA
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -272,13 +324,13 @@ ApplicationWindow {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
                         border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.cyan : "#303a49"
+                        border.color: desktopCard.activeFocus ? window.colorA : "#303a49"
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/desktop-logo.jpeg"
+                            source: leosTheme.desktopLogoUrl
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -320,13 +372,13 @@ ApplicationWindow {
                         radius: 22
                         color: gamingCard.down ? "#25172a" : "#15121d"
                         border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.magenta : "#3a2b43"
+                        border.color: gamingCard.activeFocus ? window.colorB : "#3a2b43"
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
                         Item { Layout.fillHeight: true }
                         Image {
-                            source: "../../branding/gaming-logo.jpeg"
+                            source: leosTheme.gamingLogoUrl
                             asynchronous: true
                             smooth: true
                             fillMode: Image.PreserveAspectFit
@@ -362,7 +414,7 @@ ApplicationWindow {
 
             Label {
                 text: modeManager.status
-                color: window.magenta
+                color: window.colorB
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -479,8 +531,62 @@ ApplicationWindow {
             spacing: 14
 
             Label {
-                text: "LEOS va donner à ce bureau son identité visuelle : fond officiel, couleurs cyan et magenta, style Plasma, icônes LEOS et dock inférieur. Une sauvegarde de ta disposition KDE sera créée avant toute modification."
+                text: "LEOS va appliquer ton dégradé personnalisé A/B aux ressources de marque compatibles, créer un schéma KDE correspondant et installer le fond, le style et le dock. Une sauvegarde KDE sera créée avant toute modification. Aucun accent ne sera imposé."
                 color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Button {
+                    id: appearanceColorAButton
+                    Layout.fillWidth: true
+                    text: "Couleur A · " + window.draftColorA
+                    onClicked: initialColorADialog.open()
+                    background: Rectangle {
+                        radius: 8
+                        color: window.themeColors.surface
+                        border.color: window.colorA
+                        border.width: appearanceColorAButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: appearanceColorAButton.text
+                        color: window.themeColors.text
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+                Button {
+                    id: appearanceColorBButton
+                    Layout.fillWidth: true
+                    text: "Couleur B · " + window.draftColorB
+                    onClicked: initialColorBDialog.open()
+                    background: Rectangle {
+                        radius: 8
+                        color: window.themeColors.surface
+                        border.color: window.colorB
+                        border.width: appearanceColorBButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: appearanceColorBButton.text
+                        color: window.themeColors.text
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 10
+                radius: 5
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: window.draftColorA }
+                    GradientStop { position: 1.0; color: window.draftColorB }
+                }
+            }
+            Label {
+                text: "Si les deux couleurs sont peu contrastées, LEOS adapte le texte sans modifier A ni B."
+                color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -494,8 +600,10 @@ ApplicationWindow {
                 id: appearanceStatusText
                 text: modeSelectorController.appearanceSetupRunning
                       ? "Préparation de l'apparence LEOS…"
-                      : "Tu pourras restaurer la disposition précédente depuis les sauvegardes Plasma."
-                color: window.cyan
+                      : (window.draftColorAChosen && window.draftColorBChosen
+                         ? "Tu pourras restaurer la disposition précédente depuis les sauvegardes Plasma."
+                         : "Choisis une couleur A et une couleur B avant l’activation.")
+                color: window.colorA
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -504,13 +612,13 @@ ApplicationWindow {
                 text: modeSelectorController.appearanceSetupRunning
                       ? "APPLICATION EN COURS…"
                       : "ACTIVER L'APPARENCE LEOS"
-                enabled: !modeSelectorController.appearanceSetupRunning
+                enabled: !modeSelectorController.appearanceSetupRunning && window.draftColorAChosen && window.draftColorBChosen
                 Layout.fillWidth: true
                 onClicked: window.activateDesktopAppearance()
                 background: Rectangle {
                     radius: 9
                     color: applyAppearanceButton.enabled ? "#17313d" : "#17212a"
-                    border.color: applyAppearanceButton.activeFocus ? window.magenta : window.cyan
+                    border.color: applyAppearanceButton.activeFocus ? window.colorB : window.colorA
                 }
                 contentItem: Label {
                     text: applyAppearanceButton.text
@@ -528,7 +636,7 @@ ApplicationWindow {
                 background: Rectangle {
                     radius: 9
                     color: "transparent"
-                    border.color: keepAppearanceButton.activeFocus ? window.cyan : "#485366"
+                    border.color: keepAppearanceButton.activeFocus ? window.colorA : "#485366"
                 }
                 contentItem: Label {
                     text: keepAppearanceButton.text
@@ -564,7 +672,7 @@ ApplicationWindow {
                     transitionDialog.close()
                     window.requestModeWithIntro("gaming")
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.colorA }
                 contentItem: Label {
                     text: continueGamingButton.text
                     color: "white"
