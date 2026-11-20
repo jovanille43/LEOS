@@ -99,7 +99,7 @@ required_webui_paths=(
   "usr/lib/systemd/system/webui-cockpit-ws.service"
   "usr/libexec/anaconda/webui-desktop"
   "usr/share/cockpit/anaconda-webui/index.html"
-  "usr/share/anaconda/profile.d/fedora-server.conf"
+  "etc/anaconda/profile.d/fedora-server.conf"
 )
 
 for path in "${required_webui_paths[@]}"; do
@@ -113,7 +113,7 @@ done
 # setup. LEOS uses the Fedora Server installer profile so that account creation
 # is available during installation.
 server_profile="$tmp_dir/fedora-server.conf"
-if ! unsquashfs -cat "$tmp_dir/install.img" usr/share/anaconda/profile.d/fedora-server.conf >"$server_profile"; then
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora-server.conf >"$server_profile"; then
   die "Could not read the Fedora Server Anaconda profile from the installer ISO."
 fi
 
