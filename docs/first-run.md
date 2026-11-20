@@ -9,7 +9,20 @@ Lors de la première ouverture du sélecteur, LEOS affiche un guide non bloquant
 - Les deux modes appartiennent au même système et les applications ouvertes ne sont pas fermées automatiquement lors d'un changement de mode.
 - Le guide ne change aucun thème, panneau, fond d'écran, réglage KDE ou logiciel.
 
-Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/settings.json`, via la préférence `onboarding_complete`. Choisir directement Desktop ou Gaming mémorise également cette étape. Si l'enregistrement échoue, le démarrage continue et le guide pourra réapparaître à la prochaine ouverture.
+Le bouton **Compris** mémorise que le guide a été lu dans `~/.config/leos/settings.json`, via la préférence `onboarding_complete`. Choisir directement Desktop ou Gaming mémorise également cette étape.
+
+## Activation visuelle de Desktop
+
+Lors du premier choix de **Desktop Mode**, le sélecteur propose séparément d'activer le profil visuel LEOS ou de garder le bureau KDE actuel.
+
+- Le choix **Activer l'apparence LEOS** vérifie la présence des outils et ressources, inspecte la disposition Plasma et refuse les configurations multi-panneaux ou non inspectables.
+- Avant toute modification du panneau ou du fond d'écran, LEOS crée une sauvegarde vérifiée de `plasma-org.kde.plasma.desktop-appletsrc`.
+- Après confirmation, LEOS applique le schéma couleur **LEOS Original**, le Plasma Style **LEOS**, le fond officiel Desktop et le dock inférieur centré avec les applications disponibles.
+- Les gestionnaires de couleurs et de style conservent chacun le thème précédent pour restauration. Si une étape échoue, LEOS tente de restaurer la disposition, le style et les couleurs précédents ; le choix reste en attente pour permettre une nouvelle tentative.
+- Le choix **Garder mon bureau actuel** enregistre `desktop_appearance_setup=skipped` et ne modifie aucun réglage KDE. Le Centre de contrôle reste disponible pour une personnalisation ultérieure.
+- Une application réussie enregistre `desktop_appearance_setup=applied`.
+
+Le rendu réel du fond d'écran, du Plasma Style et du dock, ainsi que le retour arrière, doivent encore être validés dans une installation Bazzite KDE complète en machine virtuelle.
 
 ## Applications facultatives
 
@@ -32,7 +45,7 @@ Aucun service indépendant ne présente une seconde fenêtre de bienvenue au dé
 
 ## Ce que LEOS ne fait pas automatiquement
 
-Le premier démarrage ne modifie pas :
+En l'absence de consentement pour le profil visuel LEOS, le premier démarrage ne modifie pas :
 
 - la langue, le fuseau horaire ou les paramètres régionaux déjà choisis dans l'installateur ou KDE ;
 - la résolution, la fréquence, l'orientation ou la disposition des écrans ;
