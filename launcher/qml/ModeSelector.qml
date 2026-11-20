@@ -14,8 +14,8 @@ ApplicationWindow {
     property var themeColors: leosTheme.themePalette
     color: themeColors.background
 
-    property color colorA: themeColors.accent_primary
-    property color colorB: themeColors.accent_secondary
+    property color colorA: Qt.color(draftColorA)
+    property color colorB: Qt.color(draftColorB)
     property color colorAText: themeColors.accent_primary_text
     property color colorBText: themeColors.accent_secondary_text
     property color muted: themeColors.muted_text

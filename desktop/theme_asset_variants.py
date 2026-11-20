@@ -128,17 +128,21 @@ def create_recolored_theme_variant(
                 (temporary / relative).mkdir(parents=True, exist_ok=True, mode=0o700)
 
         matrix = build_color_matrix(first, second)
+        metadata_seen = False
+        svg_seen = False
         for relative, raw in source_files:
             output = temporary / relative
             output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             payload = raw
             if output.suffix.lower() == ".svg":
+                svg_seen = True
                 try:
                     content = raw.decode("utf-8")
                 except UnicodeError as error:
                     raise ValueError(f"SVG is not UTF-8: {relative}") from error
                 payload = _recolor_svg(content, matrix).encode("utf-8")
             elif metadata_kind == "plasma" and relative.as_posix() == "metadata.json":
+                metadata_seen = True
                 try:
                     metadata = json.loads(raw.decode("utf-8"))
                     plugin = metadata["KPlugin"]
@@ -151,6 +155,7 @@ def create_recolored_theme_variant(
                 except (UnicodeError, json.JSONDecodeError, KeyError, TypeError) as error:
                     raise ValueError("LEOS Plasma Style metadata is invalid") from error
             elif metadata_kind == "icons" and relative.as_posix() == "index.theme":
+                metadata_seen = True
                 try:
                     content = raw.decode("utf-8")
                 except UnicodeError as error:
@@ -162,6 +167,9 @@ def create_recolored_theme_variant(
             with output.open("xb") as stream:
                 stream.write(payload)
             os.chmod(output, 0o600)
+
+        if not metadata_seen or not svg_seen:
+            raise ValueError("LEOS KDE theme is missing required metadata or SVG assets")
 
         marker = temporary / marker_name
         with marker.open("x", encoding="utf-8") as stream:
