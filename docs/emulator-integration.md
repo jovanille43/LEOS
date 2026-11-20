@@ -60,6 +60,7 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 - [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2), PPSSPP (PSP) et melonDS (Nintendo DS), avec filtres d'extensions dédiés et lancement melonDS en plein écran.
 - [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
+- [x] Actualiser automatiquement la bibliothèque lorsqu'un émulateur est installé/désinstallé et rescanner périodiquement les dossiers sélectionnés pour suivre les jeux ajoutés et les disques amovibles remontés au même chemin.
 - [ ] Ajouter les parcours d'import et de lancement pour RPCS3 et les cœurs RetroArch ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
 - [ ] Ajouter la gestion UI de retrait des dossiers mémorisés et valider les montages externes.
 
