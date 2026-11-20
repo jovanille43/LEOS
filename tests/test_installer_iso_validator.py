@@ -77,10 +77,10 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         )
         unsquashfs = fake_bin / "unsquashfs"
         unsquashfs.write_text(
-            '#!/bin/sh\\ncase "$1" in\\n'
-            '  -ll) printf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\\n'
-            '  -cat) printf "%s\\n" "$LEOS_TEST_SERVER_PROFILE" ;;\\n'
-            '  *) exit 2 ;;\\nesac\\n',
+            '#!/bin/sh\ncase "$1" in\n'
+            '  -ll) printf "%s\n" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\n'
+            '  -cat) printf "%s\n" "$LEOS_TEST_SERVER_PROFILE" ;;\n'
+            '  *) exit 2 ;;\nesac\n',
             encoding="utf-8",
         )
         xorriso.chmod(0o755)
@@ -140,7 +140,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
     def test_rejects_anaconda_profile_that_hides_account_creation(self):
         self.env["LEOS_TEST_SERVER_PROFILE"] = (
             VALID_FEDORA_SERVER_PROFILE
-            + "\\n[User Interface]\\nhidden_webui_pages =\\n    anaconda-screen-accounts\\n"
+            + "\n[User Interface]\nhidden_webui_pages =\n    anaconda-screen-accounts\n"
         )
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
