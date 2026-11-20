@@ -794,7 +794,7 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             text: "Appliquer le style et les icônes LEOS A/B"
-                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaIconsToolAvailable && controlCenter.plasmaStyleInstalled
+                                            enabled: controlCenter.themeColorsConfigured && controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaIconsToolAvailable && controlCenter.plasmaStyleInstalled
                                             onClicked: {
                                                 plasmaStyleConfirmation.action = "apply"
                                                 plasmaStyleConfirmation.open()
@@ -810,7 +810,9 @@ ApplicationWindow {
                                         }
                                     }
                                     Label {
-                                        text: !controlCenter.plasmaStyleInstalled
+                                        text: !controlCenter.themeColorsConfigured
+                                            ? "Choisis puis enregistre les deux couleurs A et B avant l’application."
+                                            : !controlCenter.plasmaStyleInstalled
                                             ? "Paquet Plasma Style LEOS indisponible."
                                             : !controlCenter.plasmaStyleToolAvailable
                                                 ? "Outil plasma-apply-desktoptheme indisponible."

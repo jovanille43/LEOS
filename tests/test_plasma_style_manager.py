@@ -201,6 +201,8 @@ class PlasmaStyleManagerTests(unittest.TestCase):
         controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn("PlasmaStyleManager()", controller)
+        self.assertIn("PlasmaIconThemeManager()", controller)
+        self.assertIn("install_themed_plasma_resources(color_a, color_b)", controller)
         self.assertIn("def applyPlasmaStyle(self)", controller)
         self.assertIn("def restorePreviousPlasmaStyle(self)", controller)
         self.assertIn("plasmaStyleConfirmation.open()", qml)
