@@ -34,6 +34,20 @@ squashfs-root/usr/libexec/anaconda/webui-desktop
 squashfs-root/usr/share/cockpit/anaconda-webui/index.html
 """
 
+VALID_SERVER_PROFILE = """[Profile]
+profile_id = fedora-server
+base_profile = fedora
+[Profile Detection]
+os_id = fedora
+variant_id = server
+"""
+
+VALID_FEDORA_PROFILE = """[Profile]
+profile_id = fedora
+[Profile Detection]
+os_id = fedora
+"""
+
 
 class InstallerIsoValidatorTests(unittest.TestCase):
     def setUp(self):
@@ -54,26 +68,27 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         fake_bin.mkdir()
         xorriso = fake_bin / "xorriso"
         xorriso.write_text(
-            '#!/bin/sh\nprintf "%s\n" "$LEOS_TEST_EL_TORITO_OUTPUT"\n',
+            '#!/bin/sh\nprintf "%s\\n" "$LEOS_TEST_EL_TORITO_OUTPUT"\n',
             encoding="utf-8",
         )
         bsdtar = fake_bin / "bsdtar"
         bsdtar.write_text(
             '#!/bin/sh\ncase "$1" in\n'
-            '  -tf) printf "%s\n" "$LEOS_TEST_ISO_CONTENTS" ;;\n'
-            '  -xOf) printf "fake SquashFS payload\n" ;;\n'
+            '  -tf) printf "%s\\n" "$LEOS_TEST_ISO_CONTENTS" ;;\n'
+            '  -xOf) printf "fake SquashFS payload\\n" ;;\n'
             '  *) exit 2 ;;\nesac\n',
             encoding="utf-8",
         )
         unsquashfs = fake_bin / "unsquashfs"
         unsquashfs.write_text(
-            """#!/bin/sh
-case "$1" in
-  -ll) printf '%s\n' "$LEOS_TEST_RUNTIME_CONTENTS" ;;
-  -cat) printf '%s\n' "$LEOS_TEST_ANACONDA_PROFILE" ;;
-  *) exit 2 ;;
-esac
-""",
+            '#!/bin/sh\ncase "$1" in\n'
+            '  -ll) printf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\n'
+            '  -cat) case "$3" in\n'
+            '    */fedora-server.conf) printf "%s" "$LEOS_TEST_SERVER_PROFILE" ;;\n'
+            '    */fedora.conf) printf "%s" "$LEOS_TEST_FEDORA_PROFILE" ;;\n'
+            '    *) exit 3 ;;\n'
+            '  esac ;;\n'
+            '  *) exit 2 ;;\nesac\n',
             encoding="utf-8",
         )
         xorriso.chmod(0o755)
@@ -85,14 +100,8 @@ esac
         self.env["LEOS_TEST_EL_TORITO_OUTPUT"] = VALID_EL_TORITO
         self.env["LEOS_TEST_ISO_CONTENTS"] = VALID_ISO_CONTENTS
         self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS
-        self.env["LEOS_TEST_ANACONDA_PROFILE"] = (
-            "[Profile]\n"
-            "profile_id = fedora-server\n"
-            "base_profile = fedora\n"
-            "[Profile Detection]\n"
-            "os_id = fedora\n"
-            "variant_id = server\n"
-        )
+        self.env["LEOS_TEST_SERVER_PROFILE"] = VALID_SERVER_PROFILE
+        self.env["LEOS_TEST_FEDORA_PROFILE"] = VALID_FEDORA_PROFILE
 
     def run_validator(self):
         return subprocess.run(
@@ -103,9 +112,10 @@ esac
             env=self.env,
         )
 
-    def test_accepts_iso_with_valid_checksum_uefi_catalog_and_installer_files(self):
+    def test_accepts_iso_with_valid_checksum_uefi_and_account_profile(self):
         result = self.run_validator()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("visible account-setup configuration", result.stdout)
         self.assertIn("LEOS installer ISO structural validation passed", result.stdout)
 
     def test_accepts_numeric_uefi_platform_id_from_older_xorriso_output(self):
@@ -138,7 +148,7 @@ esac
         self.assertIn("anaconda-webui/index.html", result.stderr)
 
     def test_rejects_installer_without_fedora_server_account_profile(self):
-        self.env["LEOS_TEST_ANACONDA_PROFILE"] = (
+        self.env["LEOS_TEST_SERVER_PROFILE"] = (
             "[Profile]\n"
             "profile_id = fedora-kinoite\n"
             "base_profile = fedora-kde\n"
@@ -149,6 +159,18 @@ esac
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("fedora-server profile", result.stderr)
+
+    def test_rejects_profile_chain_that_hides_account_creation(self):
+        self.env["LEOS_TEST_FEDORA_PROFILE"] = (
+            "[Profile]\n"
+            "profile_id = fedora\n"
+            "[User Interface]\n"
+            "hidden_webui_pages =\n"
+            "    anaconda-screen-accounts\n"
+        )
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("account page may be hidden", result.stderr)
 
     def test_rejects_checksum_mismatch(self):
         self.iso.write_bytes(b"corrupted ISO fixture bytes")
