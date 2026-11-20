@@ -62,6 +62,15 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertLess(recipe.index("type: initramfs"), recipe.index("type: signing"))
         self.assertIn("Current=leos", (ROOT / "files/sddm/90-leos-theme.conf").read_text(encoding="utf-8"))
 
+    def test_control_center_updates_and_restores_splash_and_cursor_with_ab_palette(self):
+        controller = (ROOT / "control_center/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("PlasmaVisualChromeManager", controller)
+        self.assertIn("self.visualChrome.apply", controller)
+        self.assertIn("self.visualChrome.restore_previous", controller)
+        self.assertIn("écran de chargement", qml)
+        self.assertIn("curseur", qml)
+
     def test_first_run_profile_activates_and_restores_splash_and_cursor_preferences(self):
         source = (ROOT / "desktop/first_run_appearance.py").read_text(encoding="utf-8")
         self.assertIn("PlasmaVisualChromeManager", source)

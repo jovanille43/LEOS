@@ -129,8 +129,8 @@ ApplicationWindow {
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
             text: plasmaStyleConfirmation.action === "apply"
-                ? "LEOS va générer une variante utilisateur du Plasma Style et des icônes avec tes deux couleurs A/B, puis l'activer. Les ressources système officielles restent intactes."
-                : "LEOS va restaurer les styles Plasma et icônes précédents."
+                ? "LEOS va générer une variante utilisateur du Plasma Style et des icônes avec tes deux couleurs A/B, puis appliquer aussi son écran de chargement et son curseur. Les ressources système officielles restent intactes."
+                : "LEOS va restaurer le style Plasma, les icônes, l’écran de chargement et le curseur précédents lorsque leurs réglages n’ont pas été changés manuellement depuis leur application."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
             width: 420

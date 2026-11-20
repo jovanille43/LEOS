@@ -10,6 +10,7 @@ from desktop.themes import normalize_color, palette_for_theme, palette_for_color
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
 from desktop.icon_theme import PlasmaIconThemeManager
+from desktop.visual_chrome import PlasmaVisualChromeManager
 from desktop.themed_plasma_resources import install_themed_plasma_resources
 from desktop.plasma_adapter import build_panel_management_script
 from desktop.dock_favourites import DockFavourites
@@ -161,6 +162,7 @@ class ControlCenterController(QObject):
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
         self.plasmaIcons = PlasmaIconThemeManager()
+        self.visualChrome = PlasmaVisualChromeManager()
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -658,7 +660,11 @@ class ControlCenterController(QObject):
 
     @Property(bool, notify=settingsChanged)
     def canRestorePlasmaStyle(self) -> bool:
-        return self.plasmaStyle.can_restore() or self.plasmaIcons.can_restore()
+        return (
+            self.plasmaStyle.can_restore()
+            or self.plasmaIcons.can_restore()
+            or self.visualChrome.can_restore()
+        )
 
     @Property(bool, notify=settingsChanged)
     def plasmaIconsToolAvailable(self) -> bool:
@@ -766,7 +772,7 @@ class ControlCenterController(QObject):
         except (OSError, ValueError, TypeError, KeyError):
             return "Les couleurs n’ont pas été enregistrées. Utilise le format #RRGGBB."
         self.settingsChanged.emit()
-        return "Dégradé LEOS A/B enregistré. Confirme l’application du style Plasma pour mettre aussi à jour ses accents et les icônes."
+        return "Dégradé LEOS A/B enregistré. Confirme l’application du style Plasma pour mettre à jour ses accents, les icônes, l’écran de chargement et le curseur."
 
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
@@ -825,9 +831,11 @@ class ControlCenterController(QObject):
             self.plasmaStyle.apply_style(style_id)
             try:
                 self.plasmaIcons.apply_theme(icon_id)
+                self.visualChrome.apply("org.leos.desktop", icon_id)
             except Exception as apply_error:
                 rollback_errors = []
                 for manager, restore in (
+                    (self.visualChrome, self.visualChrome.restore_previous),
                     (self.plasmaIcons, self.plasmaIcons.restore_previous_theme),
                     (self.plasmaStyle, self.plasmaStyle.restore_previous_style),
                 ):
@@ -842,13 +850,13 @@ class ControlCenterController(QObject):
                         + "; ".join(rollback_errors)
                     ) from apply_error
                 raise
-            message = "Style Plasma et icônes LEOS mis à jour avec le dégradé A/B choisi."
+            message = "Style Plasma, icônes, écran de chargement et curseur LEOS mis à jour avec le dégradé A/B choisi."
         except FileNotFoundError:
             message = "Les sources du style LEOS ou un outil KDE sont introuvables : aucun changement incomplet n’a été conservé."
             post_notification("Style Plasma non appliqué", message, "error")
             return message
         except (OSError, RuntimeError, ValueError, KeyError):
-            message = "Le style Plasma ou les icônes n’ont pas pu être actualisés. Le thème précédent reste récupérable."
+            message = "Le style Plasma, les icônes, l’écran de chargement ou le curseur n’ont pas pu être actualisés. Les réglages précédents restent récupérables."
             post_notification("Style Plasma non appliqué", message, "error")
             return message
         self.settingsChanged.emit()
@@ -861,6 +869,7 @@ class ControlCenterController(QObject):
         restored = []
         errors = []
         for manager, label, action in (
+            (self.visualChrome, "écran de chargement et curseur", self.visualChrome.restore_previous),
             (self.plasmaIcons, "icônes", self.plasmaIcons.restore_previous_theme),
             (self.plasmaStyle, "style Plasma", self.plasmaStyle.restore_previous_style),
         ):
@@ -876,7 +885,7 @@ class ControlCenterController(QObject):
             post_notification("Restauration LEOS incomplète", message, "error")
             return message
         if not restored:
-            message = "Aucun thème Plasma ou jeu d’icônes précédent n’est enregistré."
+            message = "Aucun réglage Plasma, jeu d’icônes, écran de chargement ou curseur précédent n’est enregistré."
             post_notification("Restauration indisponible", message, "warning")
             return message
         self.settingsChanged.emit()
