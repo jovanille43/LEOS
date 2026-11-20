@@ -99,6 +99,7 @@ required_webui_paths=(
   "usr/lib/systemd/system/webui-cockpit-ws.service"
   "usr/libexec/anaconda/webui-desktop"
   "usr/share/cockpit/anaconda-webui/index.html"
+  "usr/share/anaconda/profile.d/fedora-server.conf"
 )
 
 for path in "${required_webui_paths[@]}"; do
@@ -107,6 +108,26 @@ for path in "${required_webui_paths[@]}"; do
   fi
   echo "Verified Anaconda WebUI runtime file: $path"
 done
+
+# The Fedora Kinoite profile hides account creation and expects first-boot
+# setup. LEOS uses the Fedora Server installer profile so that account creation
+# is available during installation.
+server_profile="$tmp_dir/fedora-server.conf"
+if ! unsquashfs -cat "$tmp_dir/install.img" usr/share/anaconda/profile.d/fedora-server.conf >"$server_profile"; then
+  die "Could not read the Fedora Server Anaconda profile from the installer ISO."
+fi
+
+if ! grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*
+echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+ "$server_profile"; then
+  die "The installer ISO does not contain the expected Fedora Server Anaconda profile."
+fi
+
+if grep -Eq '^[[:space:]]*anaconda-screen-accounts([[:space:]]|$)' "$server_profile"; then
+  die "The Anaconda profile hides account creation; refusing to publish this ISO."
+fi
+
+echo "Verified Anaconda Fedora Server profile and visible account-creation page."
 
 echo "LEOS installer ISO structural validation passed."
 echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
