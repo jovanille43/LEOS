@@ -32,7 +32,7 @@ images/install.img
 VALID_RUNTIME_CONTENTS = """squashfs-root/usr/lib/systemd/system/webui-cockpit-ws.service
 squashfs-root/usr/libexec/anaconda/webui-desktop
 squashfs-root/usr/share/cockpit/anaconda-webui/index.html
-squashfs-root/usr/share/anaconda/profile.d/fedora-server.conf
+squashfs-root/etc/anaconda/profile.d/fedora-server.conf
 """
 
 VALID_FEDORA_SERVER_PROFILE = """[Profile]
