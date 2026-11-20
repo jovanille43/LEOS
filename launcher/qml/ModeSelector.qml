@@ -241,7 +241,7 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 8
                             color: "#17313d"
-                            border.color: applyAppearanceButton.activeFocus ? window.magenta : window.cyan
+                            border.color: window.cyan
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -508,7 +508,7 @@ ApplicationWindow {
                 background: Rectangle {
                     radius: 9
                     color: applyAppearanceButton.enabled ? "#17313d" : "#17212a"
-                    border.color: window.cyan
+                    border.color: applyAppearanceButton.activeFocus ? window.magenta : window.cyan
                 }
                 contentItem: Label {
                     text: applyAppearanceButton.text
