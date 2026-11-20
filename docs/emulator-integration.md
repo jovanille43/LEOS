@@ -63,7 +63,8 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
 - [x] Actualiser automatiquement la bibliothèque lorsqu'un émulateur est installé/désinstallé et rescanner périodiquement les dossiers sélectionnés pour suivre les jeux ajoutés et les disques amovibles remontés au même chemin.
 - [ ] Ajouter les parcours d'import et de lancement pour RPCS3 et les cœurs RetroArch ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
-- [ ] Ajouter la gestion UI de retrait des dossiers mémorisés et valider les montages externes.
+- [x] Ajouter dans Gaming un gestionnaire accessible à la manette pour retirer les dossiers mémorisés sans toucher aux jeux ; un support externe débranché peut aussi être retiré.
+- [ ] Valider réellement les montages externes et les retours de supports amovibles sur Bazzite.
 
 Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les éditions restent séparées ; les doublons potentiels ne sont ni fusionnés ni supprimés automatiquement.
 
