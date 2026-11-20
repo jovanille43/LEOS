@@ -42,6 +42,11 @@ EMULATORS = (
         "name": "RPCS3",
         "binaries": ("rpcs3",),
     },
+    {
+        "id": "dev.eden_emu.eden",
+        "name": "EDEN",
+        "binaries": ("eden", "eden-launcher"),
+    },
 )
 
 SYSTEM_FLATPAK_APP_ROOT = Path("/var/lib/flatpak/app")
