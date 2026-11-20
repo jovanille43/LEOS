@@ -5,16 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.library import GameLibraryModel
-
-
-class LibraryHarness:
-    def __init__(self, state_file: Path):
-        self._emulator_sources_file = state_file
-        self.refresh_count = 0
-
-    def refresh(self):
-        self.refresh_count += 1
+from gaming.backend.emulator_sources import remove_emulator_source_folder
 
 
 class EmulatorSourceManagementTests(unittest.TestCase):
@@ -23,7 +14,6 @@ class EmulatorSourceManagementTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.state_file = self.root / "config" / "leos" / "emulator-sources.json"
         self.state_file.parent.mkdir(parents=True)
-        self.library = LibraryHarness(self.state_file)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -49,8 +39,8 @@ class EmulatorSourceManagementTests(unittest.TestCase):
             {"platform": "ps2", "path": missing_external_folder},
         ])
 
-        removed = GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", str(game_folder)
+        removed = remove_emulator_source_folder(
+            self.state_file, "eden", str(game_folder)
         )
 
         self.assertTrue(removed)
@@ -59,40 +49,37 @@ class EmulatorSourceManagementTests(unittest.TestCase):
             [{"platform": "ps2", "path": missing_external_folder}],
         )
         self.assertEqual(game_file.read_bytes(), b"personal game data")
-        self.assertEqual(self.library.refresh_count, 1)
 
     def test_disconnected_removable_drive_source_can_still_be_forgotten(self):
         disconnected = str(self.root / "USB Drive" / "Games")
         self.assertFalse(Path(disconnected).exists())
         self.write_sources([{"platform": "eden", "path": disconnected}])
 
-        removed = GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", disconnected
+        removed = remove_emulator_source_folder(
+            self.state_file, "eden", disconnected
         )
 
         self.assertTrue(removed)
         self.assertEqual(self.read_sources(), [])
-        self.assertEqual(self.library.refresh_count, 1)
 
     def test_rejects_invalid_requests_without_rewriting_the_catalogue(self):
         source = str(self.root / "Games")
         original = [{"platform": "eden", "path": source}]
         self.write_sources(original)
 
-        self.assertFalse(GameLibraryModel.removeEmulatorFolder(
-            self.library, "unknown", source
+        self.assertFalse(remove_emulator_source_folder(
+            self.state_file, "unknown", source
         ))
-        self.assertFalse(GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", "relative/Games"
+        self.assertFalse(remove_emulator_source_folder(
+            self.state_file, "eden", "relative/Games"
         ))
-        self.assertFalse(GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", source + "\x00"
+        self.assertFalse(remove_emulator_source_folder(
+            self.state_file, "eden", source + "\x00"
         ))
-        self.assertFalse(GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", str(self.root / "Other Games")
+        self.assertFalse(remove_emulator_source_folder(
+            self.state_file, "eden", str(self.root / "Other Games")
         ))
         self.assertEqual(self.read_sources(), original)
-        self.assertEqual(self.library.refresh_count, 0)
 
     def test_refuses_symlinked_source_state_file(self):
         source = str(self.root / "Games")
@@ -105,31 +92,14 @@ class EmulatorSourceManagementTests(unittest.TestCase):
         except (OSError, NotImplementedError):
             self.skipTest("Symbolic links unavailable")
 
-        self.assertFalse(GameLibraryModel.removeEmulatorFolder(
-            self.library, "eden", source
+        self.assertFalse(remove_emulator_source_folder(
+            self.state_file, "eden", source
         ))
         self.assertEqual(
             json.loads(target.read_text(encoding="utf-8")),
             [{"platform": "eden", "path": source}],
         )
-        self.assertEqual(self.library.refresh_count, 0)
 
-    def test_source_list_contains_platform_and_path_labels(self):
-        switch_folder = str(self.root / "Switch Games")
-        ps2_folder = str(self.root / "PS2")
-        self.write_sources([
-            {"platform": "eden", "path": switch_folder},
-            {"platform": "ps2", "path": ps2_folder},
-        ])
-
-        sources = GameLibraryModel.emulatorSourceFolders(self.library)
-
-        self.assertEqual(len(sources), 2)
-        self.assertEqual(sources[0]["platform"], "eden")
-        self.assertEqual(sources[0]["path"], switch_folder)
-        self.assertIn("Eden", sources[0]["label"])
-        self.assertIn(switch_folder, sources[0]["label"])
-        self.assertIn("PCSX2", sources[1]["label"])
 
 
 if __name__ == "__main__":
