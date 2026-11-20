@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from desktop.branding_assets import source_asset_urls
 from desktop.first_run_appearance import (
     APPLIED,
     PENDING,
@@ -206,7 +207,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
     @patch("desktop.first_run_appearance.build_layout_plan", return_value={"can_apply": True})
     def test_custom_wallpaper_generation_failure_aborts_before_kde_changes(self, *_mocks):
         self.setup.branding_asset_builder = lambda color_a, color_b: {
-            "desktopWallpaperUrl": "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg"
+            "desktopWallpaperUrl": source_asset_urls()["desktopWallpaperUrl"]
         }
         with self.assertRaisesRegex(RuntimeError, "fond personnalisé A/B"):
             self.setup.apply()
