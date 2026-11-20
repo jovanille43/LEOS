@@ -108,5 +108,34 @@ for path in "${required_webui_paths[@]}"; do
   echo "Verified Anaconda WebUI runtime file: $path"
 done
 
+# The Kinoite Anaconda profile hides the account page in the Web UI.
+# Build the installer with the Fedora Server profile instead; it inherits the
+# generic Fedora profile and leaves account creation available during install.
+server_profile="$tmp_dir/fedora-server.conf"
+fedora_profile="$tmp_dir/fedora.conf"
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora-server.conf >"$server_profile" 2>/dev/null; then
+  die "The Fedora Server Anaconda profile required for account creation is missing."
+fi
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora.conf >"$fedora_profile" 2>/dev/null; then
+  die "The base Fedora Anaconda profile required by the Server profile is missing."
+fi
+
+grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*
+echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+ "$server_profile" ||
+  die "The Anaconda runtime does not contain the expected fedora-server profile."
+grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*
+echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+ "$server_profile" ||
+  die "The fedora-server profile does not inherit the generic Fedora profile."
+grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*
+echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+ "$server_profile" ||
+  die "The Anaconda Server profile does not match VARIANT_ID=server."
+if grep -Eq '^[[:space:]]*hidden_webui_pages[[:space:]]*=' "$server_profile" "$fedora_profile"; then
+  die "The Anaconda account page may be hidden by the selected Server profile chain."
+fi
+echo "Verified Anaconda Server profile and visible account-setup configuration."
+
 echo "LEOS installer ISO structural validation passed."
 echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
