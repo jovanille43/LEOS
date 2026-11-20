@@ -154,9 +154,10 @@ jobs:
             exit 1
           fi
 
-          # Fedora 45 Atomic installer media use Anaconda WebUI. Enable it instead of
-          # the legacy GTK UI, and select Server so account creation stays visible.
-          # This changes the installer profile only; the deployed payload remains LEOS.
+          # Fedora KDE/Kinoite hides the account page because KDE normally handles
+          # first boot with Plasma Setup. Bazzite no longer ships plasma-setup, so LEOS
+          # must collect the account in Anaconda. Use the Server installer profile;
+          # this changes the installer only, while the deployed payload remains LEOS.
           sudo env DOCKER_CONFIG=/root/.docker REGISTRY_AUTH_FILE=/root/.docker/config.json "$RUNNER_TEMP/bluebuild" generate-iso --variant server --web-ui --iso-name "$ISO_NAME" image "$IMAGE_REF"
           test -s "$ISO_NAME"
 
