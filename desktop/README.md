@@ -39,7 +39,7 @@ Le packaging installe les ressources et outils LEOS sous `/usr/share/leos/`. Le 
 
 Deux couleurs A/B indépendantes définissent le dégradé partagé des interfaces LEOS. Les valeurs cyan/magenta historiques ne sont que des couleurs de prévisualisation héritées ; le premier démarrage exige un choix explicite des deux accents. Les points A et B restent exactement ceux choisis, même lorsqu’ils sont identiques ou proches. Les rôles de texte sont adaptés pour préserver la lisibilité.
 
-Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos et les fonds utilisent le même moteur. Les variantes sont stockées dans le cache utilisateur ; les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
+Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos, les fonds, les schémas de couleurs KDE, le Plasma Style et le thème d'icônes utilisent le même moteur. Les variantes graphiques sont stockées dans le cache utilisateur ; les variantes KDE portent des identifiants `leos-ab-*` dans l'espace utilisateur. Les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
 
 
 Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,

@@ -1,6 +1,6 @@
 # LEOS icon theme — alpha
 
-LEOS follows the visual reference selected for the project: luminous outline icons on a deep black interface, with a smooth cyan-to-blue-to-violet-to-magenta gradient and a restrained outer glow. Shapes stay simple and recognizable at small sizes.
+LEOS uses luminous outline icons on a deep black interface with a smooth, user-selected A/B gradient and a restrained outer glow. Shapes stay simple and recognizable at small sizes.
 
 ## Included first-party symbols
 
@@ -24,3 +24,7 @@ These are LEOS-specific symbolic assets, not replacements for the full KDE appli
 Packaged at `/usr/share/icons/leos`. Select **LEOS** from KDE System Settings → Colors & Themes → Icons. Missing icon names fall back through Breeze and hicolor.
 
 This is an initial alpha pack. Validate rendering, glow performance and fallback behavior on a real Bazzite KDE session before making it the default.
+
+## Custom A/B variants
+
+The packaged `leos` icon theme is an immutable source template. During Desktop activation, LEOS creates a per-user copy under `$XDG_DATA_HOME/icons/leos-ab-*`, recolors SVG accents from the selected A/B pair and activates that unique theme ID. The files installed in `/usr/share/icons/leos` remain unchanged, and the previous icon theme stays restorable.
