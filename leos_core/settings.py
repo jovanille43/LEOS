@@ -104,6 +104,12 @@ def validate_settings_values(
     if require_complete and set(values) != set(DEFAULTS):
         raise ValueError("A complete LEOS settings snapshot must contain every known key")
 
+    supplied_theme_colors = set(values).intersection(_THEME_COLOR_KEYS)
+    if supplied_theme_colors and supplied_theme_colors != _THEME_COLOR_KEYS:
+        raise ValueError("Both LEOS accent colors must be updated atomically")
+    if values.get("theme_colors_configured") is True and supplied_theme_colors != _THEME_COLOR_KEYS:
+        raise ValueError("A configured LEOS theme requires both accent colors")
+
     validated: dict[str, Any] = {}
     for key, value in values.items():
         if key not in DEFAULTS:
@@ -170,6 +176,14 @@ class SettingsStore:
             if key == "notification_duration_seconds" and value not in {3, 5, 8}:
                 continue
             self._values[key] = value
+
+        if self._values.get("theme_colors_configured") is True:
+            raw_a = loaded.get("theme_color_a")
+            raw_b = loaded.get("theme_color_b")
+            valid_a = isinstance(raw_a, str) and _THEME_COLOR_PATTERN.fullmatch(raw_a.strip()) is not None
+            valid_b = isinstance(raw_b, str) and _THEME_COLOR_PATTERN.fullmatch(raw_b.strip()) is not None
+            if not (valid_a and valid_b):
+                self._values["theme_colors_configured"] = False
 
     def get(self, key: str, default: Any = None) -> Any:
         # Settings are shared by several LEOS processes (Desktop, Gaming and

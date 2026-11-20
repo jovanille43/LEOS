@@ -72,6 +72,25 @@ class SettingsStoreTests(unittest.TestCase):
                 ("#333333", "#333333"),
             )
 
+    def test_partial_accent_pair_updates_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            with self.assertRaisesRegex(ValueError, "atomically"):
+                settings.set_many({"theme_color_a": "#FF8800"})
+
+    def test_configured_marker_is_ignored_when_saved_pair_is_incomplete(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                json.dumps({
+                    "theme_color_a": "#123456",
+                    "theme_colors_configured": True,
+                }),
+                encoding="utf-8",
+            )
+            settings = SettingsStore(path)
+            self.assertFalse(settings.get("theme_colors_configured"))
+
     def test_invalid_custom_pair_is_rejected_without_partial_write(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
