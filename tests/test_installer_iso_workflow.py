@@ -58,6 +58,18 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         push_trigger = workflow.split("  push:", 1)[1].split("permissions:", 1)[0]
         self.assertIn('      - "tools/validate-installer-iso.sh"', push_trigger)
 
+    def test_successful_main_image_build_triggers_standard_iso(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn('workflows: ["Build LEOS"]', workflow)
+        self.assertIn("types: [completed]", workflow)
+        self.assertIn("branches: [main]", workflow)
+        self.assertIn(
+            "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+            workflow,
+        )
+        self.assertIn("inputs.variant || 'standard'", workflow)
+        self.assertIn("inputs.image_tag || 'latest'", workflow)
+
     def test_validator_checks_digest_checksum_uefi_and_installer_payload(self):
         validator = (ROOT / "tools/validate-installer-iso.sh").read_text(encoding="utf-8")
         for expected in (

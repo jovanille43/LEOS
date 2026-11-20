@@ -26,6 +26,10 @@ on:
     paths:
       - ".github/workflows/iso.yml"
       - "tools/validate-installer-iso.sh"
+  workflow_run:
+    workflows: ["Build LEOS"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -37,6 +41,7 @@ concurrency:
 
 jobs:
   generate-iso:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Generate LEOS installer (${{ inputs.variant || 'standard' }})
     runs-on: ubuntu-latest
     timeout-minutes: 120

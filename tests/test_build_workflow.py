@@ -1,4 +1,4 @@
-"""Safety checks for the manual image publication workflow."""
+"""Safety checks for the guarded image publication workflow."""
 
 from pathlib import Path
 import re
@@ -9,12 +9,34 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BuildWorkflowTests(unittest.TestCase):
-    def test_image_workflow_is_manual_only(self):
+    def test_image_workflow_supports_manual_and_guarded_main_publication(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", source)
-        self.assertNotIn("branches: [main]", source)
+        self.assertIn("  push:", source)
+        push_trigger = source.split("  push:", 1)[1].split("permissions:", 1)[0]
+        self.assertIn("branches: [main]", push_trigger)
+        for source_path in (
+            '".github/workflows/build.yml"',
+            '"recipes/**"',
+            '"branding/**"',
+            '"desktop/**"',
+            '"gaming/**"',
+            '"launcher/**"',
+            '"control_center/**"',
+            '"controller_center/**"',
+            '"shop/**"',
+            '"leos_core/**"',
+            '"files/**"',
+            '"icons/**"',
+            '"aurorae/**"',
+            '"plasma-theme/**"',
+            '"packaging/**"',
+            '"cosign.pub"',
+        ):
+            with self.subTest(source_path=source_path):
+                self.assertIn(source_path, push_trigger)
 
-    def test_manual_image_build_runs_python_suite_before_publishing(self):
+    def test_image_build_runs_python_suite_before_publishing(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Run LEOS Python test suite", source)
         self.assertIn('python -m unittest discover -s tests -v', source)

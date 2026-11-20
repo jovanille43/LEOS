@@ -2,6 +2,25 @@ name: Build LEOS
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build.yml"
+      - "recipes/**"
+      - "branding/**"
+      - "desktop/**"
+      - "gaming/**"
+      - "launcher/**"
+      - "control_center/**"
+      - "controller_center/**"
+      - "shop/**"
+      - "leos_core/**"
+      - "files/**"
+      - "icons/**"
+      - "aurorae/**"
+      - "plasma-theme/**"
+      - "packaging/**"
+      - "cosign.pub"
 
 permissions:
   contents: read
