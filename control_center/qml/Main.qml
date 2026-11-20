@@ -26,6 +26,12 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string draftColorA: controlCenter.themeColorA
+    property string draftColorB: controlCenter.themeColorB
+    property bool draftColorAChosen: controlCenter.themeColorsConfigured
+    property bool draftColorBChosen: controlCenter.themeColorsConfigured
+    property bool draftColorsDirty: false
+    property string themeColorNotice: ""
 
     function colorToHex(color) {
         function part(value) {
@@ -38,19 +44,23 @@ ApplicationWindow {
     ColorDialog {
         id: themeColorADialog
         title: "Choisir la couleur A"
-        selectedColor: Qt.color(controlCenter.themeColorA)
-        onAccepted: window.kdeThemeNotice = controlCenter.setThemeColors(
-            window.colorToHex(selectedColor), controlCenter.themeColorB
-        )
+        selectedColor: Qt.color(window.draftColorA)
+        onAccepted: {
+            window.draftColorA = window.colorToHex(selectedColor)
+            window.draftColorAChosen = true
+            window.draftColorsDirty = true
+        }
     }
 
     ColorDialog {
         id: themeColorBDialog
         title: "Choisir la couleur B"
-        selectedColor: Qt.color(controlCenter.themeColorB)
-        onAccepted: window.kdeThemeNotice = controlCenter.setThemeColors(
-            controlCenter.themeColorA, window.colorToHex(selectedColor)
-        )
+        selectedColor: Qt.color(window.draftColorB)
+        onAccepted: {
+            window.draftColorB = window.colorToHex(selectedColor)
+            window.draftColorBChosen = true
+            window.draftColorsDirty = true
+        }
     }
 
     function formatRate(bytesPerSecond) {
@@ -69,6 +79,12 @@ ApplicationWindow {
         function onSettingsChanged() {
             const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            if (!window.draftColorsDirty) {
+                window.draftColorA = controlCenter.themeColorA
+                window.draftColorB = controlCenter.themeColorB
+                window.draftColorAChosen = controlCenter.themeColorsConfigured
+                window.draftColorBChosen = controlCenter.themeColorsConfigured
+            }
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -471,7 +487,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 260
+                                Layout.preferredHeight: 318
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -486,7 +502,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Personnalise librement les deux extrémités A et B du dégradé LEOS."
+                                        text: "Personnalise librement les deux extrémités A et B du dégradé LEOS. Enregistre la paire pour l'appliquer partout."
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
@@ -500,6 +516,7 @@ ApplicationWindow {
                                         }
                                         onActivated: {
                                             const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
+                                            window.draftColorsDirty = false
                                             controlCenter.setTheme(values[currentIndex])
                                         }
                                     }
@@ -508,12 +525,12 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             Layout.fillWidth: true
-                                            text: "A · " + controlCenter.themeColorA
+                                            text: window.draftColorAChosen ? "A · " + window.draftColorA : "CHOISIR LA COULEUR A"
                                             onClicked: themeColorADialog.open()
                                         }
                                         Button {
                                             Layout.fillWidth: true
-                                            text: "B · " + controlCenter.themeColorB
+                                            text: window.draftColorBChosen ? "B · " + window.draftColorB : "CHOISIR LA COULEUR B"
                                             onClicked: themeColorBDialog.open()
                                         }
                                     }
@@ -526,6 +543,25 @@ ApplicationWindow {
                                             GradientStop { position: 0.0; color: window.themeColors.accent_primary }
                                             GradientStop { position: 1.0; color: window.themeColors.accent_secondary }
                                         }
+                                    }
+                                    Button {
+                                        Layout.fillWidth: true
+                                        text: "ENREGISTRER LE DÉGRADÉ A/B"
+                                        enabled: window.draftColorAChosen && window.draftColorBChosen
+                                        onClicked: {
+                                            window.themeColorNotice = controlCenter.setThemeColors(
+                                                window.draftColorA, window.draftColorB
+                                            )
+                                            window.draftColorsDirty = false
+                                        }
+                                    }
+                                    Label {
+                                        text: window.themeColorNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     Label {
                                         visible: window.themeColors.accent_primary_text !== window.themeColors.accent_primary
