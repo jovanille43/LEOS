@@ -165,7 +165,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("non vérifié", emulators["org.DolphinEmu.dolphin-emu"]["compatibility"])
         self.assertIn("non vérifié", emulators["net.rpcs3.RPCS3"]["compatibility"])
         self.assertIn("non vérifié", emulators["dev.eden_emu.eden"]["compatibility"])
-        self.assertIn("x86_64-v3", emulators["dev.eden_emu.eden"]["compatibility"])
+        self.assertIn("x86-64-v3", emulators["dev.eden_emu.eden"]["compatibility"])
 
 if __name__ == "__main__":
     unittest.main()
