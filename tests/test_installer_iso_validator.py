@@ -48,6 +48,13 @@ profile_id = fedora
 os_id = fedora
 """
 
+VALID_INSTALLER_OS_RELEASE = """NAME="Fedora Linux"
+ID=fedora
+VERSION_ID=45
+VARIANT="Server Edition"
+VARIANT_ID=server
+"""
+
 
 class InstallerIsoValidatorTests(unittest.TestCase):
     def setUp(self):
@@ -86,6 +93,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
             '  -cat) case "$3" in\n'
             '    */fedora-server.conf) printf "%s" "$LEOS_TEST_SERVER_PROFILE" ;;\n'
             '    */fedora.conf) printf "%s" "$LEOS_TEST_FEDORA_PROFILE" ;;\n'
+            '    */os-release) printf "%s" "$LEOS_TEST_OS_RELEASE" ;;\n'
             '    *) exit 3 ;;\n'
             '  esac ;;\n'
             '  *) exit 2 ;;\nesac\n',
@@ -102,6 +110,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS
         self.env["LEOS_TEST_SERVER_PROFILE"] = VALID_SERVER_PROFILE
         self.env["LEOS_TEST_FEDORA_PROFILE"] = VALID_FEDORA_PROFILE
+        self.env["LEOS_TEST_OS_RELEASE"] = VALID_INSTALLER_OS_RELEASE
 
     def run_validator(self):
         return subprocess.run(
@@ -146,6 +155,18 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("anaconda-webui/index.html", result.stderr)
+
+    def test_rejects_installer_os_release_that_selects_kinoite(self):
+        self.env["LEOS_TEST_OS_RELEASE"] = (
+            'NAME="Fedora Linux"\n'
+            "ID=fedora\n"
+            "VERSION_ID=45\n"
+            'VARIANT="Kinoite"\n'
+            "VARIANT_ID=kinoite\n"
+        )
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not select the Fedora Server", result.stderr)
 
     def test_rejects_installer_without_fedora_server_account_profile(self):
         self.env["LEOS_TEST_SERVER_PROFILE"] = (
