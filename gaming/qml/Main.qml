@@ -1045,7 +1045,7 @@ ApplicationWindow {
                                                 x: -parent.width * 0.55
                                                 y: parent.height * 0.25
                                                 color: window.accentA
-                                                opacity: 0.55
+                                                opacity: 0.18
                                             }
                                             Column {
                                                 anchors.centerIn: parent
