@@ -6,7 +6,7 @@
       }
     ],
     "Category": "Plasma Theme",
-    "Description": "A restrained dark Plasma style with metallic surfaces and cyan/magenta LEOS accents.",
+    "Description": "A restrained dark Plasma style with metallic surfaces and a user-selected LEOS A/B accent gradient.",
     "Id": "leos",
     "License": "GPL-3.0-or-later",
     "Name": "LEOS",

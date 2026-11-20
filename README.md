@@ -15,7 +15,7 @@ Les deux modes partagent le même système, les mêmes fichiers, applications, p
 
 ## Identité visuelle
 
-L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta, une typographie dédiée et un fond noir.
+L'identité LEOS repose sur un lion métallique, un dégradé de deux couleurs A/B librement choisies, une typographie dédiée et des surfaces sombres neutres.
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
@@ -77,7 +77,7 @@ Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard g�
 ## Desktop Mode
 
 - Bureau KDE personnalisé avec l'identité LEOS ; le premier choix de Desktop propose l'activation du profil officiel après confirmation.
-- Profil Desktop LEOS Original : fond noir et emblème officiel, palette sombre cyan/magenta, Plasma Style et icônes LEOS, et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
+- Profil Desktop LEOS : fond sombre et emblème officiel, accents A/B choisis librement, Plasma Style et icônes LEOS assortis, et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les favoris LEOS disponibles sont proposés sur le dock.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.

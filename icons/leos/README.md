@@ -27,4 +27,4 @@ This is an initial alpha pack. Validate rendering, glow performance and fallback
 
 ## Custom A/B variants
 
-The packaged `leos` icon theme is an immutable source template. During Desktop activation, LEOS creates a per-user copy under `$XDG_DATA_HOME/icons/leos-ab-*`, recolors SVG accents from the selected A/B pair and activates that unique theme ID. The files installed in `/usr/share/icons/leos` remain unchanged, and the previous icon theme stays restorable.
+The packaged `leos` icon theme is an immutable source template. During Desktop activation, LEOS creates a per-user copy under `$XDG_DATA_HOME/icons/leos-custom-*`, recolors SVG accents from the selected A/B pair and activates that unique theme ID. The files installed in `/usr/share/icons/leos` remain unchanged, and the previous icon theme stays restorable.

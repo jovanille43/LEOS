@@ -39,25 +39,14 @@ Le packaging installe les ressources et outils LEOS sous `/usr/share/leos/`. Le 
 
 Deux couleurs A/B indépendantes définissent le dégradé partagé des interfaces LEOS. Les valeurs cyan/magenta historiques ne sont que des couleurs de prévisualisation héritées ; le premier démarrage exige un choix explicite des deux accents. Les points A et B restent exactement ceux choisis, même lorsqu’ils sont identiques ou proches. Les rôles de texte sont adaptés pour préserver la lisibilité.
 
-Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos, les fonds, les schémas de couleurs KDE, le Plasma Style et le thème d'icônes utilisent le même moteur. Les variantes graphiques sont stockées dans le cache utilisateur ; les variantes KDE portent des identifiants `leos-ab-*` dans l'espace utilisateur. Les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
+Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos, les fonds, les schémas de couleurs KDE, le Plasma Style et le thème d'icônes utilisent le même moteur. Les variantes graphiques sont stockées dans le cache utilisateur ; le Plasma Style et les icônes assortis portent des identifiants `leos-custom-*` dans l'espace utilisateur. Les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
 
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Les anciennes palettes nommées sont conservées pour lire les réglages et schémas KDE historiques ; elles ne remplacent pas le choix libre des deux accents A/B. Le Centre de contrôle et le premier démarrage utilisent la même paire persistée.
 
-Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
-Une action distincte dans le Centre de contrôle permet, après confirmation,
-d'exporter le thème sous forme de schéma KDE `.colors` dans l'espace utilisateur
-`$XDG_DATA_HOME/color-schemes` (par défaut `~/.local/share/color-schemes`),
-puis d'appeler `plasma-apply-colorscheme` sans shell.
+Lors d'une activation confirmée, LEOS génère un schéma KDE `.colors` correspondant à A/B, puis une copie du Plasma Style et du thème d'icônes assortis dans l'espace utilisateur. Les identifiants `leos-custom-*` sont uniques pour chaque paire et empreinte des ressources. Les fichiers sources sous `/usr/share` restent intacts ; KDE reçoit uniquement les identifiants validés, sans shell. Le Centre de contrôle applique et restaure le Plasma Style et les icônes ensemble.
 
-L'application est limitée au schéma de couleurs KDE : elle ne remplace pas le
-Plasma Style, les icônes, les curseurs, le fond d'écran, les panneaux, ni les
-écrans de connexion. Seuls les composants KDE/Qt et éléments Plasma qui
-respectent le schéma global changent. Le système immuable Bazzite n'est pas
-modifié.
+Les autres ressources graphiques dérivées (emblèmes, fonds et introductions vidéo compatibles) sont stockées dans le cache utilisateur. Les accents A/B sont conservés tels que choisis ; seuls les rôles de texte sont adaptés en cas de contraste insuffisant. Les reflets métalliques et l'axe neutre restent préservés.
 
 Avant application, LEOS mémorise le nom du schéma actif non-LEOS afin de
 permettre sa restauration depuis le Centre de contrôle. Si le schéma actif ne
@@ -230,7 +219,7 @@ ou d'accents par nom, identifiant, description et catégorie, et lance le progra
 sans shell via `QProcess.startDetached`.
 Les commandes non résolues et les entrées invalides sont refusées. Les codes `Exec` sont développés selon la spécification freedesktop ; `TryExec` est vérifié et les entrées `Terminal=true` sont masquées tant qu'aucun terminal n'est intégré. Le menu est
 accessible depuis l'entrée **LEOS — Applications** et utilise son icône dédiée
-cyan/bleu/violet/magenta.
+dégradé A/B librement choisi.
 
 Cette version est un lanceur de fenêtre autonome, pas encore un remplacement
 du menu Plasma ni un dock intégré. La catégorie Favoris affiche les applications épinglées dans leur ordre personnalisé et conserve la recherche accent-insensible. La catégorie « Récemment utilisées » repose sur les lancements enregistrés localement. Les favoris ne sont pas encore appliqués au panneau Plasma ; les raccourcis globaux KDE restent à raccorder. Le rendu et le lancement doivent encore être validés sur une session Bazzite KDE réelle.

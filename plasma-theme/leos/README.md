@@ -33,4 +33,4 @@ The separate LEOS KDE color scheme continues to control compatible app colors.
 
 ## Custom A/B variants
 
-The packaged `leos` directory is an immutable source template. During Desktop activation, LEOS creates a deterministic per-user Plasma Style variant under `$XDG_DATA_HOME/plasma/desktoptheme/` and applies its unique `leos-ab-*` identifier. SVG accent colors are transformed from the chosen A/B pair while neutral metallic greys remain neutral. Files under `/usr/share` are never edited; the previous Plasma Style can still be restored through LEOS.
+The packaged `leos` directory is an immutable source template. During Desktop activation, LEOS creates a deterministic per-user Plasma Style variant under `$XDG_DATA_HOME/plasma/desktoptheme/` and applies its unique `leos-custom-*` identifier. SVG accent colors are transformed from the chosen A/B pair while neutral metallic greys remain neutral. Files under `/usr/share` are never edited; the previous Plasma Style can still be restored through LEOS.
