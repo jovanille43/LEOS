@@ -38,7 +38,7 @@ class DefaultGamingAppsSetupTests(unittest.TestCase):
         flatpak = self.bin_dir / "flatpak"
         flatpak.write_text(
             """#!/usr/bin/bash
-printf 'flatpak %s\\n' "$*" >> "$COMMAND_LOG"
+printf 'flatpak %s\n' "$*" >> "$COMMAND_LOG"
 case "$1" in
   info)
     scope="$2"
@@ -47,20 +47,20 @@ case "$1" in
     exit $?
     ;;
   remotes)
-    printf 'Name URL\\n'
+    printf 'Name URL\n'
     [[ -f "$REMOTE_FILE" ]] && cat "$REMOTE_FILE"
     exit 0
     ;;
   remote-add)
     [[ "$FAIL_REMOTE" == "1" ]] && exit 1
-    printf 'flathub %s\\n' "$REMOTE_URL" > "$REMOTE_FILE"
+    printf 'flathub %s\n' "$REMOTE_URL" > "$REMOTE_FILE"
     exit 0
     ;;
   install)
     app_id="${@: -1}"
     if [[ "$FAIL_APP" == "$app_id" ]]; then exit 1; fi
     grep -Fqx "user:$app_id" "$INSTALLED_FILE" 2>/dev/null || \\
-      printf 'user:%s\\n' "$app_id" >> "$INSTALLED_FILE"
+      printf 'user:%s\n' "$app_id" >> "$INSTALLED_FILE"
     exit 0
     ;;
 esac
@@ -73,7 +73,7 @@ exit 0
         # A stub proves the bootstrap does not ask for a second consent dialog.
         kdialog = self.bin_dir / "kdialog"
         kdialog.write_text(
-            "#!/usr/bin/bash\nprintf 'kdialog\\n' >> \"$COMMAND_LOG\"\nexit 1\n",
+            "#!/usr/bin/bash\nprintf 'kdialog\n' >> \"$COMMAND_LOG\"\nexit 1\n",
             encoding="utf-8",
         )
         kdialog.chmod(0o755)
@@ -121,6 +121,24 @@ exit 0
                 result.append(line.rsplit(" ", 1)[-1])
         return result
 
+    def test_catalog_and_bootstrap_share_the_same_default_app_set(self):
+        import json
+        import re
+
+        root = Path(__file__).resolve().parents[1]
+        catalog = json.loads((root / "shop" / "catalog.json").read_text(encoding="utf-8"))
+        bundled = {
+            item["id"] for item in catalog
+            if item.get("bundled") is True
+            and "automatiquement" in item.get("operation_note", "").casefold()
+        }
+        script = SCRIPT.read_text(encoding="utf-8")
+        block = re.search(r"(?ms)^apps=\\(\\n(.*?)^\\)", script)
+        self.assertIsNotNone(block)
+        declared = set(re.findall(r"(?m)^    ([A-Za-z0-9_.-]+)$", block.group(1)))
+        self.assertEqual(declared, EXPECTED_APPS)
+        self.assertEqual(bundled, EXPECTED_APPS)
+
     def test_installs_the_seven_starter_apps_without_an_extra_prompt(self):
         result = self.run_setup()
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -132,7 +150,7 @@ exit 0
 
     def test_existing_user_and_system_apps_are_not_reinstalled(self):
         self.installed_file.write_text(
-            "user:org.libretro.RetroArch\\nsystem:net.pcsx2.PCSX2\\n",
+            "user:org.libretro.RetroArch\nsystem:net.pcsx2.PCSX2\n",
             encoding="utf-8",
         )
         result = self.run_setup()
@@ -162,7 +180,7 @@ exit 0
 
     def test_rejects_a_non_official_remote_named_flathub(self):
         self.remote_file.write_text(
-            "flathub https://example.invalid/repo/\\n", encoding="utf-8"
+            "flathub https://example.invalid/repo/\n", encoding="utf-8"
         )
         result = self.run_setup()
         self.assertNotEqual(result.returncode, 0)
@@ -182,7 +200,7 @@ exit 0
         # Simulate the user uninstalling one app after the first successful setup.
         lines = self.installed_file.read_text(encoding="utf-8").splitlines()
         self.installed_file.write_text(
-            "\\n".join(line for line in lines if not line.endswith(":net.rpcs3.RPCS3")) + "\\n",
+            "\n".join(line for line in lines if not line.endswith(":net.rpcs3.RPCS3")) + "\n",
             encoding="utf-8",
         )
         second = self.run_setup()
