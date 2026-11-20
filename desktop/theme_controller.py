@@ -23,15 +23,18 @@ class _BrandingAssetSignals(QObject):
 class _BrandingAssetTask(QRunnable):
     """Generate derived logos, wallpapers and video intros away from the UI thread."""
 
-    def __init__(self, snapshot: tuple[str, str]) -> None:
+    def __init__(self, snapshot: tuple[str, str], generate_videos: bool = True) -> None:
         super().__init__()
         self.snapshot = snapshot
+        self.generate_videos = generate_videos
         self.signals = _BrandingAssetSignals()
 
     @Slot()
     def run(self) -> None:
         try:
-            assets = build_themed_branding_assets(*self.snapshot)
+            assets = build_themed_branding_assets(
+                *self.snapshot, generate_videos=self.generate_videos
+            )
         except Exception:
             # A missing optional codec or unreadable source must never prevent
             # the desktop or Gaming interface from starting.
@@ -49,9 +52,12 @@ class ThemeController(QObject):
         self,
         parent: QObject | None = None,
         settings: SettingsStore | None = None,
+        *,
+        generate_videos: bool = True,
     ) -> None:
         super().__init__(parent)
         self.settings = settings or SettingsStore()
+        self.generate_videos = bool(generate_videos)
         self._snapshot = self._read_snapshot()
         self._colors_configured = bool(self.settings.get("theme_colors_configured", False))
         self._appearance_mode = self._read_appearance_mode()
@@ -158,7 +164,7 @@ class ThemeController(QObject):
         if self._closed or self._asset_task is not None or self._asset_attempt_snapshot == self._snapshot:
             return
         self._asset_attempt_snapshot = self._snapshot
-        task = _BrandingAssetTask(self._snapshot)
+        task = _BrandingAssetTask(self._snapshot, self.generate_videos)
         task.signals.completed.connect(self._on_assets_generated)
         self._asset_task = task
         QThreadPool.globalInstance().start(task)

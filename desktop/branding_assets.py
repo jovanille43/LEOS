@@ -334,6 +334,8 @@ def build_themed_branding_assets(
     color_a: str,
     color_b: str,
     branding_root: Path | None = None,
+    *,
+    generate_videos: bool = True,
 ) -> dict[str, str]:
     """Build or reuse themed branding assets in a private cache directory."""
     first = normalize_color(color_a)
@@ -389,7 +391,7 @@ def build_themed_branding_assets(
                 source = root / "animations" / filename
                 if output.is_symlink():
                     raise OSError("LEOS theme video cache cannot contain symbolic links")
-                if not output.is_file() or output.stat().st_size == 0:
+                if generate_videos and (not output.is_file() or output.stat().st_size == 0):
                     _transform_video(source, output, matrix)
                 assets["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"] = (
                     output.as_uri() if output.is_file() and not output.is_symlink() and output.stat().st_size > 0
