@@ -46,10 +46,12 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
 
     def test_qml_toolbar_remains_controller_navigable_after_adding_import_action(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("Math.min(3, index)", qml)
+        self.assertIn("Math.min(4, index)", qml)
         self.assertIn("importEmulatorFolderButton.forceActiveFocus()", qml)
+        self.assertIn("emulatorPrerequisitesButton.forceActiveFocus()", qml)
         self.assertIn("addGameButton.forceActiveFocus()", qml)
         self.assertIn("emulatorImportDialog.open()", qml)
+        self.assertIn("emulatorPrerequisitesDialog.open()", qml)
 
     def test_gamepad_and_keyboard_can_navigate_the_custom_folder_browser(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
