@@ -70,8 +70,9 @@ class FakeIcons:
     def current_theme(self):
         return "breeze"
 
-    def apply_theme(self):
+    def apply_custom_theme(self, color_a, color_b):
         self.applied += 1
+        self.colors = (color_a, color_b)
         return "applied"
 
     def can_restore(self):
@@ -97,8 +98,9 @@ class FakeStyle:
     def current_style(self):
         return "Breeze"
 
-    def apply_style(self):
+    def apply_custom_style(self, color_a, color_b):
         self.applied += 1
+        self.colors = (color_a, color_b)
         return "applied"
 
     def can_restore(self):
@@ -190,7 +192,9 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.colors.applied, [("#FF8800", "#0055CC", "dark")])
         self.assertEqual(self.brand_asset_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.style.applied, 1)
+        self.assertEqual(self.style.colors, ("#FF8800", "#0055CC"))
         self.assertEqual(self.icons.applied, 1)
+        self.assertEqual(self.icons.colors, ("#FF8800", "#0055CC"))
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
 
