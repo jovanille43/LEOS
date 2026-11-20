@@ -287,6 +287,20 @@ class GameLibraryModel(QAbstractListModel):
             sources.append({"platform": platform_key, "path": str(path)})
         return sources
 
+    def emulatorSourceFolders(self) -> list[dict[str, str]]:
+        """Return user-selected roots for the Gaming source manager."""
+        return [
+            {
+                "platform": source["platform"],
+                "path": source["path"],
+                "label": (
+                    f"{PLATFORM_SPECS[source['platform']]['emulator_name']} · "
+                    f"{source['path']}"
+                ),
+            }
+            for source in self._load_emulator_source_folders()
+        ]
+
     def addEmulatorFolder(self, platform_key: str, folder: str) -> bool:
         """Persist one directory explicitly chosen by the user, then refresh Gaming."""
         if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
@@ -341,6 +355,59 @@ class GameLibraryModel(QAbstractListModel):
                 write_bounded_json(self._emulator_sources_file, existing)
             except (OSError, ValueError):
                 return False
+        self.refresh()
+        return True
+
+    def removeEmulatorFolder(self, platform_key: str, folder: str) -> bool:
+        """Forget one explicitly selected root without changing its files."""
+        if (
+            not isinstance(platform_key, str)
+            or platform_key not in PLATFORM_SPECS
+            or not isinstance(folder, str)
+            or not folder
+            or len(folder) > 4096
+            or "\\x00" in folder
+            or not Path(folder).is_absolute()
+        ):
+            return False
+        if (
+            self._emulator_sources_file.is_symlink()
+            or self._emulator_sources_file.parent.is_symlink()
+            or not self._emulator_sources_file.is_file()
+        ):
+            return False
+        raw = read_bounded_json(self._emulator_sources_file)
+        if not isinstance(raw, list) or len(raw) > MAX_SOURCE_FOLDERS:
+            return False
+
+        remaining: list[dict[str, str]] = []
+        removed = False
+        for item in raw:
+            if (
+                not isinstance(item, dict)
+                or set(item) != {"platform", "path"}
+                or item.get("platform") not in PLATFORM_SPECS
+                or not isinstance(item.get("path"), str)
+                or not item["path"]
+                or len(item["path"]) > 4096
+                or "\\x00" in item["path"]
+                or not Path(item["path"]).is_absolute()
+            ):
+                return False
+            if item["platform"] == platform_key and item["path"] == folder:
+                removed = True
+                continue
+            remaining.append({
+                "platform": item["platform"],
+                "path": item["path"],
+            })
+
+        if not removed:
+            return False
+        try:
+            write_bounded_json(self._emulator_sources_file, remaining)
+        except (OSError, ValueError):
+            return False
         self.refresh()
         return True
 
