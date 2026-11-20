@@ -21,6 +21,9 @@ Le résultat attendu est `LEOS-standard-latest.iso: OK`. En cas d'échec, ne pas
 
 Conserver également le fichier `LEOS-standard-latest.iso.source-digest`. Il indique le digest de l'image conteneur utilisé pour générer l'ISO. La validation confirme le checksum, le digest source, l'entrée UEFI, les principaux fichiers Anaconda et l'apparition de l'écran d'accueil Anaconda WebUI dans QEMU (notamment « Welcome. Let's install Fedora Linux now » et les étapes « Installation method » / « Storage configuration »). Elle ne réalise pas une installation complète sur disque virtuel, ne valide pas encore les étapes suivantes du parcours Anaconda et ne certifie pas la fin de l'installation.
 
+**À propos du libellé Fedora :** l'ISO utilise le profil Anaconda Fedora Server uniquement comme environnement d'installation pour rendre l'étape de création du compte accessible. Le système cible reste l'image LEOS basée sur Bazzite KDE. Le nom affiché par l'installateur ne désigne pas le système qui sera installé.
+
+
 ## 2. Créer la machine virtuelle
 
 Avec Virtual Machine Manager (`virt-manager`) et QEMU/KVM :
@@ -67,8 +70,9 @@ Le pipeline CI de LEOS utilise aussi QEMU en émulation logicielle **TCG**, sans
 2. Vérifier que l'environnement d'installation se charge, que l'interface Anaconda WebUI apparaît et que l'affichage reste utilisable. Attendre jusqu'à 5 minutes au premier démarrage ; si une erreur critique ou une boucle apparaît, arrêter le test et conserver les journaux au lieu de relancer une installation.
 3. Vérifier que la connexion réseau NAT est détectée. Avant de confirmer le partitionnement, vérifier que le seul disque proposé est le disque virtuel QCOW2 de 80 Gio créé pour `LEOS-VM-test`.
 4. Si le réseau est absent, si un disque réel de l'ordinateur hôte apparaît ou si le disque cible n'est pas clairement identifiable, annuler et arrêter l'installation.
-5. Une fois le disque virtuel confirmé, effectuer l'installation dans la VM.
-6. Redémarrer sur le disque virtuel installé et retirer/détacher l'ISO si nécessaire pour éviter de relancer l'installateur.
+5. Vérifier que l'étape **Créer un compte** apparaît dans Anaconda. Créer un compte utilisateur et définir un mot de passe ; activer les droits administrateur pour ce compte si l'option est proposée. Si l'étape n'apparaît pas, arrêter ici, ne pas lancer l'installation et conserver une capture d'écran.
+6. Une fois le compte créé et le disque virtuel confirmé, effectuer l'installation dans la VM.
+7. Redémarrer sur le disque virtuel installé et retirer/détacher l'ISO si nécessaire pour éviter de relancer l'installateur.
 
 L'opération peut effacer le disque virtuel de cette VM ; elle ne doit jamais avoir accès au disque physique de l'hôte.
 
