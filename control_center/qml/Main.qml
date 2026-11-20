@@ -129,8 +129,8 @@ ApplicationWindow {
         standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label {
             text: plasmaStyleConfirmation.action === "apply"
-                ? "LEOS va demander à Plasma d'utiliser son style de bureau. Cela modifie l'apparence des panneaux, widgets et fenêtres contextuelles Plasma, sans remplacer les icônes ni les réglages de disposition."
-                : "LEOS va réappliquer le style Plasma enregistré avant le premier changement LEOS."
+                ? "LEOS va générer une variante personnelle du Plasma Style et des icônes avec tes deux couleurs A/B, puis l’activer. Les ressources officielles du système restent intactes."
+                : "LEOS va restaurer les anciens styles Plasma et icônes."
             color: window.themeColors.text
             wrapMode: Text.WordWrap
             width: 420
@@ -789,8 +789,8 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         spacing: 8
                                         Button {
-                                            text: "Appliquer le style LEOS"
-                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled && controlCenter.themeColorsConfigured
+                                            text: "Appliquer le style et les icônes LEOS A/B"
+                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled && controlCenter.plasmaIconsToolAvailable && controlCenter.themeColorsConfigured
                                             onClicked: {
                                                 plasmaStyleConfirmation.action = "apply"
                                                 plasmaStyleConfirmation.open()
@@ -806,13 +806,15 @@ ApplicationWindow {
                                         }
                                     }
                                     Label {
-                                        text: !controlCenter.plasmaStyleInstalled
-                                            ? "Paquet Plasma Style LEOS indisponible."
-                                            : !controlCenter.plasmaStyleToolAvailable
-                                                ? "Outil plasma-apply-desktoptheme indisponible."
-                                                : (!controlCenter.themeColorsConfigured
-                                                   ? "Choisis et enregistre d’abord les couleurs A et B."
-                                                   : window.plasmaStyleNotice)
+                                        text: !controlCenter.themeColorsConfigured
+                                            ? "Choisis et enregistre d’abord les couleurs A et B."
+                                            : !controlCenter.plasmaStyleInstalled
+                                                ? "Paquet Plasma Style LEOS indisponible."
+                                                : !controlCenter.plasmaStyleToolAvailable
+                                                    ? "Outil plasma-apply-desktoptheme indisponible."
+                                                    : !controlCenter.plasmaIconsToolAvailable
+                                                        ? "Outil plasma-changeicons indisponible."
+                                                        : window.plasmaStyleNotice
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
