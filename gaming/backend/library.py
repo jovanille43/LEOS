@@ -34,6 +34,7 @@ from .retroarch import (
 from .mangohud import build_launch_command
 from .install_state import installation_status
 from .emulator_inventory import detect_emulator_installations
+from .emulator_prerequisites import detect_emulator_prerequisite_statuses
 from .emulator_games import (
     MAX_SOURCE_FOLDERS, PLATFORM_SPECS, build_emulator_launch_prefix,
     build_emulator_launch_command, scan_emulator_folder,
@@ -149,6 +150,13 @@ class GameLibraryModel(QAbstractListModel):
             for emulator in detect_emulator_installations(data_home=xdg_data_home())
         )
         return statuses
+
+    def emulatorPrerequisiteStatuses(self) -> list[str]:
+        return detect_emulator_prerequisite_statuses(
+            home=Path.home(),
+            config_home=xdg_config_home(),
+        )
+
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [
