@@ -84,6 +84,9 @@ class DesktopAppearanceSetup:
         if self.style.current_style() is None:
             raise RuntimeError("Le Plasma Style actuel ne peut pas être identifié ; aucun changement ne sera effectué.")
 
+        if not self.favourites.load():
+            raise RuntimeError("Les favoris du dock LEOS sont invalides ou illisibles ; aucune modification ne sera effectuée.")
+
         inspection = inspect_plasma_config(self.backups.config_path)
         plan = build_layout_plan(self.layout.get(), inspection)
         if not plan.get("can_apply"):
