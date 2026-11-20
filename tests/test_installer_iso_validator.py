@@ -54,23 +54,23 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         fake_bin.mkdir()
         xorriso = fake_bin / "xorriso"
         xorriso.write_text(
-            '#!/bin/sh\nprintf "%s\\n" "$LEOS_TEST_EL_TORITO_OUTPUT"\n',
+            '#!/bin/sh\nprintf "%s\x5cn" "$LEOS_TEST_EL_TORITO_OUTPUT"\n',
             encoding="utf-8",
         )
         bsdtar = fake_bin / "bsdtar"
         bsdtar.write_text(
             '#!/bin/sh\ncase "$1" in\n'
-            '  -tf) printf "%s\\n" "$LEOS_TEST_ISO_CONTENTS" ;;\n'
-            '  -xOf) printf "fake SquashFS payload\\n" ;;\n'
+            '  -tf) printf "%s\x5cn" "$LEOS_TEST_ISO_CONTENTS" ;;\n'
+            '  -xOf) printf "fake SquashFS payload\x5cn" ;;\n'
             '  *) exit 2 ;;\nesac\n',
             encoding="utf-8",
         )
         unsquashfs = fake_bin / "unsquashfs"
         unsquashfs.write_text(
-            '#!/bin/sh\\ncase "$1" in\\n'
-            '  -ll) printf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\\n'
-            '  -cat) printf "%s\\n" "$LEOS_TEST_ANACONDA_PROFILE" ;;\\n'
-            '  *) exit 2 ;;\\nesac\\n',
+            '#!/bin/sh\x5cncase "$1" in\x5cn'
+            '  -ll) printf "%s\x5cn" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\x5cn'
+            '  -cat) printf "%s\x5cn" "$LEOS_TEST_ANACONDA_PROFILE" ;;\x5cn'
+            '  *) exit 2 ;;\x5cnesac\x5cn',
             encoding="utf-8",
         )
         xorriso.chmod(0o755)
@@ -83,12 +83,12 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         self.env["LEOS_TEST_ISO_CONTENTS"] = VALID_ISO_CONTENTS
         self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS
         self.env["LEOS_TEST_ANACONDA_PROFILE"] = (
-            "[Profile]\\n"
-            "profile_id = fedora-server\\n"
-            "base_profile = fedora\\n"
-            "[Profile Detection]\\n"
-            "os_id = fedora\\n"
-            "variant_id = server\\n"
+            "[Profile]\x5cn"
+            "profile_id = fedora-server\x5cn"
+            "base_profile = fedora\x5cn"
+            "[Profile Detection]\x5cn"
+            "os_id = fedora\x5cn"
+            "variant_id = server\x5cn"
         )
 
     def run_validator(self):
@@ -136,12 +136,12 @@ class InstallerIsoValidatorTests(unittest.TestCase):
 
     def test_rejects_installer_without_fedora_server_account_profile(self):
         self.env["LEOS_TEST_ANACONDA_PROFILE"] = (
-            "[Profile]\\n"
-            "profile_id = fedora-kinoite\\n"
-            "base_profile = fedora-kde\\n"
-            "[Profile Detection]\\n"
-            "os_id = fedora\\n"
-            "variant_id = kinoite\\n"
+            "[Profile]\x5cn"
+            "profile_id = fedora-kinoite\x5cn"
+            "base_profile = fedora-kde\x5cn"
+            "[Profile Detection]\x5cn"
+            "os_id = fedora\x5cn"
+            "variant_id = kinoite\x5cn"
         )
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
