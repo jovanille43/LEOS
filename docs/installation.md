@@ -14,6 +14,8 @@ La première **ISO installateur LEOS standard** a été générée avec succès 
 
 Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
 
+**Profil de l'installateur :** l'ISO est générée avec le profil Anaconda Fedora Server afin de conserver l'écran de création du compte pendant l'installation. Ce choix concerne uniquement l'environnement temporaire de l'installateur ; la charge utile installée reste l'image conteneur LEOS (base Bazzite KDE). Le libellé Fedora de l'installateur ne signifie donc pas que Fedora Server sera installé.
+
 ## Matériel et choix de l'image
 
 LEOS vise les PC modernes x86_64 démarrant en UEFI. Le système conserve un seul ensemble de fonctions Desktop et Gaming ; les variantes ci-dessous ne changent que la base et les pilotes graphiques.
@@ -49,8 +51,9 @@ La première étape est décrite dans le [guide de validation en machine virtuel
 2. Vérifier l'ISO avec `sha256sum --check LEOS-standard-latest.iso.sha256`, depuis le dossier contenant les deux fichiers.
 3. Créer une machine virtuelle UEFI avec un disque virtuel dédié ; ne jamais connecter un disque physique de l'hôte.
 4. Démarrer sur l'ISO, vérifier l'environnement proposé, puis installer uniquement sur le disque virtuel de la VM.
-5. Vérifier que l'installateur Anaconda WebUI s'ouvre, que la connexion réseau virtuelle est détectée, puis installer uniquement sur le disque virtuel. Effectuer ensuite les contrôles KDE, réseau, audio et transitions Desktop/Gaming.
-6. Consigner les anomalies et conserver l'ISO ainsi que le fichier SHA-256 utilisés.
+5. Vérifier que l'installateur Anaconda WebUI s'ouvre, que la connexion réseau virtuelle est détectée et que l'écran **Créer un compte** est présent. Créer un compte utilisateur avec droits administrateur et mot de passe. Si cet écran est absent, arrêter l'installation et conserver une capture : ne pas poursuivre jusqu'au premier démarrage sans compte.
+6. Installer uniquement sur le disque virtuel, puis effectuer les contrôles KDE, réseau, audio et transitions Desktop/Gaming.
+7. Consigner les anomalies et conserver l'ISO ainsi que le fichier SHA-256 utilisés.
 
 ## Validation sur matériel physique
 
