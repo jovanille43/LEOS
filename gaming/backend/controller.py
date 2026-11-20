@@ -86,6 +86,13 @@ class GamingController(QObject):
         self._launcher_refresh_timer.setInterval(15000)
         self._launcher_refresh_timer.timeout.connect(self.refreshLauncherStatuses)
         self._launcher_refresh_timer.start()
+        # Re-scan bounded user-selected libraries periodically so removable
+        # drives and games installed by the first-session bootstrap appear
+        # without requiring a manual refresh.
+        self._library_refresh_timer = QTimer(self)
+        self._library_refresh_timer.setInterval(45000)
+        self._library_refresh_timer.timeout.connect(self.refreshLibrary)
+        self._library_refresh_timer.start()
         self.monitor = SystemMonitor()
         self._power_profiles = PowerProfileState(
             False, "", (), "Détection des profils d'énergie en cours…"
@@ -203,6 +210,8 @@ class GamingController(QObject):
         if statuses != self._launcher_statuses:
             self._launcher_statuses = statuses
             self.launcherStatusChanged.emit()
+            # An emulator has appeared or disappeared; refresh its game entries.
+            self.library.refresh()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
@@ -441,6 +450,7 @@ class GamingController(QObject):
         self.monitor.stop()
         self._notification_refresh_timer.stop()
         self._launcher_refresh_timer.stop()
+        self._library_refresh_timer.stop()
         self._power_profile_refresh_timer.stop()
         self._gamepad_poll_timer.stop()
         self._gamepad_refresh_timer.stop()
