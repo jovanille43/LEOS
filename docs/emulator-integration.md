@@ -7,7 +7,7 @@ Faire des émulateurs une fonction de première classe de LEOS : préparer autom
 ## État vérifié de départ
 
 - La bibliothèque LEOS importe les manifestes Steam, Heroic, Lutris et les playlists RetroArch locales `.lpl`.
-- Elle ne parcourt pas les dossiers de ROM.
+- Elle ne réalise aucun scan global de ROM : seuls les dossiers explicitement sélectionnés par l'utilisateur sont parcourus.
 - Au premier démarrage d'une session KDE, LEOS lance en tâche de fond un bootstrap Flatpak à usage utilisateur ; il installe Heroic et les six émulateurs listés ci-dessous si Internet et Flathub sont disponibles.
 - Le bootstrap enregistre un marqueur uniquement lorsque les sept applications sont vérifiées comme installées. En cas d'échec, il réessaie à la prochaine connexion ; après succès, il respecte les désinstallations ultérieures et ne réinstalle pas les applications supprimées par l'utilisateur.
 - Steam et Lutris sont fournis par l'image Bazzite de base ; LEOS n'en installe pas une seconde copie.
@@ -33,7 +33,7 @@ Heroic et les six émulateurs sont installés automatiquement dans le profil de 
 ### V2-A — Catalogue et installation automatique
 
 - [x] Ajouter les six fiches dans la catégorie Émulation de la boutique.
-- [x] Utiliser les identifiants Flathub vérifiés.
+- [x] Utiliser les identifiants d'applications Flathub du catalogue et distinguer les paquets vérifiés des paquets communautaires.
 - [x] Indiquer les limites des paquets communautaires.
 - [x] Préciser que jeux, BIOS, firmwares et cœurs ne sont pas fournis.
 - [x] Ajouter un bootstrap utilisateur automatique, avec contrôle de Flathub, vérification après installation, reprise après échec et respect des désinstallations ultérieures.
@@ -42,7 +42,7 @@ Heroic et les six émulateurs sont installés automatiquement dans le profil de 
 ### V2-B — Détection des émulateurs installés
 
 - [x] Détecter les déploiements Flatpak utilisateur et système via les dossiers d'applications effectivement déployés.
-- [x] Détecter les exécutables natifs connus pour les six émulateurs de la sélection.
+- [x] Détecter les exécutables natifs connus pour les six émulateurs de la sélection et le lanceur Heroic.
 - [x] Afficher dans le panneau rapide Gaming l'état « disponible » ou « non détecté », avec le type d'installation lorsqu'elle est trouvée.
 - [x] Garder la détection strictement en lecture seule : aucun scan ROM, aucune installation et aucun lancement pendant la détection.
 - [ ] Distinguer la configuration d'un émulateur (BIOS/firmware/cœurs) de sa seule présence.
@@ -60,7 +60,7 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 - [x] Ajouter les imports de fichiers pour Dolphin (GameCube/Wii), PCSX2 (PS2), PPSSPP (PSP) et melonDS (Nintendo DS), avec filtres d'extensions dédiés et lancement melonDS en plein écran.
 - [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
-- [ ] Ajouter les parcours d'import et de lancement pour melonDS, RPCS3, les cœurs RetroArch et d'autres plateformes ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
+- [ ] Ajouter les parcours d'import et de lancement pour RPCS3 et les cœurs RetroArch ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
 - [ ] Ajouter la gestion UI de retrait des dossiers mémorisés et valider les montages externes.
 
 Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les éditions restent séparées ; les doublons potentiels ne sont ni fusionnés ni supprimés automatiquement.
