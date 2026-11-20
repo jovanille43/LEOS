@@ -6,13 +6,13 @@ Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progres
 
 - `applications/leos-mode-selector.desktop` : entrée de menu pour ouvrir le sélecteur Desktop/Gaming.
 - `autostart/leos-session.desktop` : affiche le sélecteur de modes à chaque ouverture de session KDE. Le dernier mode utilisé y est rappelé ; le choix reste explicite.
-- `files/config/desktop-defaults.json` (installé sous `/usr/share/leos/config/desktop-defaults.json`) : profil déclaratif LEOS Original (palette sombre cyan/magenta, dock inférieur, applications épinglées indicatives et widgets facultatifs).
+- `files/config/desktop-defaults.json` (installé sous `/usr/share/leos/config/desktop-defaults.json`) : profil déclaratif LEOS Original (palette sombre, accents A/B librement choisis, dock inférieur, applications épinglées indicatives et widgets facultatifs).
 
 ## Direction visuelle Desktop
 
 - Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
 - Fond d'écran 4K officiel disponible dans `branding/wallpapers/desktop-leos.svg`. Au premier choix de Desktop, le parcours LEOS peut l'appliquer avec le profil couleur, le Plasma Style, le thème d'icônes et le dock après consentement explicite et sauvegarde de la disposition KDE.
-- Fond sombre LEOS, accents cyan et magenta, surfaces sobres et contrastes lisibles.
+- Fond sombre LEOS, deux accents A/B librement choisis, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
@@ -36,6 +36,11 @@ Le packaging installe les ressources et outils LEOS sous `/usr/share/leos/`. Le 
 
 
 ## Moteur de thèmes LEOS
+
+Deux couleurs A/B indépendantes définissent le dégradé partagé des interfaces LEOS. Les valeurs cyan/magenta historiques ne sont que des couleurs de prévisualisation héritées ; le premier démarrage exige un choix explicite des deux accents. Les points A et B restent exactement ceux choisis, même lorsqu’ils sont identiques ou proches. Les rôles de texte sont adaptés pour préserver la lisibilité.
+
+Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos et les fonds utilisent le même moteur. Les variantes sont stockées dans le cache utilisateur ; les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
+
 
 Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
 Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et

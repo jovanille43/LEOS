@@ -350,10 +350,9 @@ def build_themed_branding_assets(
     matrix = build_color_matrix(first, second)
     with lock_path.open("a", encoding="utf-8") as lock:
         os.chmod(lock_path, 0o600)
-        try:
-            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return cached_themed_branding_asset_urls(first, second, root)
+        # Wait for another LEOS process generating this same pair. Returning
+        # source assets here could otherwise race first-run wallpaper setup.
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         try:
             assets: dict[str, str] = {}
             logo_paths: dict[str, Path] = {}
