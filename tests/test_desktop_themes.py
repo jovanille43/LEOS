@@ -87,18 +87,20 @@ class DesktopThemeTests(unittest.TestCase):
         self.assertNotIn("#121720", qml)
         self.assertNotIn("#293342", qml)
 
-    def test_theme_selector_refreshes_when_shared_settings_change(self):
+    def test_control_center_exposes_free_a_b_color_editors(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn("function onSettingsChanged()", qml)
-        self.assertIn('const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]', qml)
-        self.assertIn("themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))", qml)
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        self.assertIn("id: themeColorADialog", qml)
+        self.assertIn("id: themeColorBDialog", qml)
+        self.assertIn("controlCenter.setThemeColors(", qml)
+        self.assertIn("def setThemeColors(self, color_a: str, color_b: str)", controller)
+        self.assertNotIn('model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]', qml)
 
     def test_all_shared_combo_selectors_refresh_after_external_settings_changes(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
         for expression in (
-            "themeBox.currentIndex =",
             "desktopLayoutBox.currentIndex =",
             "dockPositionBox.currentIndex =",
             "dockAlignmentBox.currentIndex =",

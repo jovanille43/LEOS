@@ -10,10 +10,13 @@ ApplicationWindow {
     minimumHeight: 560
     visible: true
     title: "LEOS — Applications"
-    color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
         if (!applicationCatalog.launch(desktopId))
@@ -34,8 +37,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: "#102b3a"; opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: "#321437"; opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.13 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.themeColors.accent_secondary); opacity: 0.12 }
     }
 
     ColumnLayout {
@@ -49,7 +52,7 @@ ApplicationWindow {
                 spacing: 10
                 Image {
                     id: desktopMenuLogo
-                    source: "../../branding/desktop-logo.jpeg"
+                    source: leosTheme.desktopLogoUrl
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
@@ -110,7 +113,7 @@ ApplicationWindow {
             font.pixelSize: 16
             color: "white"
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: "#141B25"; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : "#303A49" }
+            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : "#303A49" }
         }
 
         RowLayout {
@@ -122,8 +125,8 @@ ApplicationWindow {
                 Layout.preferredWidth: 205
                 Layout.fillHeight: true
                 radius: 15
-                color: "#10151E"
-                border.color: "#263140"
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
@@ -150,7 +153,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 radius: 15
                 color: "#0E131B"
-                border.color: "#263140"
+                border.color: window.themeColors.border
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 14
