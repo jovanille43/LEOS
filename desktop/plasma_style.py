@@ -104,9 +104,12 @@ class PlasmaStyleManager:
     def tool_available(self) -> bool:
         return bool(self.apply_executable or shutil.which("plasma-apply-desktoptheme"))
 
-    def style_installed(self) -> bool:
+    def style_installed(self, style_id: str = STYLE_ID) -> bool:
+        """Check the packaged base style or a validated user-scoped variant."""
+        if not isinstance(style_id, str) or not re.fullmatch(r"[a-z][a-z0-9-]{2,63}", style_id):
+            return False
         for root in (self.user_theme_root, self.system_theme_root):
-            directory = root / STYLE_ID
+            directory = root / style_id
             metadata = directory / "metadata.json"
             if directory.is_symlink() or metadata.is_symlink() or not metadata.is_file():
                 continue
@@ -118,7 +121,7 @@ class PlasmaStyleManager:
             except json.JSONDecodeError:
                 continue
             plugin = payload.get("KPlugin", {}) if isinstance(payload, dict) else {}
-            if isinstance(plugin, dict) and plugin.get("Id") == STYLE_ID:
+            if isinstance(plugin, dict) and plugin.get("Id") == style_id:
                 return True
         return False
 
@@ -220,7 +223,7 @@ class PlasmaStyleManager:
     def _apply_managed_style(self, style_id: str) -> str:
         if not self.tool_available():
             raise FileNotFoundError("plasma-apply-desktoptheme is unavailable")
-        if not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", style_id):
+        if not re.fullmatch(r"[a-z][a-z0-9-]{2,63}", style_id):
             raise ValueError("Invalid LEOS Plasma Style identifier")
         if self.state_file.is_symlink():
             raise ValueError("Symbolic-link Plasma style state files are not accepted")
@@ -229,7 +232,7 @@ class PlasmaStyleManager:
         if current is None:
             raise RuntimeError("The active Plasma Style cannot be identified; no change was made.")
         previous = state.get("previous_style")
-        is_leos_style = current.lower() == STYLE_ID or current.lower().startswith(f"{STYLE_ID}-ab-")
+        is_leos_style = current.lower() == STYLE_ID or current.lower().startswith(f"{STYLE_ID}-")
         if not is_leos_style:
             previous = current
         elif not previous:
@@ -251,14 +254,14 @@ class PlasmaStyleManager:
         })
         return "Style Plasma LEOS personnalisé appliqué." if style_id != STYLE_ID else "Style Plasma LEOS appliqué."
 
-    def apply_style(self) -> str:
-        """Apply the packaged legacy LEOS Plasma Style."""
-        if not self.style_installed():
-            raise FileNotFoundError("The LEOS Plasma Style package is not installed")
-        return self._apply_managed_style(STYLE_ID)
+    def apply_style(self, style_id: str = STYLE_ID) -> str:
+        """Apply the packaged LEOS Plasma Style or a generated user variant."""
+        if not self.style_installed(style_id):
+            raise FileNotFoundError(f"The requested LEOS Plasma Style is not installed: {style_id}")
+        return self._apply_managed_style(style_id)
 
     def apply_custom_style(self, color_a: str, color_b: str) -> str:
-        """Generate and activate an immutable user-scoped A/B Plasma Style variant."""
+        """Compatibility helper for generating and activating a one-off A/B style."""
         first = normalize_color(color_a)
         second = normalize_color(color_b)
         if not self.style_installed():

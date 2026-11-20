@@ -73,9 +73,12 @@ class PlasmaIconThemeManager:
     def tool_available(self) -> bool:
         return self._executable() is not None
 
-    def theme_installed(self) -> bool:
+    def theme_installed(self, theme_id: str = ICON_THEME) -> bool:
+        """Check the packaged base icon theme or a validated user variant."""
+        if not isinstance(theme_id, str) or not _THEME_RE.fullmatch(theme_id):
+            return False
         for root in (self.data_home / "icons", self.system_icon_root):
-            directory = root / ICON_THEME
+            directory = root / theme_id
             metadata = directory / "index.theme"
             if directory.is_symlink() or metadata.is_symlink() or not metadata.is_file():
                 continue
@@ -176,7 +179,7 @@ class PlasmaIconThemeManager:
             raise RuntimeError("Le thème d'icônes KDE actuel ne peut pas être identifié ; aucun changement n'a été effectué.")
         state = self._read_state()
         previous = state.get("previous_theme")
-        is_leos_theme = current.lower() == ICON_THEME or current.lower().startswith(f"{ICON_THEME}-ab-")
+        is_leos_theme = current.lower() == ICON_THEME or current.lower().startswith(f"{ICON_THEME}-")
         if not is_leos_theme:
             previous = current
         elif not previous:
@@ -200,14 +203,14 @@ class PlasmaIconThemeManager:
         })
         return "Thème d'icônes LEOS personnalisé appliqué." if theme_id != ICON_THEME else "Thème d'icônes LEOS appliqué."
 
-    def apply_theme(self) -> str:
-        """Apply the packaged legacy LEOS icon theme."""
-        if not self.theme_installed():
-            raise FileNotFoundError("Le paquet du thème d'icônes LEOS n'est pas installé.")
-        return self._apply_managed_theme(ICON_THEME)
+    def apply_theme(self, theme_id: str = ICON_THEME) -> str:
+        """Apply the packaged LEOS icon theme or a generated user-scoped variant."""
+        if not self.theme_installed(theme_id):
+            raise FileNotFoundError(f"Le thème d'icônes KDE demandé n'est pas installé : {theme_id}")
+        return self._apply_managed_theme(theme_id)
 
     def apply_custom_theme(self, color_a: str, color_b: str) -> str:
-        """Generate and activate an immutable user-scoped A/B icon-theme variant."""
+        """Compatibility helper for generating and activating a one-off A/B icon theme."""
         first = normalize_color(color_a)
         second = normalize_color(color_b)
         source = self.system_icon_root / ICON_THEME
