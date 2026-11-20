@@ -351,6 +351,12 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
                 self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
 
+    def test_iso_dispatch_explains_exact_pull_request_preview_tag(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        release = (ROOT / "docs/release-process.md").read_text(encoding="utf-8")
+        self.assertIn("PR previews use pr-<number>-<os_version>", source)
+        self.assertIn("pr-<numéro>-<os_version>", release)
+        self.assertIn("Le nom court `pr-46` seul n'est pas un tag valide.", release)
     def test_iso_workflow_verifies_and_digest_pins_bluebuild_installer(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         public_key = (ROOT / "tools/trust/blue-build-cli.pub").read_text(encoding="utf-8")
