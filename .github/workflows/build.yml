@@ -21,6 +21,25 @@ on:
       - "plasma-theme/**"
       - "packaging/**"
       - "cosign.pub"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/build.yml"
+      - "recipes/**"
+      - "branding/**"
+      - "desktop/**"
+      - "gaming/**"
+      - "launcher/**"
+      - "control_center/**"
+      - "controller_center/**"
+      - "shop/**"
+      - "leos_core/**"
+      - "files/**"
+      - "icons/**"
+      - "aurorae/**"
+      - "plasma-theme/**"
+      - "packaging/**"
+      - "cosign.pub"
 
 permissions:
   contents: read
@@ -33,6 +52,7 @@ concurrency:
 
 jobs:
   preflight:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Validate LEOS before image builds
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -161,6 +181,7 @@ jobs:
           bash tools/verify-cosign-key-pair.sh "$workdir/cosign.key" cosign.pub
 
   build-amd-intel:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Build LEOS (AMD / Intel)
     needs: preflight
     runs-on: ubuntu-latest
@@ -189,6 +210,7 @@ jobs:
           skip_checkout: true
 
   build-nvidia-legacy:
+    if: github.event_name != 'pull_request'
     name: Build LEOS (NVIDIA legacy)
     needs: preflight
     runs-on: ubuntu-latest
@@ -217,6 +239,7 @@ jobs:
           skip_checkout: true
 
   build-nvidia-modern:
+    if: github.event_name != 'pull_request'
     name: Build LEOS (NVIDIA modern)
     needs: preflight
     runs-on: ubuntu-latest
