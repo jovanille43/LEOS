@@ -76,7 +76,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "usr/lib/systemd/system/webui-cockpit-ws.service",
             "usr/libexec/anaconda/webui-desktop",
             "usr/share/cockpit/anaconda-webui/index.html",
-            "usr/share/anaconda/profile.d/fedora-server.conf",
+            "etc/anaconda/profile.d/fedora-server.conf",
             "unsquashfs -cat",
             "variant_id",
             "anaconda-screen-accounts",
