@@ -941,7 +941,7 @@ ApplicationWindow {
                             contentItem: Label {
                                 text: importEmulatorFolderButton.text
                                 color: "white"
-                                font.pixelSize: 11
+                                font.pixelSize: window.fontMicro
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
                             }
@@ -1590,14 +1590,14 @@ ApplicationWindow {
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
-                font.pixelSize: 10
+                font.pixelSize: window.fontMicro
             }
             Label {
                 text: "Les émulateurs correspondants doivent être installés depuis la boutique LEOS. Les BIOS et jeux ne sont pas fournis."
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
-                font.pixelSize: 10
+                font.pixelSize: window.fontMicro
             }
             Button {
                 text: "CHOISIR LE DOSSIER"
@@ -1644,7 +1644,7 @@ ApplicationWindow {
             Label {
                 text: "EMPLACEMENT"
                 color: window.cyan
-                font.pixelSize: 10
+                font.pixelSize: window.fontMicro
                 font.letterSpacing: 2
             }
             Label {
@@ -1678,7 +1678,7 @@ ApplicationWindow {
                 Label {
                     text: "A : ouvrir  ·  ← : parent  ·  Menu : choisir"
                     color: window.muted
-                    font.pixelSize: 10
+                    font.pixelSize: window.fontMicro
                 }
             }
             Rectangle {
