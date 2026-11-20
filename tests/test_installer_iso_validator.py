@@ -32,6 +32,16 @@ images/install.img
 VALID_RUNTIME_CONTENTS = """squashfs-root/usr/lib/systemd/system/webui-cockpit-ws.service
 squashfs-root/usr/libexec/anaconda/webui-desktop
 squashfs-root/usr/share/cockpit/anaconda-webui/index.html
+squashfs-root/usr/share/anaconda/profile.d/fedora-server.conf
+"""
+
+VALID_FEDORA_SERVER_PROFILE = """[Profile]
+profile_id = fedora-server
+base_profile = fedora
+
+[Profile Detection]
+os_id = fedora
+variant_id = server
 """
 
 
@@ -67,7 +77,10 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         )
         unsquashfs = fake_bin / "unsquashfs"
         unsquashfs.write_text(
-            '#!/bin/sh\nprintf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS"\n',
+            '#!/bin/sh\\ncase "$1" in\\n'
+            '  -ll) printf "%s\\n" "$LEOS_TEST_RUNTIME_CONTENTS" ;;\\n'
+            '  -cat) printf "%s\\n" "$LEOS_TEST_SERVER_PROFILE" ;;\\n'
+            '  *) exit 2 ;;\\nesac\\n',
             encoding="utf-8",
         )
         xorriso.chmod(0o755)
@@ -79,6 +92,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         self.env["LEOS_TEST_EL_TORITO_OUTPUT"] = VALID_EL_TORITO
         self.env["LEOS_TEST_ISO_CONTENTS"] = VALID_ISO_CONTENTS
         self.env["LEOS_TEST_RUNTIME_CONTENTS"] = VALID_RUNTIME_CONTENTS
+        self.env["LEOS_TEST_SERVER_PROFILE"] = VALID_FEDORA_SERVER_PROFILE
 
     def run_validator(self):
         return subprocess.run(
@@ -122,6 +136,23 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("anaconda-webui/index.html", result.stderr)
+
+    def test_rejects_anaconda_profile_that_hides_account_creation(self):
+        self.env["LEOS_TEST_SERVER_PROFILE"] = (
+            VALID_FEDORA_SERVER_PROFILE
+            + "\\n[User Interface]\\nhidden_webui_pages =\\n    anaconda-screen-accounts\\n"
+        )
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("hides account creation", result.stderr)
+
+    def test_rejects_anaconda_profile_that_is_not_server(self):
+        self.env["LEOS_TEST_SERVER_PROFILE"] = VALID_FEDORA_SERVER_PROFILE.replace(
+            "variant_id = server", "variant_id = kinoite"
+        )
+        result = self.run_validator()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Fedora Server Anaconda profile", result.stderr)
 
     def test_rejects_checksum_mismatch(self):
         self.iso.write_bytes(b"corrupted ISO fixture bytes")
