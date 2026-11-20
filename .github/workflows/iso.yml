@@ -16,16 +16,6 @@ on:
         required: true
         default: latest
         type: string
-  pull_request:
-    paths:
-      - ".github/workflows/iso.yml"
-      - "tools/validate-installer-iso.sh"
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/iso.yml"
-      - "tools/validate-installer-iso.sh"
   workflow_run:
     workflows: ["Build LEOS"]
     types: [completed]
