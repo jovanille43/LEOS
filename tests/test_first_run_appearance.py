@@ -42,8 +42,8 @@ class FakeColors:
     def current_scheme(self):
         return "BreezeDark"
 
-    def apply_theme(self, theme):
-        self.applied.append(theme)
+    def apply_custom_theme(self, color_a, color_b, appearance="dark"):
+        self.applied.append((color_a, color_b, appearance))
         return "applied"
 
     def can_restore(self):
@@ -138,6 +138,11 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.settings = SettingsStore(Path(self.temp.name) / "settings.json")
+        self.settings.set_many({
+            "theme_color_a": "#FF8800",
+            "theme_color_b": "#0055CC",
+            "theme_colors_configured": True,
+        })
         self.backups = FakeBackups()
         self.colors = FakeColors()
         self.style = FakeStyle()
@@ -147,6 +152,11 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.wallpaper = Path(self.temp.name) / "desktop-leos.svg"
         self.wallpaper.write_text("<svg/>", encoding="utf-8")
         self.scripts = []
+        self.brand_asset_calls = []
+
+        def build_assets(color_a, color_b):
+            self.brand_asset_calls.append((color_a, color_b))
+            return {"desktopWallpaperUrl": "file:///cache/desktop-custom.svg"}
 
         def execute(script, *, timeout):
             self.scripts.append((script, timeout))
@@ -163,6 +173,7 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
             wallpaper=self.wallpaper,
             command_lookup=lambda name: "/usr/bin/" + name,
             script_executor=execute,
+            branding_asset_builder=build_assets,
         )
 
     def tearDown(self):
@@ -175,11 +186,21 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         message = self.setup.apply()
         self.assertEqual(self.settings.get("desktop_appearance_setup"), APPLIED)
         self.assertEqual(self.backups.created, ["backup-1"])
-        self.assertEqual(self.colors.applied, ["leos-original"])
+        self.assertEqual(self.colors.applied, [("#FF8800", "#0055CC", "dark")])
+        self.assertEqual(self.brand_asset_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.style.applied, 1)
         self.assertEqual(self.icons.applied, 1)
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
+
+    def test_custom_pair_must_be_explicitly_configured_before_any_change(self):
+        self.settings.set("theme_colors_configured", False)
+        with self.assertRaisesRegex(RuntimeError, "deux couleurs A et B"):
+            self.setup.apply()
+        self.assertEqual(self.backups.created, [])
+        self.assertEqual(self.colors.applied, [])
+        self.assertEqual(self.brand_asset_calls, [])
+        self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
     def test_explicit_skip_is_persisted_and_apply_is_not_started(self):
         self.assertEqual(self.setup.skip(), SKIPPED)

@@ -49,6 +49,7 @@ class DesktopAppearanceSetup:
         wallpaper: Path = DESKTOP_WALLPAPER,
         command_lookup: Callable[[str], str | None] | None = None,
         script_executor: Callable[..., tuple[bool, str]] | None = None,
+        branding_asset_builder: Callable[[str, str], dict[str, str]] | None = None,
     ) -> None:
         self.settings = settings or SettingsStore()
         self.backups = backups or PlasmaBackupManager()
@@ -60,6 +61,7 @@ class DesktopAppearanceSetup:
         self.wallpaper = wallpaper
         self.command_lookup = command_lookup or shutil.which
         self.script_executor = script_executor or execute_plasma_script
+        self.branding_asset_builder = branding_asset_builder or build_themed_branding_assets
 
     @property
     def status(self) -> str:
@@ -148,7 +150,7 @@ class DesktopAppearanceSetup:
         try:
             # Build only user-scoped asset variants; official source files remain immutable.
             try:
-                assets = build_themed_branding_assets(color_a, color_b)
+                assets = self.branding_asset_builder(color_a, color_b)
             except Exception:
                 assets = source_asset_urls()
             wallpaper_uri = assets.get("desktopWallpaperUrl") or source_asset_urls()["desktopWallpaperUrl"]
