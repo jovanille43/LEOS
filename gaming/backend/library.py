@@ -155,6 +155,7 @@ class GameLibraryModel(QAbstractListModel):
         return detect_emulator_prerequisite_statuses(
             home=Path.home(),
             config_home=xdg_config_home(),
+            data_home=xdg_data_home(),
         )
 
     def _steam_roots(self) -> list[Path]:
