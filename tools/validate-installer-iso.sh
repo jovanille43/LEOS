@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fail closed if a generated LEOS installer ISO is incomplete or not UEFI bootable.
-# This is a structural check; it does not replace a real VM or hardware install test.
+# This is a structural check; it does not replace a complete VM installation test.
 
 set -euo pipefail
 
@@ -57,8 +57,7 @@ fi
 
 # UEFI El Torito entries use Platform ID 0xef (239).
 # xorriso versions differ: some report the EFI platform as numeric 0xef,
-# while current releases print the decoded platform name "UEFI" in the
-# El Torito boot-image table. Accept either explicit representation.
+# while current releases print the decoded platform name "UEFI".
 if ! grep -Eiq 'Platform Id[[:space:]]*:[[:space:]]*0xef([[:space:]]|$)|El Torito boot img[[:space:]]*:[[:space:]]*[0-9]+[[:space:]]+UEFI([[:space:]]|$)' "$tmp_dir/el-torito.txt"; then
   cat "$tmp_dir/el-torito.txt" >&2
   die "The ISO does not advertise a UEFI El Torito boot entry."
@@ -83,9 +82,7 @@ for path in "${required_paths[@]}"; do
   echo "Verified ISO content: $path"
 done
 
-
-# Inspect the SquashFS runtime embedded in the ISO. The package transaction in
-# the build log is not sufficient: the final image must contain the WebUI.
+# Inspect the Anaconda runtime embedded in the ISO, not just the build logs.
 if ! bsdtar -xOf "$iso_path" images/install.img >"$tmp_dir/install.img"; then
   die "Could not extract the Anaconda runtime image from the ISO."
 fi
@@ -108,11 +105,12 @@ for path in "${required_webui_paths[@]}"; do
   echo "Verified Anaconda WebUI runtime file: $path"
 done
 
-# The Kinoite Anaconda profile hides the account page in the Web UI.
-# Build the installer with the Fedora Server profile instead; it inherits the
-# generic Fedora profile and leaves account creation available during install.
+# The default BlueBuild Kinoite installer profile inherits Fedora KDE, whose
+# WebUI profile hides the account-creation page. The Server installer variant
+# uses Fedora's generic profile chain, where that page remains available.
 server_profile="$tmp_dir/fedora-server.conf"
 fedora_profile="$tmp_dir/fedora.conf"
+
 if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora-server.conf >"$server_profile" 2>/dev/null; then
   die "The Fedora Server Anaconda profile required for account creation is missing."
 fi
@@ -120,22 +118,17 @@ if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora.conf >
   die "The base Fedora Anaconda profile required by the Server profile is missing."
 fi
 
-grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
- "$server_profile" ||
+grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*$' "$server_profile" ||
   die "The Anaconda runtime does not contain the expected fedora-server profile."
-grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
- "$server_profile" ||
+grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*$' "$server_profile" ||
   die "The fedora-server profile does not inherit the generic Fedora profile."
-grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
- "$server_profile" ||
+grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*$' "$server_profile" ||
   die "The Anaconda Server profile does not match VARIANT_ID=server."
+
 if grep -Eq '^[[:space:]]*hidden_webui_pages[[:space:]]*=' "$server_profile" "$fedora_profile"; then
   die "The Anaconda account page may be hidden by the selected Server profile chain."
 fi
-echo "Verified Anaconda Server profile and visible account-setup configuration."
 
+echo "Verified Anaconda Server profile and visible account-setup configuration."
 echo "LEOS installer ISO structural validation passed."
-echo "Note: VM boot, Anaconda UI, installation, and hardware compatibility still require separate tests."
+echo "Note: complete installation, first boot, and hardware compatibility still require separate tests."
