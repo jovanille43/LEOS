@@ -14,8 +14,10 @@ ApplicationWindow {
     property var themeColors: controlCenter.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
@@ -216,7 +218,7 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 10
                                 color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
+                                border.color: window.selectedPage === modelData.page ? window.accentA : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: settingsNavigationButton.text
@@ -1634,7 +1636,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 112
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.cyan : window.themeColors.border)
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.accentB : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.accentA : window.themeColors.border)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1830,7 +1832,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 100
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: window.cyan
+                                border.color: window.accentA
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1992,7 +1994,7 @@ ApplicationWindow {
                                     Layout.preferredHeight: 126
                                     radius: 12
                                     color: window.themeColors.surface
-                                    border.color: modelData.isDefault === "true" ? window.cyan : window.themeColors.border
+                                    border.color: modelData.isDefault === "true" ? window.accentA : window.themeColors.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14

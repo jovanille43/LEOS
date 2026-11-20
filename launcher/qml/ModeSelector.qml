@@ -240,7 +240,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.colorA
+                    color: window.colorAText
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -267,7 +267,7 @@ ApplicationWindow {
 
                         Label {
                             text: "BIENVENUE DANS LEOS"
-                            color: window.colorA
+                            color: window.colorAText
                             font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
@@ -414,7 +414,7 @@ ApplicationWindow {
 
             Label {
                 text: modeManager.status
-                color: window.colorB
+                color: window.colorBText
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -603,7 +603,7 @@ ApplicationWindow {
                       : (window.draftColorAChosen && window.draftColorBChosen
                          ? "Tu pourras restaurer la disposition précédente depuis les sauvegardes Plasma."
                          : "Choisis une couleur A et une couleur B avant l’activation.")
-                color: window.colorA
+                color: window.colorAText
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
