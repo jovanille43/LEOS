@@ -224,6 +224,14 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.style.applied, 0)
         self.assertEqual(self.icons.applied, 0)
 
+    def test_missing_icon_theme_tool_blocks_before_backup(self):
+        self.icons.available = False
+        with self.assertRaisesRegex(FileNotFoundError, "thème d'icônes"):
+            self.setup.apply()
+        self.assertEqual(self.backups.created, [])
+        self.assertEqual(self.colors.applied, [])
+        self.assertEqual(self.style.applied, 0)
+
     def test_missing_required_command_blocks_before_backup(self):
         self.setup.command_lookup = lambda name: None
         with self.assertRaisesRegex(FileNotFoundError, "busctl"):

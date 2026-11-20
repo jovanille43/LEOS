@@ -75,7 +75,7 @@ class PlasmaIconThemeManagerTests(unittest.TestCase):
         self.assertEqual(self.commands, [])
 
     def test_icon_theme_identifier_is_not_taken_from_user_input(self):
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(ValueError):
             self.manager._apply("../outside")
         self.assertEqual(self.commands, [])
 
