@@ -41,7 +41,11 @@ class DefaultGamingAppsSetupTests(unittest.TestCase):
 printf 'flatpak %s\n' "$*" >> "$COMMAND_LOG"
 case "$1" in
   info)
-    scope="$2"
+    case "$2" in
+      --user) scope="user" ;;
+      --system) scope="system" ;;
+      *) exit 2 ;;
+    esac
     app_id="$3"
     grep -Fqx "$scope:$app_id" "$INSTALLED_FILE" 2>/dev/null
     exit $?
@@ -117,7 +121,7 @@ exit 0
     def assert_setup_succeeded(self, result):
         log_file = self.state_dir / "gaming-apps-setup.log"
         details = log_file.read_text(encoding="utf-8") if log_file.exists() else "(journal absent)"
-        self.assertEqual(result.returncode, 0, f"{result.stderr}\\n{details}")
+        self.assertEqual(result.returncode, 0, f"{result.stderr}\\n{details}\\nCommands: {self.command_lines()}")
 
     def install_ids(self):
         result = []
@@ -159,7 +163,7 @@ exit 0
             encoding="utf-8",
         )
         result = self.run_setup()
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assert_setup_succeeded(result)
         installed = set(self.install_ids())
         self.assertEqual(installed, EXPECTED_APPS - {
             "org.libretro.RetroArch", "net.pcsx2.PCSX2"
@@ -209,7 +213,7 @@ exit 0
             encoding="utf-8",
         )
         second = self.run_setup()
-        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assert_setup_succeeded(second)
         self.assertEqual(self.command_lines(), original_commands)
 
 
