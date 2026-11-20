@@ -13,6 +13,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat", workflow)
         self.assertIn("Validate ISO boot structure, checksum, and source digest", workflow)
         self.assertIn("generate-iso --variant server --web-ui", workflow)
+        self.assertIn("generate-iso --variant server --web-ui", workflow)
         self.assertIn('bash tools/validate-installer-iso.sh "$ISO_NAME" "$VERIFIED_DIGEST"', workflow)
         self.assertIn("Boot installer ISO with UEFI firmware in QEMU", workflow)
         self.assertIn("pull_request:", workflow)
@@ -75,6 +76,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "usr/lib/systemd/system/webui-cockpit-ws.service",
             "usr/libexec/anaconda/webui-desktop",
             "usr/share/cockpit/anaconda-webui/index.html",
+            "unsquashfs -cat",
+            "fedora-server.conf",
+            "variant_id",
+            "visible account-setup configuration",
         ):
             with self.subTest(expected=expected):
                 self.assertIn(expected, validator)
