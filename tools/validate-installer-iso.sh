@@ -110,6 +110,54 @@ done
 # uses Fedora's generic profile chain, where that page remains available.
 server_profile="$tmp_dir/fedora-server.conf"
 fedora_profile="$tmp_dir/fedora.conf"
+installer_os_release="$tmp_dir/os-release"
+if ! unsquashfs -cat "$tmp_dir/install.img" usr/lib/os-release >"$installer_os_release" 2>/dev/null; then
+  die "Could not read the Anaconda installer OS identity."
+fi
+
+grep -Eq '^[[:space:]]*ID=fedora[[:space:]]*
+  die "The Fedora Server Anaconda profile required for account creation is missing."
+fi
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora.conf >"$fedora_profile" 2>/dev/null; then
+  die "The base Fedora Anaconda profile required by the Server profile is missing."
+fi
+
+grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda runtime does not contain the expected fedora-server profile."
+grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*$' "$server_profile" ||
+  die "The fedora-server profile does not inherit the generic Fedora profile."
+grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda Server profile does not match VARIANT_ID=server."
+if grep -Eq '^[[:space:]]*anaconda-screen-accounts([[:space:]]|$)' "$server_profile" "$fedora_profile"; then
+  die "The Anaconda account page is hidden by the selected Server profile chain."
+fi
+echo "Verified Fedora Server installer identity, selected Anaconda profile, and visible account-setup configuration."
+echo "LEOS installer ISO structural validation passed."
+echo "Note: complete installation, first boot, and hardware compatibility still require separate tests."
+ "$installer_os_release" ||
+  die "The installer OS identity is not Fedora."
+grep -Eq '^[[:space:]]*VARIANT_ID=server[[:space:]]*
+  die "The Fedora Server Anaconda profile required for account creation is missing."
+fi
+if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora.conf >"$fedora_profile" 2>/dev/null; then
+  die "The base Fedora Anaconda profile required by the Server profile is missing."
+fi
+
+grep -Eq '^[[:space:]]*profile_id[[:space:]]*=[[:space:]]*fedora-server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda runtime does not contain the expected fedora-server profile."
+grep -Eq '^[[:space:]]*base_profile[[:space:]]*=[[:space:]]*fedora[[:space:]]*$' "$server_profile" ||
+  die "The fedora-server profile does not inherit the generic Fedora profile."
+grep -Eq '^[[:space:]]*variant_id[[:space:]]*=[[:space:]]*server[[:space:]]*$' "$server_profile" ||
+  die "The Anaconda Server profile does not match VARIANT_ID=server."
+if grep -Eq '^[[:space:]]*anaconda-screen-accounts([[:space:]]|$)' "$server_profile" "$fedora_profile"; then
+  die "The Anaconda account page is hidden by the selected Server profile chain."
+fi
+echo "Verified Anaconda Server profile and visible account-setup configuration."
+echo "LEOS installer ISO structural validation passed."
+echo "Note: complete installation, first boot, and hardware compatibility still require separate tests."
+ "$installer_os_release" ||
+  die "The installer OS identity does not select the Fedora Server Anaconda profile."
+
 if ! unsquashfs -cat "$tmp_dir/install.img" etc/anaconda/profile.d/fedora-server.conf >"$server_profile" 2>/dev/null; then
   die "The Fedora Server Anaconda profile required for account creation is missing."
 fi
