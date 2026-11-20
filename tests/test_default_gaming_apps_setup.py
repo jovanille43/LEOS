@@ -162,12 +162,12 @@ exit 0
         old_apps = EXPECTED_APPS - {"dev.eden_emu.eden"}
         self.state_dir.mkdir(parents=True)
         (self.state_dir / "gaming-apps-seeded-v1").write_text(
-            "completed\\n", encoding="utf-8"
+            "completed\n", encoding="utf-8"
         )
         # Simulate an app removed by the user after the old starter set completed.
         previously_installed = old_apps - {"net.rpcs3.RPCS3"}
         self.installed_file.write_text(
-            "".join(f"user:{app_id}\\n" for app_id in sorted(previously_installed)),
+            "".join(f"user:{app_id}\n" for app_id in sorted(previously_installed)),
             encoding="utf-8",
         )
 
