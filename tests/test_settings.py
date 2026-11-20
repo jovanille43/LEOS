@@ -44,6 +44,51 @@ class SettingsStoreTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 settings.set("desktop_appearance_setup", "automatic")
 
+    def test_custom_theme_colors_are_persisted_as_one_normalized_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            settings.set_many({
+                "theme_color_a": " #ff8800 ",
+                "theme_color_b": "#0055cc",
+                "theme_colors_configured": True,
+            })
+            reloaded = SettingsStore(path)
+            self.assertEqual(
+                reloaded.snapshot(("theme_color_a", "theme_color_b", "theme_colors_configured")),
+                ("#FF8800", "#0055CC", True),
+            )
+
+    def test_identical_custom_theme_colors_are_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = SettingsStore(Path(directory) / "settings.json")
+            settings.set_many({
+                "theme_color_a": "#333333",
+                "theme_color_b": "#333333",
+                "theme_colors_configured": True,
+            })
+            self.assertEqual(
+                settings.snapshot(("theme_color_a", "theme_color_b")),
+                ("#333333", "#333333"),
+            )
+
+    def test_invalid_custom_pair_is_rejected_without_partial_write(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            before = settings.snapshot(("theme_color_a", "theme_color_b", "theme_colors_configured"))
+            with self.assertRaises(ValueError):
+                settings.set_many({
+                    "theme_color_a": "#FF8800",
+                    "theme_color_b": "cyan",
+                    "theme_colors_configured": True,
+                })
+            self.assertEqual(
+                settings.snapshot(("theme_color_a", "theme_color_b", "theme_colors_configured")),
+                before,
+            )
+            self.assertFalse(path.exists())
+
     def test_values_persist_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
