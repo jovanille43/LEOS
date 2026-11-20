@@ -143,9 +143,9 @@ def _rpcs3_status(home: Path, config_home: Path) -> str:
     for dev_flash in candidates:
         if not _is_directory(dev_flash):
             continue
-        if _is_directory(dev_flash / "vsh") or _is_directory(dev_flash / "sys"):
+        if _is_regular_file(dev_flash / "sys" / "external" / "liblv2.sprx"):
             return (
-                "RPCS3 · structure du firmware PS3 détectée — lancement de test "
+                "RPCS3 · module firmware PS3 détecté — lancement de test "
                 "encore nécessaire"
             )
     return "RPCS3 · firmware PS3 à installer depuis le menu Fichier de RPCS3"
