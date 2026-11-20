@@ -58,6 +58,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("branding/sddm", recipe)
         self.assertIn("plasma-theme/look-and-feel", recipe)
         self.assertIn("prepare-leos-plymouth.sh", recipe)
+        self.assertIn("source: ghcr.io/blue-build/modules/script:v1", recipe)
         self.assertIn("type: initramfs", recipe)
         self.assertLess(recipe.index("type: initramfs"), recipe.index("type: signing"))
         self.assertIn("Current=leos", (ROOT / "files/sddm/90-leos-theme.conf").read_text(encoding="utf-8"))
@@ -70,6 +71,25 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("self.visualChrome.restore_previous", controller)
         self.assertIn("écran de chargement", qml)
         self.assertIn("curseur", qml)
+        self.assertIn("barres de titre", qml)
+        self.assertIn("lockscreen_wallpaper_uri", controller)
+        self.assertIn("kscreenlockerrc", controller + (ROOT / "desktop/visual_chrome.py").read_text(encoding="utf-8"))
+
+    def test_aurorae_window_decorations_are_generated_with_the_same_ab_pair(self):
+        metadata = (ROOT / "aurorae/leos/metadata.desktop").read_text(encoding="utf-8")
+        self.assertNotIn("cyan", metadata.lower())
+        self.assertNotIn("magenta", metadata.lower())
+        resources = (ROOT / "desktop/themed_plasma_resources.py").read_text(encoding="utf-8")
+        chrome = (ROOT / "desktop/visual_chrome.py").read_text(encoding="utf-8")
+        self.assertIn("AURORAE_SOURCE", resources)
+        self.assertIn("auroraeThemeId", resources)
+        self.assertIn("aurorae_theme_installed", chrome)
+        self.assertIn("org.kde.kdecoration2", chrome)
+        self.assertIn('return "org.kde.kwin.aurorae"', chrome)
+        self.assertIn("__aurorae__svg__", chrome)
+        self.assertIn("lockscreen_image", chrome)
+        self.assertIn("PreviewImage", chrome)
+        self.assertIn('"Greeter", "Wallpaper", "org.kde.image", "General"', chrome)
 
     def test_first_run_profile_activates_and_restores_splash_and_cursor_preferences(self):
         source = (ROOT / "desktop/first_run_appearance.py").read_text(encoding="utf-8")

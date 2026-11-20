@@ -106,6 +106,8 @@ class DesktopAppearanceSetup:
             raise FileNotFoundError("Les outils KDE de configuration de l'écran de chargement et du curseur sont indisponibles.")
         if not self.visual_chrome.splash_theme_installed():
             raise FileNotFoundError("L'écran de chargement Plasma LEOS est absent de l'image.")
+        if not self.visual_chrome.aurorae_theme_installed("leos"):
+            raise FileNotFoundError("Le décor de fenêtres Aurorae LEOS est absent de l'image.")
 
         if not self.favourites.load():
             raise RuntimeError("Les favoris du dock LEOS sont invalides ou illisibles ; aucune modification ne sera effectuée.")
@@ -133,7 +135,7 @@ class DesktopAppearanceSetup:
             try:
                 self.visual_chrome.restore_previous()
             except (OSError, RuntimeError, ValueError, FileNotFoundError) as error:
-                warnings.append(f"l'écran de chargement ou le curseur précédent n'a pas pu être restauré ({error})")
+                warnings.append(f"l'écran de chargement, le curseur ou le décor de fenêtres précédent n'a pas pu être restauré ({error})")
         if self.icons.can_restore():
             try:
                 self.icons.restore_previous_theme()
@@ -177,15 +179,18 @@ class DesktopAppearanceSetup:
             plasma_resources = self.plasma_resource_builder(color_a, color_b)
             plasma_style_id = plasma_resources.get("plasmaStyleId")
             icon_theme_id = plasma_resources.get("iconThemeId")
-            if not plasma_style_id or not icon_theme_id:
-                raise RuntimeError("Les variantes Plasma et icônes personnalisées ne sont pas disponibles.")
+            aurorae_theme_id = plasma_resources.get("auroraeThemeId")
+            if not plasma_style_id or not icon_theme_id or not aurorae_theme_id:
+                raise RuntimeError("Les variantes Plasma, icônes et décor de fenêtres personnalisées ne sont pas disponibles.")
 
             # Preserve the user's panel and wallpaper configuration before changing Plasma.
             backup_id = self.backups.create_backup()
             self.colors.apply_custom_theme(color_a, color_b, resolved_appearance)
             self.style.apply_style(plasma_style_id)
             self.icons.apply_theme(icon_theme_id)
-            self.visual_chrome.apply("org.leos.desktop", icon_theme_id)
+            self.visual_chrome.apply(
+                "org.leos.desktop", icon_theme_id, aurorae_theme_id, wallpaper_uri
+            )
 
             script = build_panel_management_script(
                 layout,

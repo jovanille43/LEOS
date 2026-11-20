@@ -95,8 +95,11 @@ class FakeVisualChrome:
     def splash_theme_installed(self, theme_id="org.leos.desktop"):
         return theme_id == "org.leos.desktop"
 
-    def apply(self, splash_theme_id, cursor_theme_id):
-        self.applied.append((splash_theme_id, cursor_theme_id))
+    def aurorae_theme_installed(self, theme_id):
+        return theme_id == "leos"
+
+    def apply(self, splash_theme_id, cursor_theme_id, aurorae_theme_id, lockscreen_wallpaper_uri):
+        self.applied.append((splash_theme_id, cursor_theme_id, aurorae_theme_id, lockscreen_wallpaper_uri))
         return "applied"
 
     def can_restore(self):
@@ -184,7 +187,11 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
 
         def build_plasma_resources(color_a, color_b):
             self.plasma_resource_calls.append((color_a, color_b))
-            return {"plasmaStyleId": "leos-custom-test", "iconThemeId": "leos-custom-test"}
+            return {
+                "plasmaStyleId": "leos-custom-test",
+                "iconThemeId": "leos-custom-test",
+                "auroraeThemeId": "leos-custom-test",
+            }
 
         def build_assets(color_a, color_b):
             self.brand_asset_calls.append((color_a, color_b))
@@ -226,7 +233,10 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.style.applied_ids, ["leos-custom-test"])
         self.assertEqual(self.icons.applied, 1)
         self.assertEqual(self.icons.applied_ids, ["leos-custom-test"])
-        self.assertEqual(self.visual_chrome.applied, [("org.leos.desktop", "leos-custom-test")])
+        self.assertEqual(
+            self.visual_chrome.applied,
+            [("org.leos.desktop", "leos-custom-test", "leos-custom-test", "file:///cache/desktop-custom.svg")],
+        )
         self.assertEqual(self.plasma_resource_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())

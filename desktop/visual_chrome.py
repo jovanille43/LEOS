@@ -1,13 +1,15 @@
-"""Safely activate and restore LEOS Plasma splash and cursor themes."""
+"""Safely activate and restore LEOS Plasma splash, lock screen, cursor, and window decorations."""
 
 from __future__ import annotations
 
+import configparser
 import json
 import os
 import re
 import shutil
 import subprocess
 import tempfile
+from urllib.parse import unquote, urlparse
 from pathlib import Path
 from typing import Any, Callable
 
@@ -15,13 +17,25 @@ from leos_core.paths import config_home as xdg_config_home
 from leos_core.paths import data_home as xdg_data_home
 from leos_core.paths import state_home as xdg_state_home
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 3
 MANAGED_BY = "LEOS Plasma visual chrome"
 MAX_STATE_BYTES = 32 * 1024
 _THEME_ID = re.compile(r"^[a-z][a-z0-9.-]{2,80}$")
 _SETTINGS = {
-    "splash": ("ksplashrc", "KSplash", "Theme"),
-    "cursor": ("kcminputrc", "Mouse", "cursorTheme"),
+    "splash": ("ksplashrc", ("KSplash",), "Theme"),
+    "cursor": ("kcminputrc", ("Mouse",), "cursorTheme"),
+    "decoration_library": ("kwinrc", ("org.kde.kdecoration2",), "library"),
+    "decoration_theme": ("kwinrc", ("org.kde.kdecoration2",), "theme"),
+    "lockscreen_image": (
+        "kscreenlockerrc",
+        ("Greeter", "Wallpaper", "org.kde.image", "General"),
+        "Image",
+    ),
+    "lockscreen_preview": (
+        "kscreenlockerrc",
+        ("Greeter", "Wallpaper", "org.kde.image", "General"),
+        "PreviewImage",
+    ),
 }
 
 
@@ -56,7 +70,7 @@ def _read_state(path: Path) -> dict[str, Any]:
 
 
 class PlasmaVisualChromeManager:
-    """Apply splash/cursor settings only after a reversible user confirmation."""
+    """Apply splash, lock-screen wallpaper, cursor, and Aurorae settings after a reversible confirmation."""
 
     def __init__(
         self,
@@ -66,6 +80,7 @@ class PlasmaVisualChromeManager:
         state_home: Path | None = None,
         icon_theme_root: Path = Path("/usr/share/icons"),
         look_and_feel_root: Path = Path("/usr/share/plasma/look-and-feel"),
+        aurorae_theme_root: Path = Path("/usr/share/aurorae/themes"),
         command_lookup: Callable[[str], str | None] | None = None,
         runner: Callable[..., Any] | None = None,
     ) -> None:
@@ -74,6 +89,7 @@ class PlasmaVisualChromeManager:
         self.state_home = Path(state_home) if state_home is not None else Path(xdg_state_home())
         self.icon_theme_root = Path(icon_theme_root)
         self.look_and_feel_root = Path(look_and_feel_root)
+        self.aurorae_theme_root = Path(aurorae_theme_root)
         self.state_file = self.state_home / "leos" / "visual-chrome.json"
         self.command_lookup = command_lookup or shutil.which
         self.runner = runner or subprocess.run
@@ -102,6 +118,36 @@ class PlasmaVisualChromeManager:
             and plugin.get("Id") == theme_id
         )
 
+    def aurorae_theme_installed(self, theme_id: str) -> bool:
+        if not isinstance(theme_id, str) or not _THEME_ID.fullmatch(theme_id):
+            return False
+        for root in (self.data_home / "aurorae" / "themes", self.aurorae_theme_root):
+            directory = root / theme_id
+            metadata = directory / "metadata.desktop"
+            config = directory / f"{theme_id}rc"
+            if (
+                directory.is_symlink()
+                or metadata.is_symlink()
+                or config.is_symlink()
+                or not metadata.is_file()
+                or not config.is_file()
+                or metadata.stat().st_size > 128 * 1024
+            ):
+                continue
+            parser = configparser.ConfigParser(interpolation=None, strict=False)
+            parser.optionxform = str
+            try:
+                parser.read_string(metadata.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, configparser.Error):
+                continue
+            section = "Desktop Entry" if parser.has_section("Desktop Entry") else "DesktopEntry"
+            if (
+                parser.has_section(section)
+                and parser.get(section, "X-KDE-PluginInfo-Name", fallback="") == theme_id
+            ):
+                return True
+        return False
+
     def cursor_theme_installed(self, theme_id: str) -> bool:
         if not isinstance(theme_id, str) or not _THEME_ID.fullmatch(theme_id):
             return False
@@ -127,16 +173,25 @@ class PlasmaVisualChromeManager:
             raise RuntimeError(detail or "KDE n'a pas accepté le réglage visuel LEOS.")
         return result
 
+    @staticmethod
+    def _group_arguments(groups: tuple[str, ...]) -> list[str]:
+        if not groups or any(not isinstance(group, str) or not group for group in groups):
+            raise ValueError("Chemin de groupe KDE invalide.")
+        arguments: list[str] = []
+        for group in groups:
+            arguments.extend(("--group", group))
+        return arguments
+
     def _read_setting(self, name: str) -> str | None:
         executable = self.command_lookup("kreadconfig6")
         if not executable:
             raise FileNotFoundError("kreadconfig6 est indisponible.")
-        filename, group, key = _SETTINGS[name]
+        filename, groups, key = _SETTINGS[name]
         path = self.config_home / filename
         if path.is_symlink():
             raise ValueError(f"Le fichier de configuration KDE {filename} est un lien symbolique.")
         result = self._run([
-            executable, "--file", str(path), "--group", group,
+            executable, "--file", str(path), *self._group_arguments(groups),
             "--key", key, "--default", "",
         ])
         value = (getattr(result, "stdout", "") or "").strip()
@@ -146,13 +201,31 @@ class PlasmaVisualChromeManager:
         executable = self.command_lookup("kwriteconfig6")
         if not executable:
             raise FileNotFoundError("kwriteconfig6 est indisponible.")
-        filename, group, key = _SETTINGS[name]
+        filename, groups, key = _SETTINGS[name]
         path = self.config_home / filename
         if path.is_symlink():
             raise ValueError(f"Le fichier de configuration KDE {filename} est un lien symbolique.")
-        command = [executable, "--file", str(path), "--group", group, "--key", key]
+        command = [
+            executable, "--file", str(path),
+            *self._group_arguments(groups), "--key", key,
+        ]
         command.append("--delete" if value is None else value)
         self._run(command)
+
+    @staticmethod
+    def _local_wallpaper_path(wallpaper_uri: str) -> str:
+        parsed = urlparse(wallpaper_uri)
+        if parsed.scheme != "file" or parsed.netloc not in ("", "localhost"):
+            raise ValueError("Le fond d'écran du verrouillage doit être un fichier local LEOS.")
+        path = Path(unquote(parsed.path))
+        if not path.is_absolute() or path.is_symlink() or not path.is_file():
+            raise FileNotFoundError("Le fond A/B de verrouillage est absent ou non sûr.")
+        current = path.parent
+        while current != current.parent:
+            if current.is_symlink():
+                raise ValueError("Le chemin du fond A/B de verrouillage contient un lien symbolique.")
+            current = current.parent
+        return str(path)
 
     def _save_state(self, previous: dict[str, str | None], last_applied: dict[str, str | None]) -> None:
         if self.state_file.is_symlink() or self.state_file.parent.is_symlink():
@@ -187,18 +260,55 @@ class PlasmaVisualChromeManager:
     def can_restore(self) -> bool:
         return bool(_read_state(self.state_file))
 
-    def apply(self, splash_theme_id: str, cursor_theme_id: str) -> str:
+    def _aurorae_library_id(self) -> str:
+        """Use KWin's stable Aurorae plugin identifier across Plasma 6 releases."""
+        return "org.kde.kwin.aurorae"
+
+    def _reconfigure_kwin(self) -> bool:
+        executable = self.command_lookup("qdbus6") or self.command_lookup("qdbus")
+        if not executable:
+            return False
+        try:
+            result = self.runner(
+                [executable, "org.kde.KWin", "/KWin", "reconfigure"],
+                shell=False,
+                capture_output=True,
+                text=True,
+                timeout=8,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+        return result.returncode == 0
+
+    def apply(
+        self,
+        splash_theme_id: str,
+        cursor_theme_id: str,
+        aurorae_theme_id: str,
+        lockscreen_wallpaper_uri: str,
+    ) -> str:
         if not self.tool_available():
             raise FileNotFoundError("Les outils kreadconfig6/kwriteconfig6 sont indisponibles.")
         if not self.splash_theme_installed(splash_theme_id):
             raise FileNotFoundError("L'écran de chargement Plasma LEOS n'est pas installé.")
         if not self.cursor_theme_installed(cursor_theme_id):
             raise FileNotFoundError("Le thème de curseur LEOS personnalisé n'est pas installé.")
+        if not self.aurorae_theme_installed(aurorae_theme_id):
+            raise FileNotFoundError("Le décor de fenêtres Aurorae LEOS personnalisé n'est pas installé.")
 
         current = {key: self._read_setting(key) for key in _SETTINGS}
         existing = _read_state(self.state_file)
         previous = existing["previous"] if existing and current == existing["last_applied"] else current
-        target = {"splash": splash_theme_id, "cursor": cursor_theme_id}
+        lockscreen_wallpaper = self._local_wallpaper_path(lockscreen_wallpaper_uri)
+        target = {
+            "splash": splash_theme_id,
+            "cursor": cursor_theme_id,
+            "decoration_library": self._aurorae_library_id(),
+            "decoration_theme": f"__aurorae__svg__{aurorae_theme_id}",
+            "lockscreen_image": lockscreen_wallpaper,
+            "lockscreen_preview": lockscreen_wallpaper,
+        }
         self._save_state(previous, target)
 
         try:
@@ -206,7 +316,7 @@ class PlasmaVisualChromeManager:
                 self._write_setting(key, value)
             verified = {key: self._read_setting(key) for key in _SETTINGS}
             if verified != target:
-                raise RuntimeError("KDE n'a pas confirmé l'activation du splash et du curseur LEOS.")
+                raise RuntimeError("KDE n'a pas confirmé l'activation du splash, du fond de verrouillage, du curseur et du décor de fenêtres LEOS.")
         except Exception as error:
             try:
                 for key, value in previous.items():
@@ -220,7 +330,9 @@ class PlasmaVisualChromeManager:
                 ) from error
             self.state_file.unlink(missing_ok=True)
             raise
-        return "Écran de chargement Plasma et curseur LEOS configurés pour la prochaine ouverture de session."
+        if self._reconfigure_kwin():
+            return "Écran de chargement, verrouillage, curseur et décor de fenêtres LEOS configurés. KWin a confirmé le rechargement des barres de titre."
+        return "Écran de chargement, fond du verrouillage, curseur et décor de fenêtres LEOS enregistrés. Les changements de décor et de verrouillage seront visibles à la prochaine ouverture de session."
 
     def restore_previous(self) -> str:
         state = _read_state(self.state_file)
@@ -240,4 +352,5 @@ class PlasmaVisualChromeManager:
         if self.state_file.is_symlink():
             raise ValueError("L'état des réglages visuels LEOS est un lien symbolique.")
         self.state_file.unlink(missing_ok=True)
-        return "Écran de chargement et curseur précédents restaurés."
+        self._reconfigure_kwin()
+        return "Écran de chargement, fond de verrouillage, curseur et décor de fenêtres précédents restaurés."

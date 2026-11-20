@@ -47,5 +47,11 @@ La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chem
 - SDDM présente le logo Desktop officiel, une connexion Qt 6 avec choix de session et la typographie Noto Sans. Les accents A/B personnels ne sont pas imposés avant la connexion.
 - Plasma fournit un écran de chargement LEOS post-connexion. Il est activé après le consentement au profil Desktop.
 - Le curseur LEOS ajoute une première forme SVG recolorable avec A/B ; les formes non fournies héritent de Breeze pour préserver la compatibilité.
+- Les fenêtres KWin utilisent une variante Aurorae dans l'espace utilisateur : cadres, boutons et état actif/inactif sont recolorés selon A/B, sans modifier les ressources système.
+- Le fond du verrouillage KDE utilise aussi le fond Desktop A/B, tandis que la saisie du mot de passe reste celle du greeter natif.
 
 Noto Sans est la famille commune des interfaces de connexion, de démarrage et de chargement. Les emblèmes restent ceux des ressources graphiques officielles.
+
+## Écran de verrouillage
+
+Le profil Desktop applique aussi le fond d'écran LEOS A/B à l'écran de verrouillage natif de KDE via `kscreenlockerrc`, y compris son aperçu. Les deux valeurs précédentes sont sauvegardées avec le reste de l'identité visuelle et restaurées uniquement si elles n'ont pas été modifiées manuellement. LEOS ne remplace pas le dialogue natif d'authentification.

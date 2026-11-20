@@ -79,5 +79,6 @@ Métadonnées relevées par CI pour les vidéos :
 | branding/sddm/leos/Main.qml | Écran de connexion SDDM Qt 6 |
 | plasma-theme/look-and-feel/org.leos.desktop/contents/splash/Splash.qml | Écran de chargement après connexion |
 | icons/leos/cursors_scalable/default/default.svg | Première forme de curseur LEOS recolorable |
+| aurorae/leos/decoration.svg et les SVG de boutons | Modèles de cadres de fenêtres et boutons, recolorés A/B dans une variante utilisateur |
 
-Le script files/scripts/prepare-leos-plymouth.sh convertit l'emblème Desktop officiel en watermark PNG pendant la construction. L'initramfs est régénéré par BlueBuild pour embarquer le thème Plymouth. SDDM utilise le thème Qt 6 fourni par LEOS. Les paramètres personnels de splash Plasma et de curseur sont appliqués uniquement lorsque l'utilisateur accepte le profil Desktop ; leurs anciennes valeurs restent restaurables.
+Le script files/scripts/prepare-leos-plymouth.sh convertit l'emblème Desktop officiel en watermark PNG pendant la construction. L'initramfs est régénéré par BlueBuild pour embarquer le thème Plymouth. SDDM utilise le thème Qt 6 fourni par LEOS. Les paramètres personnels de splash Plasma, de curseur, de décor Aurorae et de fond d'écran de verrouillage sont appliqués uniquement lorsque l'utilisateur accepte le profil Desktop ; leurs anciennes valeurs restent restaurables.

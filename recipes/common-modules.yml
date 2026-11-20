@@ -90,10 +90,9 @@ modules:
     dest: /usr/lib/sddm/sddm.conf.d/90-leos-theme.conf
 
   - type: script
+    source: ghcr.io/blue-build/modules/script:v1
     scripts:
       - prepare-leos-plymouth.sh
-
-  - type: script
     snippets:
       - plymouth-set-default-theme leos
 
