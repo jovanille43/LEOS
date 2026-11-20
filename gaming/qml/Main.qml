@@ -1585,7 +1585,8 @@ ApplicationWindow {
                 model: [
                     "Nintendo GameCube / Wii",
                     "PlayStation 2",
-                    "PlayStation Portable (PSP)"
+                    "PlayStation Portable (PSP)",
+                    "Nintendo DS (melonDS)"
                 ]
             }
             Label {
@@ -1596,7 +1597,7 @@ ApplicationWindow {
                 font.pixelSize: window.fontMicro
             }
             Label {
-                text: "Les émulateurs correspondants doivent être installés depuis la boutique LEOS. Les BIOS et jeux ne sont pas fournis."
+                text: "LEOS prépare automatiquement les émulateurs au premier démarrage connecté. Les jeux, BIOS et firmwares personnels ne sont pas fournis."
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
@@ -1606,7 +1607,7 @@ ApplicationWindow {
                 text: "CHOISIR LE DOSSIER"
                 Layout.fillWidth: true
                 onClicked: {
-                    const platformKeys = ["gamecube_wii", "ps2", "psp"]
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds"]
                     if (leos.beginEmulatorFolderBrowse(
                                 platformKeys[emulatorPlatformCombo.currentIndex])) {
                         emulatorImportDialog.close()
