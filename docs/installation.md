@@ -1,6 +1,6 @@
 # Installation de LEOS
 
-## État actuel — 19 novembre 2026
+## État actuel — 20 novembre 2026
 
 La première **ISO installateur LEOS standard** a été générée avec succès par GitHub Actions après vérification de la signature de l'image publiée.
 
@@ -10,6 +10,9 @@ La première **ISO installateur LEOS standard** a été générée avec succès 
 - N'utiliser qu'un artefact provenant d'une exécution qui a terminé avec succès l'étape **Validate ISO boot structure, checksum, and source digest**.
 - Les trois images conteneur (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées et signées dans GHCR.
 - À ce stade, seule la variante ISO **standard** a été générée. Les variantes ISO NVIDIA restent à produire.
+- L'ISO du run [#44729268412](https://github.com/jovanille43/LEOS/actions/runs/44729268412), construite depuis le commit `3c97827f5c658ed246a7b96ed4a5e8e1fbb2f317`, a ensuite été installée avec succès dans une VM QEMU/KVM : création du compte Anaconda, fin d'installation, redémarrage et ouverture du bureau KDE confirmés le 20 novembre 2026.
+- Le statut `rpm-ostree` de cette VM a confirmé la source signée `ghcr.io/jovanille43/leos:latest`. La sortie `/etc/os-release` peut afficher Bazzite, ce qui reflète la base conservée ; voir le [résultat documenté de la VM](virtual-machine-validation.md).
+- Les changements fusionnés après ce build (import de dossiers console, détection de manettes et améliorations d'accessibilité Gaming) ne sont pas encore dans cette ISO. Ils doivent être publiés dans une nouvelle image conteneur puis reconstruits en ISO avant d'être testés.
 - L'ISO reste un artefact de validation, pas une version stable certifiée. Les contrôles structurels automatisés ne remplacent pas un démarrage et une installation testés dans une machine virtuelle, puis des essais matériels.
 
 Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
