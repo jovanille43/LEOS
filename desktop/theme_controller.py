@@ -8,6 +8,7 @@ from desktop.branding_assets import (
     build_themed_branding_assets,
     cached_themed_branding_asset_urls,
     only_recolored_asset_urls,
+    source_asset_urls,
 )
 from desktop.themes import (
     APPEARANCE_MODES, DEFAULT_COLOR_A, DEFAULT_COLOR_B,
