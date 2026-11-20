@@ -531,9 +531,17 @@ ApplicationWindow {
                                         radius: 5
                                         gradient: Gradient {
                                             orientation: Gradient.Horizontal
-                                            GradientStop { position: 0.0; color: window.themeColors.accent_primary }
-                                            GradientStop { position: 1.0; color: window.themeColors.accent_secondary }
+                                            GradientStop { position: 0.0; color: Qt.color(window.draftColorA) }
+                                            GradientStop { position: 1.0; color: Qt.color(window.draftColorB) }
                                         }
+                                    }
+                                    Label {
+                                        visible: !controlCenter.themeColorsConfigured
+                                        text: "Les couleurs montrées avant le premier enregistrement sont un aperçu historique uniquement ; choisis librement A et B."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     Button {
                                         Layout.fillWidth: true
