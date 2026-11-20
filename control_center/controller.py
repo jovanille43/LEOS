@@ -9,6 +9,8 @@ from control_center.settings_modules import general_settings_command, settings_m
 from desktop.themes import normalize_color, palette_for_theme, palette_for_colors, resolve_appearance_mode
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
+from desktop.icon_theme import PlasmaIconThemeManager
+from desktop.themed_plasma_resources import install_themed_plasma_resources
 from desktop.plasma_adapter import build_panel_management_script
 from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
@@ -158,6 +160,7 @@ class ControlCenterController(QObject):
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
+        self.plasmaIcons = PlasmaIconThemeManager()
         self.monitor = SystemMonitor(self)
         self._hardware_snapshot = {
             key: "Analyse en cours…"
@@ -655,7 +658,11 @@ class ControlCenterController(QObject):
 
     @Property(bool, notify=settingsChanged)
     def canRestorePlasmaStyle(self) -> bool:
-        return self.plasmaStyle.can_restore()
+        return self.plasmaStyle.can_restore() or self.plasmaIcons.can_restore()
+
+    @Property(bool, notify=settingsChanged)
+    def plasmaIconsToolAvailable(self) -> bool:
+        return self.plasmaIcons.tool_available()
 
     @Property(str, notify=settingsChanged)
     def performanceProfile(self) -> str:
@@ -759,7 +766,7 @@ class ControlCenterController(QObject):
         except (OSError, ValueError, TypeError, KeyError):
             return "Les couleurs n’ont pas été enregistrées. Utilise le format #RRGGBB."
         self.settingsChanged.emit()
-        return "Dégradé LEOS A/B enregistré."
+        return "Dégradé LEOS A/B enregistré. Confirme l’application du style Plasma pour actualiser aussi les icônes."
 
     @Slot(result=str)
     def applyKdeTheme(self) -> str:
@@ -809,42 +816,90 @@ class ControlCenterController(QObject):
 
     @Slot(result=str)
     def applyPlasmaStyle(self) -> str:
-        """Apply the LEOS Plasma Style only after explicit UI confirmation."""
+        """Apply matching, user-scoped A/B variants of Plasma Style and icons."""
         if not self.settings.get("theme_colors_configured", False):
-            return "Choisis et enregistre les deux couleurs A et B avant d’appliquer le Plasma Style."
+            return "Choisis et enregistre d’abord les deux couleurs A et B."
+        color_a, color_b = self.settings.snapshot(("theme_color_a", "theme_color_b"))
         try:
-            color_a, color_b = self.settings.snapshot(("theme_color_a", "theme_color_b"))
-            message = self.plasmaStyle.apply_custom_style(color_a, color_b)
-        except FileNotFoundError:
-            message = "Style LEOS ou outil KDE introuvable : aucun changement appliqué."
+            resources = install_themed_plasma_resources(color_a, color_b)
+            style_id = resources["plasmaStyleId"]
+            icon_id = resources["iconThemeId"]
+            if not self.plasmaStyle.style_installed(style_id):
+                raise FileNotFoundError("La variante Plasma personnalisée n'est pas installée.")
+            if not self.plasmaIcons.theme_installed(icon_id):
+                raise FileNotFoundError("La variante d'icônes personnalisée n'est pas installée.")
+
+            try:
+                self.plasmaStyle.apply_style(style_id)
+                self.plasmaIcons.apply_theme(icon_id)
+            except Exception as apply_error:
+                rollback_errors = []
+                for manager, restore in (
+                    (self.plasmaIcons, self.plasmaIcons.restore_previous_theme),
+                    (self.plasmaStyle, self.plasmaStyle.restore_previous_style),
+                ):
+                    try:
+                        if manager.can_restore():
+                            restore()
+                    except Exception as rollback_error:
+                        rollback_errors.append(str(rollback_error))
+                if rollback_errors:
+                    raise RuntimeError(
+                        "L’application Plasma a échoué et le retour arrière est incomplet : "
+                        + "; ".join(rollback_errors)
+                    ) from apply_error
+                raise
+
+            message = "Style Plasma et icônes LEOS appliqués avec le dégradé A/B choisi."
+        except FileNotFoundError as error:
+            message = f"Ressource LEOS ou outil KDE introuvable : {error}"
             post_notification("Style Plasma non appliqué", message, "error")
             return message
-        except (OSError, RuntimeError, ValueError):
-            message = "Le style Plasma LEOS n'a pas pu être appliqué. Le thème précédent reste récupérable."
+        except (OSError, RuntimeError, ValueError, KeyError) as error:
+            message = (
+                "Le style Plasma et les icônes n'ont pas pu être actualisés. "
+                "Le thème précédent reste récupérable."
+            )
+            if str(error):
+                message += f" Détail : {error}"
             post_notification("Style Plasma non appliqué", message, "error")
             return message
+
         self.settingsChanged.emit()
-        post_notification("Style Plasma appliqué", message, "success")
+        post_notification("Style LEOS A/B appliqué", message, "success")
         return message
 
     @Slot(result=str)
     def restorePreviousPlasmaStyle(self) -> str:
-        """Restore the Plasma Style saved before the first LEOS application."""
-        try:
-            message = self.plasmaStyle.restore_previous_style()
-        except FileNotFoundError:
-            message = "Aucun style Plasma précédent n'est enregistré."
-            post_notification("Restauration du style Plasma impossible", message, "warning")
+        """Restore both the Plasma Style and icon theme to their earlier choices."""
+        restored = []
+        errors = []
+        for manager, label, restore in (
+            (self.plasmaIcons, "icônes", self.plasmaIcons.restore_previous_theme),
+            (self.plasmaStyle, "style Plasma", self.plasmaStyle.restore_previous_style),
+        ):
+            if not manager.can_restore():
+                continue
+            try:
+                restore()
+                restored.append(label)
+            except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
+                errors.append(f"{label} : {error}")
+
+        if errors:
+            message = "Restauration incomplète : " + "; ".join(errors)
+            post_notification("Restauration LEOS incomplète", message, "error")
             return message
-        except (OSError, RuntimeError, ValueError):
-            message = "La restauration du style Plasma a échoué."
-            post_notification("Restauration du style Plasma échouée", message, "error")
+        if not restored:
+            message = "Aucun thème Plasma ou jeu d’icônes précédent n'est enregistré."
+            post_notification("Restauration indisponible", message, "warning")
             return message
+
         self.settingsChanged.emit()
-        post_notification("Style Plasma restauré", message, "success")
+        message = "Thèmes précédents restaurés : " + " et ".join(restored) + "."
+        post_notification("Apparence Plasma restaurée", message, "success")
         return message
 
-    @Slot(str)
     def setPerformanceProfile(self, profile: str) -> None:
         self.settings.set("performance_profile", profile)
         self.settingsChanged.emit()
