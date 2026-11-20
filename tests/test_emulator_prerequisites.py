@@ -103,6 +103,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         dev_flash = (
             self.flatpak_config("net.rpcs3.RPCS3", "rpcs3") / "dev_flash"
         )
+        dev_flash.mkdir()
         (dev_flash / "vsh").mkdir()
         (dev_flash / "sys" / "external").mkdir(parents=True)
         self.assertIn("firmware PS3 à installer", self.detect()[2])
