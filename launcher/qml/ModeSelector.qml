@@ -18,13 +18,31 @@ ApplicationWindow {
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
+    property int appearanceDialogFocusIndex: 0
 
     function requestDesktopMode() {
         if (modeSelectorController.desktopAppearanceStatus === "pending") {
+            appearanceDialogFocusIndex = 0
             appearanceDialog.open()
+            applyAppearanceButton.forceActiveFocus()
             return
         }
         requestModeWithIntro("desktop")
+    }
+
+    function activateDesktopAppearance() {
+        appearanceStatusText.text = "Sauvegarde du bureau et application du profil LEOS…"
+        if (!modeSelectorController.beginDesktopAppearanceSetup())
+            appearanceStatusText.text = "L'activation ne peut pas démarrer. Vérifie l'état du premier démarrage."
+    }
+
+    function keepCurrentDesktopAppearance() {
+        if (modeSelectorController.skipDesktopAppearance()) {
+            appearanceDialog.close()
+            window.requestModeWithIntro("desktop")
+        } else {
+            appearanceStatusText.text = "Le choix n'a pas pu être enregistré. Aucun réglage KDE n'a été modifié."
+        }
     }
 
     function requestModeWithIntro(mode) {
@@ -62,6 +80,23 @@ ApplicationWindow {
     function handleGamepadAction(action) {
         if (transitionInProgress)
             return
+        if (appearanceDialog.visible) {
+            if (action === "left" || action === "right" || action === "up" || action === "down") {
+                appearanceDialogFocusIndex = 1 - appearanceDialogFocusIndex
+                if (appearanceDialogFocusIndex === 0)
+                    applyAppearanceButton.forceActiveFocus()
+                else
+                    keepAppearanceButton.forceActiveFocus()
+            } else if (action === "confirm") {
+                if (appearanceDialogFocusIndex === 0)
+                    activateDesktopAppearance()
+                else
+                    keepCurrentDesktopAppearance()
+            } else if (action === "back") {
+                appearanceDialog.close()
+            }
+            return
+        }
         if (transitionDialog.visible) {
             if (action === "confirm") {
                 transitionDialog.close()
@@ -206,7 +241,7 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 8
                             color: "#17313d"
-                            border.color: window.cyan
+                            border.color: applyAppearanceButton.activeFocus ? window.magenta : window.cyan
                         }
                         contentItem: Label {
                             text: "COMPRIS"
@@ -352,13 +387,20 @@ ApplicationWindow {
                 transitionDialog.open()
                 event.accepted = true
             } else if (event.key === Qt.Key_D) {
-                window.requestModeWithIntro("desktop")
+                window.requestDesktopMode()
                 event.accepted = true
             } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
                 if (desktopCard.activeFocus)
                     gamingCard.forceActiveFocus()
                 else
                     desktopCard.forceActiveFocus()
+                event.accepted = true
+            } else if (event.key === Qt.Key_Escape && appearanceDialog.visible) {
+                appearanceDialog.close()
+                event.accepted = true
+            } else if (event.key === Qt.Key_G && appearanceDialog.visible) {
+                appearanceDialog.close()
+                transitionDialog.open()
                 event.accepted = true
             } else if (event.key === Qt.Key_Escape && transitionDialog.visible) {
                 transitionDialog.close()
@@ -462,11 +504,7 @@ ApplicationWindow {
                       : "ACTIVER L'APPARENCE LEOS"
                 enabled: !modeSelectorController.appearanceSetupRunning
                 Layout.fillWidth: true
-                onClicked: {
-                    appearanceStatusText.text = "Sauvegarde du bureau et application du profil LEOS…"
-                    if (!modeSelectorController.beginDesktopAppearanceSetup())
-                        appearanceStatusText.text = "L'activation ne peut pas démarrer. Vérifie l'état du premier démarrage."
-                }
+                onClicked: window.activateDesktopAppearance()
                 background: Rectangle {
                     radius: 9
                     color: applyAppearanceButton.enabled ? "#17313d" : "#17212a"
@@ -484,18 +522,11 @@ ApplicationWindow {
                 text: "GARDER MON BUREAU ACTUEL"
                 enabled: !modeSelectorController.appearanceSetupRunning
                 Layout.fillWidth: true
-                onClicked: {
-                    if (modeSelectorController.skipDesktopAppearance()) {
-                        appearanceDialog.close()
-                        window.requestModeWithIntro("desktop")
-                    } else {
-                        appearanceStatusText.text = "Le choix n'a pas pu être enregistré. Aucun réglage KDE n'a été modifié."
-                    }
-                }
+                onClicked: window.keepCurrentDesktopAppearance()
                 background: Rectangle {
                     radius: 9
                     color: "transparent"
-                    border.color: "#485366"
+                    border.color: keepAppearanceButton.activeFocus ? window.cyan : "#485366"
                 }
                 contentItem: Label {
                     text: keepAppearanceButton.text
