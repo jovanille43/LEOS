@@ -319,7 +319,7 @@ class BuildWorkflowTests(unittest.TestCase):
         public_key = (ROOT / "tools/trust/blue-build-cli.pub").read_text(encoding="utf-8")
         provenance = (ROOT / "tools/trust/README.md").read_text(encoding="utf-8")
         self.assertIn("Verify and install BlueBuild CLI", source)
-        self.assertIn("CLI_IMAGE: ghcr.io/blue-build/cli:v0.9-installer", source)
+        self.assertIn("CLI_IMAGE: ghcr.io/blue-build/cli:v0.9.42-installer", source)
         self.assertIn("tools/trust/blue-build-cli.pub", source)
         self.assertIn('skopeo inspect --format \'{{.Digest}}\'', source)
         self.assertIn('cli_immutable_ref="${cli_repository}@${cli_digest}"', source)
