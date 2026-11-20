@@ -172,6 +172,17 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("account page may be hidden", result.stderr)
 
+    def test_allows_other_webui_pages_to_be_hidden(self):
+        self.env["LEOS_TEST_FEDORA_PROFILE"] = (
+            "[Profile]\n"
+            "profile_id = fedora\n"
+            "[User Interface]\n"
+            "hidden_webui_pages =\n"
+            "    anaconda-screen-network\n"
+        )
+        result = self.run_validator()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_rejects_checksum_mismatch(self):
         self.iso.write_bytes(b"corrupted ISO fixture bytes")
         result = self.run_validator()
