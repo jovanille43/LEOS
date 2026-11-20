@@ -215,7 +215,9 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.plasma_resource_calls, [])
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
-    def test_custom_plasma_resource_generation_failure_aborts_before_backup(self):
+    @patch("desktop.first_run_appearance.inspect_plasma_config", return_value={"available": True})
+    @patch("desktop.first_run_appearance.build_layout_plan", return_value={"can_apply": True})
+    def test_custom_plasma_resource_generation_failure_aborts_before_backup(self, *_mocks):
         self.setup.plasma_resource_builder = lambda color_a, color_b: (_ for _ in ()).throw(
             FileNotFoundError("generated theme sources missing")
         )

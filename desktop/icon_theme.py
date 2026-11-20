@@ -172,7 +172,7 @@ class PlasmaIconThemeManager:
         if not self.tool_available():
             raise FileNotFoundError("plasma-changeicons is unavailable")
         if not self.theme_installed(theme_id):
-            raise FileNotFoundError("Le thème d'icônes LEOS demandé n'est pas installé.")
+            raise FileNotFoundError("Le paquet du thème d'icônes LEOS demandé n'est pas installé.")
         if self.state_file.is_symlink():
             raise ValueError("LEOS icon-theme state path cannot be a symbolic link")
         current = self.current_theme()
