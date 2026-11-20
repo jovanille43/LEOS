@@ -18,6 +18,7 @@ from leos_core.settings import SettingsStore  # noqa: E402
 from launcher.mode_manager import ModeManager  # noqa: E402
 from launcher.controller import ModeSelectorController  # noqa: E402
 from desktop.notifications import post_notification  # noqa: E402
+from desktop.theme_controller import ThemeController  # noqa: E402
 
 
 def start_gaming() -> subprocess.Popen[bytes] | None:
@@ -54,6 +55,7 @@ def main() -> int:
 
     manager = ModeManager(settings)
     selector_controller = ModeSelectorController()
+    theme = ThemeController(settings=settings)
 
     def handle_mode(mode: str) -> None:
         if mode == "gaming":
@@ -84,11 +86,14 @@ def main() -> int:
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("modeManager", manager)
     engine.rootContext().setContextProperty("modeSelectorController", selector_controller)
+    engine.rootContext().setContextProperty("leosTheme", theme)
     app.aboutToQuit.connect(selector_controller.shutdown)
+    app.aboutToQuit.connect(theme.shutdown)
     qml_file = Path(__file__).parent / "qml" / "ModeSelector.qml"
     engine.load(QUrl.fromLocalFile(str(qml_file)))
     if not engine.rootObjects():
         selector_controller.shutdown()
+        theme.shutdown()
         return 1
 
     exit_code = app.exec()

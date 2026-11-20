@@ -6,7 +6,15 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 - **Desktop Mode :** emblème du lion seul.
 - **Gaming Mode :** emblème du lion avec manette.
-- **Style :** lion métallique, accents cyan et magenta, typographie LEOS et fond noir.
+- **Style :** lion métallique, typographie LEOS, fond sombre et dégradé composé de deux couleurs A/B choisies librement.
+
+## Couleurs A/B
+
+- L’utilisateur choisit deux accents indépendants A et B avec le sélecteur natif ou un code HEX `#RRGGBB`.
+- Les couleurs peuvent être identiques ou proches ; un contraste faible déclenche un avertissement de lisibilité, sans changer A ni B.
+- Les surfaces sombres, les tons neutres et les reflets métalliques restent préservés.
+- Les cyan/magenta historiques sont uniquement des valeurs de prévisualisation héritées, jamais une paire obligatoire.
+- Les variantes de logos, de fonds et, lorsque l’encodeur est disponible, d’introductions sont générées dans le cache privé utilisateur. Les sources officielles restent intactes.
 
 ## Organisation
 

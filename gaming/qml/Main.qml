@@ -10,11 +10,14 @@ ApplicationWindow {
     visible: true
     visibility: Window.FullScreen
     title: "LEOS Gaming"
-    color: "#08090d"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#8d96a8"
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property color focusColor: "#ffffff"
     property int fontMicro: 14
     property int fontCaption: 15
@@ -51,7 +54,7 @@ ApplicationWindow {
         }
         returningToDesktop = true
         desktopIntroOverlay.visible = true
-        desktopIntroPlayer.source = Qt.resolvedUrl("../../branding/animations/desktop-intro.mov")
+        desktopIntroPlayer.source = leosTheme.desktopIntroUrl
         desktopIntroAudio.muted = !leos.soundsEnabled
         desktopIntroTimeout.start()
         desktopIntroPlayer.play()
@@ -513,7 +516,7 @@ ApplicationWindow {
                     spacing: 1
                     Image {
                         id: gamingHeaderLogo
-                        source: "../../branding/gaming-logo.jpeg"
+                        source: leosTheme.gamingLogoUrl
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
@@ -577,7 +580,7 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 10
                         color: notificationSilenceButton.down ? "#26313e" : "#171d28"
-                        border.color: leos.silentNotificationsInGaming ? window.cyan : "#344052"
+                        border.color: leos.silentNotificationsInGaming ? window.accentA : "#344052"
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
@@ -724,7 +727,7 @@ ApplicationWindow {
                                         radius: 6
                                         color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
                                         border.width: window.quickPanelFocusIndex === index + 1 ? 2 : 1
-                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.focusColor : (leos.activePowerProfile === modelData ? window.cyan : "#344052")
+                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.focusColor : (leos.activePowerProfile === modelData ? window.accentA : "#344052")
                                     }
                                     contentItem: Label {
                                         text: powerProfileButton.text
@@ -816,7 +819,7 @@ ApplicationWindow {
                                 radius: 9
                                 color: modelData === window.selectedCategory ? "#202b38" : "transparent"
                                 border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
-                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.focusColor : (modelData === window.selectedCategory ? window.cyan : "transparent")
+                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.focusColor : (modelData === window.selectedCategory ? window.accentA : "transparent")
                             }
                             contentItem: Label {
                                 text: categoryButton.text
@@ -936,7 +939,7 @@ ApplicationWindow {
                                 radius: 9
                                 color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "#1a2c38" : "#151a24"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.cyan : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.accentA : "#2a3444"
                             }
                             contentItem: Label {
                                 text: importEmulatorFolderButton.text
@@ -964,7 +967,7 @@ ApplicationWindow {
                                 radius: 9
                                 color: "#17313d"
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.cyan
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.accentA
                             }
                             contentItem: Label {
                                 text: addGameButton.text
@@ -1146,7 +1149,7 @@ ApplicationWindow {
                                         radius: 9
                                         color: "#103847"
                                         border.width: emptyStatePrimaryButton.activeFocus ? 2 : 1
-                                        border.color: emptyStatePrimaryButton.activeFocus ? window.focusColor : window.cyan
+                                        border.color: emptyStatePrimaryButton.activeFocus ? window.focusColor : window.accentA
                                     }
                                     contentItem: Label {
                                         text: emptyStatePrimaryButton.text
@@ -1323,7 +1326,7 @@ ApplicationWindow {
                                         radius: 9
                                         color: "#191d2a"
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.magenta
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.accentB
                                     }
                                     contentItem: Label {
                                         text: favoriteGameButton.text
@@ -1349,7 +1352,7 @@ ApplicationWindow {
                                         radius: 10
                                         color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.cyan : "#344052"
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.accentA : "#344052"
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
@@ -1510,7 +1513,7 @@ ApplicationWindow {
                     returnDialog.close()
                     window.requestDesktopReturn()
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
                 contentItem: Label {
                     text: returnToDesktopButton.text
                     color: "white"
@@ -1548,7 +1551,7 @@ ApplicationWindow {
                     leos.applyPowerProfile(window.pendingPowerProfile)
                     statusText.text = leos.powerProfileStatus
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
                     color: "white"
@@ -1610,7 +1613,7 @@ ApplicationWindow {
                         emulatorFolderDialog.open()
                     }
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.cyan }
+                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
                 contentItem: Label {
                     text: "CHOISIR LE DOSSIER"
                     color: "white"
@@ -1806,7 +1809,7 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 8
                         color: "#17313d"
-                        border.color: window.cyan
+                        border.color: window.accentA
                     }
                     contentItem: Label {
                         text: parent.text

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 
 ApplicationWindow {
@@ -13,8 +14,10 @@ ApplicationWindow {
     property var themeColors: controlCenter.themePalette
     color: themeColors.background
 
-    property color cyan: themeColors.accent_primary
-    property color magenta: themeColors.accent_secondary
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
     property int selectedPage: 0
     property string launchNotice: ""
@@ -23,6 +26,42 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+    property string draftColorA: controlCenter.themeColorA
+    property string draftColorB: controlCenter.themeColorB
+    property bool draftColorAChosen: controlCenter.themeColorsConfigured
+    property bool draftColorBChosen: controlCenter.themeColorsConfigured
+    property bool draftColorsDirty: false
+    property string themeColorNotice: ""
+
+    function colorToHex(color) {
+        function part(value) {
+            const hex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return hex.length === 1 ? "0" + hex : hex
+        }
+        return "#" + part(color.r) + part(color.g) + part(color.b)
+    }
+
+    ColorDialog {
+        id: themeColorADialog
+        title: "Choisir la couleur A"
+        selectedColor: Qt.color(window.draftColorA)
+        onAccepted: {
+            window.draftColorA = window.colorToHex(selectedColor)
+            window.draftColorAChosen = true
+            window.draftColorsDirty = true
+        }
+    }
+
+    ColorDialog {
+        id: themeColorBDialog
+        title: "Choisir la couleur B"
+        selectedColor: Qt.color(window.draftColorB)
+        onAccepted: {
+            window.draftColorB = window.colorToHex(selectedColor)
+            window.draftColorBChosen = true
+            window.draftColorsDirty = true
+        }
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -40,6 +79,12 @@ ApplicationWindow {
         function onSettingsChanged() {
             const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
             themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
+            if (!window.draftColorsDirty) {
+                window.draftColorA = controlCenter.themeColorA
+                window.draftColorB = controlCenter.themeColorB
+                window.draftColorAChosen = controlCenter.themeColorsConfigured
+                window.draftColorBChosen = controlCenter.themeColorsConfigured
+            }
             const layouts = ["leos-default", "minimal", "workspace", "custom"]
             desktopLayoutBox.currentIndex = Math.max(0, layouts.indexOf(controlCenter.desktopLayoutProfile))
             const positions = ["bottom", "top", "left", "right"]
@@ -189,7 +234,7 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 10
                                 color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.cyan : window.themeColors.border
+                                border.color: window.selectedPage === modelData.page ? window.accentA : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: settingsNavigationButton.text
@@ -442,7 +487,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 318
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -457,7 +502,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Personnalise librement les deux extrémités A et B du dégradé LEOS. Enregistre la paire pour l'appliquer partout."
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
@@ -471,24 +516,61 @@ ApplicationWindow {
                                         }
                                         onActivated: {
                                             const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
+                                            window.draftColorsDirty = false
                                             controlCenter.setTheme(values[currentIndex])
                                         }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
                                         spacing: 8
-                                        Rectangle {
+                                        Button {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_primary
+                                            text: window.draftColorAChosen ? "A · " + window.draftColorA : "CHOISIR LA COULEUR A"
+                                            onClicked: themeColorADialog.open()
                                         }
-                                        Rectangle {
+                                        Button {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_secondary
+                                            text: window.draftColorBChosen ? "B · " + window.draftColorB : "CHOISIR LA COULEUR B"
+                                            onClicked: themeColorBDialog.open()
                                         }
+                                    }
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 9
+                                        radius: 5
+                                        gradient: Gradient {
+                                            orientation: Gradient.Horizontal
+                                            GradientStop { position: 0.0; color: window.themeColors.accent_primary }
+                                            GradientStop { position: 1.0; color: window.themeColors.accent_secondary }
+                                        }
+                                    }
+                                    Button {
+                                        Layout.fillWidth: true
+                                        text: "ENREGISTRER LE DÉGRADÉ A/B"
+                                        enabled: window.draftColorAChosen && window.draftColorBChosen
+                                        onClicked: {
+                                            window.themeColorNotice = controlCenter.setThemeColors(
+                                                window.draftColorA, window.draftColorB
+                                            )
+                                            window.draftColorsDirty = false
+                                        }
+                                    }
+                                    Label {
+                                        text: window.themeColorNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        visible: window.themeColors.accent_primary_text !== window.themeColors.accent_primary
+                                                 || window.themeColors.accent_secondary_text !== window.themeColors.accent_secondary
+                                        text: "Contraste faible : le texte est adapté sans modifier les couleurs A/B choisies."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                 }
                             }
@@ -1590,7 +1672,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 112
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.cyan : window.themeColors.border)
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.accentB : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.accentA : window.themeColors.border)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1786,7 +1868,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 100
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: window.cyan
+                                border.color: window.accentA
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -1948,7 +2030,7 @@ ApplicationWindow {
                                     Layout.preferredHeight: 126
                                     radius: 12
                                     color: window.themeColors.surface
-                                    border.color: modelData.isDefault === "true" ? window.cyan : window.themeColors.border
+                                    border.color: modelData.isDefault === "true" ? window.accentA : window.themeColors.border
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
