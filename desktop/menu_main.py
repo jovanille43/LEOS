@@ -21,7 +21,7 @@ def main() -> int:
     app.setApplicationName("LEOS Menu")
     app.setOrganizationName("LEOS")
     catalog = ApplicationCatalog()
-    theme = ThemeController()
+    theme = ThemeController(generate_videos=False)
     engine = QQmlApplicationEngine()
     engine.addImageProvider("desktop-icons", DesktopIconProvider())
     engine.rootContext().setContextProperty("applicationCatalog", catalog)

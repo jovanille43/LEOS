@@ -22,7 +22,7 @@ def main() -> int:
     app.setApplicationName("LEOS Controller Center")
     app.setOrganizationName("LEOS")
     controller = ControllerCenterController()
-    theme = ThemeController()
+    theme = ThemeController(generate_assets=False)
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("controllerCenter", controller)
     engine.rootContext().setContextProperty("leosTheme", theme)
