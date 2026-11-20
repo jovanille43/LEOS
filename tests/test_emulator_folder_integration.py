@@ -19,6 +19,14 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         self.assertIn("def beginEmulatorFolderBrowse", controller)
         self.assertIn("def useCurrentEmulatorFolder", controller)
 
+    def test_switch_eden_is_available_in_the_gamepad_import_selector(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("Nintendo Switch (Eden)", qml)
+        self.assertIn(
+            'const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]',
+            qml,
+        )
+
     def test_only_persisted_user_selected_sources_are_added_to_library(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         self.assertIn("def addEmulatorFolder", library)
