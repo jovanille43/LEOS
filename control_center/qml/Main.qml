@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 
 ApplicationWindow {
@@ -23,6 +24,32 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
+
+    function colorToHex(color) {
+        function part(value) {
+            const hex = Math.max(0, Math.min(255, Math.round(value * 255))).toString(16).toUpperCase()
+            return hex.length === 1 ? "0" + hex : hex
+        }
+        return "#" + part(color.r) + part(color.g) + part(color.b)
+    }
+
+    ColorDialog {
+        id: themeColorADialog
+        title: "Choisir la couleur A"
+        selectedColor: Qt.color(controlCenter.themeColorA)
+        onAccepted: window.kdeThemeNotice = controlCenter.setThemeColors(
+            window.colorToHex(selectedColor), controlCenter.themeColorB
+        )
+    }
+
+    ColorDialog {
+        id: themeColorBDialog
+        title: "Choisir la couleur B"
+        selectedColor: Qt.color(controlCenter.themeColorB)
+        onAccepted: window.kdeThemeNotice = controlCenter.setThemeColors(
+            controlCenter.themeColorA, window.colorToHex(selectedColor)
+        )
+    }
 
     function formatRate(bytesPerSecond) {
         if (bytesPerSecond < 0)
@@ -442,7 +469,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 184
+                                Layout.preferredHeight: 260
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -457,7 +484,7 @@ ApplicationWindow {
                                         font.letterSpacing: 2
                                     }
                                     Label {
-                                        text: "Choisis l'apparence générale de ton interface."
+                                        text: "Personnalise librement les deux extrémités A et B du dégradé LEOS."
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
@@ -477,18 +504,35 @@ ApplicationWindow {
                                     RowLayout {
                                         Layout.fillWidth: true
                                         spacing: 8
-                                        Rectangle {
+                                        Button {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_primary
+                                            text: "A · " + controlCenter.themeColorA
+                                            onClicked: themeColorADialog.open()
                                         }
-                                        Rectangle {
+                                        Button {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 6
-                                            radius: 3
-                                            color: window.themeColors.accent_secondary
+                                            text: "B · " + controlCenter.themeColorB
+                                            onClicked: themeColorBDialog.open()
                                         }
+                                    }
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 9
+                                        radius: 5
+                                        gradient: Gradient {
+                                            orientation: Gradient.Horizontal
+                                            GradientStop { position: 0.0; color: window.themeColors.accent_primary }
+                                            GradientStop { position: 1.0; color: window.themeColors.accent_secondary }
+                                        }
+                                    }
+                                    Label {
+                                        visible: window.themeColors.accent_primary_text !== window.themeColors.accent_primary
+                                                 || window.themeColors.accent_secondary_text !== window.themeColors.accent_secondary
+                                        text: "Contraste faible : le texte est adapté sans modifier les couleurs A/B choisies."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                 }
                             }
