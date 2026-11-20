@@ -1,5 +1,6 @@
 """First-run identity and session-entry regression tests."""
 
+import ast
 from pathlib import Path
 import unittest
 
@@ -39,6 +40,26 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         self.assertIn("/usr/share/leos/launcher/main.py --select", entry)
         self.assertIn("src: desktop/autostart/leos-session.desktop", recipe)
         self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
+
+
+    def test_theme_asset_worker_fallback_helper_is_imported(self):
+        controller = ROOT / "desktop" / "theme_controller.py"
+        tree = ast.parse(controller.read_text(encoding="utf-8"))
+        imported_names = {
+            alias.asname or alias.name
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom)
+            and node.module == "desktop.branding_assets"
+            for alias in node.names
+        }
+        calls_helper = any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "source_asset_urls"
+            for node in ast.walk(tree)
+        )
+        self.assertTrue(calls_helper)
+        self.assertIn("source_asset_urls", imported_names)
 
     def test_source_asset_fallbacks_are_hidden_until_recolored(self):
         originals = source_asset_urls()
