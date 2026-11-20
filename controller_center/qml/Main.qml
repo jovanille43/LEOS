@@ -10,13 +10,16 @@ ApplicationWindow {
     minimumHeight: 600
     visible: true
     title: "LEOS — Centre des manettes"
-    color: "#090b10"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#909aac"
-    property color panel: "#121720"
-    property color line: "#293342"
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
+    property color panel: themeColors.surface
+    property color line: themeColors.border
 
     Rectangle {
         anchors.fill: parent
@@ -69,7 +72,7 @@ ApplicationWindow {
                         Layout.preferredWidth: 54
                         Layout.preferredHeight: 54
                         radius: 14
-                        color: "#17303b"
+                        color: window.themeColors.surface_elevated
                         border.color: window.cyan
                         Label {
                             anchors.centerIn: parent
@@ -232,8 +235,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 104
                                 radius: 10
-                                color: "#0b1119"
-                                border.color: "#263543"
+                                color: window.themeColors.background
+                                border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 14
@@ -300,7 +303,7 @@ ApplicationWindow {
             Label {
                 Layout.fillWidth: true
                 text: "LEOS · Les périphériques sont surveillés en lecture seule ; aucune règle système ni commande de jeu n'est modifiée."
-                color: "#657184"
+                color: window.themeColors.muted_text
                 font.pixelSize: 10
                 horizontalAlignment: Text.AlignHCenter
             }
