@@ -161,7 +161,7 @@ class PlasmaStyleManager:
             not isinstance(previous, str)
             or not previous
             or len(previous) > 80
-            or any(ch in previous for ch in ("/", "\\\\", "\\n", "\\r"))
+            or any(ch in previous for ch in ("/", chr(92), chr(10), chr(13)))
         ):
             return {}
         return state

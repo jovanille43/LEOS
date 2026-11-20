@@ -124,6 +124,44 @@ class BrandingAssetTests(unittest.TestCase):
         )):
             self.assertIsNone(_available_video_encoder("/usr/bin/ffmpeg"))
 
+    def test_asset_generation_can_skip_video_reencoding_for_palette_surfaces(self):
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "branding"
+            (root / "wallpapers").mkdir(parents=True)
+            (root / "animations").mkdir()
+            for relative in (
+                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
+                "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
+            ):
+                path = root / relative
+                path.write_text("<svg/>" if path.suffix == ".svg" else "source", encoding="utf-8")
+            cache_home = Path(directory) / "cache"
+
+            def fake_image(_source, destination, _matrix):
+                destination.write_bytes(b"themed png")
+                return True
+
+            def fake_svg(_source, destination, _matrix, _emblem):
+                destination.write_text("<svg/>", encoding="utf-8")
+                return True
+
+            with patch.dict(os.environ, {"XDG_CACHE_HOME": str(cache_home)}):
+                with patch("desktop.branding_assets._image_transform", side_effect=fake_image):
+                    with patch("desktop.branding_assets._transform_svg", side_effect=fake_svg):
+                        with patch("desktop.branding_assets._transform_video") as transform_video:
+                            from desktop.branding_assets import build_themed_branding_assets
+                            assets = build_themed_branding_assets(
+                                "#FF8800", "#0055CC", root, include_videos=False
+                            )
+            transform_video.assert_not_called()
+            self.assertTrue(assets["desktopLogoUrl"].endswith("desktop-logo.png"))
+            self.assertTrue(assets["gamingWallpaperUrl"].endswith("gaming-leos.svg"))
+            self.assertTrue(assets["desktopIntroUrl"].endswith("desktop-intro.mov"))
+            self.assertTrue(assets["gamingIntroUrl"].endswith("gaming-intro.mp4"))
+
     def test_fallback_asset_urls_point_to_official_source_files(self):
         root = Path("/usr/share/leos/branding")
         urls = source_asset_urls(root)
