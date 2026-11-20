@@ -15,7 +15,8 @@ if [[ -z "$state_home" || "$state_home" != /* ]]; then
     state_home="$HOME/.local/state"
 fi
 state_dir="$state_home/leos"
-marker="$state_dir/gaming-apps-seeded-v1"
+marker="$state_dir/gaming-apps-seeded-v2"
+legacy_marker="$state_dir/gaming-apps-seeded-v1"
 lock_file="$state_dir/gaming-apps-setup.lock"
 log_file="$state_dir/gaming-apps-setup.log"
 
@@ -25,12 +26,16 @@ if [[ -L "$state_home" || -L "$state_dir" ]]; then
     exit 1
 fi
 mkdir -p -- "$state_dir"
-if [[ -L "$marker" || ( -e "$marker" && ! -f "$marker" ) ]]; then
+if [[ -L "$marker" || ( -e "$marker" && ! -f "$marker" ) || -L "$legacy_marker" || ( -e "$legacy_marker" && ! -f "$legacy_marker" ) ]]; then
     echo "LEOS: invalid Gaming setup completion marker; refusing to continue." >&2
     exit 1
 fi
 if [[ -f "$marker" ]]; then
     exit 0
+fi
+legacy_seeded=0
+if [[ -f "$legacy_marker" ]]; then
+    legacy_seeded=1
 fi
 if [[ -L "$lock_file" || ( -e "$lock_file" && ! -f "$lock_file" ) ]]; then
     echo "LEOS: invalid Gaming setup lock file; refusing to continue." >&2
@@ -71,7 +76,16 @@ apps=(
     org.ppsspp.PPSSPP
     net.kuribo64.melonDS
     net.rpcs3.RPCS3
+    dev.eden_emu.eden
 )
+
+# Upgrade existing LEOS profiles by installing only Eden. The v1 marker
+# proves the previous starter set completed; do not reinstall apps the user
+# may have deliberately removed since then.
+if (( legacy_seeded == 1 )); then
+    apps=(dev.eden_emu.eden)
+    echo "Migrating the existing Gaming setup: adding Eden without reseeding older apps."
+fi
 
 missing_apps=()
 for app_id in "${apps[@]}"; do
@@ -139,7 +153,7 @@ if (( failed != 0 )); then
 fi
 
 # Mark completion only after every requested application is installed.
-marker_tmp="$(mktemp "$state_dir/.gaming-apps-seeded-v1.XXXXXX")"
+marker_tmp="$(mktemp "$state_dir/.gaming-apps-seeded-v2.XXXXXX")"
 printf 'completed\n' > "$marker_tmp"
 mv -- "$marker_tmp" "$marker"
 echo "LEOS Gaming starter applications are ready."
