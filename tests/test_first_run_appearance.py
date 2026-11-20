@@ -202,7 +202,9 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.brand_asset_calls, [])
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
-    def test_custom_wallpaper_generation_failure_aborts_before_kde_changes(self):
+    @patch("desktop.first_run_appearance.inspect_plasma_config", return_value={"available": True})
+    @patch("desktop.first_run_appearance.build_layout_plan", return_value={"can_apply": True})
+    def test_custom_wallpaper_generation_failure_aborts_before_kde_changes(self, *_mocks):
         self.setup.branding_asset_builder = lambda color_a, color_b: {
             "desktopWallpaperUrl": "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg"
         }
