@@ -170,7 +170,7 @@ class InstallerIsoValidatorTests(unittest.TestCase):
         )
         result = self.run_validator()
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("account page may be hidden", result.stderr)
+        self.assertIn("account page is hidden", result.stderr)
 
     def test_allows_other_webui_pages_to_be_hidden(self):
         self.env["LEOS_TEST_FEDORA_PROFILE"] = (
