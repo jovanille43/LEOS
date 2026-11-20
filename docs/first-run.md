@@ -21,6 +21,7 @@ Lors du premier choix de **Desktop Mode**, le sélecteur propose séparément d'
 - Les gestionnaires de couleurs et de style conservent chacun le thème précédent pour restauration. Si une étape échoue, LEOS tente de restaurer la disposition, le style et les couleurs précédents ; le choix reste en attente pour permettre une nouvelle tentative.
 - Le choix **Garder mon bureau actuel** enregistre `desktop_appearance_setup=skipped` et ne modifie aucun réglage KDE. Le Centre de contrôle reste disponible pour une personnalisation ultérieure.
 - Une application réussie enregistre `desktop_appearance_setup=applied`.
+- Si l'utilisateur choisit Gaming en premier, le retour vers Desktop rouvre le sélecteur tant que l'apparence est `pending`, afin de présenter le même choix visuel avant de révéler le bureau.
 
 Le rendu réel du fond d'écran, du Plasma Style et du dock, ainsi que le retour arrière, doivent encore être validés dans une installation Bazzite KDE complète en machine virtuelle.
 

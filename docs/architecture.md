@@ -62,6 +62,7 @@ Demander une confirmation explicite avant l'opération. Ne pas contourner l'arch
 - Il présente l'heure, la date, le dernier mode utilisé et deux grandes cartes Desktop/Gaming.
 - Desktop ferme uniquement le sélecteur et laisse apparaître le bureau KDE déjà actif ; Gaming lance l'application LEOS plein écran au-dessus de la même session.
 - Le dernier mode choisi est mémorisé et présenté au prochain démarrage, sans imposer de lancement automatique.
+- Si le profil visuel Desktop est encore en attente, le retour depuis Gaming rouvre le sélecteur afin que l'utilisateur puisse activer l'identité LEOS avant d'arriver sur le bureau.
 - L'entrée vers Gaming demande une confirmation ; le retour vers Desktop demande également une confirmation depuis Gaming.
 - Aucune application ouverte n'est terminée automatiquement. Les applications KDE restent en arrière-plan pendant Gaming, sous réserve de leur propre comportement.
 - Le sélecteur ne remplace pas SDDM : il apparaît après l'authentification de l'utilisateur.

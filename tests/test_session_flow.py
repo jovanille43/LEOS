@@ -117,6 +117,13 @@ class SessionFlowTests(unittest.TestCase):
         window_header = qml.split("ApplicationWindow {", 1)[1].split("id: gamingContent", 1)[0]
         self.assertNotIn("focus: true", window_header)
 
+    def test_gaming_return_reopens_selector_while_desktop_appearance_is_pending(self):
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        self.assertIn('self.settings.get("desktop_appearance_setup", "pending") == "pending"', controller)
+        self.assertIn('launcher = Path(__file__).resolve().parents[2] / "launcher" / "main.py"', controller)
+        self.assertIn('[sys.executable, str(launcher), "--select"]', controller)
+        self.assertIn("self.desktopRequested.emit()", controller)
+
     def test_gaming_return_plays_desktop_intro_before_closing(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
