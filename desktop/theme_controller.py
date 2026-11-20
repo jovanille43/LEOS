@@ -23,15 +23,16 @@ class _BrandingAssetSignals(QObject):
 class _BrandingAssetTask(QRunnable):
     """Generate derived logos, wallpapers and video intros away from the UI thread."""
 
-    def __init__(self, snapshot: tuple[str, str]) -> None:
+    def __init__(self, snapshot: tuple[str, str], *, include_videos: bool = True) -> None:
         super().__init__()
         self.snapshot = snapshot
+        self.include_videos = include_videos
         self.signals = _BrandingAssetSignals()
 
     @Slot()
     def run(self) -> None:
         try:
-            assets = build_themed_branding_assets(*self.snapshot)
+            assets = build_themed_branding_assets(*self.snapshot, include_videos=self.include_videos)
         except Exception:
             # A missing optional codec or unreadable source must never prevent
             # the desktop or Gaming interface from starting.
@@ -49,9 +50,16 @@ class ThemeController(QObject):
         self,
         parent: QObject | None = None,
         settings: SettingsStore | None = None,
+        *,
+        generate_assets: bool = True,
+        generate_videos: bool = True,
     ) -> None:
         super().__init__(parent)
         self.settings = settings or SettingsStore()
+        if type(generate_assets) is not bool or type(generate_videos) is not bool:
+            raise TypeError("ThemeController asset options must be booleans")
+        self._generate_assets = generate_assets
+        self._generate_videos = generate_videos
         self._snapshot = self._read_snapshot()
         self._colors_configured = bool(self.settings.get("theme_colors_configured", False))
         self._appearance_mode = self._read_appearance_mode()
@@ -155,10 +163,15 @@ class ThemeController(QObject):
         return self._assets.get("gamingIntroUrl", "")
 
     def _start_asset_generation(self) -> None:
-        if self._closed or self._asset_task is not None or self._asset_attempt_snapshot == self._snapshot:
+        if (
+            self._closed
+            or not self._generate_assets
+            or self._asset_task is not None
+            or self._asset_attempt_snapshot == self._snapshot
+        ):
             return
         self._asset_attempt_snapshot = self._snapshot
-        task = _BrandingAssetTask(self._snapshot)
+        task = _BrandingAssetTask(self._snapshot, include_videos=self._generate_videos)
         task.signals.completed.connect(self._on_assets_generated)
         self._asset_task = task
         QThreadPool.globalInstance().start(task)

@@ -334,10 +334,14 @@ def build_themed_branding_assets(
     color_a: str,
     color_b: str,
     branding_root: Path | None = None,
+    *,
+    include_videos: bool = True,
 ) -> dict[str, str]:
     """Build or reuse themed branding assets in a private cache directory."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
+    if type(include_videos) is not bool:
+        raise TypeError("include_videos must be a boolean")
     root = branding_root or _branding_root()
     original_urls = source_asset_urls(root)
     cache = _cache_directory(first, second, root)
@@ -385,6 +389,11 @@ def build_themed_branding_assets(
                 )
 
             for key, filename in _VIDEO_NAMES.items():
+                if not include_videos:
+                    assets["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"] = (
+                        original_urls["desktopIntroUrl" if key == "desktop_intro" else "gamingIntroUrl"]
+                    )
+                    continue
                 output = cache / filename
                 source = root / "animations" / filename
                 if output.is_symlink():
