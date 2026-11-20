@@ -14,6 +14,8 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         self.home.mkdir()
         self.config_home = self.home / ".config"
         self.config_home.mkdir()
+        self.data_home = self.home / ".local" / "share"
+        self.data_home.mkdir(parents=True)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -22,6 +24,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         return detect_emulator_prerequisite_statuses(
             home=self.home,
             config_home=self.config_home,
+            data_home=self.data_home,
         )
 
     def flatpak_config(self, app_id, app_directory):
@@ -130,6 +133,38 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         (cores / "linked_libretro.so").symlink_to(target)
         self.assertIn("aucun cœur détecté", self.detect()[3])
 
+    def eden_data_root(self):
+        return (
+            self.home / ".var" / "app" / "dev.eden_emu.eden"
+            / "data" / "eden"
+        )
+
+    def test_eden_detects_local_keys_and_registered_firmware_without_reading_them(self):
+        root = self.eden_data_root()
+        keys = root / "keys"
+        firmware = root / "nand" / "system" / "Contents" / "registered"
+        keys.mkdir(parents=True)
+        firmware.mkdir(parents=True)
+        (keys / "prod.keys").write_bytes(b"keys")
+        (firmware / "firmware.nca").write_bytes(b"firmware")
+        status = self.detect()[-1]
+        self.assertIn("clés et firmware Switch détectés", status)
+        self.assertNotIn(str(self.home), status)
+
+    def test_eden_ignores_empty_and_symlinked_key_or_firmware_files(self):
+        root = self.eden_data_root()
+        keys = root / "keys"
+        firmware = root / "nand" / "system" / "Contents" / "registered"
+        keys.mkdir(parents=True)
+        firmware.mkdir(parents=True)
+        (keys / "prod.keys").write_bytes(b"")
+        (firmware / "firmware.nca").write_bytes(b"")
+        target = self.home / "outside.keys"
+        target.write_bytes(b"not exposed")
+        (keys / "title.keys").symlink_to(target)
+        status = self.detect()[-1]
+        self.assertIn("clés prod.keys/title.keys", status)
+
     def test_gaming_toolbar_exposes_prerequisite_dialog_and_status_binding(self):
         qml = (
             Path(__file__).resolve().parents[1]
@@ -153,7 +188,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
 
     def test_statuses_never_read_rom_folders_or_return_private_file_paths(self):
         results = self.detect()
-        self.assertEqual(len(results), 5)
+        self.assertEqual(len(results), 6)
         self.assertTrue(all(str(self.home) not in item for item in results))
         self.assertTrue(all("BIOS" in item or "firmware" in item or "cœur" in item for item in results))
 
