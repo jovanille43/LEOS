@@ -39,7 +39,7 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn('nvidia-modern) image_name="leos-nvidia-open"', source)
         self.assertIn('cosign_bin="$(command -v cosign)"', source)
         verify = source.index('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --insecure-ignore-tlog --check-claims --key cosign.pub')
-        generate = source.index("generate-iso --web-ui --iso-name")
+        generate = source.index("generate-iso --variant server --web-ui --iso-name")
         self.assertLess(verify, generate)
         self.assertIn("--insecure-ignore-tlog --check-claims --key cosign.pub", source)
         self.assertIn("sha256sum", source)
