@@ -366,7 +366,7 @@ class GameLibraryModel(QAbstractListModel):
             or not isinstance(folder, str)
             or not folder
             or len(folder) > 4096
-            or "\\x00" in folder
+            or "\x00" in folder
             or not Path(folder).is_absolute()
         ):
             return False
@@ -390,7 +390,7 @@ class GameLibraryModel(QAbstractListModel):
                 or not isinstance(item.get("path"), str)
                 or not item["path"]
                 or len(item["path"]) > 4096
-                or "\\x00" in item["path"]
+                or "\x00" in item["path"]
                 or not Path(item["path"]).is_absolute()
             ):
                 return False
