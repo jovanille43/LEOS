@@ -63,6 +63,27 @@ Les réglages avancés restent accessibles dans KDE et le Centre de contrôle LE
 
 ## Validation avant publication
 
+### Identité et couleurs A/B
+
+- [ ] L'écran d'identité apparaît avant tout accès à Desktop ou Gaming lors d'un premier démarrage.
+- [ ] A et B sont choisies indépendamment ; les deux peuvent être identiques si l'utilisateur le souhaite.
+- [ ] Les valeurs exactes choisies sont enregistrées et restaurées après fermeture puis réouverture de session.
+- [ ] Une paire incomplète ou une erreur d'écriture ne permet pas de contourner le choix obligatoire.
+- [ ] Aucun ancien cyan/magenta n'apparaît comme accent par défaut.
+- [ ] Les logos, fonds et introductions recolorés utilisent la paire choisie sans teinter les gris métalliques.
+- [ ] Si la génération d'un visuel échoue (codec, fichier absent ou cache), le sélecteur reste utilisable et aucun visuel source non recoloré ne remplace l'identité choisie.
+
+### Apparence Desktop et retour arrière
+
+- [ ] **Activer l'apparence LEOS** demande confirmation et crée une sauvegarde Plasma vérifiée avant toute modification.
+- [ ] Le profil applique le fond Desktop, le schéma de couleurs, le Plasma Style, les icônes et le dock lorsque les composants requis sont disponibles.
+- [ ] Une disposition multi-panneaux ou non inspectable est refusée sans changement de configuration.
+- [ ] Une erreur pendant l'application restaure les réglages précédents et laisse la configuration en attente pour une nouvelle tentative.
+- [ ] **Garder mon bureau actuel** ne modifie ni le fond d'écran, ni le thème, ni les panneaux.
+- [ ] Après application réussie, le profil ne se réapplique pas à chaque session et l'utilisateur conserve l'accès aux paramètres KDE natifs.
+
+### Guide et applications facultatives
+
 - [ ] Le guide apparaît quand `onboarding_complete` est faux.
 - [ ] **Compris** masque le guide et mémorise le choix.
 - [ ] Choisir Desktop ou Gaming mémorise également la lecture du guide.
