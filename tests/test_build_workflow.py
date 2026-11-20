@@ -36,6 +36,21 @@ class BuildWorkflowTests(unittest.TestCase):
             with self.subTest(source_path=source_path):
                 self.assertIn(source_path, push_trigger)
 
+    def test_pull_request_builds_only_a_signed_standard_preview(self):
+        source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertIn("  pull_request:", source)
+        trigger = source.split("  pull_request:", 1)[1].split("permissions:", 1)[0]
+        self.assertIn("types: [opened, synchronize, reopened]", trigger)
+        self.assertIn("pr_event_number: ${{ github.event.number || 0 }}", source)
+
+        standard = source.split("  build-amd-intel:", 1)[1].split("  build-nvidia-legacy:", 1)[0]
+        self.assertIn("if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository", standard)
+        for job_name in ("build-nvidia-legacy", "build-nvidia-modern"):
+            with self.subTest(job=job_name):
+                job = source.split(f"  {job_name}:", 1)[1]
+                self.assertIn("if: github.event_name != 'pull_request'", job.split("needs:", 1)[0])
+        preflight = source.split("  preflight:", 1)[1].split("  build-amd-intel:", 1)[0]
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", preflight)
     def test_image_build_runs_python_suite_before_publishing(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
         self.assertIn("Run LEOS Python test suite", source)
