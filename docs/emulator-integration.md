@@ -32,7 +32,7 @@ Heroic et les six émulateurs sont installés automatiquement dans le profil de 
 
 ### V2-A — Catalogue et installation automatique
 
-- [x] Ajouter les six fiches dans la catégorie Émulation de la boutique.
+- [x] Ajouter les six fiches d'émulation et celle de Heroic dans la boutique.
 - [x] Utiliser les identifiants d'applications Flathub du catalogue et distinguer les paquets vérifiés des paquets communautaires.
 - [x] Indiquer les limites des paquets communautaires.
 - [x] Préciser que jeux, BIOS, firmwares et cœurs ne sont pas fournis.
