@@ -30,6 +30,7 @@ from .emulator_folder_browser import (
 from .system_monitor import SystemMonitor
 from .power_profiles import PowerProfileState, inspect_power_profiles, set_power_profile
 from .mangohud import find_mangohud
+from .emulator_prerequisites import detect_emulator_prerequisite_statuses
 
 
 class _PowerProfileTaskSignals(QObject):
@@ -73,6 +74,7 @@ class GamingController(QObject):
     launchStatusChanged = Signal()
     launcherStatusChanged = Signal()
     emulatorFolderBrowserChanged = Signal()
+    emulatorPrerequisitesChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -82,6 +84,7 @@ class GamingController(QObject):
             resolve_browsable_directory(Path.home()) or Path("/")
         )
         self._launcher_statuses = self.library.launcherStatuses()
+        self._emulator_prerequisite_statuses = self.library.emulatorPrerequisiteStatuses()
         self._launcher_refresh_timer = QTimer(self)
         self._launcher_refresh_timer.setInterval(15000)
         self._launcher_refresh_timer.timeout.connect(self.refreshLauncherStatuses)
@@ -204,14 +207,22 @@ class GamingController(QObject):
     def launcherStatuses(self) -> list[str]:
         return list(self._launcher_statuses)
 
+    @Property("QStringList", notify=emulatorPrerequisitesChanged)
+    def emulatorPrerequisiteStatuses(self) -> list[str]:
+        return list(self._emulator_prerequisite_statuses)
+
     @Slot()
     def refreshLauncherStatuses(self) -> None:
         statuses = self.library.launcherStatuses()
+        prerequisites = self.library.emulatorPrerequisiteStatuses()
         if statuses != self._launcher_statuses:
             self._launcher_statuses = statuses
             self.launcherStatusChanged.emit()
             # An emulator has appeared or disappeared; refresh its game entries.
             self.library.refresh()
+        if prerequisites != self._emulator_prerequisite_statuses:
+            self._emulator_prerequisite_statuses = prerequisites
+            self.emulatorPrerequisitesChanged.emit()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
