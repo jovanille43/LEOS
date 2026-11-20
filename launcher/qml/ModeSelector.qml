@@ -81,6 +81,8 @@ ApplicationWindow {
         if (transitionInProgress)
             return
         if (appearanceDialog.visible) {
+            if (modeSelectorController.appearanceSetupRunning)
+                return
             if (action === "left" || action === "right" || action === "up" || action === "down") {
                 appearanceDialogFocusIndex = 1 - appearanceDialogFocusIndex
                 if (appearanceDialogFocusIndex === 0)
