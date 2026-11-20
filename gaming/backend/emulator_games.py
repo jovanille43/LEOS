@@ -45,6 +45,14 @@ PLATFORM_SPECS = {
         "extensions": frozenset({".iso", ".cso", ".chd", ".pbp"}),
         "arguments": lambda path: [str(path)],
     },
+    "melonds": {
+        "emulator_id": "net.kuribo64.melonDS",
+        "emulator_name": "melonDS",
+        "binaries": ("melonDS", "melonds"),
+        "platform": "Nintendo",
+        "extensions": frozenset({".nds"}),
+        "arguments": lambda path: ["-f", str(path)],
+    },
 }
 
 
