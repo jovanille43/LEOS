@@ -998,8 +998,8 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: 9
                                 color: window.themeColors.surface_elevated
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.accentA
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? "white" : window.accentA
                             }
                             contentItem: Label {
                                 text: addGameButton.text
