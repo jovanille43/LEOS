@@ -825,11 +825,22 @@ class ControlCenterController(QObject):
             self.plasmaStyle.apply_style(style_id)
             try:
                 self.plasmaIcons.apply_theme(icon_id)
-            except Exception:
-                if self.plasmaIcons.can_restore():
-                    self.plasmaIcons.restore_previous_theme()
-                if self.plasmaStyle.can_restore():
-                    self.plasmaStyle.restore_previous_style()
+            except Exception as apply_error:
+                rollback_errors = []
+                for manager, restore in (
+                    (self.plasmaIcons, self.plasmaIcons.restore_previous_theme),
+                    (self.plasmaStyle, self.plasmaStyle.restore_previous_style),
+                ):
+                    try:
+                        if manager.can_restore():
+                            restore()
+                    except Exception as rollback_error:
+                        rollback_errors.append(str(rollback_error))
+                if rollback_errors:
+                    raise RuntimeError(
+                        "L’activation Plasma a échoué et le retour arrière est incomplet : "
+                        + "; ".join(rollback_errors)
+                    ) from apply_error
                 raise
             message = "Style Plasma et icônes LEOS mis à jour avec le dégradé A/B choisi."
         except FileNotFoundError:
