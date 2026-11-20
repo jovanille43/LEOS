@@ -131,6 +131,22 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("def animationsEnabled(self)", controller)
         self.assertIn("def soundsEnabled(self)", controller)
 
+    def test_desktop_choice_offers_consent_based_first_run_appearance(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
+        setup = (ROOT / "desktop/first_run_appearance.py").read_text(encoding="utf-8")
+        self.assertIn("function requestDesktopMode()", qml)
+        self.assertIn('desktopAppearanceStatus === "pending"', qml)
+        self.assertIn('title: "Activer l\'apparence LEOS"', qml)
+        self.assertIn("ACTIVER L'APPARENCE LEOS", qml)
+        self.assertIn("GARDER MON BUREAU ACTUEL", qml)
+        self.assertIn("beginDesktopAppearanceSetup", controller)
+        self.assertIn("skipDesktopAppearance", controller)
+        self.assertIn("build_panel_management_script", setup)
+        self.assertIn("DESKTOP_WALLPAPER_URI", setup)
+        self.assertIn("restore_backup", setup)
+        self.assertIn("desktop_appearance_setup", setup)
+
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(
             encoding="utf-8"

@@ -19,6 +19,14 @@ ApplicationWindow {
     property string pendingMode: ""
     property bool transitionInProgress: false
 
+    function requestDesktopMode() {
+        if (modeSelectorController.desktopAppearanceStatus === "pending") {
+            appearanceDialog.open()
+            return
+        }
+        requestModeWithIntro("desktop")
+    }
+
     function requestModeWithIntro(mode) {
         if (transitionInProgress)
             return
@@ -73,7 +81,7 @@ ApplicationWindow {
             if (gamingCard.activeFocus)
                 transitionDialog.open()
             else
-                window.requestModeWithIntro("desktop")
+                window.requestDesktopMode()
         }
     }
 
@@ -222,7 +230,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
-                    onClicked: window.requestModeWithIntro("desktop")
+                    onClicked: window.requestDesktopMode()
                     background: Rectangle {
                         radius: 22
                         color: desktopCard.down ? "#1a2630" : "#111720"
@@ -404,6 +412,97 @@ ApplicationWindow {
         target: modeSelectorController
         function onGamepadAction(action) {
             window.handleGamepadAction(action)
+        }
+        function onAppearanceSetupFinished(succeeded, message) {
+            appearanceStatusText.text = message
+            if (succeeded) {
+                appearanceDialog.close()
+                window.requestModeWithIntro("desktop")
+            }
+        }
+    }
+
+    Dialog {
+        id: appearanceDialog
+        title: "Activer l'apparence LEOS"
+        modal: true
+        anchors.centerIn: parent
+        closePolicy: Popup.NoAutoClose
+        width: 520
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
+
+            Label {
+                text: "LEOS va donner à ce bureau son identité visuelle : fond officiel, couleurs cyan et magenta, style Plasma LEOS et dock inférieur. Une sauvegarde de ta disposition KDE sera créée avant toute modification."
+                color: "white"
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: "Si la configuration actuelle comporte plusieurs panneaux ou ne peut pas être sauvegardée en sécurité, LEOS n'y touchera pas et expliquera pourquoi."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                id: appearanceStatusText
+                text: modeSelectorController.appearanceSetupRunning
+                      ? "Préparation de l'apparence LEOS…"
+                      : "Tu pourras restaurer la disposition précédente depuis les sauvegardes Plasma."
+                color: window.cyan
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                id: applyAppearanceButton
+                text: modeSelectorController.appearanceSetupRunning
+                      ? "APPLICATION EN COURS…"
+                      : "ACTIVER L'APPARENCE LEOS"
+                enabled: !modeSelectorController.appearanceSetupRunning
+                Layout.fillWidth: true
+                onClicked: {
+                    appearanceStatusText.text = "Sauvegarde du bureau et application du profil LEOS…"
+                    if (!modeSelectorController.beginDesktopAppearanceSetup())
+                        appearanceStatusText.text = "L'activation ne peut pas démarrer. Vérifie l'état du premier démarrage."
+                }
+                background: Rectangle {
+                    radius: 9
+                    color: applyAppearanceButton.enabled ? "#17313d" : "#17212a"
+                    border.color: window.cyan
+                }
+                contentItem: Label {
+                    text: applyAppearanceButton.text
+                    color: "white"
+                    font.weight: Font.Bold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+            Button {
+                id: keepAppearanceButton
+                text: "GARDER MON BUREAU ACTUEL"
+                enabled: !modeSelectorController.appearanceSetupRunning
+                Layout.fillWidth: true
+                onClicked: {
+                    if (modeSelectorController.skipDesktopAppearance()) {
+                        appearanceDialog.close()
+                        window.requestModeWithIntro("desktop")
+                    } else {
+                        appearanceStatusText.text = "Le choix n'a pas pu être enregistré. Aucun réglage KDE n'a été modifié."
+                    }
+                }
+                background: Rectangle {
+                    radius: 9
+                    color: "transparent"
+                    border.color: "#485366"
+                }
+                contentItem: Label {
+                    text: keepAppearanceButton.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
         }
     }
 
