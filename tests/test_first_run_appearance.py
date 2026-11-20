@@ -97,6 +97,12 @@ class FakeLayout:
 
 
 class FakeFavourites:
+    def __init__(self, valid=True):
+        self.valid = valid
+
+    def load(self):
+        return self.valid
+
     def items(self):
         return ["leos-menu.desktop", "org.kde.dolphin.desktop", "steam.desktop"]
 
@@ -177,6 +183,14 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.style.restored, 1)
         self.assertEqual(self.colors.restored, 1)
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
+
+    def test_invalid_saved_favourites_block_before_backup(self):
+        self.favourites.valid = False
+        with self.assertRaisesRegex(RuntimeError, "favoris du dock"):
+            self.setup.apply()
+        self.assertEqual(self.backups.created, [])
+        self.assertEqual(self.colors.applied, [])
+        self.assertEqual(self.style.applied, 0)
 
     def test_missing_required_command_blocks_before_backup(self):
         self.setup.command_lookup = lambda name: None
