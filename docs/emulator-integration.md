@@ -79,10 +79,16 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 
 ### V2-E — BIOS, firmware et cœurs
 
-- Ne jamais distribuer, extraire d'une console ou télécharger des BIOS, firmware, clés ou fichiers protégés.
-- Expliquer dans l'assistant de configuration que l'utilisateur doit fournir les fichiers qu'il est autorisé à utiliser.
-- Vérifier uniquement la présence locale lorsqu'un format et un emplacement sont documentés ; ne pas téléverser ni lire le contenu privé.
-- RetroArch garde la gestion de ses cœurs dans son environnement ; aucune installation automatique de cœur sans une action explicite et documentée.
+- [x] Ajouter un écran Gaming « Prérequis » navigable à la manette, alimenté par des vérifications locales en lecture seule.
+- [x] PCSX2 : vérifier uniquement la présence d'au moins un fichier BIOS non vide dans le dossier de configuration Flatpak ou utilisateur connu.
+- [x] melonDS : lire le petit fichier de configuration TOML et vérifier la présence ainsi que les tailles attendues des trois dumps DS configurés (BIOS9, BIOS7, firmware).
+- [x] RPCS3 : vérifier le module `dev_flash/sys/external/liblv2.sprx`, utilisé par le projet pour reconnaître le firmware installé.
+- [x] RetroArch : lire le dossier de cœurs configuré et compter uniquement les fichiers de cœur Linux réguliers non vides.
+- [x] Ne jamais afficher les chemins privés, lire le contenu des BIOS/firmwares/cœurs, ni les téléverser. Une présence détectée n'atteste pas l'authenticité ou le bon fonctionnement.
+- [ ] Ajouter des assistants de configuration guidés avec sélection contrôlée des dossiers et essais de lancement.
+- [ ] Valider sur les versions Flatpak réellement installées et documenter les cas natifs spécifiques.
+
+LEOS ne fournit, ne distribue, n'extrait et ne télécharge aucun BIOS, firmware, clé, jeu ou cœur protégé. L'utilisateur doit fournir les fichiers qu'il est autorisé à utiliser. RetroArch conserve le choix des cœurs par système ; aucun cœur n'est installé automatiquement parce que les besoins dépendent des consoles que l'utilisateur souhaite émuler.
 
 ### V2-F — Validation
 
@@ -107,6 +113,10 @@ Les formats et options de lancement de la première intégration s'appuient sur 
 - **PPSSPP — formats de jeux et copies personnelles** : https://www.ppsspp.org/getgames/
 - **PPSSPP — arguments de ligne de commande** : https://www.ppsspp.org/docs/reference/command-line/
 - **melonDS — argument ROM et option plein écran** : https://melonds.kuribo64.net/board/thread.php?id=924
-- **melonDS — préchargement des ROM dans l'interface Qt** : https://github.com/melonDS-emu/melonDS/blob/master/src/frontend/qt_sdl/main.cpp
+- **melonDS — configuration TOML et chemins DS.BIOS9Path / DS.BIOS7Path / DS.FirmwarePath** : https://github.com/melonDS-emu/melonDS/blob/master/src/frontend/qt_sdl/Config.cpp
+- **melonDS — tailles des BIOS/firmware DS** : https://melonds.kuribo64.net/faq.php
+- **PCSX2 Flatpak — dossier BIOS et configuration initiale** : https://github.com/flathub/net.pcsx2.PCSX2
+- **RetroArch — installation des cœurs dans le dossier indiqué par Settings > Directory > Cores** : https://docs.libretro.com/guides/download-cores/
+- **RPCS3 — vérification du module liblv2.sprx et installation via File > Install Firmware** : https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/Cell/PPUModule.cpp
 
 Lors de toute évolution des formats ou des arguments, mettre à jour les tests de contrat et revérifier les options sur les versions Flatpak réellement prises en charge. La liste déclarée par un projet amont ne remplace pas les essais de lancement sur Bazzite.
