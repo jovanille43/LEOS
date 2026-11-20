@@ -353,6 +353,11 @@ ApplicationWindow {
             }
             return
         }
+        if (emulatorPrerequisitesDialog.visible) {
+            if (action === "back" || action === "confirm")
+                emulatorPrerequisitesDialog.close()
+            return
+        }
         if (emulatorImportDialog.visible) {
             if (action === "back") {
                 emulatorImportDialog.close()
