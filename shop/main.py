@@ -23,7 +23,7 @@ def main() -> int:
     app.setOrganizationName("LEOS")
 
     store = StoreController()
-    theme = ThemeController(generate_assets=False)
+    theme = ThemeController(generate_videos=False)
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("store", store)
     engine.rootContext().setContextProperty("leosTheme", theme)

@@ -20,7 +20,7 @@ def main() -> int:
     app.setApplicationName("LEOS Notifications")
     app.setOrganizationName("LEOS")
     model = NotificationModel()
-    theme = ThemeController(generate_assets=False)
+    theme = ThemeController(generate_videos=False)
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("notificationModel", model)
     engine.rootContext().setContextProperty("leosTheme", theme)
