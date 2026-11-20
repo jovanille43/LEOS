@@ -133,7 +133,7 @@ exit 0
             and "automatiquement" in item.get("operation_note", "").casefold()
         }
         script = SCRIPT.read_text(encoding="utf-8")
-        block = re.search(r"(?ms)^apps=\\(\\n(.*?)^\\)", script)
+        block = re.search(r"(?ms)^apps=\(\n(.*?)^\)", script)
         self.assertIsNotNone(block)
         declared = set(re.findall(r"(?m)^    ([A-Za-z0-9_.-]+)$", block.group(1)))
         self.assertEqual(declared, EXPECTED_APPS)
