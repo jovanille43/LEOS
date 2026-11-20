@@ -39,6 +39,7 @@ from .emulator_games import (
     MAX_SOURCE_FOLDERS, PLATFORM_SPECS, build_emulator_launch_prefix,
     build_emulator_launch_command, scan_emulator_folder,
 )
+from .emulator_sources import remove_emulator_source_folder
 
 
 MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
@@ -359,54 +360,10 @@ class GameLibraryModel(QAbstractListModel):
         return True
 
     def removeEmulatorFolder(self, platform_key: str, folder: str) -> bool:
-        """Forget one explicitly selected root without changing its files."""
-        if (
-            not isinstance(platform_key, str)
-            or platform_key not in PLATFORM_SPECS
-            or not isinstance(folder, str)
-            or not folder
-            or len(folder) > 4096
-            or "\x00" in folder
-            or not Path(folder).is_absolute()
+        """Forget a user-selected source without touching the external drive."""
+        if not remove_emulator_source_folder(
+            self._emulator_sources_file, platform_key, folder
         ):
-            return False
-        if (
-            self._emulator_sources_file.is_symlink()
-            or self._emulator_sources_file.parent.is_symlink()
-            or not self._emulator_sources_file.is_file()
-        ):
-            return False
-        raw = read_bounded_json(self._emulator_sources_file)
-        if not isinstance(raw, list) or len(raw) > MAX_SOURCE_FOLDERS:
-            return False
-
-        remaining: list[dict[str, str]] = []
-        removed = False
-        for item in raw:
-            if (
-                not isinstance(item, dict)
-                or set(item) != {"platform", "path"}
-                or item.get("platform") not in PLATFORM_SPECS
-                or not isinstance(item.get("path"), str)
-                or not item["path"]
-                or len(item["path"]) > 4096
-                or "\x00" in item["path"]
-                or not Path(item["path"]).is_absolute()
-            ):
-                return False
-            if item["platform"] == platform_key and item["path"] == folder:
-                removed = True
-                continue
-            remaining.append({
-                "platform": item["platform"],
-                "path": item["path"],
-            })
-
-        if not removed:
-            return False
-        try:
-            write_bounded_json(self._emulator_sources_file, remaining)
-        except (OSError, ValueError):
             return False
         self.refresh()
         return True
