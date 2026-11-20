@@ -17,6 +17,11 @@ class PlasmaIconThemeManagerTests(unittest.TestCase):
         self.state = self.root / "state"
         self.icons = self.root / "icons"
         (self.icons / ICON_THEME).mkdir(parents=True)
+        (self.icons / ICON_THEME / "scalable" / "actions").mkdir(parents=True)
+        (self.icons / ICON_THEME / "scalable" / "actions" / "leos-test.svg").write_text(
+            '<svg><path stroke="#00D9FF"/><path fill="#E33BFF"/><path fill="#808080"/></svg>',
+            encoding="utf-8",
+        )
         (self.icons / ICON_THEME / "index.theme").write_text(
             "[Icon Theme]\nName=LEOS\nInherits=breeze,hicolor\n",
             encoding="utf-8",
@@ -61,6 +66,23 @@ class PlasmaIconThemeManagerTests(unittest.TestCase):
         self.assertEqual(self.manager.current_theme(), "breeze")
         self.assertFalse(self.manager.can_restore())
         self.assertEqual([command[0][1] for command in self.commands], ["leos", "breeze"])
+
+    def test_custom_a_b_icon_variant_is_user_scoped_and_restorable(self):
+        message = self.manager.apply_custom_theme("#FF8800", "#0055CC")
+        selected = self.manager.current_theme()
+        self.assertIn("personnalisé", message.lower())
+        self.assertTrue(selected.startswith("leos-ab-"))
+        variant = self.data / "icons" / selected
+        index = (variant / "index.theme").read_text(encoding="utf-8")
+        self.assertIn("Name=LEOS personnalisé", index)
+        svg = (variant / "scalable" / "actions" / "leos-test.svg").read_text(encoding="utf-8")
+        self.assertIn("#FF8800", svg)
+        self.assertIn("#0055CC", svg)
+        self.assertIn("#808080", svg)
+        self.assertIn("#00D9FF", (self.icons / ICON_THEME / "scalable" / "actions" / "leos-test.svg").read_text(encoding="utf-8"))
+        self.assertTrue(self.manager.can_restore())
+        self.manager.restore_previous_theme()
+        self.assertEqual(self.manager.current_theme(), "breeze")
 
     def test_cannot_apply_when_active_theme_cannot_be_identified(self):
         self.config_file.write_text("[General]\nColorScheme=BreezeDark\n", encoding="utf-8")

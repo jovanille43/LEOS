@@ -10,10 +10,13 @@ ApplicationWindow {
     minimumHeight: 440
     visible: true
     title: "LEOS — Notifications"
-    color: "#090B10"
-    property color cyan: "#00D9FF"
-    property color magenta: "#E33BFF"
-    property color muted: "#929BAD"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
 
     ColumnLayout {
         anchors.fill: parent
@@ -30,8 +33,8 @@ ApplicationWindow {
             Item { Layout.fillWidth: true }
             Rectangle {
                 radius: 12
-                color: "#14202B"
-                border.color: "#245064"
+                color: window.themeColors.surface_elevated
+                border.color: window.themeColors.border
                 implicitWidth: 90
                 implicitHeight: 34
                 Label {
@@ -55,8 +58,8 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: 16
-            color: "#10151E"
-            border.color: "#263140"
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
             ListView {
                 id: list
                 anchors.fill: parent
@@ -93,7 +96,7 @@ ApplicationWindow {
                             spacing: 4
                             Label { text: title; color: "white"; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; wrapMode: Text.Wrap }
                             Label { text: body; color: window.muted; font.pixelSize: 11; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
-                            Label { text: createdAt; color: "#657184"; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
                         }
                         ColumnLayout {
                             ToolButton {
@@ -122,7 +125,7 @@ ApplicationWindow {
         Label {
             Layout.fillWidth: true
             text: "Les notifications système KDE restent gérées par Plasma. Cet espace conserve les événements émis par les composants LEOS."
-            color: "#657184"
+            color: window.themeColors.muted_text
             font.pixelSize: 10
             wrapMode: Text.WordWrap
         }

@@ -8,11 +8,14 @@ ApplicationWindow {
     height: 790
     visible: true
     title: "LEOS — Boutique"
-    color: "#080a0f"
+    property var themeColors: leosTheme.themePalette
+    color: themeColors.background
 
-    property color cyan: "#00d9ff"
-    property color magenta: "#e33bff"
-    property color muted: "#929bad"
+    property color cyan: themeColors.accent_primary_text
+    property color magenta: themeColors.accent_secondary_text
+    property color accentA: themeColors.accent_primary
+    property color accentB: themeColors.accent_secondary
+    property color muted: themeColors.muted_text
     property int selectedRow: -1
 
     function normalizedSearchText(value) {
@@ -94,8 +97,8 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
                     ListView {
                         id: appList
                         anchors.fill: parent
@@ -131,7 +134,7 @@ ApplicationWindow {
                                     Layout.preferredWidth: 42
                                     Layout.preferredHeight: 42
                                     radius: 10
-                                    color: "#202c3b"
+                                    color: window.themeColors.surface_elevated
                                     Label {
                                         anchors.centerIn: parent
                                         text: name.length ? name.substring(0, 1).toUpperCase() : "L"
@@ -185,8 +188,8 @@ ApplicationWindow {
                     Layout.preferredWidth: 360
                     Layout.fillHeight: true
                     radius: 14
-                    color: "#111720"
-                    border.color: "#293342"
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
 
                     ColumnLayout {
                         anchors.fill: parent

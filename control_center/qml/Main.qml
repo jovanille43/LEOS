@@ -77,8 +77,6 @@ ApplicationWindow {
             window.plasmaDockNotice = message
         }
         function onSettingsChanged() {
-            const themes = ["leos-original", "light", "cyan", "magenta", "gaming"]
-            themeBox.currentIndex = Math.max(0, themes.indexOf(controlCenter.theme))
             if (!window.draftColorsDirty) {
                 window.draftColorA = controlCenter.themeColorA
                 window.draftColorB = controlCenter.themeColorB
@@ -506,19 +504,12 @@ ApplicationWindow {
                                         color: window.muted
                                         font.pixelSize: 12
                                     }
-                                    ComboBox {
-                                        id: themeBox
+                                    Label {
+                                        text: "Les anciennes palettes prédéfinies ne sont pas imposées : choisis directement A et B ci-dessous."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
-                                        model: ["LEOS Original", "Light", "Cyan", "Magenta", "Gaming"]
-                                        Component.onCompleted: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            currentIndex = Math.max(0, values.indexOf(controlCenter.theme))
-                                        }
-                                        onActivated: {
-                                            const values = ["leos-original", "light", "cyan", "magenta", "gaming"]
-                                            window.draftColorsDirty = false
-                                            controlCenter.setTheme(values[currentIndex])
-                                        }
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -552,7 +543,10 @@ ApplicationWindow {
                                             window.themeColorNotice = controlCenter.setThemeColors(
                                                 window.draftColorA, window.draftColorB
                                             )
-                                            window.draftColorsDirty = false
+                                            if (controlCenter.themeColorsConfigured
+                                                    && controlCenter.themeColorA === window.draftColorA
+                                                    && controlCenter.themeColorB === window.draftColorB)
+                                                window.draftColorsDirty = false
                                         }
                                     }
                                     Label {
@@ -616,7 +610,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: desktopWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/desktop-leos.svg"
+                                                    source: leosTheme.desktopWallpaperUrl
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -651,7 +645,7 @@ ApplicationWindow {
                                                 Image {
                                                     id: gamingWallpaperPreview
                                                     anchors.fill: parent
-                                                    source: "../../branding/wallpapers/gaming-leos.svg"
+                                                    source: leosTheme.gamingWallpaperUrl
                                                     fillMode: Image.PreserveAspectFit
                                                     asynchronous: true
                                                     visible: status === Image.Ready
@@ -732,7 +726,7 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             text: "Appliquer à KDE"
-                                            enabled: controlCenter.kdeColorSchemeToolAvailable
+                                            enabled: controlCenter.kdeColorSchemeToolAvailable && controlCenter.themeColorsConfigured
                                             onClicked: {
                                                 kdeThemeConfirmation.action = "apply"
                                                 kdeThemeConfirmation.open()
@@ -750,7 +744,9 @@ ApplicationWindow {
                                     Label {
                                         text: !controlCenter.kdeColorSchemeToolAvailable
                                             ? "Outil plasma-apply-colorscheme indisponible sur cette session."
-                                            : window.kdeThemeNotice
+                                            : (!controlCenter.themeColorsConfigured
+                                               ? "Choisis et enregistre d’abord les couleurs A et B."
+                                               : window.kdeThemeNotice)
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
@@ -794,7 +790,7 @@ ApplicationWindow {
                                         spacing: 8
                                         Button {
                                             text: "Appliquer le style LEOS"
-                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled
+                                            enabled: controlCenter.plasmaStyleToolAvailable && controlCenter.plasmaStyleInstalled && controlCenter.themeColorsConfigured
                                             onClicked: {
                                                 plasmaStyleConfirmation.action = "apply"
                                                 plasmaStyleConfirmation.open()
@@ -814,7 +810,9 @@ ApplicationWindow {
                                             ? "Paquet Plasma Style LEOS indisponible."
                                             : !controlCenter.plasmaStyleToolAvailable
                                                 ? "Outil plasma-apply-desktoptheme indisponible."
-                                                : window.plasmaStyleNotice
+                                                : (!controlCenter.themeColorsConfigured
+                                                   ? "Choisis et enregistre d’abord les couleurs A et B."
+                                                   : window.plasmaStyleNotice)
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
