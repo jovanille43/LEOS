@@ -166,7 +166,7 @@ ApplicationWindow {
     }
 
     function focusToolbar(index) {
-        toolbarFocusIndex = Math.max(0, Math.min(3, index))
+        toolbarFocusIndex = Math.max(0, Math.min(4, index))
         navigationArea = "toolbar"
         if (toolbarFocusIndex === 0)
             searchField.forceActiveFocus()
@@ -174,6 +174,8 @@ ApplicationWindow {
             refreshLibraryButton.forceActiveFocus()
         else if (toolbarFocusIndex === 2)
             importEmulatorFolderButton.forceActiveFocus()
+        else if (toolbarFocusIndex === 3)
+            emulatorPrerequisitesButton.forceActiveFocus()
         else
             addGameButton.forceActiveFocus()
     }
@@ -199,6 +201,8 @@ ApplicationWindow {
             gameGrid.forceActiveFocus()
         } else if (toolbarFocusIndex === 2) {
             emulatorImportDialog.open()
+        } else if (toolbarFocusIndex === 3) {
+            emulatorPrerequisitesDialog.open()
         } else {
             addDialog.open()
         }
@@ -950,8 +954,8 @@ ApplicationWindow {
                             }
                         }
                         Button {
-                            id: addGameButton
-                            text: "+ AJOUTER UN JEU"
+                            id: emulatorPrerequisitesButton
+                            text: "PRÉREQUIS"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
@@ -961,6 +965,34 @@ ApplicationWindow {
                             onClicked: {
                                 window.navigationArea = "toolbar"
                                 window.toolbarFocusIndex = 3
+                                emulatorPrerequisitesDialog.open()
+                            }
+                            background: Rectangle {
+                                radius: 9
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? window.focusColor : window.themeColors.border
+                            }
+                            contentItem: Label {
+                                text: emulatorPrerequisitesButton.text
+                                color: "white"
+                                font.pixelSize: window.fontCaption
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+                        Button {
+                            id: addGameButton
+                            text: "+ AJOUTER UN JEU"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 4
+                                }
+                            }
+                            onClicked: {
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 4
                                 addDialog.open()
                             }
                             background: Rectangle {
@@ -1558,6 +1590,62 @@ ApplicationWindow {
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
+            }
+        }
+    }
+
+    Dialog {
+        id: emulatorPrerequisitesDialog
+        title: "PRÉREQUIS DES ÉMULATEURS"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 620)
+        height: Math.min(window.height - 80, 560)
+        standardButtons: Dialog.Close
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
+
+            Label {
+                text: "ÉTAT DE CONFIGURATION"
+                color: window.accentA
+                font.pixelSize: window.fontCaption
+                font.letterSpacing: 2
+            }
+            Label {
+                text: "LEOS vérifie uniquement la présence de fichiers et de dossiers attendus. Il ne lit pas leur contenu et ne peut pas certifier leur authenticité ni leur compatibilité."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Repeater {
+                model: leos.emulatorPrerequisiteStatuses
+                delegate: Rectangle {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    implicitHeight: prerequisiteLabel.implicitHeight + 20
+                    radius: 8
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+
+                    Label {
+                        id: prerequisiteLabel
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        text: modelData
+                        color: modelData.toLowerCase().includes("détect") ? window.accentA : "white"
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: window.fontBody
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+            }
+            Label {
+                text: "Les BIOS, firmwares, clés et cœurs protégés ne sont jamais fournis par LEOS. Ajoute uniquement les fichiers que tu es autorisé à utiliser."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
             }
         }
     }
