@@ -33,6 +33,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("OVMF_CODE", workflow)
         self.assertIn("xvfb-run", workflow)
         self.assertIn("tesseract", workflow)
+        self.assertIn("generate-iso --variant server --web-ui --iso-name", workflow)
+        self.assertIn("installed payload", workflow)
         qemu_step = workflow.split("      - name: Boot installer ISO with UEFI firmware in QEMU", 1)[1].split(
             "      - name: Upload UEFI boot diagnostics", 1
         )[0]
@@ -74,6 +76,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "usr/lib/systemd/system/webui-cockpit-ws.service",
             "usr/libexec/anaconda/webui-desktop",
             "usr/share/cockpit/anaconda-webui/index.html",
+            "usr/share/anaconda/profile.d/fedora-server.conf",
+            "unsquashfs -cat",
+            "variant_id",
+            "anaconda-screen-accounts",
         ):
             with self.subTest(expected=expected):
                 self.assertIn(expected, validator)
