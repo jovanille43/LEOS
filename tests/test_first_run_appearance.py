@@ -202,6 +202,18 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.brand_asset_calls, [])
         self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
 
+    def test_custom_wallpaper_generation_failure_aborts_before_kde_changes(self):
+        self.setup.branding_asset_builder = lambda color_a, color_b: {
+            "desktopWallpaperUrl": "file:///usr/share/leos/branding/wallpapers/desktop-leos.svg"
+        }
+        with self.assertRaisesRegex(RuntimeError, "fond personnalisé A/B"):
+            self.setup.apply()
+        self.assertEqual(self.backups.created, [])
+        self.assertEqual(self.colors.applied, [])
+        self.assertEqual(self.style.applied, 0)
+        self.assertEqual(self.icons.applied, 0)
+        self.assertEqual(self.settings.get("desktop_appearance_setup"), PENDING)
+
     def test_explicit_skip_is_persisted_and_apply_is_not_started(self):
         self.assertEqual(self.setup.skip(), SKIPPED)
         self.assertEqual(self.settings.get("desktop_appearance_setup"), SKIPPED)
