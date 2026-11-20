@@ -149,11 +149,13 @@ class DesktopAppearanceSetup:
         plasma_script_attempted = False
         try:
             # Build only user-scoped asset variants; official source files remain immutable.
-            try:
-                assets = self.branding_asset_builder(color_a, color_b)
-            except Exception:
-                assets = source_asset_urls()
-            wallpaper_uri = assets.get("desktopWallpaperUrl") or source_asset_urls()["desktopWallpaperUrl"]
+            assets = self.branding_asset_builder(color_a, color_b)
+            wallpaper_uri = assets.get("desktopWallpaperUrl")
+            original_wallpaper_uri = source_asset_urls()["desktopWallpaperUrl"]
+            if not wallpaper_uri or wallpaper_uri == original_wallpaper_uri:
+                raise RuntimeError(
+                    "Le fond personnalisé A/B n’a pas pu être généré ; le bureau existant est conservé."
+                )
 
             # Preserve the user's panel and wallpaper configuration before changing Plasma.
             backup_id = self.backups.create_backup()
