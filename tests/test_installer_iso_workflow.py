@@ -54,18 +54,20 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             workflow.index("Upload installer ISO and checksum"),
         )
 
-    def test_iso_is_not_started_for_unverified_or_failed_image_builds(self):
+    def test_iso_is_gated_and_main_iso_workflow_updates_start_all_variants(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', workflow)
         self.assertIn("branches: [main]", workflow)
+        self.assertIn("  push:", workflow)
+        self.assertIn('      - ".github/workflows/iso.yml"', workflow)
         self.assertIn(
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertNotIn("  push:", workflow)
+        self.assertIn("(github.event_name == 'workflow_run' || github.event_name == 'push')", workflow)
         self.assertNotIn("  pull_request:", workflow)
 
-    def test_successful_main_image_build_triggers_standard_iso(self):
+    def test_successful_main_image_build_triggers_all_three_installer_isos(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', workflow)
         self.assertIn("types: [completed]", workflow)
@@ -74,6 +76,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
+        self.assertIn('fromJSON((github.event_name == \'workflow_run\' || github.event_name == \'push\') && \'["standard","nvidia-legacy","nvidia-modern"]\'', workflow)
+        self.assertIn("max-parallel: 1", workflow)
+        self.assertIn("VARIANT: ${{ matrix.variant }}", workflow)
+        self.assertIn("name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}", workflow)
         self.assertIn("inputs.variant || 'standard'", workflow)
         self.assertIn("inputs.image_tag || 'latest'", workflow)
 
