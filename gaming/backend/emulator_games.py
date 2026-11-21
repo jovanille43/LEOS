@@ -69,7 +69,7 @@ PLATFORM_SPECS = {
         # PS3 titles are imported through their validated SELF boot target below,
         # not by treating arbitrary .BIN or .PKG files as games.
         "extensions": frozenset(),
-        "arguments": lambda path: ["--no-gui", str(path)],
+        "arguments": lambda path: ["--no-gui", "--fullscreen", str(path)],
     },
 }
 
@@ -167,17 +167,24 @@ MAX_RPCS3_PARAM_SFO_BYTES = 1024 * 1024
 def _rpcs3_game_root(selected_root: Path, eboot_path: Path) -> Path | None:
     """Accept only PS3 game folders with a local PARAM.SFO and USRDIR/EBOOT.BIN."""
     try:
-        root = Path(selected_root).resolve(strict=True)
+        selected_root = Path(selected_root)
+        eboot_path = Path(eboot_path)
+        if selected_root.is_symlink() or eboot_path.is_symlink():
+            return None
+
+        root = selected_root.resolve(strict=True)
         if (
-            eboot_path.is_symlink()
-            or eboot_path.name.casefold() != "eboot.bin"
+            eboot_path.name.casefold() != "eboot.bin"
             or eboot_path.parent.name.casefold() != "usrdir"
+            or eboot_path.parent.is_symlink()
+            or eboot_path.parent.parent.is_symlink()
         ):
             return None
 
         executable = eboot_path.resolve(strict=True)
         executable.relative_to(root)
-        if not executable.is_file():
+        executable_metadata = executable.stat(follow_symlinks=False)
+        if not stat.S_ISREG(executable_metadata.st_mode) or executable_metadata.st_size <= 0:
             return None
 
         title_directory = executable.parent.parent
@@ -193,12 +200,16 @@ def _rpcs3_game_root(selected_root: Path, eboot_path: Path) -> Path | None:
             game_root = title_directory
             metadata_file = title_directory / "PARAM.SFO"
 
-        if game_root.is_symlink() or not game_root.is_dir():
+        if (
+            game_root.is_symlink()
+            or title_directory.is_symlink()
+            or not game_root.is_dir()
+        ):
             return None
         resolved_game_root = game_root.resolve(strict=True)
         resolved_game_root.relative_to(root)
 
-        if metadata_file.is_symlink():
+        if metadata_file.is_symlink() or metadata_file.parent.is_symlink():
             return None
         metadata = metadata_file.stat(follow_symlinks=False)
         if (
