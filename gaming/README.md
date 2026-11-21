@@ -18,6 +18,8 @@ Les jeux Steam sont lancés via l'URL `steam://rungameid/...` lorsqu'un gestionn
 
 Les listes RetroArch `.lpl` au format JSON sont lues depuis les emplacements de configuration natifs et Flatpak connus, ainsi que depuis `playlist_directory` dans `retroarch.cfg`. Les commandes natives utilisent le cœur local lorsqu'il existe. Avec le Flatpak RetroArch, LEOS demande au lancement un accès temporaire et strictement en lecture seule au dossier de la ROM (et au dossier du cœur personnalisé lorsque nécessaire), sans modifier les permissions persistantes de l'application. Si le cœur est marqué `DETECT` ou introuvable, RetroArch est lancé sans imposer de cœur afin qu'il puisse proposer sa sélection.
 
+Le panneau **PRÉREQUIS ET CŒURS RETROARCH** affiche aussi huit recommandations de cœurs courants (FCEUmm, Snes9x, Gambatte, mGBA, Genesis Plus GX, Mupen64Plus-Next, melonDS DS et Flycast). LEOS détecte leur présence dans le répertoire de cœurs configuré (ou l'emplacement par défaut) à partir du nom et du type de fichier uniquement ; les binaires ne sont pas lus et les liens symboliques sont ignorés. Le bouton **OUVRIR RETROARCH** lance l'application native ou son Flatpak sans shell ; l'utilisateur installe ensuite les cœurs depuis **Online Updater → Select Core Downloader**, puis peut actualiser l'état dans LEOS. Si Core Downloader est masqué, il faut l'activer dans **Settings → User Interface → Menu Item Visibility → Show Core Downloader**. La disponibilité des cœurs et leur adéquation dépendent du paquet RetroArch et du matériel ; cette liste est une aide de départ, pas une garantie de compatibilité. LEOS ne télécharge pas les cœurs et ne modifie pas la configuration RetroArch.
+
 ## Développement local
 
 Depuis le dossier `gaming/` :
