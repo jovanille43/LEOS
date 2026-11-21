@@ -67,6 +67,34 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("json_nesting_within_limit(text)", loader)
         self.assertIn("APP_ID_RE.fullmatch(app_id)", loader)
 
+    def test_store_shares_the_first_run_flatpak_lock_before_launching_commands(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        helper = (ROOT / "leos_core/flatpak_lock.py").read_text(encoding="utf-8")
+        self.assertIn("from leos_core.flatpak_lock import", source)
+        self.assertIn("descriptor = try_acquire_flatpak_lock()", source)
+        self.assertIn("if descriptor is None:", source)
+        self.assertIn('LOCK_FILENAME = "flatpak-setup.lock"', helper)
+        self.assertIn("fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)", helper)
+        self.assertIn("def _release_flatpak_lock(self)", source)
+
+    def test_store_holds_shared_lock_across_remote_recheck_and_confirmed_install(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        start = source.index('if action == "recheck-remote":')
+        end = source.index('if action == "verify-install":', start)
+        valid_branch = source[start:end].split("else:", 1)[0]
+        self.assertIn('"install"', valid_branch)
+        self.assertNotIn("_release_flatpak_lock()", valid_branch)
+        self.assertIn("self._release_flatpak_lock()", source[source.index("def _on_finished"):])
+
+    def test_store_does_not_release_lock_until_a_failed_flatpak_child_exits(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        error = source[source.index("def _on_error"):source.index("def _append_output")]
+        finished = source[source.index("def _on_finished"):source.index("def _on_timeout")]
+        self.assertIn("self._process.kill()", error)
+        self.assertIn("if self._process.state() == QProcess.ProcessState.NotRunning:", error)
+        self.assertIn("if not self._busy:", finished)
+        self.assertIn("self._release_flatpak_lock()", finished)
+
     def test_flatpak_process_output_is_bounded_per_stream(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024", source)
