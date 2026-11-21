@@ -176,7 +176,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
     def test_retroarch_recommended_assistant_falls_back_to_flatpak_user_core_folder(self):
         config_dir = self.flatpak_config("org.libretro.RetroArch", "retroarch")
         (config_dir / "retroarch.cfg").write_text(
-            'libretro_directory = "/app/lib/retroarch/cores"\\n',
+            'libretro_directory = "/app/lib/retroarch/cores"\n',
             encoding="utf-8",
         )
         user_cores = config_dir / "cores"
