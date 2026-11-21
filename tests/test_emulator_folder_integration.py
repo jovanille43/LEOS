@@ -27,7 +27,7 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
             'const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden", "rpcs3"]',
             qml,
         )
-        self.assertIn("PARAM.SFO and USRDIR/EBOOT.BIN", qml)
+        self.assertIn("PARAM.SFO et USRDIR/EBOOT.BIN", qml)
 
     def test_selected_sources_can_be_removed_without_deleting_game_files(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
