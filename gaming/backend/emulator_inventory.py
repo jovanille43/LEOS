@@ -114,3 +114,43 @@ def detect_emulator_installations(
             ),
         })
     return results
+
+
+
+def build_emulator_frontend_command(
+    app_id: str,
+    *,
+    which: Callable[[str], str | None] | None = None,
+    data_home: Path | None = None,
+    system_flatpak_root: Path = SYSTEM_FLATPAK_APP_ROOT,
+) -> list[str]:
+    """Return a safe argv to open a known, already-installed emulator frontend.
+
+    Native executables take precedence. Flatpak is invoked only when the
+    requested app has a real user or system deployment; this helper never
+    installs software, grants filesystem permissions, or accepts free-form
+    commands from the interface.
+    """
+    emulator = next((item for item in EMULATORS if item["id"] == app_id), None)
+    if emulator is None:
+        return []
+
+    which = shutil.which if which is None else which
+    data_home = Path(data_home) if data_home is not None else Path.home() / ".local/share"
+    native = next(
+        (path for binary in emulator["binaries"] if (path := which(binary))),
+        None,
+    )
+    if native:
+        return [native]
+
+    flatpak = which("flatpak")
+    if not flatpak:
+        return []
+
+    user_root = data_home / "flatpak" / "app"
+    if _flatpak_ref_is_deployed(user_root / app_id):
+        return [flatpak, "run", app_id]
+    if _flatpak_ref_is_deployed(Path(system_flatpak_root) / app_id):
+        return [flatpak, "run", app_id]
+    return []
