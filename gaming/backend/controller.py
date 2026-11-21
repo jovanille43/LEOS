@@ -219,10 +219,14 @@ class GamingController(QObject):
     @Slot()
     def refreshRetroArchCoreStatuses(self) -> None:
         statuses = self.library.retroarchRecommendedCoreStatuses()
+        prerequisites = self.library.emulatorPrerequisiteStatuses()
         if statuses != self._retroarch_core_statuses:
             self._retroarch_core_statuses = statuses
             self.retroarchCoreStatusesChanged.emit()
-        self._message = "État des cœurs RetroArch actualisé."
+        if prerequisites != self._emulator_prerequisite_statuses:
+            self._emulator_prerequisite_statuses = prerequisites
+            self.emulatorPrerequisitesChanged.emit()
+        self._message = "État des cœurs RetroArch et des prérequis actualisé."
         self.messageChanged.emit(self._message)
 
     @Slot(result=bool)
@@ -258,6 +262,10 @@ class GamingController(QObject):
         if prerequisites != self._emulator_prerequisite_statuses:
             self._emulator_prerequisite_statuses = prerequisites
             self.emulatorPrerequisitesChanged.emit()
+        core_statuses = self.library.retroarchRecommendedCoreStatuses()
+        if core_statuses != self._retroarch_core_statuses:
+            self._retroarch_core_statuses = core_statuses
+            self.retroarchCoreStatusesChanged.emit()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
