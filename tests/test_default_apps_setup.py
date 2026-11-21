@@ -87,10 +87,22 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
     def marker(self):
         return self.home / ".local/state/leos/default-apps-seeded"
 
+    def test_default_setup_shares_the_flatpak_transaction_lock(self):
+        root = Path(__file__).resolve().parents[1]
+        gaming_script = root / "packaging" / "leos-default-gaming-apps-setup"
+        default_source = SCRIPT.read_text(encoding="utf-8")
+        gaming_source = gaming_script.read_text(encoding="utf-8")
+        shared_lock = 'lock_file="$state_dir/flatpak-setup.lock"'
+        self.assertIn(shared_lock, default_source)
+        self.assertIn(shared_lock, gaming_source)
+        self.assertIn("flock -w 900 9", default_source)
+        self.assertIn("flock -n 9", gaming_source)
+
     def test_declining_never_adds_flathub_or_installs_apps(self):
         result = self.run_setup(accept=False)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(self.marker.is_file())
+        self.assertTrue((self.home / ".local/state/leos/flatpak-setup.lock").is_file())
         calls = self.log.read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(calls), 1)
         self.assertTrue(calls[0].startswith("kdialog "))
