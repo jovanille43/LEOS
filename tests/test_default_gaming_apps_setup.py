@@ -131,6 +131,11 @@ exit 0
                 result.append(line.rsplit(" ", 1)[-1])
         return result
 
+    def test_gaming_setup_uses_the_shared_flatpak_transaction_lock(self):
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('lock_file="$state_dir/flatpak-setup.lock"', source)
+        self.assertIn("flock -n 9", source)
+
     def test_catalog_and_bootstrap_share_the_same_default_app_set(self):
         import json
         import re
@@ -153,6 +158,7 @@ exit 0
         result = self.run_setup()
         self.assert_setup_succeeded(result)
         self.assertTrue(self.marker.is_file())
+        self.assertTrue((self.state_dir / "flatpak-setup.lock").is_file())
         self.assertEqual(set(self.install_ids()), EXPECTED_APPS)
         self.assertEqual(len(self.install_ids()), len(EXPECTED_APPS))
         self.assertEqual(sum("remote-add " in line for line in self.command_lines()), 1)
