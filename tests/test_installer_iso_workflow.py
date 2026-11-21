@@ -65,7 +65,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertNotIn("  push:", workflow)
         self.assertNotIn("  pull_request:", workflow)
 
-    def test_successful_main_image_build_triggers_standard_iso(self):
+    def test_successful_main_image_build_triggers_all_three_installer_isos(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', workflow)
         self.assertIn("types: [completed]", workflow)
@@ -74,6 +74,10 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
+        self.assertIn('fromJSON(github.event_name == \'workflow_run\' && \'["standard","nvidia-legacy","nvidia-modern"]\'', workflow)
+        self.assertIn("max-parallel: 1", workflow)
+        self.assertIn("VARIANT: ${{ matrix.variant }}", workflow)
+        self.assertIn("name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}", workflow)
         self.assertIn("inputs.variant || 'standard'", workflow)
         self.assertIn("inputs.image_tag || 'latest'", workflow)
 
