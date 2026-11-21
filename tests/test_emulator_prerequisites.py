@@ -173,6 +173,22 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         self.assertIn("Super Nintendo · Snes9x — à installer", statuses)
         self.assertIn("Game Boy Advance · mGBA — à installer", statuses)
 
+    def test_retroarch_recommended_assistant_falls_back_to_flatpak_user_core_folder(self):
+        config_dir = self.flatpak_config("org.libretro.RetroArch", "retroarch")
+        (config_dir / "retroarch.cfg").write_text(
+            'libretro_directory = "/app/lib/retroarch/cores"\\n',
+            encoding="utf-8",
+        )
+        user_cores = config_dir / "cores"
+        user_cores.mkdir()
+        (user_cores / "fceumm_libretro.so").write_bytes(b"core")
+
+        statuses = detect_retroarch_recommended_core_statuses(
+            home=self.home,
+            config_home=self.config_home,
+        )
+        self.assertIn("NES / Famicom · FCEUmm — détecté", statuses)
+
     def test_retroarch_recommended_assistant_accepts_platform_suffixed_linux_core_name(self):
         config_dir = self.config_home / "retroarch"
         config_dir.mkdir()
