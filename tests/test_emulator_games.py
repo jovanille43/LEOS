@@ -261,11 +261,123 @@ class EmulatorGameFolderTests(unittest.TestCase):
             "dev.eden_emu.eden",
         ])
 
+    def test_rpcs3_imports_only_validated_ps3_disc_layouts(self):
+        title = self.root / "Gran Turismo"
+        ps3_game = title / "PS3_GAME"
+        usrdir = ps3_game / "USRDIR"
+        usrdir.mkdir(parents=True)
+        (ps3_game / "PARAM.SFO").write_bytes(b"param-sfo")
+        eboot = usrdir / "EBOOT.BIN"
+        eboot.write_bytes(b"self")
+
+        games = scan_emulator_folder(
+            "rpcs3", self.root, launch_prefix=["/usr/bin/rpcs3"]
+        )
+        self.assertEqual(len(games), 1)
+        self.assertEqual(games[0]["title"], "Gran Turismo")
+        self.assertEqual(games[0]["content_path"], str(eboot))
+        self.assertEqual(games[0]["launch"], [
+            "/usr/bin/rpcs3", "--no-gui", "--fullscreen", str(eboot)
+        ])
+        self.assertEqual(games[0]["platform"], "PlayStation")
+
+    def test_rpcs3_imports_psn_title_layout_and_supports_selecting_title_root(self):
+        title = self.root / "NPUB12345"
+        usrdir = title / "USRDIR"
+        usrdir.mkdir(parents=True)
+        (title / "PARAM.SFO").write_bytes(b"param-sfo")
+        eboot = usrdir / "EBOOT.BIN"
+        eboot.write_bytes(b"self")
+
+        games = scan_emulator_folder(
+            "rpcs3", title, launch_prefix=["/usr/bin/rpcs3"]
+        )
+        self.assertEqual(len(games), 1)
+        self.assertEqual(games[0]["title"], "NPUB12345")
+        self.assertEqual(games[0]["selected_root"], str(title.resolve()))
+
+    def test_rpcs3_ignores_pkg_arbitrary_bins_and_unvalidated_eboots(self):
+        (self.root / "Install.pkg").write_bytes(b"pkg")
+        (self.root / "not-a-game.bin").write_bytes(b"bin")
+        invalid = self.root / "Invalid" / "USRDIR"
+        invalid.mkdir(parents=True)
+        (invalid / "EBOOT.BIN").write_bytes(b"self")
+
+        games = scan_emulator_folder(
+            "rpcs3", self.root, launch_prefix=["/usr/bin/rpcs3"]
+        )
+        self.assertEqual(games, [])
+
+    def test_rpcs3_flatpak_mounts_only_the_selected_games_root_read_only(self):
+        data_home = Path(self.temporary.name) / "data"
+        deployment = (
+            data_home / "flatpak/app" / "net.rpcs3.RPCS3"
+            / "x86_64/stable/commit/files"
+        )
+        deployment.mkdir(parents=True)
+        prefix = build_emulator_launch_prefix(
+            "rpcs3",
+            self.root,
+            which=lambda name: "/usr/bin/flatpak" if name == "flatpak" else None,
+            data_home=data_home,
+            system_flatpak_root=Path(self.temporary.name) / "system-apps",
+        )
+        self.assertEqual(prefix, [
+            "/usr/bin/flatpak", "run",
+            f"--filesystem={self.root}:ro",
+            "net.rpcs3.RPCS3",
+        ])
+
+    def test_rpcs3_launch_revalidates_eboot_and_param_sfo_before_start(self):
+        title = self.root / "Title"
+        ps3_game = title / "PS3_GAME"
+        usrdir = ps3_game / "USRDIR"
+        usrdir.mkdir(parents=True)
+        metadata = ps3_game / "PARAM.SFO"
+        metadata.write_bytes(b"param-sfo")
+        eboot = usrdir / "EBOOT.BIN"
+        eboot.write_bytes(b"self")
+
+        command = build_emulator_launch_command(
+            "rpcs3", eboot, self.root,
+            which=lambda name: "/usr/bin/rpcs3" if name == "rpcs3" else None,
+        )
+        self.assertEqual(command, [
+            "/usr/bin/rpcs3", "--no-gui", "--fullscreen", str(eboot.resolve())
+        ])
+
+        metadata.unlink()
+        self.assertEqual(
+            build_emulator_launch_command(
+                "rpcs3", eboot, self.root,
+                which=lambda name: "/usr/bin/rpcs3" if name == "rpcs3" else None,
+            ),
+            [],
+        )
+
+    def test_rpcs3_refuses_symbolic_links_inside_the_selected_game_layout(self):
+        title = self.root / "Title"
+        ps3_game = title / "PS3_GAME"
+        usrdir = ps3_game / "USRDIR"
+        usrdir.mkdir(parents=True)
+        (ps3_game / "PARAM.SFO").write_bytes(b"param-sfo")
+        outside = Path(self.temporary.name) / "outside"
+        outside.write_bytes(b"self")
+        try:
+            (usrdir / "EBOOT.BIN").symlink_to(outside)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symbolic links unavailable")
+        self.assertEqual(
+            scan_emulator_folder("rpcs3", self.root, launch_prefix=["rpcs3"]),
+            [],
+        )
+
     def test_supported_platforms_are_deliberately_limited_to_confirmed_cli_paths(self):
         self.assertEqual(
             set(PLATFORM_SPECS),
-            {"gamecube_wii", "ps2", "psp", "melonds", "eden"},
+            {"gamecube_wii", "ps2", "psp", "melonds", "eden", "rpcs3"},
         )
+        self.assertEqual(PLATFORM_SPECS["rpcs3"]["extensions"], frozenset())
 
 
 if __name__ == "__main__":
