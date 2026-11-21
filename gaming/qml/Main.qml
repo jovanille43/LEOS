@@ -1759,6 +1759,12 @@ ApplicationWindow {
                         Layout.topMargin: 5
                     }
                     Label {
+                        text: "À savoir : le paquet Flathub d'Eden est communautaire et n'est pas vérifié ni pris en charge par l'équipe Eden. Sa fiche indique 8 Gio de mémoire au minimum et 16 Gio recommandés ; les performances dépendent aussi du jeu et du GPU."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
                         text: "1. Ouvre Eden, puis Tools > Install Decryption Keys et sélectionne ton fichier prod.keys extrait de ta propre console. title.keys est facultatif selon les titres."
                         color: window.muted
                         wrapMode: Text.WordWrap
