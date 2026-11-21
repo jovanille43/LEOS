@@ -4,7 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.emulator_prerequisites import detect_emulator_prerequisite_statuses
+from gaming.backend.emulator_prerequisites import (
+    detect_emulator_prerequisite_statuses,
+    detect_retroarch_recommended_core_statuses,
+)
 
 
 class EmulatorPrerequisiteTests(unittest.TestCase):
@@ -133,6 +136,56 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         (cores / "linked_libretro.so").symlink_to(target)
         self.assertIn("aucun cœur détecté", self.detect()[3])
 
+    def test_retroarch_recommended_assistant_detects_custom_flatpak_core_directory(self):
+        config_dir = self.flatpak_config("org.libretro.RetroArch", "retroarch")
+        cores = self.home / "retroarch-cores"
+        cores.mkdir()
+        (cores / "snes9x_libretro.so").write_bytes(b"core")
+        (cores / "mgba_libretro.so").write_bytes(b"core")
+        (config_dir / "retroarch.cfg").write_text(
+            f'libretro_directory = "{cores}"\\n',
+            encoding="utf-8",
+        )
+
+        statuses = detect_retroarch_recommended_core_statuses(
+            home=self.home,
+            config_home=self.config_home,
+        )
+        self.assertIn("Super Nintendo · Snes9x — détecté", statuses)
+        self.assertIn("Game Boy Advance · mGBA — détecté", statuses)
+        self.assertIn("NES / Famicom · FCEUmm — à installer", statuses)
+        self.assertTrue(all(str(self.home) not in status for status in statuses))
+
+    def test_retroarch_recommended_assistant_ignores_empty_and_symlinked_cores(self):
+        config_dir = self.config_home / "retroarch"
+        config_dir.mkdir()
+        cores = config_dir / "cores"
+        cores.mkdir()
+        (cores / "snes9x_libretro.so").write_bytes(b"")
+        target = self.home / "outside-core.so"
+        target.write_bytes(b"core")
+        (cores / "mgba_libretro.so").symlink_to(target)
+
+        statuses = detect_retroarch_recommended_core_statuses(
+            home=self.home,
+            config_home=self.config_home,
+        )
+        self.assertIn("Super Nintendo · Snes9x — à installer", statuses)
+        self.assertIn("Game Boy Advance · mGBA — à installer", statuses)
+
+    def test_retroarch_recommended_assistant_accepts_platform_suffixed_linux_core_name(self):
+        config_dir = self.config_home / "retroarch"
+        config_dir.mkdir()
+        cores = config_dir / "cores"
+        cores.mkdir()
+        (cores / "snes9x_libretro_linux.so").write_bytes(b"core")
+
+        statuses = detect_retroarch_recommended_core_statuses(
+            home=self.home,
+            config_home=self.config_home,
+        )
+        self.assertIn("Super Nintendo · Snes9x — détecté", statuses)
+
     def eden_data_root(self):
         return (
             self.home / ".var" / "app" / "dev.eden_emu.eden"
@@ -182,9 +235,18 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         self.assertIn('id: emulatorPrerequisitesDialog', qml)
         self.assertIn('model: leos.emulatorPrerequisiteStatuses', qml)
         self.assertIn('if (emulatorPrerequisitesDialog.visible)', qml)
-        self.assertIn('action === "back" || action === "confirm"', qml)
+        self.assertIn('action === "back"', qml)
+        self.assertIn('action === "confirm"', qml)
+        self.assertIn('model: leos.retroarchCoreStatuses', qml)
+        self.assertIn('id: retroArchOpenCoreUpdaterButton', qml)
+        self.assertIn('id: retroArchRefreshCoreStatusButton', qml)
+        self.assertIn('leos.openRetroArchCoreUpdater()', qml)
+        self.assertIn('leos.refreshRetroArchCoreStatuses()', qml)
         self.assertIn('def emulatorPrerequisiteStatuses(self)', controller)
-        self.assertIn('emulatorPrerequisitesChanged', controller)
+        self.assertIn('def retroarchCoreStatuses(self)', controller)
+        self.assertIn('def openRetroArchCoreUpdater(self)', controller)
+        self.assertIn('def refreshRetroArchCoreStatuses(self)', controller)
+        self.assertIn('retroarchCoreStatusesChanged', controller)
 
     def test_statuses_never_read_rom_folders_or_return_private_file_paths(self):
         results = self.detect()
