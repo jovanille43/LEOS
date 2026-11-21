@@ -18,6 +18,17 @@ from typing import Any
 MAX_CONFIG_BYTES = 128 * 1024
 MAX_DIRECTORY_ENTRIES = 512
 MAX_RETROARCH_CORES = 256
+
+RETROARCH_RECOMMENDED_CORES = (
+    ("NES / Famicom", "FCEUmm", "fceumm_libretro.so"),
+    ("Super Nintendo", "Snes9x", "snes9x_libretro.so"),
+    ("Game Boy / Game Boy Color", "Gambatte", "gambatte_libretro.so"),
+    ("Game Boy Advance", "mGBA", "mgba_libretro.so"),
+    ("Mega Drive / Master System", "Genesis Plus GX", "genesis_plus_gx_libretro.so"),
+    ("Nintendo 64", "Mupen64Plus-Next", "mupen64plus_next_libretro.so"),
+    ("Nintendo DS", "melonDS DS", "melondsds_libretro.so"),
+    ("Dreamcast", "Flycast", "flycast_libretro.so"),
+)
 MELONDS_BIOS_SIZES = {
     "bios9.bin": {4 * 1024},
     "bios7.bin": {16 * 1024},
@@ -214,6 +225,71 @@ def _retroarch_status(home: Path, config_home: Path) -> str:
     if core_count:
         return f"RetroArch · {core_count} cœur(s) détecté(s)"
     return "RetroArch · aucun cœur détecté — choisir les systèmes dans RetroArch"
+
+
+def detect_retroarch_recommended_core_statuses(
+    *,
+    home: Path | None = None,
+    config_home: Path | None = None,
+) -> list[str]:
+    """Report recommended installed RetroArch cores by filename only.
+
+    Only the known native and Flatpak configuration roots are consulted.
+    The scan is bounded, read-only, ignores symbolic links, and never reads a
+    core binary or any ROM/BIOS content.
+    """
+    home = Path(home) if home is not None else Path.home()
+    config_home = Path(config_home) if config_home is not None else home / ".config"
+    installed: set[str] = set()
+    seen_directories: set[str] = set()
+
+    expected = {
+        filename.casefold(): filename.casefold()
+        for _system, _core, filename in RETROARCH_RECOMMENDED_CORES
+    }
+    suffix_prefixes = {
+        filename.casefold()[:-3]: filename.casefold()
+        for _system, _core, filename in RETROARCH_RECOMMENDED_CORES
+    }
+
+    for config_directory in _retroarch_config_directories(home, config_home):
+        core_directory = _retroarch_core_directory(config_directory)
+        if not _is_directory(core_directory):
+            continue
+        try:
+            resolved_directory = core_directory.resolve(strict=True)
+            identity = str(resolved_directory)
+            if identity in seen_directories or not resolved_directory.is_dir():
+                continue
+            seen_directories.add(identity)
+            with os.scandir(resolved_directory) as entries:
+                for index, entry in enumerate(entries):
+                    if index >= MAX_DIRECTORY_ENTRIES:
+                        break
+                    name = entry.name.casefold()
+                    matched = expected.get(name)
+                    if matched is None and name.endswith(".so"):
+                        matched_prefix = next(
+                            (
+                                prefix
+                                for prefix in suffix_prefixes
+                                if name.startswith(prefix + "_")
+                            ),
+                            None,
+                        )
+                        if matched_prefix is not None:
+                            matched = suffix_prefixes[matched_prefix]
+                    if matched and entry.is_file(follow_symlinks=False):
+                        if _is_regular_file(Path(entry.path)):
+                            installed.add(matched)
+        except (OSError, RuntimeError, ValueError):
+            continue
+
+    return [
+        f"{system} · {core} — "
+        f"{'détecté' if filename.casefold() in installed else 'à installer'}"
+        for system, core, filename in RETROARCH_RECOMMENDED_CORES
+    ]
 
 
 def _count_matching_files(directory: Path, suffixes: set[str]) -> int:
