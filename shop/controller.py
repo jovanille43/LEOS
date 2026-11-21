@@ -60,6 +60,11 @@ class StoreController(QObject):
         self._timeout_timer = QTimer(self)
         self._timeout_timer.setSingleShot(True)
         self._timeout_timer.timeout.connect(self._on_timeout)
+        self._inventory_retry_timer = QTimer(self)
+        self._inventory_retry_timer.setSingleShot(True)
+        self._inventory_retry_timer.setInterval(5_000)
+        self._inventory_retry_timer.timeout.connect(self._retry_inventory_refresh)
+        self._inventory_retry_attempts = 0
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
@@ -131,6 +136,9 @@ class StoreController(QObject):
                 return
             if descriptor is None:
                 message = "Une autre opération Flatpak LEOS est en cours (préparation Gaming ou application). Réessaie quand elle sera terminée."
+                if action == "list" and self._inventory_retry_attempts < 60:
+                    self._inventory_retry_attempts += 1
+                    self._inventory_retry_timer.start()
                 self._set_status(message)
                 if action in {"verify-remote", "verify-install", "recheck-remote"}:
                     self._set_verification_details(message)
@@ -150,6 +158,11 @@ class StoreController(QObject):
 
     @Slot()
     def refreshInstalled(self) -> None:
+        self._inventory_retry_timer.stop()
+        self._inventory_retry_attempts = 0
+        self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
+
+    def _retry_inventory_refresh(self) -> None:
         self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
 
     @Slot(int, result="QVariant")
@@ -254,6 +267,8 @@ class StoreController(QObject):
                 post_notification("Boutique LEOS", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
                 return
+            self._inventory_retry_timer.stop()
+            self._inventory_retry_attempts = 0
             user_apps, system_apps = parse_flatpak_inventory(stdout)
             self.catalog.setInstalled(user_apps, system_apps)
             self.catalogUpdated.emit()
