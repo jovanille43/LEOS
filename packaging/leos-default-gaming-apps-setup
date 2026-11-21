@@ -17,7 +17,7 @@ fi
 state_dir="$state_home/leos"
 marker="$state_dir/gaming-apps-seeded-v2"
 legacy_marker="$state_dir/gaming-apps-seeded-v1"
-lock_file="$state_dir/gaming-apps-setup.lock"
+lock_file="$state_dir/flatpak-setup.lock"
 log_file="$state_dir/gaming-apps-setup.log"
 
 # Do not follow user-controlled symlinks for the state directory or markers.
@@ -48,13 +48,15 @@ fi
 : >> "$log_file"
 exec >> "$log_file" 2>&1
 
-# Multiple session starts must not run package transactions concurrently.
-if command -v flock >/dev/null 2>&1; then
-    exec 9> "$lock_file"
-    if ! flock -n 9; then
-        echo "Another LEOS Gaming setup task is already running."
-        exit 0
-    fi
+# Both first-run installers share this lock; never overlap Flatpak transactions.
+if ! command -v flock >/dev/null 2>&1; then
+    echo "flock is unavailable; Gaming setup will be retried at the next login."
+    exit 1
+fi
+exec 9> "$lock_file"
+if ! flock -n 9; then
+    echo "Another LEOS Flatpak setup task is already running."
+    exit 0
 fi
 
 # Re-check after taking the lock in case another process just completed.
