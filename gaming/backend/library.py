@@ -33,7 +33,10 @@ from .retroarch import (
 )
 from .mangohud import build_launch_command
 from .install_state import installation_status
-from .emulator_inventory import detect_emulator_installations
+from .emulator_inventory import (
+    build_emulator_frontend_command,
+    detect_emulator_installations,
+)
 from .emulator_prerequisites import (
     detect_emulator_prerequisite_statuses,
     detect_retroarch_recommended_core_statuses,
@@ -177,6 +180,13 @@ class GameLibraryModel(QAbstractListModel):
         if flatpak and self._flatpak_app_available(RETROARCH_FLATPAK_ID):
             return [flatpak, "run", RETROARCH_FLATPAK_ID]
         return []
+
+    def edenLauncherCommand(self) -> list[str]:
+        """Return a safe command for the already-installed Eden frontend."""
+        return build_emulator_frontend_command(
+            "dev.eden_emu.eden",
+            data_home=xdg_data_home(),
+        )
 
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
