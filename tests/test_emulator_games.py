@@ -43,6 +43,8 @@ class EmulatorGameFolderTests(unittest.TestCase):
         (self.root / "A Game.iso").write_bytes(b"disc")
         (self.root / "B Game.chd").write_bytes(b"disc")
         (self.root / "C Game.pbp").write_bytes(b"disc")
+        (self.root / "Switch Game.nsp").write_bytes(b"switch")
+        (self.root / "Homebrew.nro").write_bytes(b"homebrew")
 
         dolphin = scan_emulator_folder(
             "gamecube_wii", self.root, launch_prefix=["/usr/bin/dolphin-emu"]
@@ -53,9 +55,14 @@ class EmulatorGameFolderTests(unittest.TestCase):
         ppsspp = scan_emulator_folder(
             "psp", self.root, launch_prefix=["/usr/bin/PPSSPPQt"]
         )
+        eden = scan_emulator_folder(
+            "eden", self.root, launch_prefix=["/usr/bin/eden"]
+        )
         dolphin_game = next(game for game in dolphin if game["title"] == "A Game")
         pcsx2_game = next(game for game in pcsx2 if game["title"] == "B Game")
         ppsspp_game = next(game for game in ppsspp if game["title"] == "C Game")
+        eden_game = next(game for game in eden if game["title"] == "Switch Game")
+        homebrew_game = next(game for game in eden if game["title"] == "Homebrew")
 
         self.assertEqual(dolphin_game["launch"], [
             "/usr/bin/dolphin-emu", "-e", str(self.root / "A Game.iso")
@@ -66,7 +73,14 @@ class EmulatorGameFolderTests(unittest.TestCase):
         self.assertEqual(ppsspp_game["launch"], [
             "/usr/bin/PPSSPPQt", str(self.root / "C Game.pbp")
         ])
-        for game in (dolphin_game, pcsx2_game, ppsspp_game):
+        self.assertEqual(eden_game["launch"], [
+            "/usr/bin/eden", "-f", str(self.root / "Switch Game.nsp")
+        ])
+        self.assertEqual(homebrew_game["launch"], [
+            "/usr/bin/eden", "-f", str(self.root / "Homebrew.nro")
+        ])
+        self.assertEqual(eden_game["platform"], "Nintendo Switch")
+        for game in (dolphin_game, pcsx2_game, ppsspp_game, eden_game, homebrew_game):
             self.assertTrue(all(isinstance(part, str) for part in game["launch"]))
             self.assertIn("content_path", game)
             self.assertIn("selected_root", game)
@@ -197,11 +211,61 @@ class EmulatorGameFolderTests(unittest.TestCase):
         self.assertEqual(PLATFORM_SPECS["psp"]["extensions"], {
             ".iso", ".cso", ".chd", ".pbp"
         })
+        self.assertEqual(PLATFORM_SPECS["melonds"]["extensions"], {".nds"})
+        self.assertEqual(
+            PLATFORM_SPECS["eden"]["extensions"],
+            {".nsp", ".xci", ".nro", ".nso"},
+        )
         self.assertNotIn(".nrg", PLATFORM_SPECS["ps2"]["extensions"])
         self.assertNotIn(".wad", PLATFORM_SPECS["gamecube_wii"]["extensions"])
 
+    def test_melonds_uses_fullscreen_rom_argument(self):
+        game = self.root / "Nintendo DS.nds"
+        game.write_bytes(b"rom")
+        command = build_emulator_launch_command(
+            "melonds",
+            game,
+            self.root,
+            which=lambda name: "/usr/bin/melonDS" if name == "melonDS" else None,
+        )
+        self.assertEqual(command, ["/usr/bin/melonDS", "-f", str(game.resolve())])
+
+    def test_eden_uses_fullscreen_flag_and_single_game_path(self):
+        game = self.root / "Switch Game.xci"
+        game.write_bytes(b"switch")
+        command = build_emulator_launch_command(
+            "eden",
+            game,
+            self.root,
+            which=lambda name: "/usr/bin/eden" if name == "eden" else None,
+        )
+        self.assertEqual(command, ["/usr/bin/eden", "-f", str(game.resolve())])
+
+    def test_eden_flatpak_mounts_only_the_selected_games_folder_read_only(self):
+        data_home = Path(self.temporary.name) / "data"
+        deployment = (
+            data_home / "flatpak/app" / "dev.eden_emu.eden"
+            / "x86_64/stable/commit/files"
+        )
+        deployment.mkdir(parents=True)
+        prefix = build_emulator_launch_prefix(
+            "eden",
+            self.root,
+            which=lambda name: "/usr/bin/flatpak" if name == "flatpak" else None,
+            data_home=data_home,
+            system_flatpak_root=Path(self.temporary.name) / "system-apps",
+        )
+        self.assertEqual(prefix, [
+            "/usr/bin/flatpak", "run",
+            f"--filesystem={self.root}:ro",
+            "dev.eden_emu.eden",
+        ])
+
     def test_supported_platforms_are_deliberately_limited_to_confirmed_cli_paths(self):
-        self.assertEqual(set(PLATFORM_SPECS), {"gamecube_wii", "ps2", "psp"})
+        self.assertEqual(
+            set(PLATFORM_SPECS),
+            {"gamecube_wii", "ps2", "psp", "melonds", "eden"},
+        )
 
 
 if __name__ == "__main__":

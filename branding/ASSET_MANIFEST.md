@@ -16,10 +16,10 @@ Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libe
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), lion seul, halos cyan/magenta discrets |
-| `branding/wallpapers/gaming-leos.svg` | Fond LEOS Gaming 4K (3840 × 2160), lion avec manette, halos cyan/magenta plus dynamiques |
+| `branding/wallpapers/desktop-leos.svg` | Fond source LEOS Desktop 4K (3840 × 2160), lion seul ; accents d'origine utilisés uniquement comme points de transformation A/B |
+| `branding/wallpapers/gaming-leos.svg` | Fond source LEOS Gaming 4K (3840 × 2160), lion avec manette ; accents d'origine utilisés uniquement comme points de transformation A/B |
 
-Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Les fonds sont fournis comme ressources ; ils ne sont pas appliqués automatiquement ni injectés dans le profil Plasma. Le rendu SVG avec image liée doit encore être validé dans une session Bazzite réelle.
+Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
 
 ## Animations intégrées
 
@@ -70,3 +70,16 @@ Métadonnées relevées par CI pour les vidéos :
 - Gaming utilise le lion avec la manette.
 - La référence comparative n'est jamais affichée comme logo de mode.
 - Préserver les fichiers présents ; toute optimisation future doit produire une copie dérivée, sans écraser la source.
+
+## Identité système avant et après connexion
+
+| Ressource | Rôle |
+| --- | --- |
+| branding/plymouth/leos/leos.plymouth | Plymouth sombre et métallique, sans accents A/B imposés |
+| branding/sddm/leos/Main.qml | Écran de connexion SDDM Qt 6 |
+| plasma-theme/look-and-feel/org.leos.desktop/contents/splash/Splash.qml | Écran de chargement après connexion |
+| icons/leos/cursors_scalable/default/default.svg | Flèche standard LEOS, recolorée A/B |
+| files/scripts/prepare-leos-cursors.sh | Génération à la construction des 11 formes SVG de curseur, avec points chauds par type |
+| aurorae/leos/decoration.svg et les SVG de boutons | Modèles de cadres de fenêtres et boutons, recolorés A/B dans une variante utilisateur |
+
+Le script files/scripts/prepare-leos-plymouth.sh convertit l'emblème Desktop officiel en watermark PNG pendant la construction. La recette installe le dossier source branding dans /usr/share/leos/branding/ (et non à la racine de /usr/share/leos), emplacement attendu par les lanceurs, les fonds d'écran, SDDM, Plasma et Plymouth. L'initramfs est régénéré par BlueBuild pour embarquer le thème Plymouth. SDDM utilise le thème Qt 6 fourni par LEOS. Les paramètres personnels de splash Plasma, de curseur, de décor Aurorae et de fond d'écran de verrouillage sont appliqués uniquement lorsque l'utilisateur accepte le profil Desktop ; leurs anciennes valeurs restent restaurables.

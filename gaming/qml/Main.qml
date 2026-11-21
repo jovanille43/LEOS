@@ -166,7 +166,7 @@ ApplicationWindow {
     }
 
     function focusToolbar(index) {
-        toolbarFocusIndex = Math.max(0, Math.min(3, index))
+        toolbarFocusIndex = Math.max(0, Math.min(4, index))
         navigationArea = "toolbar"
         if (toolbarFocusIndex === 0)
             searchField.forceActiveFocus()
@@ -174,6 +174,8 @@ ApplicationWindow {
             refreshLibraryButton.forceActiveFocus()
         else if (toolbarFocusIndex === 2)
             importEmulatorFolderButton.forceActiveFocus()
+        else if (toolbarFocusIndex === 3)
+            emulatorPrerequisitesButton.forceActiveFocus()
         else
             addGameButton.forceActiveFocus()
     }
@@ -199,6 +201,8 @@ ApplicationWindow {
             gameGrid.forceActiveFocus()
         } else if (toolbarFocusIndex === 2) {
             emulatorImportDialog.open()
+        } else if (toolbarFocusIndex === 3) {
+            emulatorPrerequisitesDialog.open()
         } else {
             addDialog.open()
         }
@@ -349,12 +353,74 @@ ApplicationWindow {
             }
             return
         }
+        if (emulatorPrerequisitesDialog.visible) {
+            if (action === "back" || action === "confirm")
+                emulatorPrerequisitesDialog.close()
+            return
+        }
+        if (emulatorSourcesDialog.visible) {
+            if (action === "back") {
+                emulatorSourcesDialog.close()
+            } else if (action === "up" || action === "down") {
+                const count = leos.emulatorSourceFolders.length
+                if (count > 0) {
+                    const step = action === "up" ? -1 : 1
+                    emulatorSourcesList.currentIndex = Math.max(
+                        0, Math.min(count - 1, emulatorSourcesList.currentIndex + step))
+                    if (emulatorSourcesList.currentItem)
+                        emulatorSourcesList.currentItem.forceActiveFocus()
+                }
+            } else if (action === "confirm") {
+                const index = emulatorSourcesList.currentIndex
+                const count = leos.emulatorSourceFolders.length
+                if (index >= 0 && index < count) {
+                    const source = leos.emulatorSourceFolders[index]
+                    if (leos.removeEmulatorFolder(source.platform, source.path)) {
+                        const nextCount = leos.emulatorSourceFolders.length
+                        emulatorSourcesList.currentIndex = nextCount > 0
+                            ? Math.min(index, nextCount - 1) : -1
+                        if (emulatorSourcesList.currentItem)
+                            emulatorSourcesList.currentItem.forceActiveFocus()
+                    }
+                }
+            }
+            return
+        }
         if (emulatorImportDialog.visible) {
             if (action === "back") {
                 emulatorImportDialog.close()
+            } else if (action === "up" || action === "down") {
+                const step = action === "up" ? -1 : 1
+                emulatorImportDialog.controllerFocusIndex = Math.max(
+                    0, Math.min(2, emulatorImportDialog.controllerFocusIndex + step))
+                if (emulatorImportDialog.controllerFocusIndex === 0)
+                    emulatorPlatformCombo.forceActiveFocus()
+                else if (emulatorImportDialog.controllerFocusIndex === 1)
+                    emulatorChooseFolderButton.forceActiveFocus()
+                else
+                    emulatorManageSourcesButton.forceActiveFocus()
+            } else if (action === "left" || action === "right") {
+                if (emulatorImportDialog.controllerFocusIndex === 0) {
+                    const step = action === "left" ? -1 : 1
+                    const count = emulatorPlatformCombo.count
+                    emulatorPlatformCombo.currentIndex = (
+                        emulatorPlatformCombo.currentIndex + step + count
+                    ) % count
+                }
             } else if (action === "confirm") {
-                emulatorImportDialog.close()
-                emulatorFolderDialog.open()
+                if (emulatorImportDialog.controllerFocusIndex === 0) {
+                    emulatorImportDialog.controllerFocusIndex = 1
+                    emulatorChooseFolderButton.forceActiveFocus()
+                } else if (emulatorImportDialog.controllerFocusIndex === 1) {
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
+                    if (leos.beginEmulatorFolderBrowse(
+                                platformKeys[emulatorPlatformCombo.currentIndex])) {
+                        emulatorImportDialog.close()
+                        emulatorFolderDialog.open()
+                    }
+                } else {
+                    emulatorSourcesDialog.open()
+                }
             }
             return
         }
@@ -495,12 +561,12 @@ ApplicationWindow {
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
-            color: "#102331"; opacity: 0.20
+            color: window.accentA; opacity: 0.14
         }
         Rectangle {
             width: 520; height: 520; radius: 260
             x: -width * 0.5; y: parent.height - height * 0.45
-            color: "#2a1232"; opacity: 0.15
+            color: window.accentB; opacity: 0.12
         }
 
         ColumnLayout {
@@ -560,8 +626,8 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: notificationCenterButton.down ? "#26313e" : "#171d28"
-                        border.color: "#344052"
+                        color: notificationCenterButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.color: window.themeColors.border
                     }
                     contentItem: Label {
                         text: notificationCenterButton.text
@@ -579,8 +645,8 @@ ApplicationWindow {
                     onClicked: leos.toggleSilentNotifications()
                     background: Rectangle {
                         radius: 10
-                        color: notificationSilenceButton.down ? "#26313e" : "#171d28"
-                        border.color: leos.silentNotificationsInGaming ? window.accentA : "#344052"
+                        color: notificationSilenceButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.color: leos.silentNotificationsInGaming ? window.accentA : window.themeColors.border
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
@@ -601,8 +667,8 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: quickPanelButton.down ? "#26313e" : "#171d28"
-                        border.color: "#344052"
+                        color: quickPanelButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.color: window.themeColors.border
                     }
                     contentItem: Label {
                         text: quickPanelButton.text
@@ -621,8 +687,8 @@ ApplicationWindow {
                 visible: false
                 implicitHeight: 230
                 radius: 15
-                color: "#ee111722"
-                border.color: "#354052"
+                color: window.themeColors.surface_elevated
+                border.color: window.themeColors.border
                 Accessible.role: Accessible.Grouping
                 Accessible.name: "Panneau rapide Gaming"
                 Accessible.description: "Statistiques, réglages de jeu, profils d’énergie et accès aux commandes de session."
@@ -640,13 +706,13 @@ ApplicationWindow {
                         Label { text: systemMonitor.gpuName; color: window.muted; font.pixelSize: window.fontMicro; elide: Text.ElideRight; Layout.maximumWidth: 210 }
                         Label { text: systemMonitor.gpuMemoryTotal > 0 && systemMonitor.gpuMemoryUsed >= 0 ? "VRAM  " + Math.round(systemMonitor.gpuMemoryUsed / 1048576) + " / " + Math.round(systemMonitor.gpuMemoryTotal / 1048576) + " Mo" : "VRAM  —"; color: window.muted; font.pixelSize: window.fontCaption }
                     }
-                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
                         Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
                     }
-                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
                         Label { text: "JEUX"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         CheckBox {
@@ -725,9 +791,9 @@ ApplicationWindow {
                                     }
                                     background: Rectangle {
                                         radius: 6
-                                        color: leos.activePowerProfile === modelData ? "#123847" : "#202630"
+                                        color: leos.activePowerProfile === modelData ? window.themeColors.surface_elevated : window.themeColors.surface
                                         border.width: window.quickPanelFocusIndex === index + 1 ? 2 : 1
-                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.focusColor : (leos.activePowerProfile === modelData ? window.accentA : "#344052")
+                                        border.color: window.quickPanelFocusIndex === index + 1 ? window.focusColor : (leos.activePowerProfile === modelData ? window.accentA : window.themeColors.border)
                                     }
                                     contentItem: Label {
                                         text: powerProfileButton.text
@@ -739,7 +805,7 @@ ApplicationWindow {
                             }
                         }
                     }
-                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#374253" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     Item { Layout.fillWidth: true }
                     Button {
                         text: "CONFIGURER MANETTE"
@@ -751,9 +817,9 @@ ApplicationWindow {
                         }
                         background: Rectangle {
                             radius: 7
-                            color: "#202630"
+                            color: window.themeColors.surface
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? window.focusColor : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 1 ? window.focusColor : window.themeColors.border
                         }
                     }
                     Button {
@@ -764,9 +830,9 @@ ApplicationWindow {
                         }
                         background: Rectangle {
                             radius: 7
-                            color: "#202630"
+                            color: window.themeColors.surface
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.focusColor : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 2 ? window.focusColor : window.themeColors.border
                         }
                     }
                     Button {
@@ -774,9 +840,9 @@ ApplicationWindow {
                         onClicked: quickPanel.visible = false
                         background: Rectangle {
                             radius: 7
-                            color: "#202630"
+                            color: window.themeColors.surface
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? 2 : 1
-                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.focusColor : "#344052"
+                            border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.focusColor : window.themeColors.border
                         }
                     }
                 }
@@ -817,7 +883,7 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: modelData === window.selectedCategory ? "#202b38" : "transparent"
+                                color: modelData === window.selectedCategory ? window.themeColors.surface_elevated : "transparent"
                                 border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
                                 border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.focusColor : (modelData === window.selectedCategory ? window.accentA : "transparent")
                             }
@@ -837,7 +903,7 @@ ApplicationWindow {
                     Item { Layout.fillHeight: true }
                     Label {
                         text: "UNE EXPÉRIENCE. DEUX MODES."
-                        color: "#626c7e"
+                        color: window.themeColors.muted_text
                         font.pixelSize: window.fontMicro
                         wrapMode: Text.WordWrap
                     }
@@ -881,9 +947,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 8
-                                color: "#121822"
+                                color: window.themeColors.surface
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.focusColor : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 0 ? window.focusColor : window.themeColors.border
                             }
                             onTextChanged: {
                                 gameLibrary.setSearchQuery(text)
@@ -909,9 +975,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 8
-                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? "#1a2c38" : "#151a24"
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.focusColor : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 1 ? window.focusColor : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: refreshLibraryButton.text
@@ -937,9 +1003,9 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? "#1a2c38" : "#151a24"
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.accentA : "#2a3444"
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 2 ? window.accentA : window.themeColors.border
                             }
                             contentItem: Label {
                                 text: importEmulatorFolderButton.text
@@ -950,8 +1016,8 @@ ApplicationWindow {
                             }
                         }
                         Button {
-                            id: addGameButton
-                            text: "+ AJOUTER UN JEU"
+                            id: emulatorPrerequisitesButton
+                            text: "PRÉREQUIS"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
@@ -961,13 +1027,41 @@ ApplicationWindow {
                             onClicked: {
                                 window.navigationArea = "toolbar"
                                 window.toolbarFocusIndex = 3
+                                emulatorPrerequisitesDialog.open()
+                            }
+                            background: Rectangle {
+                                radius: 9
+                                color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? window.focusColor : window.themeColors.border
+                            }
+                            contentItem: Label {
+                                text: emulatorPrerequisitesButton.text
+                                color: "white"
+                                font.pixelSize: window.fontCaption
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+                        Button {
+                            id: addGameButton
+                            text: "+ AJOUTER UN JEU"
+                            onActiveFocusChanged: {
+                                if (activeFocus) {
+                                    window.navigationArea = "toolbar"
+                                    window.toolbarFocusIndex = 4
+                                }
+                            }
+                            onClicked: {
+                                window.navigationArea = "toolbar"
+                                window.toolbarFocusIndex = 4
                                 addDialog.open()
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: "#17313d"
-                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 3 ? "white" : window.accentA
+                                color: window.themeColors.surface_elevated
+                                border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? 2 : 1
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? "white" : window.accentA
                             }
                             contentItem: Label {
                                 text: addGameButton.text
@@ -1017,9 +1111,9 @@ ApplicationWindow {
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
                                     radius: 13
-                                    color: window.selectedIndex === gameCard.index ? "#1a2c38" : "#151a24"
+                                    color: window.selectedIndex === gameCard.index ? window.themeColors.surface_elevated : window.themeColors.surface
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
-                                    border.color: window.selectedIndex === gameCard.index ? window.focusColor : "#2a3444"
+                                    border.color: window.selectedIndex === gameCard.index ? window.focusColor : window.themeColors.border
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     Behavior on border.color { ColorAnimation { duration: 150 } }
                                 }
@@ -1036,16 +1130,16 @@ ApplicationWindow {
                                             radius: 8
                                             visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
                                             clip: true
-                                            color: "#101b29"
-                                            border.color: "#294455"
+                                            color: window.themeColors.surface
+                                            border.color: window.themeColors.border
                                             Rectangle {
                                                 width: parent.width * 1.5
                                                 height: parent.width * 1.5
                                                 radius: width / 2
                                                 x: -parent.width * 0.55
                                                 y: parent.height * 0.25
-                                                color: "#123b4b"
-                                                opacity: 0.55
+                                                color: window.accentA
+                                                opacity: 0.18
                                             }
                                             Column {
                                                 anchors.centerIn: parent
@@ -1147,7 +1241,7 @@ ApplicationWindow {
                                     onClicked: window.activateEmptyStatePrimaryAction()
                                     background: Rectangle {
                                         radius: 9
-                                        color: "#103847"
+                                        color: window.themeColors.surface_elevated
                                         border.width: emptyStatePrimaryButton.activeFocus ? 2 : 1
                                         border.color: emptyStatePrimaryButton.activeFocus ? window.focusColor : window.accentA
                                     }
@@ -1177,9 +1271,9 @@ ApplicationWindow {
                                     }
                                     background: Rectangle {
                                         radius: 9
-                                        color: "#171d28"
+                                        color: window.themeColors.surface
                                         border.width: emptyStateAddButton.activeFocus ? 2 : 1
-                                        border.color: emptyStateAddButton.activeFocus ? window.focusColor : "#344052"
+                                        border.color: emptyStateAddButton.activeFocus ? window.focusColor : window.themeColors.border
                                     }
                                     contentItem: Label {
                                         text: emptyStateAddButton.text
@@ -1197,8 +1291,8 @@ ApplicationWindow {
                             Layout.preferredWidth: 280
                             Layout.fillHeight: true
                             radius: 16
-                            color: "#111720"
-                            border.color: "#293342"
+                            color: window.themeColors.surface
+                            border.color: window.themeColors.border
                             Accessible.role: Accessible.Grouping
                             Accessible.name: "Détails du jeu sélectionné"
 
@@ -1218,8 +1312,8 @@ ApplicationWindow {
                                     Layout.preferredHeight: 172
                                     radius: 11
                                     clip: true
-                                    color: "#0b1018"
-                                    border.color: "#293849"
+                                    color: window.themeColors.background
+                                    border.color: window.themeColors.border
                                     Image {
                                         id: selectedGameArtwork
                                         anchors.fill: parent
@@ -1241,7 +1335,7 @@ ApplicationWindow {
                                         Label {
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: "LEOS"
-                                            color: "#617184"
+                                            color: window.themeColors.muted_text
                                             font.pixelSize: window.fontTitle
                                             font.weight: Font.Black
                                             font.letterSpacing: 5
@@ -1273,7 +1367,7 @@ ApplicationWindow {
                                 Rectangle {
                                     Layout.fillWidth: true
                                     implicitHeight: 1
-                                    color: "#293849"
+                                    color: window.themeColors.border
                                 }
                                 RowLayout {
                                     Layout.fillWidth: true
@@ -1297,7 +1391,7 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     visible: window.selectedAppId.length > 0
                                     text: "IDENTIFIANT  ·  " + window.selectedAppId
-                                    color: "#697789"
+                                    color: window.themeColors.muted_text
                                     font.pixelSize: window.fontMicro
                                     elide: Text.ElideMiddle
                                 }
@@ -1324,7 +1418,7 @@ ApplicationWindow {
                                     onClicked: window.toggleSelectedFavorite()
                                     background: Rectangle {
                                         radius: 9
-                                        color: "#191d2a"
+                                        color: window.themeColors.surface
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
                                         border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.accentB
                                     }
@@ -1350,13 +1444,13 @@ ApplicationWindow {
                                     onClicked: window.launchSelectedGame()
                                     background: Rectangle {
                                         radius: 10
-                                        color: launchSelectedGameButton.enabled ? "#103847" : "#202630"
+                                        color: launchSelectedGameButton.enabled ? window.themeColors.surface_elevated : window.themeColors.surface
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.accentA : "#344052"
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.accentA : window.themeColors.border
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
-                                        color: launchSelectedGameButton.enabled ? "white" : "#778091"
+                                        color: launchSelectedGameButton.enabled ? "white" : window.themeColors.muted_text
                                         font.pixelSize: window.fontBody
                                         font.weight: Font.Bold
                                         horizontalAlignment: Text.AlignHCenter
@@ -1513,7 +1607,7 @@ ApplicationWindow {
                     returnDialog.close()
                     window.requestDesktopReturn()
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
+                background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: returnToDesktopButton.text
                     color: "white"
@@ -1551,7 +1645,7 @@ ApplicationWindow {
                     leos.applyPowerProfile(window.pendingPowerProfile)
                     statusText.text = leos.powerProfileStatus
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
+                background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
                     color: "white"
@@ -1563,12 +1657,74 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: emulatorPrerequisitesDialog
+        title: "PRÉREQUIS DES ÉMULATEURS"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 620)
+        height: Math.min(window.height - 80, 560)
+        standardButtons: Dialog.Close
+
+        ColumnLayout {
+            width: parent.width
+            spacing: 14
+
+            Label {
+                text: "ÉTAT DE CONFIGURATION"
+                color: window.accentA
+                font.pixelSize: window.fontCaption
+                font.letterSpacing: 2
+            }
+            Label {
+                text: "LEOS vérifie uniquement la présence de fichiers et de dossiers attendus. Il ne lit pas leur contenu et ne peut pas certifier leur authenticité ni leur compatibilité."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Repeater {
+                model: leos.emulatorPrerequisiteStatuses
+                delegate: Rectangle {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    implicitHeight: prerequisiteLabel.implicitHeight + 20
+                    radius: 8
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+
+                    Label {
+                        id: prerequisiteLabel
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        text: modelData
+                        color: modelData.toLowerCase().includes("détect") ? window.accentA : "white"
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: window.fontBody
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+            }
+            Label {
+                text: "Les BIOS, firmwares, clés et cœurs protégés ne sont jamais fournis par LEOS. Ajoute uniquement les fichiers que tu es autorisé à utiliser."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+        }
+    }
+
+    Dialog {
         id: emulatorImportDialog
         title: "Importer des jeux console"
         modal: true
         anchors.centerIn: parent
         standardButtons: Dialog.Cancel
-        width: 470
+        width: 520
+        property int controllerFocusIndex: 0
+
+        onOpened: {
+            controllerFocusIndex = 0
+            emulatorPlatformCombo.forceActiveFocus()
+        }
 
         ColumnLayout {
             width: parent.width
@@ -1582,10 +1738,16 @@ ApplicationWindow {
             ComboBox {
                 id: emulatorPlatformCombo
                 Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 0
+                }
                 model: [
                     "Nintendo GameCube / Wii",
                     "PlayStation 2",
-                    "PlayStation Portable (PSP)"
+                    "PlayStation Portable (PSP)",
+                    "Nintendo DS (melonDS)",
+                    "Nintendo Switch (Eden)"
                 ]
             }
             Label {
@@ -1596,30 +1758,160 @@ ApplicationWindow {
                 font.pixelSize: window.fontMicro
             }
             Label {
-                text: "Les émulateurs correspondants doivent être installés depuis la boutique LEOS. Les BIOS et jeux ne sont pas fournis."
+                text: "LEOS prépare automatiquement les émulateurs au premier démarrage connecté. Les jeux, BIOS, firmwares et clés personnels ne sont pas fournis."
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 font.pixelSize: window.fontMicro
             }
             Button {
+                id: emulatorChooseFolderButton
                 text: "CHOISIR LE DOSSIER"
                 Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 1
+                }
                 onClicked: {
-                    const platformKeys = ["gamecube_wii", "ps2", "psp"]
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
                     if (leos.beginEmulatorFolderBrowse(
                                 platformKeys[emulatorPlatformCombo.currentIndex])) {
                         emulatorImportDialog.close()
                         emulatorFolderDialog.open()
                     }
                 }
-                background: Rectangle { radius: 9; color: "#17313d"; border.color: window.accentA }
+                background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: "CHOISIR LE DOSSIER"
                     color: "white"
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
+            }
+            Button {
+                id: emulatorManageSourcesButton
+                text: "GÉRER LES DOSSIERS AJOUTÉS"
+                Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        emulatorImportDialog.controllerFocusIndex = 2
+                }
+                onClicked: emulatorSourcesDialog.open()
+                background: Rectangle {
+                    radius: 9
+                    color: window.themeColors.surface
+                    border.color: activeFocus ? window.focusColor : window.themeColors.border
+                    border.width: activeFocus ? 2 : 1
+                }
+                contentItem: Label {
+                    text: "GÉRER LES DOSSIERS AJOUTÉS"
+                    color: "white"
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: emulatorSourcesDialog
+        title: "GÉRER LES DOSSIERS DE JEUX"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 680)
+        height: Math.min(window.height - 80, 560)
+        standardButtons: Dialog.Close
+
+        onOpened: {
+            emulatorSourcesList.currentIndex =
+                leos.emulatorSourceFolders.length > 0 ? 0 : -1
+            if (emulatorSourcesList.currentItem)
+                emulatorSourcesList.currentItem.forceActiveFocus()
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 10
+
+            Label {
+                text: "DOSSIERS SÉLECTIONNÉS"
+                color: window.accentA
+                font.pixelSize: window.fontMicro
+                font.letterSpacing: 2
+            }
+            Label {
+                text: "Retirer un dossier le supprime uniquement de la bibliothèque LEOS. Aucun jeu et aucun fichier du disque ne sera effacé."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: 10
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
+
+                ListView {
+                    id: emulatorSourcesList
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    clip: true
+                    spacing: 5
+                    model: leos.emulatorSourceFolders
+                    delegate: Button {
+                        required property var modelData
+                        required property int index
+                        width: ListView.view.width
+                        height: 48
+                        text: "RETIRER  ·  " + modelData.label
+                        Accessible.name: "Retirer " + modelData.label + " de la bibliothèque"
+                        onActiveFocusChanged: {
+                            if (activeFocus)
+                                emulatorSourcesList.currentIndex = index
+                        }
+                        onClicked: {
+                            if (leos.removeEmulatorFolder(modelData.platform, modelData.path)) {
+                                const count = leos.emulatorSourceFolders.length
+                                emulatorSourcesList.currentIndex =
+                                    count > 0 ? Math.min(index, count - 1) : -1
+                                if (emulatorSourcesList.currentItem)
+                                    emulatorSourcesList.currentItem.forceActiveFocus()
+                            }
+                        }
+                        background: Rectangle {
+                            radius: 8
+                            color: emulatorSourcesList.currentIndex === index
+                                ? window.themeColors.surface_elevated : window.themeColors.surface
+                            border.width: activeFocus ? 2 : 1
+                            border.color: activeFocus ? window.focusColor : window.themeColors.border
+                        }
+                        contentItem: Label {
+                            text: parent.text
+                            color: "white"
+                            elide: Text.ElideMiddle
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 10
+                        }
+                    }
+                    Keys.onUpPressed: {
+                        if (count > 0)
+                            currentIndex = Math.max(0, currentIndex - 1)
+                        event.accepted = true
+                    }
+                    Keys.onDownPressed: {
+                        if (count > 0)
+                            currentIndex = Math.min(count - 1, currentIndex + 1)
+                        event.accepted = true
+                    }
+                }
+            }
+            Label {
+                visible: leos.emulatorSourceFolders.length === 0
+                text: "Aucun dossier de jeux n'est encore ajouté."
+                color: window.muted
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
             }
         }
     }
@@ -1668,8 +1960,8 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 8
-                        color: "#18232d"
-                        border.color: "#334555"
+                        color: window.themeColors.surface
+                        border.color: window.themeColors.border
                     }
                     contentItem: Label {
                         text: parent.text
@@ -1688,8 +1980,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 radius: 10
-                color: "#101720"
-                border.color: "#293746"
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 ListView {
                     id: folderDirectoryList
                     anchors.fill: parent
@@ -1719,10 +2011,10 @@ ApplicationWindow {
                         background: Rectangle {
                             radius: 7
                             color: folderDirectoryList.currentIndex === index
-                                   ? "#19313d" : "#151d28"
+                                   ? window.themeColors.surface_elevated : window.themeColors.surface
                             border.width: folderDirectoryList.currentIndex === index ? 2 : 1
                             border.color: folderDirectoryList.currentIndex === index
-                                          ? window.cyan : "#283543"
+                                          ? window.cyan : window.themeColors.border
                         }
                         contentItem: Label {
                             text: parent.text
@@ -1788,7 +2080,7 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 8
                         color: "transparent"
-                        border.color: "#394657"
+                        border.color: window.themeColors.border
                     }
                     contentItem: Label {
                         text: parent.text
@@ -1808,7 +2100,7 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 8
-                        color: "#17313d"
+                        color: window.themeColors.surface_elevated
                         border.color: window.accentA
                     }
                     contentItem: Label {

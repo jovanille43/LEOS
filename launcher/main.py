@@ -33,7 +33,28 @@ def start_gaming() -> subprocess.Popen[bytes] | None:
     )
 
 
+def start_default_gaming_apps_setup() -> None:
+    """Launch the one-time Flatpak setup without delaying the mode selector."""
+    setup_script = Path("/usr/libexec/leos-default-gaming-apps-setup")
+    if not setup_script.is_file():
+        return
+    try:
+        subprocess.Popen(
+            ["/usr/bin/bash", str(setup_script)],
+            cwd=str(Path.home()),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+    except OSError:
+        # Gaming remains usable; the bootstrap can be retried next login.
+        pass
+
+
 def main() -> int:
+    start_default_gaming_apps_setup()
     settings = SettingsStore()
     select_mode = "--select" in sys.argv
 

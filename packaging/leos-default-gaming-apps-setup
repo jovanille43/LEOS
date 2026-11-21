@@ -1,0 +1,162 @@
+#!/usr/bin/bash
+# Install the LEOS Gaming starter set once per user, without prompting.
+# A completion marker prevents reinstalling apps after the user removes them.
+# Increment the marker version if the fixed application set changes.
+set -euo pipefail
+umask 077
+
+if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+    echo "LEOS Gaming setup must run as the logged-in user, not root." >&2
+    exit 1
+fi
+
+state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+if [[ -z "$state_home" || "$state_home" != /* ]]; then
+    state_home="$HOME/.local/state"
+fi
+state_dir="$state_home/leos"
+marker="$state_dir/gaming-apps-seeded-v2"
+legacy_marker="$state_dir/gaming-apps-seeded-v1"
+lock_file="$state_dir/gaming-apps-setup.lock"
+log_file="$state_dir/gaming-apps-setup.log"
+
+# Do not follow user-controlled symlinks for the state directory or markers.
+if [[ -L "$state_home" || -L "$state_dir" ]]; then
+    echo "LEOS: unsafe symlink in Gaming setup state path; refusing to continue." >&2
+    exit 1
+fi
+mkdir -p -- "$state_dir"
+if [[ -L "$marker" || ( -e "$marker" && ! -f "$marker" ) || -L "$legacy_marker" || ( -e "$legacy_marker" && ! -f "$legacy_marker" ) ]]; then
+    echo "LEOS: invalid Gaming setup completion marker; refusing to continue." >&2
+    exit 1
+fi
+if [[ -f "$marker" ]]; then
+    exit 0
+fi
+legacy_seeded=0
+if [[ -f "$legacy_marker" ]]; then
+    legacy_seeded=1
+fi
+if [[ -L "$lock_file" || ( -e "$lock_file" && ! -f "$lock_file" ) ]]; then
+    echo "LEOS: invalid Gaming setup lock file; refusing to continue." >&2
+    exit 1
+fi
+if [[ -L "$log_file" || ( -e "$log_file" && ! -f "$log_file" ) ]]; then
+    echo "LEOS: invalid Gaming setup log file; refusing to continue." >&2
+    exit 1
+fi
+: >> "$log_file"
+exec >> "$log_file" 2>&1
+
+# Multiple session starts must not run package transactions concurrently.
+if command -v flock >/dev/null 2>&1; then
+    exec 9> "$lock_file"
+    if ! flock -n 9; then
+        echo "Another LEOS Gaming setup task is already running."
+        exit 0
+    fi
+fi
+
+# Re-check after taking the lock in case another process just completed.
+if [[ -f "$marker" ]]; then
+    exit 0
+fi
+
+flatpak_bin="$(command -v flatpak || true)"
+if [[ -z "$flatpak_bin" ]]; then
+    echo "Flatpak is unavailable; Gaming setup will be retried at the next login."
+    exit 1
+fi
+
+apps=(
+    com.heroicgameslauncher.hgl
+    org.libretro.RetroArch
+    org.DolphinEmu.dolphin-emu
+    net.pcsx2.PCSX2
+    org.ppsspp.PPSSPP
+    net.kuribo64.melonDS
+    net.rpcs3.RPCS3
+    dev.eden_emu.eden
+)
+
+# Upgrade existing LEOS profiles by installing only Eden. The v1 marker
+# proves the previous starter set completed; do not reinstall apps the user
+# may have deliberately removed since then.
+if (( legacy_seeded == 1 )); then
+    apps=(dev.eden_emu.eden)
+    echo "Migrating the existing Gaming setup: adding Eden without reseeding older apps."
+fi
+
+missing_apps=()
+for app_id in "${apps[@]}"; do
+    # Respect apps already installed in either user or system scope.
+    if "$flatpak_bin" info --user "$app_id" >/dev/null 2>&1; then
+        echo "$app_id is already installed for this user."
+        continue
+    fi
+    if "$flatpak_bin" info --system "$app_id" >/dev/null 2>&1; then
+        echo "$app_id is already installed system-wide."
+        continue
+    fi
+    missing_apps+=("$app_id")
+done
+
+if (( ${#missing_apps[@]} > 0 )); then
+    if ! remote_output="$("$flatpak_bin" remotes --user --columns=name,url)"; then
+        echo "Could not inspect the user's Flatpak remotes; no apps were installed."
+        exit 1
+    fi
+    flathub_url="$(printf '%s\n' "$remote_output" | awk 'tolower($1) == "flathub" { print $2; exit }')"
+
+    if [[ -z "$flathub_url" ]]; then
+        if ! "$flatpak_bin" remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo; then
+            echo "Could not add the official Flathub user remote."
+            exit 1
+        fi
+        if ! remote_output="$("$flatpak_bin" remotes --user --columns=name,url)"; then
+            echo "Could not verify the Flathub user remote after adding it."
+            exit 1
+        fi
+        flathub_url="$(printf '%s\n' "$remote_output" | awk 'tolower($1) == "flathub" { print $2; exit }')"
+    fi
+
+    case "$flathub_url" in
+        https://dl.flathub.org/repo|https://flathub.org/repo|https://dl.flathub.org/repo/|https://flathub.org/repo/|https://dl.flathub.org/repo/flathub.flatpakrepo|https://flathub.org/repo/flathub.flatpakrepo)
+            ;;
+        *)
+            echo "The remote named Flathub is absent or does not use an official URL; refusing to install."
+            exit 1
+            ;;
+    esac
+fi
+
+failed=0
+for app_id in "${missing_apps[@]}"; do
+    echo "Installing $app_id in the user scope."
+    if ! "$flatpak_bin" install --user --noninteractive --or-update flathub "$app_id"; then
+        echo "Installation failed for $app_id; it will be retried at the next login."
+        failed=1
+        continue
+    fi
+    if ! "$flatpak_bin" info --user "$app_id" >/dev/null 2>&1         && ! "$flatpak_bin" info --system "$app_id" >/dev/null 2>&1; then
+        echo "Flatpak did not report $app_id as installed after the transaction."
+        failed=1
+    fi
+done
+
+if (( failed != 0 )); then
+    echo "LEOS Gaming setup is incomplete; successful apps are kept and missing apps will be retried."
+    if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && command -v notify-send >/dev/null 2>&1; then
+        notify-send --app-name="LEOS" "Préparation Gaming incomplète"             "Certaines applications n'ont pas pu être installées. LEOS réessaiera à la prochaine session." || true
+    fi
+    exit 1
+fi
+
+# Mark completion only after every requested application is installed.
+marker_tmp="$(mktemp "$state_dir/.gaming-apps-seeded-v2.XXXXXX")"
+printf 'completed\n' > "$marker_tmp"
+mv -- "$marker_tmp" "$marker"
+echo "LEOS Gaming starter applications are ready."
+if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && command -v notify-send >/dev/null 2>&1; then
+    notify-send --app-name="LEOS" "Gaming Mode prêt"         "Les lanceurs et émulateurs LEOS sont installés. Ajoute tes jeux personnels dans Gaming." || true
+fi

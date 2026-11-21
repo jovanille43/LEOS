@@ -63,8 +63,8 @@ def _read_settings_file(path: Path) -> dict[str, Any]:
 DEFAULTS: dict[str, Any] = {
     "last_mode": "desktop",
     "theme": "leos-original",
-    "theme_color_a": "#00D9FF",
-    "theme_color_b": "#E33BFF",
+    "theme_color_a": "#A0A0A0",
+    "theme_color_b": "#D0D0D0",
     "theme_colors_configured": False,
     "desktop_appearance_setup": "pending",
     "appearance_mode": "dark",
@@ -184,6 +184,13 @@ class SettingsStore:
             valid_b = isinstance(raw_b, str) and _THEME_COLOR_PATTERN.fullmatch(raw_b.strip()) is not None
             if not (valid_a and valid_b):
                 self._values["theme_colors_configured"] = False
+                self._values["theme_color_a"] = DEFAULTS["theme_color_a"]
+                self._values["theme_color_b"] = DEFAULTS["theme_color_b"]
+        else:
+            # Older releases stored historic artwork colors even though they
+            # were never explicitly chosen. Do not treat them as a user palette.
+            self._values["theme_color_a"] = DEFAULTS["theme_color_a"]
+            self._values["theme_color_b"] = DEFAULTS["theme_color_b"]
 
     def get(self, key: str, default: Any = None) -> Any:
         # Settings are shared by several LEOS processes (Desktop, Gaming and

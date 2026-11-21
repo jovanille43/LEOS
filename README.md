@@ -15,7 +15,7 @@ Les deux modes partagent le même système, les mêmes fichiers, applications, p
 
 ## Identité visuelle
 
-L'identité LEOS repose sur un lion métallique, des éclairages cyan et magenta, une typographie dédiée et un fond noir.
+L'identité LEOS repose sur un lion métallique, une typographie dédiée, une base sombre et un dégradé A/B librement choisi au premier démarrage. Aucune paire de couleurs n'est imposée.
 
 - Desktop : emblème officiel du lion seul.
 - Gaming : emblème officiel du lion avec manette.
@@ -77,7 +77,7 @@ Ces composants sont intégrés aux images LEOS publiées et à l'ISO standard g�
 ## Desktop Mode
 
 - Bureau KDE personnalisé avec l'identité LEOS ; le premier choix de Desktop propose l'activation du profil officiel après confirmation.
-- Profil Desktop LEOS Original : fond noir et emblème officiel, palette sombre cyan/magenta, Plasma Style et icônes LEOS, et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
+- Profil Desktop LEOS : fond sombre et emblème officiel, dégradé A/B choisi par l'utilisateur, Plasma Style et icônes LEOS assortis, et dock inférieur centré. Une sauvegarde Plasma est créée avant l'application ; les configurations multi-panneaux restent intactes.
 - Menu principal LEOS avec recherche, catégories, favoris et applications récemment utilisées. Les favoris LEOS disponibles sont proposés sur le dock.
 - Notifications natives et historique système restent gérés par Plasma ; le Centre LEOS conserve uniquement les événements émis par les applications et services LEOS.
 - Centre de contrôle simplifié pour les fonctions propres à LEOS, avec tableau de bord matériel en lecture seule et accès direct aux paramètres KDE avancés.
@@ -149,7 +149,7 @@ LEOS/
 2. **Corrections après essais** — traiter les anomalies bloquantes révélées par le premier démarrage et relancer les contrôles automatiques.
 3. **Validation physique** — tester sur un PC ou disque de test le GPU réel, le réseau, l'audio, les manettes, le Bluetooth, la veille, les écrans et le rollback.
 4. **ISO NVIDIA** — générer séparément les ISO NVIDIA legacy et NVIDIA open après validation de la chaîne standard.
-5. **Évolution produit** — poursuivre les intégrations d'émulateurs et les améliorations Desktop/Gaming sans présenter les fonctions non testées comme certifiées.
+5. **Validation Gaming plug-and-play** — tester l'installation automatique Flathub, les imports de jeux, les manettes, les prérequis BIOS/firmware et les bibliothèques sur disques externes, sans présenter les fonctions non testées comme certifiées.
 
 ## État actuel
 
@@ -161,7 +161,8 @@ LEOS/
 - [x] Contrôles Python, lint QML Qt 6, décodage des vidéos, validation/génération de la recette BlueBuild et contrôle SHA-256 des huit ressources déployées réussis sur GitHub Actions.
 - [x] Fonds d'écran Desktop et Gaming 4K empaquetés, avec aperçus dans le Centre de contrôle et accès aux paramètres natifs KDE ; le rendu SVG et l'application réelle restent à valider sur Bazzite.
 - [x] Application guidée du dock à un panneau unique, sauvegarde préalable, confirmation et refus sûr des dispositions multi-panneaux ; validation sur Bazzite encore nécessaire.
-- [ ] Intégrations d'émulateurs.
+- [x] Préparation automatique de Heroic et des six émulateurs Flatpak dans le profil utilisateur à la première session connectée ; melonDS est désormais importable et lançable depuis Gaming.
+- [ ] Intégration complète des émulateurs : imports/lancements RPCS3 et cœurs RetroArch, assistance BIOS/firmware, stockage externe et validations réelles.
 - [x] Construire, publier et signer les trois images conteneur Bazzite : standard, NVIDIA legacy et NVIDIA open.
 - [ ] Générer et valider les ISO installateur NVIDIA legacy et NVIDIA open ; documenter les limites des PC hybrides.
 - [x] Ajouter `cosign.pub` et configurer les secrets GitHub `SIGNING_SECRET` et `COSIGN_PASSWORD` pour la signature chiffrée.

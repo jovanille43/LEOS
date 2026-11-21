@@ -63,7 +63,8 @@
     "description": "Lanceur pour les bibliothèques Epic Games, GOG et Amazon Games.",
     "source": "Flathub",
     "compatibility": "La compatibilité des jeux dépend de Proton, Wine, des pilotes et de chaque titre.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
   },
   {
     "id": "net.lutris.Lutris",
@@ -90,7 +91,8 @@
     "description": "Centre multi-systèmes libretro pour lancer des jeux rétro avec des cœurs compatibles.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub vérifié par Flathub. Les cœurs libretro, leurs versions et leur compatibilité restent à gérer dans RetroArch ; LEOS ne les installe pas automatiquement.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Les jeux et fichiers BIOS doivent provenir de tes propres copies ; LEOS ne télécharge aucun contenu."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Les cœurs libretro ne sont pas préinstallés : choisis-les dans RetroArch selon les systèmes voulus. Les jeux et fichiers BIOS doivent provenir de tes propres copies. Tu peux le désinstaller depuis la boutique ; LEOS ne le réinstallera pas ensuite.",
+    "bundled": true
   },
   {
     "id": "org.DolphinEmu.dolphin-emu",
@@ -99,7 +101,8 @@
     "description": "Émulateur Nintendo GameCube et Wii avec prise en charge des manettes et du rendu amélioré.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub communautaire non vérifié par le projet Dolphin. Compatibilité et performances dépendantes du matériel et des jeux.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le paquet est fourni par la communauté Flathub ; les jeux et fichiers système doivent être fournis légalement par l'utilisateur."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Jeux et éventuels fichiers système doivent provenir de tes propres copies. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
   },
   {
     "id": "net.pcsx2.PCSX2",
@@ -108,7 +111,8 @@
     "description": "Émulateur PlayStation 2 avec rendu amélioré, sauvegardes et prise en charge des contrôleurs.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub x86_64 publié au nom de PCSX2 Team. Les performances dépendent fortement du CPU, du GPU et de la compatibilité de chaque titre.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le BIOS et les jeux ne sont pas fournis par LEOS et doivent provenir de tes propres copies."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). PCSX2 demande un BIOS PS2 obtenu légalement par l'utilisateur. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
   },
   {
     "id": "org.ppsspp.PPSSPP",
@@ -117,7 +121,8 @@
     "description": "Émulateur PlayStation Portable avec mise à l'échelle HD et prise en charge des contrôleurs.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub x86_64/aarch64 publié par le projet PPSSPP. La compatibilité varie selon les titres et le matériel.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. LEOS ne fournit ni jeux ni contenus protégés."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). LEOS ne fournit ni jeux ni contenus protégés. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
   },
   {
     "id": "net.kuribo64.melonDS",
@@ -126,7 +131,8 @@
     "description": "Émulateur Nintendo DS et DSi avec prise en charge du rendu 3D, des sauvegardes et des manettes.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub x86_64/aarch64. L'émulation DSi et certaines fonctions réseau restent expérimentales selon le projet.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Les jeux et fichiers système doivent être fournis par l'utilisateur."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Les fichiers BIOS/firmware nécessaires aux fonctions choisies doivent être fournis légalement par l'utilisateur. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
   },
   {
     "id": "net.rpcs3.RPCS3",
@@ -135,6 +141,17 @@
     "description": "Émulateur expérimental PlayStation 3 utilisant notamment Vulkan et OpenGL.",
     "source": "Flathub",
     "compatibility": "Paquet Flathub communautaire non vérifié par le projet RPCS3. Émulation exigeante et compatibilité variable ; un GPU et des pilotes Vulkan adaptés sont recommandés.",
-    "operation_note": "Installation facultative dans ton profil utilisateur après confirmation. Le firmware officiel et les jeux doivent être obtenus légalement par l'utilisateur ; LEOS ne les télécharge pas."
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant ta première session LEOS (connexion Internet requise). Le firmware officiel PS3 et les jeux doivent être obtenus légalement par l'utilisateur. Tu peux le désinstaller ou le réinstaller depuis la boutique ; LEOS ne le réinstallera pas après une désinstallation.",
+    "bundled": true
+  },
+  {
+    "id": "dev.eden_emu.eden",
+    "name": "Eden (Nintendo Switch)",
+    "category": "Émulation",
+    "description": "Émulateur Nintendo Switch pour les jeux et applications compatibles.",
+    "source": "Flathub",
+    "compatibility": "Paquet Flathub communautaire non vérifié, non affilié et non pris en charge par Eden Contributors. La compilation x86_64 nécessite un processeur x86-64-v3 ; compatibilité et performances variables selon le matériel et les titres.",
+    "operation_note": "Installé automatiquement dans ton profil utilisateur pendant la première session LEOS (connexion Internet requise). LEOS ne fournit ni jeux, ni clés prod.keys/title.keys, ni firmware Switch. Tu dois utiliser tes propres copies obtenues légalement. Le paquet Flathub Eden est communautaire et non vérifié ; tu peux le désinstaller depuis la boutique.",
+    "bundled": true
   }
 ]

@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Property, QRunnable, QThreadPool, QTimer, Si
 from desktop.branding_assets import (
     build_themed_branding_assets,
     cached_themed_branding_asset_urls,
+    only_recolored_asset_urls,
     source_asset_urls,
 )
 from desktop.themes import (
@@ -62,7 +63,7 @@ class ThemeController(QObject):
         self._colors_configured = bool(self.settings.get("theme_colors_configured", False))
         self._appearance_mode = self._read_appearance_mode()
         self._effective_appearance = resolve_appearance_mode(self._appearance_mode)
-        self._assets = cached_themed_branding_asset_urls(*self._snapshot)
+        self._assets = only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
         self._asset_task: _BrandingAssetTask | None = None
         self._asset_attempt_snapshot: tuple[str, str] | None = None
         self._closed = False
@@ -176,7 +177,7 @@ class ThemeController(QObject):
             return
         snapshot, assets = result
         if snapshot == self._snapshot and isinstance(assets, dict):
-            self._assets = dict(assets)
+            self._assets = only_recolored_asset_urls(assets)
             self.themeAssetsChanged.emit()
         if snapshot != self._snapshot:
             self._start_asset_generation()
@@ -209,7 +210,7 @@ class ThemeController(QObject):
 
         # Another LEOS process may own the generation lock. Adopt its derived
         # files on a later poll without repeatedly competing for that lock.
-        cached = cached_themed_branding_asset_urls(*self._snapshot)
+        cached = only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
         if cached != self._assets:
             self._assets = cached
             self.themeAssetsChanged.emit()

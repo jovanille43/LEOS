@@ -12,6 +12,10 @@ modules:
         - aurorae
         - qt6-qtmultimedia
         - qt6-qtsvg
+        - google-noto-sans-fonts
+        - plymouth
+        - plymouth-plugin-two-step
+        - plymouth-scripts
 
   - type: copy
     src: gaming
@@ -42,6 +46,10 @@ modules:
     dest: /usr/share/plasma/desktoptheme/leos/
 
   - type: copy
+    src: plasma-theme/look-and-feel/org.leos.desktop
+    dest: /usr/share/plasma/look-and-feel/org.leos.desktop/
+
+  - type: copy
     src: icons/leos
     dest: /usr/share/icons/leos/
 
@@ -58,12 +66,36 @@ modules:
     dest: /usr/libexec/
 
   - type: copy
+    src: packaging/leos-default-gaming-apps-setup
+    dest: /usr/libexec/
+
+  - type: copy
     src: leos_core
     dest: /usr/share/leos/
 
   - type: copy
     src: branding
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/branding/
+
+  - type: copy
+    src: branding/sddm/leos
+    dest: /usr/share/sddm/themes/leos/
+
+  - type: copy
+    src: branding/plymouth/leos
+    dest: /usr/share/plymouth/themes/leos/
+
+  - type: copy
+    src: files/sddm/90-leos-theme.conf
+    dest: /usr/lib/sddm/sddm.conf.d/90-leos-theme.conf
+
+  - type: script
+    source: ghcr.io/blue-build/modules/script:v1
+    scripts:
+      - prepare-leos-plymouth.sh
+      - prepare-leos-cursors.sh
+    snippets:
+      - plymouth-set-default-theme leos
 
   - type: copy
     src: desktop/applications/leos-mode-selector.desktop
@@ -92,5 +124,7 @@ modules:
   - type: copy
     src: desktop/autostart/leos-session.desktop
     dest: /usr/etc/xdg/autostart/
+
+  - type: initramfs
 
   - type: signing

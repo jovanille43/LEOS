@@ -77,9 +77,9 @@ ApplicationWindow {
                     width: list.width
                     height: content.implicitHeight + 22
                     radius: 11
-                    color: isRead ? "#141B25" : "#172330"
+                    color: isRead ? window.themeColors.surface : window.themeColors.surface_elevated
                     border.width: isRead ? 1 : 2
-                    border.color: isRead ? "#2B3544" : window.cyan
+                    border.color: isRead ? window.themeColors.border : window.cyan
                     RowLayout {
                         id: content
                         anchors.fill: parent

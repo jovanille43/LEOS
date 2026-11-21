@@ -29,6 +29,14 @@ Utiliser une version sémantique :
 
 Les premières versions de validation restent en `0.x.y`. Le tag et le titre de la release suivent le format `vX.Y.Z` (par exemple `v0.1.0` pour la première préversion qualifiée).
 
+## Images candidates de pull request
+
+Pour éviter de remplacer l'image stable `latest` pendant le développement, le workflow **Build LEOS** construit, pour une pull request issue du dépôt lui-même, uniquement la variante standard en image candidate signée `pr-<numéro>`. Les variantes NVIDIA ne sont pas reconstruites à chaque PR. Les pull requests provenant d'un fork ne reçoivent pas de secrets de signature et ne déclenchent pas de publication d'image.
+
+Après le succès du job **Build LEOS (AMD / Intel)**, l'ISO candidate peut être produite manuellement sans toucher à `latest` : ouvrir le workflow **Generate LEOS installer ISO**, sélectionner la branche de la pull request, choisir la variante `standard` et saisir dans `image_tag` le tag exact indiqué par BlueBuild. Avec la version BlueBuild CLI `v0.9.42` utilisée par le dépôt, le format d'une image issue d'une PR est `pr-<numéro>-<os_version>` (par exemple `pr-46-<os_version>` : remplacer ce dernier champ par la version réellement inscrite dans les journaux du build). Un tag secondaire `<short_sha>-<os_version>` est également produit. Le nom court `pr-46` seul n'est pas un tag valide. La chaîne vérifie toujours la signature, fige le digest, contrôle la structure ISO et démarre l'installateur en UEFI/QEMU avant de publier l'artefact.
+
+Cette ISO candidate n'est pas une release et ne remplace pas le jalon de validation complète en VM puis sur matériel réel.
+
 ## Procédure de publication
 
 1. Geler un commit candidat sur `main` et vérifier que les contrôles automatiques sont verts.

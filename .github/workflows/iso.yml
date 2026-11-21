@@ -12,7 +12,7 @@ on:
           - nvidia-legacy
           - nvidia-modern
       image_tag:
-        description: Published LEOS container image tag
+        description: Published image tag; PR previews use pr-<number>-<os_version> (see Build LEOS logs)
         required: true
         default: latest
         type: string

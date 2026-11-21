@@ -31,3 +31,8 @@ symbol.
 Packaged at `/usr/share/icons/leos`; user-selected variants are installed
 under `XDG_DATA_HOME/icons/leos-custom-<id>`. The Control Center can generate
 and apply a new variant after either accent color changes.
+
+
+## Curseurs LEOS
+
+La construction de l'image génère une famille de curseurs SVG scalables dans `cursors_scalable/`, avec métadonnées et points chauds adaptés à chaque forme. Les accents source servent uniquement de points de transformation ; la création de la variante utilisateur remplace ces accents par les couleurs A/B choisies. Les formes non fournies héritent de `breeze_cursors` pour éviter des pointeurs manquants.

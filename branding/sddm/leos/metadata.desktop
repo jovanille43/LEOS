@@ -1,0 +1,11 @@
+[SddmGreeterTheme]
+Name=LEOS
+Description=Écran de connexion LEOS, métal sombre et emblème officiel
+Author=LEOS Project
+Copyright=Copyright (C) LEOS Project
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+QtVersion=6

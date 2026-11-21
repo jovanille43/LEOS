@@ -11,8 +11,8 @@
     "border": "#293342",
     "text": "#F4F7FB",
     "muted_text": "#909AAC",
-    "accent_primary": "#00D9FF",
-    "accent_secondary": "#E33BFF",
+    "accent_primary": "#A0A0A0",
+    "accent_secondary": "#D0D0D0",
     "corner_radius": 12,
     "animations_enabled": true
   },

@@ -1,6 +1,6 @@
 # LEOS — Desktop Mode
 
-Desktop Mode conserve **KDE Plasma** comme bureau principal. LEOS ajoute progressivement une identité cohérente sans remplacer les mécanismes natifs de KDE/Bazzite.
+Desktop Mode conserve **KDE Plasma** comme moteur de bureau, mais fournit une expérience visuelle LEOS : sélecteur de session, fond, style Plasma, icônes, menu et dock cohérents avec l'identité A/B choisie.
 
 ## Éléments déjà préparés
 
@@ -37,15 +37,15 @@ Le packaging installe les ressources et outils LEOS sous `/usr/share/leos/`. Le 
 
 ## Moteur de thèmes LEOS
 
-Deux couleurs A/B indépendantes définissent le dégradé partagé des interfaces LEOS. Les valeurs cyan/magenta historiques ne sont que des couleurs de prévisualisation héritées ; le premier démarrage exige un choix explicite des deux accents. Les points A et B restent exactement ceux choisis, même lorsqu’ils sont identiques ou proches. Les rôles de texte sont adaptés pour préserver la lisibilité.
+Deux couleurs A/B indépendantes définissent le dégradé partagé des interfaces LEOS. Les teintes présentes dans les ressources d'origine servent uniquement de points de transformation ; le premier démarrage exige un choix explicite des deux accents. Les points A et B restent exactement ceux choisis, même lorsqu’ils sont identiques ou proches. Les rôles de texte sont adaptés pour préserver la lisibilité.
 
 Le sélecteur Desktop/Gaming, Gaming Mode, le Centre de contrôle, les logos et les fonds utilisent le même moteur. Les variantes sont stockées dans le cache utilisateur ; les ressources officielles installées restent inchangées. Les introductions vidéo sont recolorées seulement lorsqu’un encodeur vidéo compatible est disponible.
 
 
-Le paquet `desktop/themes.py` fournit les palettes LEOS Original, Light, Cyan,
-Magenta et Gaming. Le Centre de contrôle les expose à ses composants QML et
-actualise son apparence dès le changement de thème. Les préférences sont
-conservées par `leos_core.SettingsStore`.
+Le paquet `desktop/themes.py` conserve les anciennes palettes nommées uniquement
+pour la compatibilité avec les réglages historiques. Elles ne sont pas proposées
+au premier démarrage : l'aperçu initial est métallique et neutre, puis l'utilisateur
+choisit librement A et B. Les préférences sont conservées par `leos_core.SettingsStore`.
 
 Par défaut, le choix de palette modifie uniquement les interfaces LEOS.
 Une action distincte dans le Centre de contrôle permet, après confirmation,

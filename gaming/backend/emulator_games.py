@@ -45,6 +45,22 @@ PLATFORM_SPECS = {
         "extensions": frozenset({".iso", ".cso", ".chd", ".pbp"}),
         "arguments": lambda path: [str(path)],
     },
+    "melonds": {
+        "emulator_id": "net.kuribo64.melonDS",
+        "emulator_name": "melonDS",
+        "binaries": ("melonDS", "melonds"),
+        "platform": "Nintendo",
+        "extensions": frozenset({".nds"}),
+        "arguments": lambda path: ["-f", str(path)],
+    },
+    "eden": {
+        "emulator_id": "dev.eden_emu.eden",
+        "emulator_name": "Eden",
+        "binaries": ("eden", "eden-launcher"),
+        "platform": "Nintendo Switch",
+        "extensions": frozenset({".nsp", ".xci", ".nro", ".nso"}),
+        "arguments": lambda path: ["-f", str(path)],
+    },
 }
 
 

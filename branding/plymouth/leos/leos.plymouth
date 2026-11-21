@@ -1,0 +1,51 @@
+[Plymouth Theme]
+Name=LEOS
+Description=Écran de démarrage LEOS, emblème métallique sur fond graphite
+ModuleName=two-step
+
+[two-step]
+ImageDir=/usr/share/plymouth/themes/leos
+Font=Noto Sans 12
+TitleFont=Noto Sans 22
+DialogHorizontalAlignment=.5
+DialogVerticalAlignment=.27
+TitleHorizontalAlignment=.5
+TitleVerticalAlignment=.27
+HorizontalAlignment=.5
+VerticalAlignment=.78
+WatermarkHorizontalAlignment=.5
+WatermarkVerticalAlignment=.45
+Transition=fade-over
+TransitionDuration=0.35
+BackgroundStartColor=0x090B10
+BackgroundEndColor=0x090B10
+ProgressBarBackgroundColor=0x303844
+ProgressBarForegroundColor=0xC5CBD3
+DialogClearsFirmwareBackground=true
+MessageBelowAnimation=true
+
+[boot-up]
+UseFirmwareBackground=false
+UseEndAnimation=false
+
+[shutdown]
+UseFirmwareBackground=false
+UseEndAnimation=false
+
+[reboot]
+UseFirmwareBackground=false
+UseEndAnimation=false
+
+[updates]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Mise à jour de LEOS…
+SubTitle=Ne pas éteindre l’ordinateur
+
+[system-upgrade]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Mise à niveau de LEOS…
+SubTitle=Ne pas éteindre l’ordinateur

@@ -34,10 +34,12 @@ from .retroarch import (
 from .mangohud import build_launch_command
 from .install_state import installation_status
 from .emulator_inventory import detect_emulator_installations
+from .emulator_prerequisites import detect_emulator_prerequisite_statuses
 from .emulator_games import (
     MAX_SOURCE_FOLDERS, PLATFORM_SPECS, build_emulator_launch_prefix,
     build_emulator_launch_command, scan_emulator_folder,
 )
+from .emulator_sources import remove_emulator_source_folder
 
 
 MAX_STEAM_MANIFESTS_PER_LIBRARY = 20_000
@@ -149,6 +151,14 @@ class GameLibraryModel(QAbstractListModel):
             for emulator in detect_emulator_installations(data_home=xdg_data_home())
         )
         return statuses
+
+    def emulatorPrerequisiteStatuses(self) -> list[str]:
+        return detect_emulator_prerequisite_statuses(
+            home=Path.home(),
+            config_home=xdg_config_home(),
+            data_home=xdg_data_home(),
+        )
+
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [
@@ -278,6 +288,20 @@ class GameLibraryModel(QAbstractListModel):
             sources.append({"platform": platform_key, "path": str(path)})
         return sources
 
+    def emulatorSourceFolders(self) -> list[dict[str, str]]:
+        """Return user-selected roots for the Gaming source manager."""
+        return [
+            {
+                "platform": source["platform"],
+                "path": source["path"],
+                "label": (
+                    f"{PLATFORM_SPECS[source['platform']]['emulator_name']} · "
+                    f"{source['path']}"
+                ),
+            }
+            for source in self._load_emulator_source_folders()
+        ]
+
     def addEmulatorFolder(self, platform_key: str, folder: str) -> bool:
         """Persist one directory explicitly chosen by the user, then refresh Gaming."""
         if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
@@ -332,6 +356,15 @@ class GameLibraryModel(QAbstractListModel):
                 write_bounded_json(self._emulator_sources_file, existing)
             except (OSError, ValueError):
                 return False
+        self.refresh()
+        return True
+
+    def removeEmulatorFolder(self, platform_key: str, folder: str) -> bool:
+        """Forget a user-selected source without touching the external drive."""
+        if not remove_emulator_source_folder(
+            self._emulator_sources_file, platform_key, folder
+        ):
+            return False
         self.refresh()
         return True
 

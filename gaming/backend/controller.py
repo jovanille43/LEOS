@@ -73,6 +73,7 @@ class GamingController(QObject):
     launchStatusChanged = Signal()
     launcherStatusChanged = Signal()
     emulatorFolderBrowserChanged = Signal()
+    emulatorPrerequisitesChanged = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -82,10 +83,18 @@ class GamingController(QObject):
             resolve_browsable_directory(Path.home()) or Path("/")
         )
         self._launcher_statuses = self.library.launcherStatuses()
+        self._emulator_prerequisite_statuses = self.library.emulatorPrerequisiteStatuses()
         self._launcher_refresh_timer = QTimer(self)
         self._launcher_refresh_timer.setInterval(15000)
         self._launcher_refresh_timer.timeout.connect(self.refreshLauncherStatuses)
         self._launcher_refresh_timer.start()
+        # Re-scan bounded user-selected libraries periodically so removable
+        # drives and games installed by the first-session bootstrap appear
+        # without requiring a manual refresh.
+        self._library_refresh_timer = QTimer(self)
+        self._library_refresh_timer.setInterval(45000)
+        self._library_refresh_timer.timeout.connect(self.refreshLibrary)
+        self._library_refresh_timer.start()
         self.monitor = SystemMonitor()
         self._power_profiles = PowerProfileState(
             False, "", (), "Détection des profils d'énergie en cours…"
@@ -197,12 +206,22 @@ class GamingController(QObject):
     def launcherStatuses(self) -> list[str]:
         return list(self._launcher_statuses)
 
+    @Property("QStringList", notify=emulatorPrerequisitesChanged)
+    def emulatorPrerequisiteStatuses(self) -> list[str]:
+        return list(self._emulator_prerequisite_statuses)
+
     @Slot()
     def refreshLauncherStatuses(self) -> None:
         statuses = self.library.launcherStatuses()
+        prerequisites = self.library.emulatorPrerequisiteStatuses()
         if statuses != self._launcher_statuses:
             self._launcher_statuses = statuses
             self.launcherStatusChanged.emit()
+            # An emulator has appeared or disappeared; refresh its game entries.
+            self.library.refresh()
+        if prerequisites != self._emulator_prerequisite_statuses:
+            self._emulator_prerequisite_statuses = prerequisites
+            self.emulatorPrerequisitesChanged.emit()
 
     @Property(bool, notify=mangoHudChanged)
     def mangoHudAvailable(self) -> bool:
@@ -350,6 +369,23 @@ class GamingController(QObject):
     def emulatorFolderDirectories(self) -> list[str]:
         return list_child_directories(self._emulator_folder_path)
 
+    @Property("QVariantList", notify=emulatorFolderBrowserChanged)
+    def emulatorSourceFolders(self) -> list[dict[str, str]]:
+        return self.library.emulatorSourceFolders()
+
+    @Slot(str, str, result=bool)
+    def removeEmulatorFolder(self, platform_key: str, folder: str) -> bool:
+        removed = self.library.removeEmulatorFolder(platform_key, folder)
+        self._message = (
+            "Dossier retiré de la bibliothèque Gaming. Les fichiers du disque n'ont pas été modifiés."
+            if removed else
+            "Impossible de retirer ce dossier. Actualise la bibliothèque et réessaie."
+        )
+        self.messageChanged.emit(self._message)
+        if removed:
+            self.emulatorFolderBrowserChanged.emit()
+        return removed
+
     @Slot(str, result=bool)
     def beginEmulatorFolderBrowse(self, platform_key: str) -> bool:
         if not isinstance(platform_key, str) or platform_key not in PLATFORM_SPECS:
@@ -441,6 +477,7 @@ class GamingController(QObject):
         self.monitor.stop()
         self._notification_refresh_timer.stop()
         self._launcher_refresh_timer.stop()
+        self._library_refresh_timer.stop()
         self._power_profile_refresh_timer.stop()
         self._gamepad_poll_timer.stop()
         self._gamepad_refresh_timer.stop()

@@ -22,6 +22,7 @@ from leos_core.paths import data_home as xdg_data_home
 
 STYLE_SOURCE = Path("/usr/share/plasma/desktoptheme/leos")
 ICON_SOURCE = Path("/usr/share/icons/leos")
+AURORAE_SOURCE = Path("/usr/share/aurorae/themes/leos")
 _RESOURCE_ID = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
 MAX_FILES = 2048
 MAX_FILE_BYTES = 16 * 1024 * 1024
@@ -66,9 +67,13 @@ def _files(root: Path) -> list[tuple[Path, Path]]:
     return result
 
 
-def _source_fingerprint(style_files: list[tuple[Path, Path]], icon_files: list[tuple[Path, Path]]) -> str:
+def _source_fingerprint(
+    style_files: list[tuple[Path, Path]],
+    icon_files: list[tuple[Path, Path]],
+    aurorae_files: list[tuple[Path, Path]],
+) -> str:
     digest = hashlib.sha256()
-    for kind, entries in (("style", style_files), ("icons", icon_files)):
+    for kind, entries in (("style", style_files), ("icons", icon_files), ("aurorae", aurorae_files)):
         digest.update(kind.encode("ascii"))
         for path, relative in entries:
             digest.update(relative.as_posix().encode("utf-8"))
@@ -91,11 +96,19 @@ def _assert_no_symlink_components(path: Path, stop_at: Path) -> None:
         current = current.parent
 
 
-def _manifest(style_id: str, icon_id: str, color_a: str, color_b: str, fingerprint: str) -> dict[str, str]:
+def _manifest(
+    style_id: str,
+    icon_id: str,
+    aurorae_id: str,
+    color_a: str,
+    color_b: str,
+    fingerprint: str,
+) -> dict[str, str]:
     return {
-        "schema": "leos-themed-plasma-resources-v1",
+        "schema": "leos-themed-plasma-resources-v2",
         "style_id": style_id,
         "icon_id": icon_id,
+        "aurorae_id": aurorae_id,
         "color_a": color_a,
         "color_b": color_b,
         "source_fingerprint": fingerprint,
@@ -138,9 +151,14 @@ def _copy_variant(
             raise FileExistsError(
                 f"A different or incomplete theme already occupies {destination}; it was left untouched."
             )
-        metadata = destination / ("metadata.json" if kind == "style" else "index.theme")
+        metadata_name = {"style": "metadata.json", "icons": "index.theme", "aurorae": "metadata.desktop"}[kind]
+        metadata = destination / metadata_name
         if metadata.is_symlink() or not metadata.is_file():
             raise FileExistsError(f"Existing user theme is incomplete: {destination}")
+        if kind == "aurorae":
+            config = destination / f"{theme_id}rc"
+            if config.is_symlink() or not config.is_file():
+                raise FileExistsError(f"Existing Aurorae theme is incomplete: {destination}")
         return
 
     destination.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
@@ -149,7 +167,8 @@ def _copy_variant(
     staging = Path(tempfile.mkdtemp(prefix=f".{theme_id}.", dir=destination.parent))
     try:
         for source, relative in source_files:
-            target = staging / relative
+            output_relative = Path(f"{theme_id}rc") if kind == "aurorae" and relative.name == "leosrc" else relative
+            target = staging / output_relative
             target.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
             if relative.suffix.lower() == ".svg":
                 if not _transform_svg(source, target, matrix, emblem=None):
@@ -169,7 +188,7 @@ def _copy_variant(
             plugin["Description"] = "LEOS Plasma Style with the user's A/B accent gradient."
             metadata_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             os.chmod(metadata_path, 0o644)
-        else:
+        elif kind == "icons":
             index_path = staging / "index.theme"
             parser = configparser.ConfigParser(interpolation=None, strict=False)
             parser.optionxform = str
@@ -181,6 +200,22 @@ def _copy_variant(
             with index_path.open("w", encoding="utf-8") as stream:
                 parser.write(stream)
             os.chmod(index_path, 0o644)
+        elif kind == "aurorae":
+            metadata_path = staging / "metadata.desktop"
+            parser = configparser.ConfigParser(interpolation=None, strict=False)
+            parser.optionxform = str
+            parser.read_string(metadata_path.read_text(encoding="utf-8"))
+            section = "Desktop Entry" if parser.has_section("Desktop Entry") else "DesktopEntry"
+            if not parser.has_section(section):
+                raise ValueError("The packaged LEOS Aurorae metadata is invalid")
+            if parser.get(section, "X-KDE-PluginInfo-Name", fallback="") != "leos":
+                raise ValueError("The packaged LEOS Aurorae plugin identifier is invalid")
+            parser.set(section, "Name", "LEOS personnalisé")
+            parser.set(section, "Comment", "LEOS window decoration with the user's A/B accent gradient")
+            parser.set(section, "X-KDE-PluginInfo-Name", theme_id)
+            with metadata_path.open("w", encoding="utf-8") as stream:
+                parser.write(stream)
+            os.chmod(metadata_path, 0o644)
 
         _write_manifest(staging, manifest)
         for current, directories, filenames in os.walk(staging):
@@ -208,17 +243,20 @@ def install_themed_plasma_resources(
     data_home: Path | None = None,
     plasma_theme_root: Path = STYLE_SOURCE,
     icon_theme_root: Path = ICON_SOURCE,
+    aurorae_theme_root: Path = AURORAE_SOURCE,
 ) -> dict[str, str]:
-    """Install a matched per-user Plasma Style and icon theme for a chosen A/B pair."""
+    """Install matched user-scoped Plasma, icon, and window-decoration variants."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
     style_files = _files(plasma_theme_root)
     icon_files = _files(icon_theme_root)
-    fingerprint = _source_fingerprint(style_files, icon_files)
+    aurorae_files = _files(aurorae_theme_root)
+    fingerprint = _source_fingerprint(style_files, icon_files, aurorae_files)
     identity = hashlib.sha256(f"{first}|{second}|{fingerprint}".encode("utf-8")).hexdigest()[:16]
     style_id = f"leos-custom-{identity}"
     icon_id = f"leos-custom-{identity}"
-    if not _RESOURCE_ID.fullmatch(style_id) or not _RESOURCE_ID.fullmatch(icon_id):
+    aurorae_id = f"leos-custom-{identity}"
+    if not all(_RESOURCE_ID.fullmatch(value) for value in (style_id, icon_id, aurorae_id)):
         raise ValueError("Generated LEOS theme identifier is invalid")
 
     base = Path(data_home) if data_home is not None else Path(xdg_data_home())
@@ -226,9 +264,11 @@ def install_themed_plasma_resources(
     _assert_no_symlink_components(base, base)
     style_destination = base / "plasma" / "desktoptheme" / style_id
     icon_destination = base / "icons" / icon_id
+    aurorae_destination = base / "aurorae" / "themes" / aurorae_id
     _assert_no_symlink_components(style_destination.parent, base)
     _assert_no_symlink_components(icon_destination.parent, base)
-    manifest = _manifest(style_id, icon_id, first, second, fingerprint)
+    _assert_no_symlink_components(aurorae_destination.parent, base)
+    manifest = _manifest(style_id, icon_id, aurorae_id, first, second, fingerprint)
     matrix = build_color_matrix(first, second)
 
     lock_root = base / "leos" / "theme-resources"
@@ -251,6 +291,10 @@ def install_themed_plasma_resources(
                 icon_files, icon_destination, kind="icons",
                 theme_id=icon_id, manifest=manifest, matrix=matrix,
             )
+            _copy_variant(
+                aurorae_files, aurorae_destination, kind="aurorae",
+                theme_id=aurorae_id, manifest=manifest, matrix=matrix,
+            )
         finally:
             fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
     return {
@@ -258,4 +302,6 @@ def install_themed_plasma_resources(
         "iconThemeId": icon_id,
         "plasmaStylePath": str(style_destination),
         "iconThemePath": str(icon_destination),
+        "auroraeThemeId": aurorae_id,
+        "auroraeThemePath": str(aurorae_destination),
     }

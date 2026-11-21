@@ -6,9 +6,11 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
+from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B
 from desktop.branding_assets import (
     _cache_directory,
     _available_video_encoder,
+    only_recolored_asset_urls,
     _transform_svg,
     build_color_matrix,
     cached_themed_branding_asset_urls,
@@ -23,17 +25,28 @@ def _rgb(hex_color):
 
 
 class BrandingAssetTests(unittest.TestCase):
+    def test_neutral_preview_is_separate_from_original_artwork_endpoints(self):
+        self.assertNotEqual(DEFAULT_COLOR_A, SOURCE_COLOR_A)
+        self.assertNotEqual(DEFAULT_COLOR_B, SOURCE_COLOR_B)
+
     def test_color_matrix_maps_both_original_endpoints_to_the_custom_pair(self):
         color_a = "#FF8800"
         color_b = "#0055CC"
         matrix = build_color_matrix(color_a, color_b)
 
-        mapped_a = transform_rgb(_rgb("#00D9FF"), matrix)
-        mapped_b = transform_rgb(_rgb("#E33BFF"), matrix)
+        mapped_a = transform_rgb(_rgb(SOURCE_COLOR_A), matrix)
+        mapped_b = transform_rgb(_rgb(SOURCE_COLOR_B), matrix)
         for actual, expected in zip(mapped_a, _rgb(color_a)):
             self.assertAlmostEqual(actual, expected, places=6)
         for actual, expected in zip(mapped_b, _rgb(color_b)):
             self.assertAlmostEqual(actual, expected, places=6)
+
+    def test_unrecolored_source_files_are_not_returned_as_visual_fallbacks(self):
+        originals = source_asset_urls()
+        self.assertEqual(only_recolored_asset_urls(originals), {})
+        custom = dict(originals)
+        custom["desktopLogoUrl"] = "file:///home/user/.cache/leos/custom-desktop.png"
+        self.assertEqual(only_recolored_asset_urls(custom), {"desktopLogoUrl": custom["desktopLogoUrl"]})
 
     def test_color_matrix_preserves_neutral_metallic_greys(self):
         matrix = build_color_matrix("#FF00AA", "#00D060")

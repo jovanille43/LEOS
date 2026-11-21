@@ -249,7 +249,9 @@ class SessionFlowTests(unittest.TestCase):
             encoding="utf-8"
         )
         gaming = (ROOT / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn('onClicked: transitionDialog.open()', selector)
+        self.assertIn('onClicked: window.requestGamingMode()', selector)
+        self.assertIn('function requestGamingMode()', selector)
+        self.assertIn('if (!leosTheme.themeColorsConfigured)', selector)
         self.assertIn('window.requestModeWithIntro("gaming")', selector)
         self.assertIn('id: returnDialog', gaming)
         self.assertIn('title: "Retourner à Desktop Mode ?"', gaming)

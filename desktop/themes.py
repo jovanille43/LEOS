@@ -9,8 +9,12 @@ import re
 from datetime import datetime
 
 DEFAULT_THEME = "leos-original"  # retained for older settings and KDE schemes
-DEFAULT_COLOR_A = "#00D9FF"
-DEFAULT_COLOR_B = "#E33BFF"
+# Neutral metallic placeholders are used only until the user chooses A and B.
+DEFAULT_COLOR_A = "#A0A0A0"
+DEFAULT_COLOR_B = "#D0D0D0"
+# Original artwork endpoints are transform inputs only, never user defaults.
+SOURCE_COLOR_A = "#00D9FF"
+SOURCE_COLOR_B = "#E33BFF"
 DEFAULT_APPEARANCE = "dark"
 APPEARANCE_MODES = frozenset({"dark", "light", "auto"})
 AUTO_LIGHT_START_HOUR = 7
@@ -80,7 +84,7 @@ def _with_accent_text_tokens(palette: dict[str, str]) -> dict[str, str]:
 # Legacy named palettes remain readable for existing KDE scheme files and old
 # preferences, but the interface no longer asks users to choose among them.
 _LEGACY_THEME_PALETTES: dict[str, dict[str, str]] = {
-    "leos-original": {**_BASE_PALETTE, "accent_primary": DEFAULT_COLOR_A, "accent_secondary": DEFAULT_COLOR_B},
+    "leos-original": {**_BASE_PALETTE, "accent_primary": SOURCE_COLOR_A, "accent_secondary": SOURCE_COLOR_B},
     "light": {
         "background": "#F3F6FA", "surface": "#FFFFFF", "surface_elevated": "#E8EEF5",
         "border": "#CFD8E3", "text": "#18202B", "muted_text": "#5D6978",
@@ -99,7 +103,7 @@ _LEGACY_THEME_PALETTES: dict[str, dict[str, str]] = {
     "gaming": {
         "background": "#070910", "surface": "#101522", "surface_elevated": "#1A2436",
         "border": "#303D55", "text": "#F5F7FF", "muted_text": "#929DB4",
-        "accent_primary": DEFAULT_COLOR_A, "accent_secondary": DEFAULT_COLOR_B,
+        "accent_primary": SOURCE_COLOR_A, "accent_secondary": SOURCE_COLOR_B,
     },
 }
 

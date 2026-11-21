@@ -1,0 +1,11 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Id": "org.leos.desktop",
+    "Name": "LEOS",
+    "Description": "Écran de chargement LEOS, métal sombre et emblème officiel",
+    "Authors": [{"Name": "LEOS Project"}],
+    "Version": "0.2.0",
+    "License": "GPL-3.0-or-later"
+  }
+}

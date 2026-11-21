@@ -17,7 +17,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color
+from desktop.themes import SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color
 
 
 _HEX_COLOR_RE = re.compile(r"#[0-9A-Fa-f]{6}\b")
@@ -68,8 +68,8 @@ def _inverse_3x3(matrix: tuple[tuple[float, float, float], ...]) -> tuple[tuple[
 def build_color_matrix(
     color_a: str,
     color_b: str,
-    source_a: str = DEFAULT_COLOR_A,
-    source_b: str = DEFAULT_COLOR_B,
+    source_a: str = SOURCE_COLOR_A,
+    source_b: str = SOURCE_COLOR_B,
 ) -> tuple[tuple[float, float, float], ...]:
     """Map old A/B gradient endpoints to new A/B while preserving neutral grey."""
     old_a = _rgb01(source_a)
@@ -282,6 +282,15 @@ def source_asset_urls(branding_root: Path | None = None) -> dict[str, str]:
         "gamingWallpaperUrl": (root / "wallpapers" / "gaming-leos.svg").as_uri(),
         "desktopIntroUrl": (root / "animations" / "desktop-intro.mov").as_uri(),
         "gamingIntroUrl": (root / "animations" / "gaming-intro.mp4").as_uri(),
+    }
+
+
+def only_recolored_asset_urls(assets: dict[str, str], branding_root: Path | None = None) -> dict[str, str]:
+    """Drop source-file fallbacks so uncustomized colors never flash in LEOS UI."""
+    originals = source_asset_urls(branding_root)
+    return {
+        key: url for key, url in assets.items()
+        if isinstance(url, str) and url and url != originals.get(key)
     }
 
 

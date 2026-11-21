@@ -19,6 +19,32 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         self.assertIn("def beginEmulatorFolderBrowse", controller)
         self.assertIn("def useCurrentEmulatorFolder", controller)
 
+    def test_switch_eden_is_available_in_the_gamepad_import_selector(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("Nintendo Switch (Eden)", qml)
+        self.assertIn(
+            'const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]',
+            qml,
+        )
+
+    def test_selected_sources_can_be_removed_without_deleting_game_files(self):
+        library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def emulatorSourceFolders", library)
+        self.assertIn("def removeEmulatorFolder", library)
+        source_manager = (ROOT / "gaming/backend/emulator_sources.py").read_text(encoding="utf-8")
+        self.assertIn("remove_emulator_source_folder(", library)
+        self.assertIn("write_bounded_json(state_file, remaining)", source_manager)
+        self.assertNotIn("unlink(", source_manager)
+        self.assertIn('def emulatorSourceFolders(self)', controller)
+        self.assertIn('def removeEmulatorFolder(self, platform_key: str, folder: str)', controller)
+        self.assertIn('id: emulatorSourcesDialog', qml)
+        self.assertIn('model: leos.emulatorSourceFolders', qml)
+        self.assertIn('leos.removeEmulatorFolder(modelData.platform, modelData.path)', qml)
+        self.assertIn('GÉRER LES DOSSIERS AJOUTÉS', qml)
+        self.assertIn('emulatorSourcesDialog.visible', qml)
+
     def test_only_persisted_user_selected_sources_are_added_to_library(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
         self.assertIn("def addEmulatorFolder", library)
@@ -46,10 +72,12 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
 
     def test_qml_toolbar_remains_controller_navigable_after_adding_import_action(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("Math.min(3, index)", qml)
+        self.assertIn("Math.min(4, index)", qml)
         self.assertIn("importEmulatorFolderButton.forceActiveFocus()", qml)
+        self.assertIn("emulatorPrerequisitesButton.forceActiveFocus()", qml)
         self.assertIn("addGameButton.forceActiveFocus()", qml)
         self.assertIn("emulatorImportDialog.open()", qml)
+        self.assertIn("emulatorPrerequisitesDialog.open()", qml)
 
     def test_gamepad_and_keyboard_can_navigate_the_custom_folder_browser(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
