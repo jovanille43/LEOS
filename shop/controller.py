@@ -378,7 +378,12 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
-            self._release_flatpak_lock()
+            # Read/write errors may occur while the child still runs. Keep the
+            # shared lock until QProcess confirms that the process has exited.
+            if self._process.state() == QProcess.ProcessState.NotRunning:
+                self._release_flatpak_lock()
+            else:
+                self._process.kill()
             if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
