@@ -250,6 +250,28 @@ class GamingController(QObject):
         self.messageChanged.emit(self._message)
         return opened
 
+    @Slot(result=bool)
+    def openEdenSetup(self) -> bool:
+        """Open the already-installed Eden UI for its user-guided first setup."""
+        command = self.library.edenLauncherCommand()
+        if not command:
+            self._message = "Eden n'est pas installé. Tu peux l'ajouter depuis la Boutique LEOS."
+            self.messageChanged.emit(self._message)
+            return False
+        try:
+            result = QProcess.startDetached(command[0], command[1:], str(Path.home()))
+            opened = bool(result[0] if isinstance(result, tuple) else result)
+        except (OSError, RuntimeError):
+            opened = False
+        self._message = (
+            "Eden est ouvert. Ajoute d'abord tes clés dans Tools > Install Decryption Keys, "
+            "puis ton firmware dans Tools > Install Firmware."
+            if opened
+            else "Impossible d'ouvrir Eden sur cet hôte."
+        )
+        self.messageChanged.emit(self._message)
+        return opened
+
     @Slot()
     def refreshLauncherStatuses(self) -> None:
         statuses = self.library.launcherStatuses()

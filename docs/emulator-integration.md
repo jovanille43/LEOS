@@ -88,8 +88,10 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 - [x] RPCS3 : vérifier le module `dev_flash/sys/external/liblv2.sprx`, utilisé par le projet pour reconnaître le firmware installé.
 - [x] RetroArch : lire le dossier de cœurs configuré et compter uniquement les fichiers de cœur Linux réguliers non vides.
 - [x] Eden : détecter par métadonnées la présence de fichiers de clés `.keys` et de contenus firmware `.nca` dans les emplacements locaux connus, sans lire ni transmettre leur contenu.
+- [x] Eden : ajouter dans Gaming un assistant navigable à la manette qui ouvre l'émulateur déjà installé et présente le parcours officiel de configuration des clés, du firmware et de la manette.
+- [x] Eden : fournir une commande de lancement native/Flatpak explicite, sans shell, sans installation implicite et sans permissions de dossiers supplémentaires.
 - [x] Ne jamais afficher les chemins privés, lire le contenu des BIOS/firmwares/cœurs, ni les téléverser. Une présence détectée n'atteste pas l'authenticité ou le bon fonctionnement.
-- [ ] Ajouter des assistants de configuration guidés avec sélection contrôlée des dossiers et essais de lancement.
+- [ ] Ajouter les assistants de configuration guidés pour les autres émulateurs, avec sélection contrôlée des dossiers et essais de lancement.
 - [ ] Valider sur les versions Flatpak réellement installées et documenter les cas natifs spécifiques.
 
 LEOS ne fournit, ne distribue, n'extrait et ne télécharge aucun BIOS, firmware, clé, jeu ou cœur protégé. L'utilisateur doit fournir les fichiers qu'il est autorisé à utiliser. Eden nécessite des clés Switch et un firmware obtenus depuis sa propre console ; LEOS vérifie uniquement la présence des fichiers et ne peut en certifier l'authenticité ou le fonctionnement. La version Flathub d'Eden est un paquet communautaire non vérifié et non affilié au projet amont ; l'amont distribue ses builds Linux sous forme d'AppImage. RetroArch conserve le choix des cœurs par système ; aucun cœur n'est installé automatiquement parce que les besoins dépendent des consoles que l'utilisateur souhaite émuler.
@@ -123,7 +125,7 @@ Les formats et options de lancement de la première intégration s'appuient sur 
 - **RetroArch — installation des cœurs dans le dossier indiqué par Settings > Directory > Cores** : https://docs.libretro.com/guides/download-cores/
 - **RPCS3 — vérification du module liblv2.sprx et installation via File > Install Firmware** : https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/Cell/PPUModule.cpp
 - **Eden — arguments CLI et option plein écran** : https://git.eden-emu.dev/eden-emu/eden/src/branch/master/docs/user/CommandLine.md
-- **Eden — guide officiel d'installation des clés et du firmware** : https://git.eden-emu.dev/eden-emu/eden/src/branch/master/docs/user/QuickStart.md
+- **Eden — guide officiel de démarrage, clés, firmware et manette** : https://github.com/eden-emulator/mirror/blob/master/docs/user/QuickStart.md
 - **Eden — paquet Flathub communautaire non vérifié** : https://flathub.org/en/apps/dev.eden_emu.eden
 - **Eden — manifest communautaire Flathub et architectures prises en charge** : https://github.com/flathub/dev.eden_emu.eden/blob/master/dev.eden_emu.eden.yml
 
