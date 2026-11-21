@@ -253,37 +253,44 @@ def detect_retroarch_recommended_core_statuses(
     }
 
     for config_directory in _retroarch_config_directories(home, config_home):
-        core_directory = _retroarch_core_directory(config_directory)
-        if not _is_directory(core_directory):
-            continue
-        try:
-            resolved_directory = core_directory.resolve(strict=True)
-            identity = str(resolved_directory)
-            if identity in seen_directories or not resolved_directory.is_dir():
+        # The configured path may point inside the Flatpak runtime (/app),
+        # which is not a host path. Also inspect the user's conventional cores
+        # folder, where custom cores are commonly stored.
+        core_directories = (
+            _retroarch_core_directory(config_directory),
+            config_directory / "cores",
+        )
+        for core_directory in core_directories:
+            if not _is_directory(core_directory):
                 continue
-            seen_directories.add(identity)
-            with os.scandir(resolved_directory) as entries:
-                for index, entry in enumerate(entries):
-                    if index >= MAX_DIRECTORY_ENTRIES:
-                        break
-                    name = entry.name.casefold()
-                    matched = expected.get(name)
-                    if matched is None and name.endswith(".so"):
-                        matched_prefix = next(
-                            (
-                                prefix
-                                for prefix in suffix_prefixes
-                                if name.startswith(prefix + "_")
-                            ),
-                            None,
-                        )
-                        if matched_prefix is not None:
-                            matched = suffix_prefixes[matched_prefix]
-                    if matched and entry.is_file(follow_symlinks=False):
-                        if _is_regular_file(Path(entry.path)):
-                            installed.add(matched)
-        except (OSError, RuntimeError, ValueError):
-            continue
+            try:
+                resolved_directory = core_directory.resolve(strict=True)
+                identity = str(resolved_directory)
+                if identity in seen_directories or not resolved_directory.is_dir():
+                    continue
+                seen_directories.add(identity)
+                with os.scandir(resolved_directory) as entries:
+                    for index, entry in enumerate(entries):
+                        if index >= MAX_DIRECTORY_ENTRIES:
+                            break
+                        name = entry.name.casefold()
+                        matched = expected.get(name)
+                        if matched is None and name.endswith(".so"):
+                            matched_prefix = next(
+                                (
+                                    prefix
+                                    for prefix in suffix_prefixes
+                                    if name.startswith(prefix + "_")
+                                ),
+                                None,
+                            )
+                            if matched_prefix is not None:
+                                matched = suffix_prefixes[matched_prefix]
+                        if matched and entry.is_file(follow_symlinks=False):
+                            if _is_regular_file(Path(entry.path)):
+                                installed.add(matched)
+            except (OSError, RuntimeError, ValueError):
+                continue
 
     return [
         f"{system} · {core} — "
