@@ -143,7 +143,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         (cores / "snes9x_libretro.so").write_bytes(b"core")
         (cores / "mgba_libretro.so").write_bytes(b"core")
         (config_dir / "retroarch.cfg").write_text(
-            f'libretro_directory = "{cores}"\\n',
+            f'libretro_directory = "{cores}"\n',
             encoding="utf-8",
         )
 
