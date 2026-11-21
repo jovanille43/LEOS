@@ -19,6 +19,13 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
+    def test_eden_setup_discloses_community_package_and_memory_requirements(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("paquet Flathub d'Eden est communautaire", qml)
+        self.assertIn("n'est pas vérifié ni pris en charge par l'équipe Eden", qml)
+        self.assertIn("8 Gio de mémoire au minimum", qml)
+        self.assertIn("16 Gio recommandés", qml)
+
     def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("leosTheme.gamingLogoUrl", qml)
