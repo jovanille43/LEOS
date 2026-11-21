@@ -19,6 +19,7 @@ from shop.flatpak_inventory import (
 )
 from shop.flatpak_metadata import runtime_summary
 from desktop.notifications import post_notification
+from leos_core.flatpak_lock import release_flatpak_lock, try_acquire_flatpak_lock
 
 
 MAX_PROCESS_OUTPUT_BYTES = 4 * 1024 * 1024
@@ -59,12 +60,18 @@ class StoreController(QObject):
         self._timeout_timer = QTimer(self)
         self._timeout_timer.setSingleShot(True)
         self._timeout_timer.timeout.connect(self._on_timeout)
+        self._inventory_retry_timer = QTimer(self)
+        self._inventory_retry_timer.setSingleShot(True)
+        self._inventory_retry_timer.setInterval(5_000)
+        self._inventory_retry_timer.timeout.connect(self._retry_inventory_refresh)
+        self._inventory_retry_attempts = 0
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
         self._stdout = bytearray()
         self._stderr = bytearray()
         self._output_overflowed = False
+        self._flatpak_lock_fd: int | None = None
 
     @Property(str, notify=statusChanged)
     def status(self) -> str:
@@ -92,6 +99,16 @@ class StoreController(QObject):
             self._busy = value
             self.busyChanged.emit(value)
 
+    def _release_flatpak_lock(self) -> None:
+        descriptor = self._flatpak_lock_fd
+        self._flatpak_lock_fd = None
+        if descriptor is not None:
+            try:
+                release_flatpak_lock(descriptor)
+            except OSError:
+                # The helper closes the descriptor even if explicit unlock fails.
+                pass
+
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
         if self._busy:
             if action in {"verify-remote", "verify-install", "recheck-remote"}:
@@ -100,12 +117,34 @@ class StoreController(QObject):
             return
         executable = shutil.which(program)
         if not executable:
+            self._release_flatpak_lock()
             if action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Flatpak n'est pas disponible : la source et les dépendances n'ont pas pu être vérifiées.")
             self._set_status(f"{program} n'est pas disponible sur ce système.")
             post_notification("Opération impossible", self._status, "error")
             self.operationFinished.emit(False, self._status)
             return
+        if self._flatpak_lock_fd is None:
+            try:
+                descriptor = try_acquire_flatpak_lock()
+            except OSError as error:
+                message = f"Le verrou Flatpak LEOS n'est pas disponible en sécurité : {error}"
+                self._set_status(message)
+                if action in {"verify-remote", "verify-install", "recheck-remote"}:
+                    self._set_verification_details(message)
+                self.operationFinished.emit(False, message)
+                return
+            if descriptor is None:
+                message = "Une autre opération Flatpak LEOS est en cours (préparation Gaming ou application). Réessaie quand elle sera terminée."
+                if action == "list" and self._inventory_retry_attempts < 60:
+                    self._inventory_retry_attempts += 1
+                    self._inventory_retry_timer.start()
+                self._set_status(message)
+                if action in {"verify-remote", "verify-install", "recheck-remote"}:
+                    self._set_verification_details(message)
+                self.operationFinished.emit(False, message)
+                return
+            self._flatpak_lock_fd = descriptor
         self._action, self._target = action, target
         self._stdout.clear()
         self._stderr.clear()
@@ -119,6 +158,11 @@ class StoreController(QObject):
 
     @Slot()
     def refreshInstalled(self) -> None:
+        self._inventory_retry_timer.stop()
+        self._inventory_retry_attempts = 0
+        self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
+
+    def _retry_inventory_refresh(self) -> None:
         self._start("list", "", "flatpak", ["list", "--app", "--columns=application,installation"])
 
     @Slot(int, result="QVariant")
@@ -190,8 +234,9 @@ class StoreController(QObject):
 
     def _on_finished(self, exit_code: int, exit_status) -> None:
         # FailedToStart and some runtime errors can be followed by a finished
-        # signal. The error handler already released this operation.
+        # signal. Release any lock retained until a timed-out process actually exits.
         if not self._busy:
+            self._release_flatpak_lock()
             return
         self._timeout_timer.stop()
         if exit_status != QProcess.ExitStatus.NormalExit:
@@ -204,6 +249,7 @@ class StoreController(QObject):
         self._set_busy(False)
 
         if self._output_overflowed:
+            self._release_flatpak_lock()
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
@@ -213,6 +259,7 @@ class StoreController(QObject):
             return
 
         if action == "list":
+            self._release_flatpak_lock()
             if exit_code != 0:
                 lines = stderr.strip().splitlines()
                 reason = lines[-1] if lines else "Inventaire Flatpak indisponible."
@@ -220,6 +267,8 @@ class StoreController(QObject):
                 post_notification("Boutique LEOS", self._status, "warning")
                 self.operationFinished.emit(False, self._status)
                 return
+            self._inventory_retry_timer.stop()
+            self._inventory_retry_attempts = 0
             user_apps, system_apps = parse_flatpak_inventory(stdout)
             self.catalog.setInstalled(user_apps, system_apps)
             self.catalogUpdated.emit()
@@ -245,6 +294,7 @@ class StoreController(QObject):
                     ["remote-info", "--user", "--show-metadata", "flathub", target],
                 )
             else:
+                self._release_flatpak_lock()
                 self._action = ""
                 self._verified_source_url = ""
                 self._set_verification_details("Le dépôt nommé Flathub est absent ou son adresse n'est pas reconnue comme officielle. Aucune installation n'a été lancée.")
@@ -263,6 +313,7 @@ class StoreController(QObject):
                     ["install", "--user", "--assumeyes", "flathub", target],
                 )
             else:
+                self._release_flatpak_lock()
                 self._action = ""
                 self._verified_source_url = ""
                 self._set_verification_details(
@@ -275,6 +326,7 @@ class StoreController(QObject):
 
         if action == "verify-install":
             if exit_code == 0:
+                self._release_flatpak_lock()
                 self._action = "verified"
                 self._set_verification_details(
                     f"Source vérifiée : {self._verified_source_url}\n{runtime_summary(stdout)}"
@@ -284,6 +336,7 @@ class StoreController(QObject):
                 )
                 self.operationFinished.emit(True, self._status)
             else:
+                self._release_flatpak_lock()
                 self._action = ""
                 self._verified_source_url = ""
                 self._set_verification_details("Les informations de dépendances n’ont pas pu être vérifiées.")
@@ -295,6 +348,7 @@ class StoreController(QObject):
             return
 
         if exit_code == 0:
+            self._release_flatpak_lock()
             verb = "installée" if action == "install" else "désinstallée"
             message = f"{target} a été {verb}."
             self._set_status(message)
@@ -302,6 +356,7 @@ class StoreController(QObject):
             self.operationFinished.emit(True, message)
             self.refreshInstalled()
         else:
+            self._release_flatpak_lock()
             lines = stderr.strip().splitlines()
             reason = lines[-1] if lines else "Flatpak a signalé une erreur."
             self._set_status(f"Opération non terminée : {reason}")
@@ -338,6 +393,12 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
+            # Read/write errors may occur while the child still runs. Keep the
+            # shared lock until QProcess confirms that the process has exited.
+            if self._process.state() == QProcess.ProcessState.NotRunning:
+                self._release_flatpak_lock()
+            else:
+                self._process.kill()
             if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
                 self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")

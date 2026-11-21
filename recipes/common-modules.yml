@@ -16,6 +16,7 @@ modules:
         - plymouth
         - plymouth-plugin-two-step
         - plymouth-scripts
+        - util-linux-core
 
   - type: copy
     src: gaming

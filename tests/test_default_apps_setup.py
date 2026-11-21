@@ -1,8 +1,10 @@
 """Tests for the consent-based LEOS starter application offer."""
 
 import os
+import signal
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -55,7 +57,7 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def run_setup(self, accept=False, fail_remote=False, fail_install=False, no_kdialog=False):
+    def setup_environment(self, accept=False, fail_remote=False, fail_install=False, no_kdialog=False):
         env = os.environ.copy()
         path = str(self.bin_dir)
         if no_kdialog:
@@ -75,9 +77,12 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
             "FAIL_REMOTE": "1" if fail_remote else "0",
             "FAIL_INSTALL": "1" if fail_install else "0",
         })
+        return env
+
+    def run_setup(self, accept=False, fail_remote=False, fail_install=False, no_kdialog=False):
         return subprocess.run(
             ["/usr/bin/bash", str(SCRIPT)],
-            env=env,
+            env=self.setup_environment(accept, fail_remote, fail_install, no_kdialog),
             capture_output=True,
             text=True,
             check=False,
@@ -86,6 +91,20 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
     @property
     def marker(self):
         return self.home / ".local/state/leos/default-apps-seeded"
+
+    def test_default_setup_shares_the_flatpak_transaction_lock(self):
+        root = Path(__file__).resolve().parents[1]
+        gaming_script = root / "packaging" / "leos-default-gaming-apps-setup"
+        default_source = SCRIPT.read_text(encoding="utf-8")
+        gaming_source = gaming_script.read_text(encoding="utf-8")
+        shared_lock = 'lock_file="$state_dir/flatpak-setup.lock"'
+        self.assertIn(shared_lock, default_source)
+        self.assertIn(shared_lock, gaming_source)
+        self.assertIn("flock -w 900 9", default_source)
+        self.assertIn("flock -n 9", gaming_source)
+
+        recipe = (root / "recipes" / "common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("- util-linux-core", recipe)
 
     def test_declining_never_adds_flathub_or_installs_apps(self):
         result = self.run_setup(accept=False)
@@ -104,6 +123,7 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
         first = self.run_setup(accept=True)
         self.assertEqual(first.returncode, 0, first.stderr)
         self.assertTrue(self.marker.is_file())
+        self.assertTrue((self.home / ".local/state/leos/flatpak-setup.lock").is_file())
         calls = self.log.read_text(encoding="utf-8").splitlines()
         self.assertEqual(sum("remote-add " in line for line in calls), 1)
         self.assertEqual(sum("install " in line for line in calls), 3)
@@ -111,6 +131,62 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
         second = self.run_setup(accept=True)
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertEqual(self.log.read_text(encoding="utf-8").splitlines(), calls)
+
+    def test_waits_for_gaming_flatpak_transaction_before_installing_optional_apps(self):
+        state_dir = self.home / ".local/state/leos"
+        state_dir.mkdir(parents=True)
+        lock_file = state_dir / "flatpak-setup.lock"
+        holder = subprocess.Popen([
+            "/usr/bin/flock", "-n", str(lock_file), "/usr/bin/sleep", "2"
+        ], start_new_session=True)
+        setup = None
+        try:
+            time.sleep(0.05)
+            self.assertIsNone(holder.poll(), "The lock holder exited unexpectedly")
+            probe = subprocess.run(
+                ["/usr/bin/flock", "-n", str(lock_file), "/usr/bin/true"],
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(probe.returncode, 0, "The test did not acquire the shared lock")
+
+            setup = subprocess.Popen(
+                ["/usr/bin/bash", str(SCRIPT)],
+                env=self.setup_environment(accept=True),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            deadline = time.monotonic() + 3
+            lines = []
+            while time.monotonic() < deadline:
+                lines = self.log.read_text(encoding="utf-8").splitlines() if self.log.exists() else []
+                if any(line.startswith("kdialog ") for line in lines):
+                    break
+                if setup.poll() is not None:
+                    break
+                time.sleep(0.02)
+
+            self.assertIsNone(setup.poll(), "Setup should wait while the Gaming lock is held")
+            self.assertTrue(any(line.startswith("kdialog ") for line in lines))
+            self.assertFalse(
+                any(line.startswith("flatpak ") for line in lines),
+                "Flatpak must not be called before the shared lock is released",
+            )
+
+            holder.wait(timeout=4)
+            stdout, stderr = setup.communicate(timeout=5)
+            self.assertEqual(setup.returncode, 0, f"{stdout}\\n{stderr}")
+            completed = self.log.read_text(encoding="utf-8").splitlines()
+            self.assertTrue(any(line.startswith("flatpak install ") for line in completed))
+            self.assertTrue(self.marker.is_file())
+        finally:
+            if setup is not None and setup.poll() is None:
+                setup.kill()
+                setup.wait(timeout=3)
+            if holder.poll() is None:
+                os.killpg(holder.pid, signal.SIGTERM)
+                holder.wait(timeout=3)
 
     def test_install_failure_does_not_write_completion_marker(self):
         result = self.run_setup(accept=True, fail_install=True)
