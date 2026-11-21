@@ -4,7 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gaming.backend.emulator_inventory import detect_emulator_installations
+from gaming.backend.emulator_inventory import (
+    build_emulator_frontend_command,
+    detect_emulator_installations,
+)
 
 
 class EmulatorInventoryTests(unittest.TestCase):
@@ -87,6 +90,60 @@ class EmulatorInventoryTests(unittest.TestCase):
         # The detector has no ROM path input and accepts only an executable lookup.
         results = self.detect()
         self.assertTrue(all(set(item) == {"id", "name", "scope", "status"} for item in results))
+
+
+    def test_frontend_command_prefers_native_eden_executable(self):
+        self.deploy(self.data_home / "flatpak/app", "dev.eden_emu.eden")
+        self.which_map["eden"] = "/usr/bin/eden"
+        self.which_map["flatpak"] = "/usr/bin/flatpak"
+        command = build_emulator_frontend_command(
+            "dev.eden_emu.eden",
+            which=self.lookup,
+            data_home=self.data_home,
+            system_flatpak_root=self.system_root,
+        )
+        self.assertEqual(command, ["/usr/bin/eden"])
+
+    def test_frontend_command_opens_deployed_user_flatpak_eden(self):
+        self.deploy(self.data_home / "flatpak/app", "dev.eden_emu.eden")
+        self.which_map["flatpak"] = "/usr/bin/flatpak"
+        command = build_emulator_frontend_command(
+            "dev.eden_emu.eden",
+            which=self.lookup,
+            data_home=self.data_home,
+            system_flatpak_root=self.system_root,
+        )
+        self.assertEqual(command, ["/usr/bin/flatpak", "run", "dev.eden_emu.eden"])
+
+    def test_frontend_command_opens_deployed_system_flatpak_eden(self):
+        self.deploy(self.system_root, "dev.eden_emu.eden")
+        self.which_map["flatpak"] = "/usr/bin/flatpak"
+        command = build_emulator_frontend_command(
+            "dev.eden_emu.eden",
+            which=self.lookup,
+            data_home=self.data_home,
+            system_flatpak_root=self.system_root,
+        )
+        self.assertEqual(command, ["/usr/bin/flatpak", "run", "dev.eden_emu.eden"])
+
+    def test_frontend_command_never_guesses_or_runs_uninstalled_emulator(self):
+        self.which_map["flatpak"] = "/usr/bin/flatpak"
+        command = build_emulator_frontend_command(
+            "dev.eden_emu.eden",
+            which=self.lookup,
+            data_home=self.data_home,
+            system_flatpak_root=self.system_root,
+        )
+        self.assertEqual(command, [])
+        self.assertEqual(
+            build_emulator_frontend_command(
+                "arbitrary.application",
+                which=self.lookup,
+                data_home=self.data_home,
+                system_flatpak_root=self.system_root,
+            ),
+            [],
+        )
 
 
 if __name__ == "__main__":
