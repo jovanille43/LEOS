@@ -1,6 +1,7 @@
 """Tests for the consent-based LEOS starter application offer."""
 
 import os
+import signal
 import subprocess
 import tempfile
 import time
@@ -133,8 +134,8 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
         state_dir.mkdir(parents=True)
         lock_file = state_dir / "flatpak-setup.lock"
         holder = subprocess.Popen([
-            "/usr/bin/flock", "-n", str(lock_file), "/usr/bin/sleep", "30"
-        ])
+            "/usr/bin/flock", "-n", str(lock_file), "/usr/bin/sleep", "2"
+        ], start_new_session=True)
         setup = None
         try:
             time.sleep(0.05)
@@ -170,8 +171,7 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
                 "Flatpak must not be called before the shared lock is released",
             )
 
-            holder.terminate()
-            holder.wait(timeout=3)
+            holder.wait(timeout=4)
             stdout, stderr = setup.communicate(timeout=5)
             self.assertEqual(setup.returncode, 0, f"{stdout}\\n{stderr}")
             completed = self.log.read_text(encoding="utf-8").splitlines()
@@ -182,7 +182,7 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
                 setup.kill()
                 setup.wait(timeout=3)
             if holder.poll() is None:
-                holder.terminate()
+                os.killpg(holder.pid, signal.SIGTERM)
                 holder.wait(timeout=3)
 
     def test_install_failure_does_not_write_completion_marker(self):
