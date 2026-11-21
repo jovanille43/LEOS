@@ -176,8 +176,22 @@ def save_steam_game_cache(path: Path, games: Iterable[dict[str, Any]]) -> None:
         }
         if len(records) >= MAX_STEAM_CACHE_GAMES:
             break
+
+    ordered = sorted(records.values(), key=lambda item: item["app_id"])
+    previous = load_steam_game_cache(path)
+    if previous is not None and [
+        {
+            "app_id": item["app_id"],
+            "title": item["title"],
+            "install_path": item["install_path"],
+            "steam_library_root": item["steam_library_root"],
+        }
+        for item in previous
+    ] == ordered:
+        return
+
     write_bounded_json(
         path,
-        {"version": 1, "games": list(records.values())},
+        {"version": 1, "games": ordered},
         max_bytes=MAX_STEAM_CACHE_BYTES,
     )
