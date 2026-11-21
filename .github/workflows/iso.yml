@@ -33,7 +33,13 @@ concurrency:
 jobs:
   generate-iso:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
-    name: Generate LEOS installer (${{ inputs.variant || 'standard' }})
+    strategy:
+      fail-fast: false
+      # Keep large ISO builds sequential to limit runner and artifact-storage pressure.
+      max-parallel: 1
+      matrix:
+        variant: ${{ fromJSON(github.event_name == 'workflow_run' && '["standard","nvidia-legacy","nvidia-modern"]' || format('["{0}"]', inputs.variant || 'standard')) }}
+    name: Generate LEOS installer (${{ matrix.variant }})
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -81,7 +87,7 @@ jobs:
       - name: Select published image
         id: image
         env:
-          VARIANT: ${{ inputs.variant || 'standard' }}
+          VARIANT: ${{ matrix.variant }}
           IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
           OWNER: ${{ github.repository_owner }}
         run: |
@@ -319,7 +325,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: LEOS-installer-${{ inputs.variant || 'standard' }}-${{ inputs.image_tag || 'latest' }}
+          name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
