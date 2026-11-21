@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 # Offer optional starter applications; never install or add a remote without consent.
 set -euo pipefail
+umask 077
 
 state_home="${XDG_STATE_HOME:-}"
 if [[ -z "$state_home" || "$state_home" != /* ]]; then
@@ -11,6 +12,21 @@ marker="$state_dir/default-apps-seeded"
 # This consent applies only to the fixed v1 application list below. Increment the
 # marker version whenever that list changes so new software always needs consent.
 consent_marker="$state_dir/default-apps-consent-v1"
+# Both first-run installers share this lock so their Flatpak transactions cannot race.
+lock_file="$state_dir/flatpak-setup.lock"
+
+# Do not follow user-controlled symlinks for state, markers, or the shared lock.
+if [[ -L "$state_home" || -L "$state_dir" ]]; then
+    echo "LEOS: unsafe symlink in starter-app state path; refusing to continue." >&2
+    exit 1
+fi
+mkdir -p -- "$state_dir"
+for path in "$marker" "$consent_marker" "$lock_file"; do
+    if [[ -L "$path" || ( -e "$path" && ! -f "$path" ) ]]; then
+        echo "LEOS: invalid starter-app state file; refusing to continue." >&2
+        exit 1
+    fi
+done
 
 if [[ -L "$marker" || ( -e "$marker" && ! -f "$marker" ) ]]; then
     echo "LEOS: invalid starter-app state marker; refusing to continue." >&2
@@ -64,6 +80,24 @@ if [[ ! -f "$consent_marker" ]]; then
         echo "LEOS: impossible d'enregistrer le consentement ; aucune installation lancée." >&2
         exit 1
     fi
+fi
+
+# Wait for the Gaming bootstrap (or another starter-app run) to finish.
+# The approval marker is already persisted, so a timed-out run can retry later
+# without asking the user again.
+if ! command -v flock >/dev/null 2>&1; then
+    echo "LEOS: flock is unavailable; refusing to run a concurrent Flatpak transaction." >&2
+    exit 1
+fi
+exec 9> "$lock_file"
+if ! flock -w 900 9; then
+    echo "LEOS: another Flatpak setup is still running; this setup will retry later." >&2
+    exit 1
+fi
+
+# Another Desktop setup may have completed while this process waited.
+if [[ -f "$marker" ]]; then
+    exit 0
 fi
 
 missing_apps=()
