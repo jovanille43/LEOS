@@ -297,6 +297,24 @@ ApplicationWindow {
         moveSelection(action)
     }
 
+    function focusRetroArchAssistantAction() {
+        if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
+            retroArchOpenCoreUpdaterButton.forceActiveFocus()
+        else if (emulatorPrerequisitesDialog.controllerFocusIndex === 1)
+            retroArchRefreshCoreStatusButton.forceActiveFocus()
+        else
+            retroArchCloseDialogButton.forceActiveFocus()
+    }
+
+    function activateRetroArchAssistantAction() {
+        if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
+            leos.openRetroArchCoreUpdater()
+        else if (emulatorPrerequisitesDialog.controllerFocusIndex === 1)
+            leos.refreshRetroArchCoreStatuses()
+        else
+            emulatorPrerequisitesDialog.close()
+    }
+
     function quickPanelActionCount() {
         return leos.availablePowerProfiles.length + 4
     }
@@ -357,16 +375,15 @@ ApplicationWindow {
             if (action === "back") {
                 emulatorPrerequisitesDialog.close()
             } else if (action === "left" || action === "up") {
-                emulatorPrerequisitesDialog.controllerFocusIndex = 0
-                retroArchOpenCoreUpdaterButton.forceActiveFocus()
+                emulatorPrerequisitesDialog.controllerFocusIndex =
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 2) % 3
+                focusRetroArchAssistantAction()
             } else if (action === "right" || action === "down") {
-                emulatorPrerequisitesDialog.controllerFocusIndex = 1
-                retroArchRefreshCoreStatusButton.forceActiveFocus()
+                emulatorPrerequisitesDialog.controllerFocusIndex =
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 1) % 3
+                focusRetroArchAssistantAction()
             } else if (action === "confirm") {
-                if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
-                    leos.openRetroArchCoreUpdater()
-                else
-                    leos.refreshRetroArchCoreStatuses()
+                activateRetroArchAssistantAction()
             }
             return
         }
@@ -1675,7 +1692,6 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: Math.min(window.width - 64, 760)
         height: Math.min(window.height - 70, 720)
-        standardButtons: Dialog.Close
         property int controllerFocusIndex: 0
 
         onOpened: {
@@ -1797,8 +1813,8 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 9
                         color: window.themeColors.surface_elevated
-                        border.color: activeFocus ? window.focusColor : window.accentA
-                        border.width: activeFocus ? 2 : 1
+                        border.color: retroArchOpenCoreUpdaterButton.activeFocus ? window.focusColor : window.accentA
+                        border.width: retroArchOpenCoreUpdaterButton.activeFocus ? 2 : 1
                     }
                     contentItem: Label {
                         text: retroArchOpenCoreUpdaterButton.text
@@ -1820,11 +1836,34 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 9
                         color: window.themeColors.surface
-                        border.color: activeFocus ? window.focusColor : window.themeColors.border
-                        border.width: activeFocus ? 2 : 1
+                        border.color: retroArchRefreshCoreStatusButton.activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: retroArchRefreshCoreStatusButton.activeFocus ? 2 : 1
                     }
                     contentItem: Label {
                         text: retroArchRefreshCoreStatusButton.text
+                        color: "white"
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                Button {
+                    id: retroArchCloseDialogButton
+                    text: "FERMER"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 2
+                    }
+                    onClicked: emulatorPrerequisitesDialog.close()
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface
+                        border.color: retroArchCloseDialogButton.activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: retroArchCloseDialogButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: retroArchCloseDialogButton.text
                         color: "white"
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
