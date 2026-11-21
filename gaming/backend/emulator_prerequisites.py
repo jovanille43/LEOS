@@ -18,6 +18,7 @@ from typing import Any
 MAX_CONFIG_BYTES = 128 * 1024
 MAX_DIRECTORY_ENTRIES = 512
 MAX_RETROARCH_CORES = 256
+RETROARCH_CORE_PLATFORM_SUFFIXES = frozenset({"linux", "android", "ios", "tvos"})
 
 RETROARCH_RECOMMENDED_CORES = (
     ("NES / Famicom", "FCEUmm", "fceumm_libretro.so"),
@@ -285,7 +286,9 @@ def detect_retroarch_recommended_core_statuses(
                                 None,
                             )
                             if matched_prefix is not None:
-                                matched = suffix_prefixes[matched_prefix]
+                                platform_suffix = name[len(matched_prefix) + 1:-3]
+                                if platform_suffix in RETROARCH_CORE_PLATFORM_SUFFIXES:
+                                    matched = suffix_prefixes[matched_prefix]
                         if matched and entry.is_file(follow_symlinks=False):
                             if _is_regular_file(Path(entry.path)):
                                 installed.add(matched)
