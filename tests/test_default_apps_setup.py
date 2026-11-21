@@ -103,6 +103,9 @@ printf 'kdialog %s\\n' "$*" >> "$COMMAND_LOG"
         self.assertIn("flock -w 900 9", default_source)
         self.assertIn("flock -n 9", gaming_source)
 
+        recipe = (root / "recipes" / "common-modules.yml").read_text(encoding="utf-8")
+        self.assertIn("- util-linux-core", recipe)
+
     def test_declining_never_adds_flathub_or_installs_apps(self):
         result = self.run_setup(accept=False)
         self.assertEqual(result.returncode, 0, result.stderr)
