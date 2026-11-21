@@ -297,19 +297,23 @@ ApplicationWindow {
         moveSelection(action)
     }
 
-    function focusRetroArchAssistantAction() {
+    function focusEmulatorPrerequisiteAction() {
         if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
-            retroArchOpenCoreUpdaterButton.forceActiveFocus()
+            edenOpenSetupButton.forceActiveFocus()
         else if (emulatorPrerequisitesDialog.controllerFocusIndex === 1)
+            retroArchOpenCoreUpdaterButton.forceActiveFocus()
+        else if (emulatorPrerequisitesDialog.controllerFocusIndex === 2)
             retroArchRefreshCoreStatusButton.forceActiveFocus()
         else
             retroArchCloseDialogButton.forceActiveFocus()
     }
 
-    function activateRetroArchAssistantAction() {
+    function activateEmulatorPrerequisiteAction() {
         if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
-            leos.openRetroArchCoreUpdater()
+            leos.openEdenSetup()
         else if (emulatorPrerequisitesDialog.controllerFocusIndex === 1)
+            leos.openRetroArchCoreUpdater()
+        else if (emulatorPrerequisitesDialog.controllerFocusIndex === 2)
             leos.refreshRetroArchCoreStatuses()
         else
             emulatorPrerequisitesDialog.close()
@@ -376,14 +380,14 @@ ApplicationWindow {
                 emulatorPrerequisitesDialog.close()
             } else if (action === "left" || action === "up") {
                 emulatorPrerequisitesDialog.controllerFocusIndex =
-                        (emulatorPrerequisitesDialog.controllerFocusIndex + 2) % 3
-                focusRetroArchAssistantAction()
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 3) % 4
+                focusEmulatorPrerequisiteAction()
             } else if (action === "right" || action === "down") {
                 emulatorPrerequisitesDialog.controllerFocusIndex =
-                        (emulatorPrerequisitesDialog.controllerFocusIndex + 1) % 3
-                focusRetroArchAssistantAction()
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 1) % 4
+                focusEmulatorPrerequisiteAction()
             } else if (action === "confirm") {
-                activateRetroArchAssistantAction()
+                activateEmulatorPrerequisiteAction()
             }
             return
         }
@@ -1696,7 +1700,7 @@ ApplicationWindow {
 
         onOpened: {
             controllerFocusIndex = 0
-            retroArchOpenCoreUpdaterButton.forceActiveFocus()
+            edenOpenSetupButton.forceActiveFocus()
         }
 
         ColumnLayout {
@@ -1745,6 +1749,38 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }
+                    }
+
+                    Label {
+                        text: "CONFIGURATION NINTENDO SWITCH — EDEN"
+                        color: window.accentA
+                        font.pixelSize: window.fontCaption
+                        font.letterSpacing: 2
+                        Layout.topMargin: 5
+                    }
+                    Label {
+                        text: "1. Ouvre Eden, puis Tools > Install Decryption Keys et sélectionne ton fichier prod.keys extrait de ta propre console. title.keys est facultatif selon les titres."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "2. Ensuite, utilise Tools > Install Firmware > Select From Folder ou Select From ZIP. Installe les clés avant le firmware ; choisis uniquement un firmware extrait de ta propre console."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "3. Dans la fenêtre principale d'Eden, ajoute le dossier de tes jeux. Pour régler la manette : Emulation > Configure > Input. Reviens ensuite ici et actualise l'état."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "LEOS ne fournit, ne télécharge et ne vérifie pas les clés, le firmware ou les jeux. La détection locale confirme seulement la présence de fichiers ; elle ne garantit pas qu'un jeu démarre."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
                     }
 
                     Label {
@@ -1802,12 +1838,35 @@ ApplicationWindow {
                 spacing: 10
 
                 Button {
+                    id: edenOpenSetupButton
+                    text: "OUVRIR EDEN"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 0
+                    }
+                    onClicked: leos.openEdenSetup()
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface_elevated
+                        border.color: edenOpenSetupButton.activeFocus ? window.focusColor : window.accentA
+                        border.width: edenOpenSetupButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: edenOpenSetupButton.text
+                        color: "white"
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                Button {
                     id: retroArchOpenCoreUpdaterButton
                     text: "OUVRIR RETROARCH"
                     Layout.fillWidth: true
                     onActiveFocusChanged: {
                         if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 0
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 1
                     }
                     onClicked: leos.openRetroArchCoreUpdater()
                     background: Rectangle {
@@ -1823,6 +1882,11 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
 
                 Button {
                     id: retroArchRefreshCoreStatusButton
@@ -1830,7 +1894,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     onActiveFocusChanged: {
                         if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 1
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 2
                     }
                     onClicked: leos.refreshRetroArchCoreStatuses()
                     background: Rectangle {
@@ -1853,7 +1917,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     onActiveFocusChanged: {
                         if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 2
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 3
                     }
                     onClicked: emulatorPrerequisitesDialog.close()
                     background: Rectangle {
@@ -1870,6 +1934,7 @@ ApplicationWindow {
                     }
                 }
             }
+
         }
     }
 
