@@ -354,8 +354,20 @@ ApplicationWindow {
             return
         }
         if (emulatorPrerequisitesDialog.visible) {
-            if (action === "back" || action === "confirm")
+            if (action === "back") {
                 emulatorPrerequisitesDialog.close()
+            } else if (action === "left" || action === "up") {
+                emulatorPrerequisitesDialog.controllerFocusIndex = 0
+                retroArchOpenCoreUpdaterButton.forceActiveFocus()
+            } else if (action === "right" || action === "down") {
+                emulatorPrerequisitesDialog.controllerFocusIndex = 1
+                retroArchRefreshCoreStatusButton.forceActiveFocus()
+            } else if (action === "confirm") {
+                if (emulatorPrerequisitesDialog.controllerFocusIndex === 0)
+                    leos.openRetroArchCoreUpdater()
+                else
+                    leos.refreshRetroArchCoreStatuses()
+            }
             return
         }
         if (emulatorSourcesDialog.visible) {
@@ -1658,56 +1670,166 @@ ApplicationWindow {
 
     Dialog {
         id: emulatorPrerequisitesDialog
-        title: "PRÉREQUIS DES ÉMULATEURS"
+        title: "PRÉREQUIS ET CŒURS RETROARCH"
         modal: true
         anchors.centerIn: parent
-        width: Math.min(window.width - 64, 620)
-        height: Math.min(window.height - 80, 560)
+        width: Math.min(window.width - 64, 760)
+        height: Math.min(window.height - 70, 720)
         standardButtons: Dialog.Close
+        property int controllerFocusIndex: 0
+
+        onOpened: {
+            controllerFocusIndex = 0
+            retroArchOpenCoreUpdaterButton.forceActiveFocus()
+        }
 
         ColumnLayout {
             width: parent.width
-            spacing: 14
+            spacing: 10
 
-            Label {
-                text: "ÉTAT DE CONFIGURATION"
-                color: window.accentA
-                font.pixelSize: window.fontCaption
-                font.letterSpacing: 2
-            }
-            Label {
-                text: "LEOS vérifie uniquement la présence de fichiers et de dossiers attendus. Il ne lit pas leur contenu et ne peut pas certifier leur authenticité ni leur compatibilité."
-                color: window.muted
-                wrapMode: Text.WordWrap
+            ScrollView {
                 Layout.fillWidth: true
-            }
-            Repeater {
-                model: leos.emulatorPrerequisiteStatuses
-                delegate: Rectangle {
-                    required property string modelData
-                    Layout.fillWidth: true
-                    implicitHeight: prerequisiteLabel.implicitHeight + 20
-                    radius: 8
-                    color: window.themeColors.surface
-                    border.color: window.themeColors.border
+                Layout.fillHeight: true
+                clip: true
+
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 9
 
                     Label {
-                        id: prerequisiteLabel
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        text: modelData
-                        color: modelData.toLowerCase().includes("détect") ? window.accentA : "white"
+                        text: "ÉTAT DE CONFIGURATION"
+                        color: window.accentA
+                        font.pixelSize: window.fontCaption
+                        font.letterSpacing: 2
+                    }
+                    Label {
+                        text: "LEOS vérifie uniquement la présence de fichiers et de dossiers attendus. Il ne lit pas leur contenu et ne peut pas certifier leur authenticité ni leur compatibilité."
+                        color: window.muted
                         wrapMode: Text.WordWrap
-                        font.pixelSize: window.fontBody
-                        verticalAlignment: Text.AlignVCenter
+                        Layout.fillWidth: true
+                    }
+                    Repeater {
+                        model: leos.emulatorPrerequisiteStatuses
+                        delegate: Rectangle {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            implicitHeight: prerequisiteLabel.implicitHeight + 20
+                            radius: 8
+                            color: window.themeColors.surface
+                            border.color: window.themeColors.border
+
+                            Label {
+                                id: prerequisiteLabel
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                text: modelData
+                                color: modelData.toLowerCase().includes("détect") ? window.accentA : "white"
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: window.fontBody
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                    }
+
+                    Label {
+                        text: "CŒURS RETROARCH RECOMMANDÉS"
+                        color: window.accentA
+                        font.pixelSize: window.fontCaption
+                        font.letterSpacing: 2
+                        Layout.topMargin: 5
+                    }
+                    Label {
+                        text: "Les cœurs ci-dessous couvrent plusieurs systèmes courants. « Détecté » signifie seulement que le fichier du cœur est présent ; cela ne garantit pas son bon fonctionnement ni les performances sur ton matériel."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Repeater {
+                        model: leos.retroarchCoreStatuses
+                        delegate: Rectangle {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            implicitHeight: retroArchCoreLabel.implicitHeight + 16
+                            radius: 8
+                            color: window.themeColors.surface
+                            border.color: window.themeColors.border
+
+                            Label {
+                                id: retroArchCoreLabel
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                text: modelData
+                                color: modelData.toLowerCase().includes("détecté") ? window.accentA : "white"
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: window.fontBody
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                    }
+                    Label {
+                        text: "Pour installer un cœur : ouvre RetroArch, puis Online Updater > Select Core Downloader. Si « Core Downloader » est masqué, active-le dans Settings > User Interface > Menu Item Visibility > Show Core Downloader."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "LEOS ne télécharge pas les cœurs, jeux, BIOS, firmwares ni clés. Les listes et fichiers de jeu restent gérés par RetroArch ; reviens ici et actualise après avoir installé les cœurs."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
                     }
                 }
             }
-            Label {
-                text: "Les BIOS, firmwares, clés et cœurs protégés ne sont jamais fournis par LEOS. Ajoute uniquement les fichiers que tu es autorisé à utiliser."
-                color: window.muted
-                wrapMode: Text.WordWrap
+
+            RowLayout {
                 Layout.fillWidth: true
+                spacing: 10
+
+                Button {
+                    id: retroArchOpenCoreUpdaterButton
+                    text: "OUVRIR RETROARCH"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 0
+                    }
+                    onClicked: leos.openRetroArchCoreUpdater()
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface_elevated
+                        border.color: activeFocus ? window.focusColor : window.accentA
+                        border.width: activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: retroArchOpenCoreUpdaterButton.text
+                        color: "white"
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                Button {
+                    id: retroArchRefreshCoreStatusButton
+                    text: "ACTUALISER"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            emulatorPrerequisitesDialog.controllerFocusIndex = 1
+                    }
+                    onClicked: leos.refreshRetroArchCoreStatuses()
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface
+                        border.color: activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: retroArchRefreshCoreStatusButton.text
+                        color: "white"
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
             }
         }
     }
