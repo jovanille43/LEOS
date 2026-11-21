@@ -25,7 +25,7 @@ Faire des émulateurs une fonction de première classe de LEOS : préparer autom
 | PPSSPP | PSP | `org.ppsspp.PPSSPP` | Paquet publié par le projet PPSSPP |
 | melonDS | Nintendo DS / DSi | `net.kuribo64.melonDS` | Paquet vérifié Flathub ; l'import des ROM Nintendo DS est relié à Gaming, les prérequis BIOS/firmware restent à renseigner |
 | RPCS3 | PlayStation 3 | `net.rpcs3.RPCS3` | Paquet Flathub communautaire non vérifié par le projet amont |
-| Eden | Nintendo Switch | `dev.eden_emu.eden` | Paquet Flathub communautaire non vérifié, non affilié au projet Eden ; la compilation x86_64 exige x86-64-v3 |
+| Eden | Nintendo Switch | `dev.eden_emu.eden` | Paquet Flathub communautaire non vérifié par l'équipe Eden ; x86-64-v3 requis, 8 Gio de RAM minimum et 16 Gio recommandés |
 
 Heroic et les sept émulateurs sont installés automatiquement dans le profil de l'utilisateur, jamais dans l'image système ni avec les droits administrateur. La première session nécessite une connexion Internet. Si l'installation échoue, LEOS la retente à la prochaine connexion ; une fois le lot terminé, une désinstallation volontaire est respectée. Les paquets Flathub communautaires non vérifiés restent clairement identifiés dans la boutique.
 
