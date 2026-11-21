@@ -412,7 +412,7 @@ ApplicationWindow {
                     emulatorImportDialog.controllerFocusIndex = 1
                     emulatorChooseFolderButton.forceActiveFocus()
                 } else if (emulatorImportDialog.controllerFocusIndex === 1) {
-                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden", "rpcs3"]
                     if (leos.beginEmulatorFolderBrowse(
                                 platformKeys[emulatorPlatformCombo.currentIndex])) {
                         emulatorImportDialog.close()
@@ -1747,11 +1747,19 @@ ApplicationWindow {
                     "PlayStation 2",
                     "PlayStation Portable (PSP)",
                     "Nintendo DS (melonDS)",
-                    "Nintendo Switch (Eden)"
+                    "Nintendo Switch (Eden)",
+                    "PlayStation 3 (RPCS3)"
                 ]
             }
             Label {
                 text: "LEOS parcourra uniquement le dossier que tu sélectionnes et ses sous-dossiers (limites de profondeur et de fichiers). Les jeux ne seront ni modifiés ni déplacés."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                font.pixelSize: window.fontMicro
+            }
+            Label {
+                text: "RPCS3 : importe un dossier de jeu PS3 contenant PARAM.SFO et USRDIR/EBOOT.BIN. Les PKG et fichiers RAP se configurent dans RPCS3 ; LEOS ne les installe pas."
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
@@ -1773,7 +1781,7 @@ ApplicationWindow {
                         emulatorImportDialog.controllerFocusIndex = 1
                 }
                 onClicked: {
-                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]
+                    const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden", "rpcs3"]
                     if (leos.beginEmulatorFolderBrowse(
                                 platformKeys[emulatorPlatformCombo.currentIndex])) {
                         emulatorImportDialog.close()

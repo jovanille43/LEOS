@@ -19,13 +19,15 @@ class EmulatorFolderIntegrationTests(unittest.TestCase):
         self.assertIn("def beginEmulatorFolderBrowse", controller)
         self.assertIn("def useCurrentEmulatorFolder", controller)
 
-    def test_switch_eden_is_available_in_the_gamepad_import_selector(self):
+    def test_eden_and_rpcs3_are_available_in_the_gamepad_import_selector(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("Nintendo Switch (Eden)", qml)
+        self.assertIn("PlayStation 3 (RPCS3)", qml)
         self.assertIn(
-            'const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden"]',
+            'const platformKeys = ["gamecube_wii", "ps2", "psp", "melonds", "eden", "rpcs3"]',
             qml,
         )
+        self.assertIn("PARAM.SFO et USRDIR/EBOOT.BIN", qml)
 
     def test_selected_sources_can_be_removed_without_deleting_game_files(self):
         library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")

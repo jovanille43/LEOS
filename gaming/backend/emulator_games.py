@@ -61,6 +61,16 @@ PLATFORM_SPECS = {
         "extensions": frozenset({".nsp", ".xci", ".nro", ".nso"}),
         "arguments": lambda path: ["-f", str(path)],
     },
+    "rpcs3": {
+        "emulator_id": "net.rpcs3.RPCS3",
+        "emulator_name": "RPCS3",
+        "binaries": ("rpcs3",),
+        "platform": "PlayStation",
+        # PS3 titles are imported through their validated SELF boot target below,
+        # not by treating arbitrary .BIN or .PKG files as games.
+        "extensions": frozenset(),
+        "arguments": lambda path: ["--no-gui", "--fullscreen", str(path)],
+    },
 }
 
 
@@ -151,6 +161,68 @@ def _iter_candidate_files(root: Path) -> Iterable[Path]:
             continue
 
 
+MAX_RPCS3_PARAM_SFO_BYTES = 1024 * 1024
+
+
+def _rpcs3_game_root(selected_root: Path, eboot_path: Path) -> Path | None:
+    """Accept only PS3 game folders with a local PARAM.SFO and USRDIR/EBOOT.BIN."""
+    try:
+        selected_root = Path(selected_root)
+        eboot_path = Path(eboot_path)
+        if selected_root.is_symlink() or eboot_path.is_symlink():
+            return None
+
+        root = selected_root.resolve(strict=True)
+        if (
+            eboot_path.name.casefold() != "eboot.bin"
+            or eboot_path.parent.name.casefold() != "usrdir"
+            or eboot_path.parent.is_symlink()
+            or eboot_path.parent.parent.is_symlink()
+        ):
+            return None
+
+        executable = eboot_path.resolve(strict=True)
+        executable.relative_to(root)
+        executable_metadata = executable.stat(follow_symlinks=False)
+        if not stat.S_ISREG(executable_metadata.st_mode) or executable_metadata.st_size <= 0:
+            return None
+
+        title_directory = executable.parent.parent
+        if title_directory.name.casefold() == "ps3_game":
+            # Disc dumps contain PS3_GAME/PARAM.SFO next to USRDIR.
+            metadata_file = title_directory / "PARAM.SFO"
+            game_root = title_directory.parent
+            if title_directory.resolve(strict=True) == root:
+                # Also support users who select the PS3_GAME folder itself.
+                game_root = root
+        else:
+            # Installed PSN titles use <TITLE_ID>/PARAM.SFO and USRDIR/EBOOT.BIN.
+            game_root = title_directory
+            metadata_file = title_directory / "PARAM.SFO"
+
+        if (
+            game_root.is_symlink()
+            or title_directory.is_symlink()
+            or not game_root.is_dir()
+        ):
+            return None
+        resolved_game_root = game_root.resolve(strict=True)
+        resolved_game_root.relative_to(root)
+
+        if metadata_file.is_symlink() or metadata_file.parent.is_symlink():
+            return None
+        metadata = metadata_file.stat(follow_symlinks=False)
+        if (
+            not stat.S_ISREG(metadata.st_mode)
+            or metadata.st_size <= 0
+            or metadata.st_size > MAX_RPCS3_PARAM_SFO_BYTES
+        ):
+            return None
+        return resolved_game_root
+    except (OSError, RuntimeError, ValueError):
+        return None
+
+
 def build_emulator_launch_command(
     platform_key: str,
     content_path: Path,
@@ -185,6 +257,8 @@ def build_emulator_launch_command(
     spec = PLATFORM_SPECS.get(platform_key)
     if spec is None:
         return []
+    if platform_key == "rpcs3" and _rpcs3_game_root(root, game_file) is None:
+        return []
     return prefix + list(spec["arguments"](game_file))
 
 
@@ -212,7 +286,10 @@ def scan_emulator_folder(
     games: list[dict[str, object]] = []
     seen_paths: set[str] = set()
     for candidate in _iter_candidate_files(root):
-        if candidate.suffix.casefold() not in spec["extensions"]:
+        if platform_key == "rpcs3":
+            if candidate.name.casefold() != "eboot.bin":
+                continue
+        elif candidate.suffix.casefold() not in spec["extensions"]:
             continue
         try:
             if candidate.is_symlink():
@@ -224,12 +301,22 @@ def scan_emulator_folder(
             continue
         if not stat.S_ISREG(metadata.st_mode):
             continue
+
+        rpcs3_root = _rpcs3_game_root(root, resolved) if platform_key == "rpcs3" else None
+        if platform_key == "rpcs3" and rpcs3_root is None:
+            continue
+
         path_text = str(resolved)
         if path_text in seen_paths:
             continue
         seen_paths.add(path_text)
 
-        title = resolved.stem.strip()
+        if platform_key == "rpcs3":
+            title = rpcs3_root.name
+            if root.name.casefold() == "ps3_game" and rpcs3_root == root:
+                title = root.parent.name
+        else:
+            title = resolved.stem.strip()
         if not title or len(title) > 256:
             continue
         identity = hashlib.sha256(
