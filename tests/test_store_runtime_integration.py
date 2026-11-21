@@ -77,6 +77,14 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn("fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)", helper)
         self.assertIn("def _release_flatpak_lock(self)", source)
 
+    def test_store_retries_inventory_refresh_while_first_run_owns_the_lock(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn("self._inventory_retry_timer.timeout.connect(self._retry_inventory_refresh)", source)
+        self.assertIn("self._inventory_retry_attempts < 60", source)
+        self.assertIn("self._inventory_retry_timer.start()", source)
+        self.assertIn("self._inventory_retry_timer.stop()", source)
+        self.assertIn("def _retry_inventory_refresh(self)", source)
+
     def test_store_holds_shared_lock_across_remote_recheck_and_confirmed_install(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         start = source.index('if action == "recheck-remote":')
