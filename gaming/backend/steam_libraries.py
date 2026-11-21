@@ -21,7 +21,7 @@ MAX_STEAM_CACHE_BYTES = 8 * 1024 * 1024
 MAX_STEAM_LIBRARY_PATH_LENGTH = 4096
 MAX_STEAM_TITLE_LENGTH = 256
 _STEAM_APP_ID = re.compile(r"^[0-9]{1,12}$")
-_STEAM_PATH_FIELD = re.compile(r'"path"\\s+"((?:\\\\.|[^"\\\\])*)"', re.IGNORECASE)
+_STEAM_PATH_FIELD = re.compile(r'"path"\s+"((?:\\.|[^"\\])*)"', re.IGNORECASE)
 
 
 def _normal_absolute_path(raw_value: str) -> Path | None:
@@ -29,7 +29,7 @@ def _normal_absolute_path(raw_value: str) -> Path | None:
         not isinstance(raw_value, str)
         or not raw_value
         or len(raw_value) > MAX_STEAM_LIBRARY_PATH_LENGTH
-        or "\\x00" in raw_value
+        or "\x00" in raw_value
     ):
         return None
     candidate = Path(raw_value).expanduser()
@@ -86,7 +86,7 @@ def steam_library_locations(default_roots: Iterable[Path]) -> list[Path]:
 
         for match in _STEAM_PATH_FIELD.finditer(text):
             escaped = match.group(1)
-            value = escaped.replace(r'\\"', '"').replace(r"\\\\", "\\")
+            value = escaped.replace(r'\"', '"').replace(r"\\", "\\")
             candidate = _normal_absolute_path(value)
             if candidate is not None:
                 add(candidate)
