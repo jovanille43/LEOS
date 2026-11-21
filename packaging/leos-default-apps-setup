@@ -20,7 +20,6 @@ if [[ -L "$state_home" || -L "$state_dir" ]]; then
     echo "LEOS: unsafe symlink in starter-app state path; refusing to continue." >&2
     exit 1
 fi
-mkdir -p -- "$state_dir"
 for path in "$marker" "$consent_marker" "$lock_file"; do
     if [[ -L "$path" || ( -e "$path" && ! -f "$path" ) ]]; then
         echo "LEOS: invalid starter-app state file; refusing to continue." >&2
