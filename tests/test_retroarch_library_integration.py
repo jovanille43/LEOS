@@ -48,6 +48,36 @@ class RetroArchLibraryIntegrationTests(unittest.TestCase):
         self.assertNotIn("self._apply_filter()", collector)
         self.assertIn("self._refresh_pending = True", refresh)
 
+    def test_retroarch_core_assistant_is_read_only_and_uses_native_or_flatpak_launcher(self):
+        prerequisites = (ROOT / "gaming/backend/emulator_prerequisites.py").read_text(encoding="utf-8")
+        library = (ROOT / "gaming/backend/library.py").read_text(encoding="utf-8")
+        controller = (ROOT / "gaming/backend/controller.py").read_text(encoding="utf-8")
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+
+        self.assertIn("RETROARCH_RECOMMENDED_CORES", prerequisites)
+        self.assertIn("detect_retroarch_recommended_core_statuses", prerequisites)
+        self.assertIn("entry.is_file(follow_symlinks=False)", prerequisites)
+        self.assertIn("_is_regular_file(Path(entry.path))", prerequisites)
+        self.assertIn("def retroarchRecommendedCoreStatuses(self)", library)
+        launcher = library[
+            library.index("def retroarchLauncherCommand"):
+            library.index("def _steam_roots")
+        ]
+        self.assertIn('return [native]', launcher)
+        self.assertIn('return [flatpak, "run", RETROARCH_FLATPAK_ID]', launcher)
+        self.assertNotIn("subprocess", launcher)
+
+        self.assertIn("def openRetroArchCoreUpdater(self)", controller)
+        self.assertIn(
+            "QProcess.startDetached(command[0], command[1:], str(Path.home()))",
+            controller,
+        )
+        self.assertIn("def refreshRetroArchCoreStatuses(self)", controller)
+        self.assertIn("model: leos.retroarchCoreStatuses", qml)
+        self.assertIn("Online Updater > Select Core Downloader", qml)
+        self.assertIn('leos.openRetroArchCoreUpdater()', qml)
+        self.assertIn('leos.refreshRetroArchCoreStatuses()', qml)
+
     def test_importer_stays_read_only_and_does_not_scan_or_download_roms(self):
         source = (ROOT / "gaming/backend/retroarch.py").read_text(encoding="utf-8")
         self.assertIn("MAX_PLAYLIST_BYTES", source)
