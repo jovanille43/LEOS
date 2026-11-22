@@ -12,6 +12,7 @@ ApplicationWindow {
     visibility: Window.FullScreen
     title: "LEOS — Choix du mode"
     property var themeColors: leosTheme.themePalette
+    property bool firstRunIdentityPromptVisible: identityDialog.visible
     color: themeColors.background
 
     property color colorA: Qt.color(draftColorA)
