@@ -63,7 +63,11 @@ class ThemeController(QObject):
         self._colors_configured = bool(self.settings.get("theme_colors_configured", False))
         self._appearance_mode = self._read_appearance_mode()
         self._effective_appearance = resolve_appearance_mode(self._appearance_mode)
-        self._assets = only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
+        self._assets = (
+            only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
+            if self._colors_configured
+            else {}
+        )
         self._asset_task: _BrandingAssetTask | None = None
         self._asset_attempt_snapshot: tuple[str, str] | None = None
         self._closed = False
@@ -162,7 +166,14 @@ class ThemeController(QObject):
         return self._assets.get("gamingIntroUrl", "")
 
     def _start_asset_generation(self) -> None:
-        if self._closed or self._asset_task is not None or self._asset_attempt_snapshot == self._snapshot:
+        # A neutral, unconfigured first-run preview is not the user's palette.
+        # Avoid recoloring large images/videos until the user explicitly saves A/B.
+        if (
+            self._closed
+            or not self._colors_configured
+            or self._asset_task is not None
+            or self._asset_attempt_snapshot == self._snapshot
+        ):
             return
         self._asset_attempt_snapshot = self._snapshot
         task = _BrandingAssetTask(self._snapshot, self.generate_videos)
@@ -176,7 +187,7 @@ class ThemeController(QObject):
         if self._closed or not isinstance(result, tuple) or len(result) != 2:
             return
         snapshot, assets = result
-        if snapshot == self._snapshot and isinstance(assets, dict):
+        if snapshot == self._snapshot and self._colors_configured and isinstance(assets, dict):
             self._assets = only_recolored_asset_urls(assets)
             self.themeAssetsChanged.emit()
         if snapshot != self._snapshot:
@@ -199,6 +210,13 @@ class ThemeController(QObject):
             self._effective_appearance = effective_appearance
         if configured_changed:
             self._colors_configured = colors_configured
+            if self._colors_configured:
+                # Also retry when the user intentionally chooses the neutral
+                # default pair, which does not change the color snapshot.
+                self._asset_attempt_snapshot = None
+            elif self._assets:
+                self._assets = {}
+                self.themeAssetsChanged.emit()
 
         if snapshot != self._snapshot:
             self._snapshot = snapshot
@@ -210,7 +228,11 @@ class ThemeController(QObject):
 
         # Another LEOS process may own the generation lock. Adopt its derived
         # files on a later poll without repeatedly competing for that lock.
-        cached = only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
+        cached = (
+            only_recolored_asset_urls(cached_themed_branding_asset_urls(*self._snapshot))
+            if self._colors_configured
+            else {}
+        )
         if cached != self._assets:
             self._assets = cached
             self.themeAssetsChanged.emit()
