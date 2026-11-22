@@ -92,6 +92,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("KdeColorSchemeManager", smoke)
         self.assertIn("PlasmaVisualChromeManager", smoke)
         self.assertIn("LEOS Aurorae window decoration", smoke)
+        self.assertIn("LEOS first-run identity dialog shown successfully", smoke)
         self.assertIn("/usr/bin/python3 - <<PY\nfrom desktop.icon_theme", smoke)
         self.assertIn("\nPY\n\n        expected_exec=", smoke)
 
