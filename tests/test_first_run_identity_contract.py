@@ -50,8 +50,14 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         root_check = main.index("if not engine.rootObjects():")
         ready_marker = main.index('print("LEOS mode selector QML loaded successfully", flush=True)')
         event_loop = main.index("exit_code = app.exec()")
-        self.assertLess(root_check, ready_marker)
+        process_events = main.index("app.processEvents()")
+        first_run_check = main.index('root_window.property("firstRunIdentityPromptVisible")')
+        identity_ready = main.index('print("LEOS first-run identity dialog shown successfully", flush=True)')
+        self.assertLess(root_check, process_events)
+        self.assertLess(process_events, first_run_check)
+        self.assertLess(first_run_check, ready_marker)
         self.assertLess(ready_marker, event_loop)
+        self.assertLess(identity_ready, event_loop)
 
     def test_unconfigured_theme_defers_recoloring_until_user_selects_colors(self):
         controller = ROOT / "desktop" / "theme_controller.py"
