@@ -45,6 +45,14 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         self.assertIn("src: packaging/leos-session-selector", recipe)
         self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
 
+    def test_selector_reports_qml_readiness_only_after_the_window_loads(self):
+        main = (ROOT / "launcher" / "main.py").read_text(encoding="utf-8")
+        root_check = main.index("if not engine.rootObjects():")
+        ready_marker = main.index('print("LEOS mode selector QML loaded successfully", flush=True)')
+        event_loop = main.index("exit_code = app.exec()")
+        self.assertLess(root_check, ready_marker)
+        self.assertLess(ready_marker, event_loop)
+
     def test_theme_asset_worker_fallback_helper_is_imported(self):
         controller = ROOT / "desktop" / "theme_controller.py"
         tree = ast.parse(controller.read_text(encoding="utf-8"))
