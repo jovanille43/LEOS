@@ -157,6 +157,11 @@ PY
             exit 1
         fi
 
+        if ! grep -Fq "LEOS first-run identity dialog shown successfully" "$log_file"; then
+            echo "The first-run LEOS A/B identity dialog did not become visible." >&2
+            exit 1
+        fi
+
         echo "LEOS first-session selector QML smoke test passed."
 
         gaming_log="$XDG_STATE_HOME/leos/gaming-smoke.log"
