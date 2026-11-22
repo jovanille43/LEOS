@@ -71,6 +71,23 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertLess(smoke, generate)
         self.assertNotIn("  pull_request:", workflow)
 
+    def test_image_smoke_checks_the_complete_leos_desktop_profile(self):
+        smoke = (ROOT / "tools/smoke-test-leos-session-selector.sh").read_text(encoding="utf-8")
+        for asset in (
+            "/usr/share/plasma/desktoptheme/leos/metadata.json",
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/manifest.json",
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/contents/splash/Splash.qml",
+            "/usr/share/icons/leos/index.theme",
+            "/usr/share/aurorae/themes/leos/metadata.desktop",
+            "/usr/share/aurorae/themes/leos/leosrc",
+            "/usr/share/sddm/themes/leos/Main.qml",
+            "/usr/share/plymouth/themes/leos/leos.plymouth",
+        ):
+            self.assertIn(asset, smoke)
+        for executable in ("plasma-apply-colorscheme", "plasma-apply-desktoptheme", "kreadconfig6", "kwriteconfig6"):
+            self.assertIn(executable, smoke)
+        self.assertIn("plasma-changeicons", smoke)
+
     def test_iso_uses_the_exact_image_tag_from_its_triggering_main_commit(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn("SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}", workflow)
