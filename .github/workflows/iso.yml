@@ -136,6 +136,7 @@ jobs:
             exit 1
           fi
           echo "Using image built from $SOURCE_SHA: $image_repository:$IMAGE_TAG"
+          echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "ref=$image_repository:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
 
@@ -360,7 +361,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}
+          name: LEOS-installer-${{ matrix.variant }}-${{ steps.image.outputs.tag }}
           path: |
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
