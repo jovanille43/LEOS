@@ -116,10 +116,12 @@ class SessionFlowTests(unittest.TestCase):
         transition = selector.split("function requestModeWithIntro(mode)", 1)[1].split(
             "function finishModeTransition()", 1
         )[0]
+        empty_guard = transition.index("if (!introUrl)")
+        guard_body = transition[empty_guard:].split("}", 1)[0]
+        playback = transition.index("introPlayer.play()")
         self.assertIn("const introUrl =", transition)
-        self.assertIn("if (!introUrl)", transition)
-        self.assertIn("finishModeTransition()", transition)
-        self.assertNotIn("introPlayer.play()", transition.split("if (!introUrl)", 1)[0].split("return", 1)[0])
+        self.assertIn("finishModeTransition()", guard_body)
+        self.assertLess(empty_guard, playback)
 
     def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
