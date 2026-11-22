@@ -87,6 +87,11 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         for executable in ("plasma-apply-colorscheme", "plasma-apply-desktoptheme", "kreadconfig6", "kwriteconfig6"):
             self.assertIn(executable, smoke)
         self.assertIn("plasma-changeicons", smoke)
+        self.assertIn("PlasmaStyleManager().", smoke)
+        self.assertIn("PlasmaIconThemeManager", smoke)
+        self.assertIn("KdeColorSchemeManager", smoke)
+        self.assertIn("PlasmaVisualChromeManager", smoke)
+        self.assertIn("LEOS Aurorae window decoration", smoke)
 
     def test_iso_uses_the_exact_image_tag_from_its_triggering_main_commit(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
