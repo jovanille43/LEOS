@@ -67,6 +67,10 @@ modules:
     dest: /usr/libexec/
 
   - type: copy
+    src: packaging/leos-session-selector
+    dest: /usr/libexec/
+
+  - type: copy
     src: packaging/leos-default-gaming-apps-setup
     dest: /usr/libexec/
 
