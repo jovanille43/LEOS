@@ -53,6 +53,32 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         self.assertLess(root_check, ready_marker)
         self.assertLess(ready_marker, event_loop)
 
+    def test_unconfigured_theme_defers_recoloring_until_user_selects_colors(self):
+        controller = ROOT / "desktop" / "theme_controller.py"
+        tree = ast.parse(controller.read_text(encoding="utf-8"))
+        theme_class = next(
+            node for node in tree.body
+            if isinstance(node, ast.ClassDef) and node.name == "ThemeController"
+        )
+        methods = {
+            node.name: node
+            for node in theme_class.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+
+        start_source = ast.get_source_segment(
+            controller.read_text(encoding="utf-8"),
+            methods["_start_asset_generation"],
+        )
+        refresh_source = ast.get_source_segment(
+            controller.read_text(encoding="utf-8"),
+            methods["refresh"],
+        )
+        self.assertIn("not self._colors_configured", start_source)
+        self.assertIn("if self._colors_configured", refresh_source)
+        self.assertIn("self._asset_attempt_snapshot = None", refresh_source)
+        self.assertIn("else {}", refresh_source)
+
     def test_theme_asset_worker_fallback_helper_is_imported(self):
         controller = ROOT / "desktop" / "theme_controller.py"
         tree = ast.parse(controller.read_text(encoding="utf-8"))
