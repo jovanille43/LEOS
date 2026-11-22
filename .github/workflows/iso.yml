@@ -38,7 +38,7 @@ jobs:
       # Keep large ISO builds sequential to limit runner and artifact-storage pressure.
       max-parallel: 1
       matrix:
-        variant: ${{ fromJSON((github.event_name == 'workflow_run' || github.event_name == 'push') && '["standard","nvidia-legacy","nvidia-modern"]' || format('["{0}"]', inputs.variant || 'standard')) }}
+        variant: ${{ fromJSON((github.event_name == 'workflow_run') && '["standard","nvidia-legacy","nvidia-modern"]' || format('["{0}"]', inputs.variant || 'standard')) }}
     name: Generate LEOS installer (${{ matrix.variant }})
     runs-on: ubuntu-latest
     timeout-minutes: 120
