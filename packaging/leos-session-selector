@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+# Start the LEOS first-session selector and retain diagnostics for support.
+set -u
+umask 077
+
+state_home="${XDG_STATE_HOME:-}"
+if [[ -z "$state_home" || "$state_home" != /* ]]; then
+    state_home="$HOME/.local/state"
+fi
+state_dir="$state_home/leos"
+log_file="$state_dir/session-selector.log"
+
+# Never follow a user-controlled symlink for diagnostic state.
+if [[ -L "$state_home" || -L "$state_dir" ]]; then
+    exit 1
+fi
+mkdir -p -- "$state_dir" || exit 1
+if [[ -L "$log_file" || ( -e "$log_file" && ! -f "$log_file" ) ]]; then
+    exit 1
+fi
+: >> "$log_file" || exit 1
+exec >> "$log_file" 2>&1
+
+printf '\n[%s] Starting LEOS first-session selector\n' "$(/usr/bin/date --iso-8601=seconds)"
+printf 'Desktop: %s\n' "${XDG_CURRENT_DESKTOP:-unknown}"
+printf 'Session: %s\n' "${XDG_SESSION_TYPE:-unknown}"
+
+entry="/usr/share/leos/launcher/main.py"
+if [[ ! -r "$entry" ]]; then
+    echo "LEOS selector entry point is missing: $entry"
+    exit 1
+fi
+if [[ ! -x /usr/bin/python3 ]]; then
+    echo "Python runtime is missing: /usr/bin/python3"
+    exit 1
+fi
+
+exec /usr/bin/python3 -u "$entry" --select
