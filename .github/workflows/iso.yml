@@ -142,6 +142,16 @@ jobs:
           sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --insecure-ignore-tlog --check-claims --key cosign.pub "${immutable_ref}"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
+      - name: Smoke-test the packaged LEOS first-session selector
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          VERIFIED_DIGEST: ${{ steps.verified.outputs.digest }}
+        run: |
+          set -euo pipefail
+          image_repository="${IMAGE_REF%:*}"
+          image_digest_ref="${image_repository}@${VERIFIED_DIGEST}"
+          bash tools/smoke-test-leos-session-selector.sh "${image_digest_ref}"
+
       - name: Generate bootable installer ISO
         env:
           IMAGE_REF: ${{ steps.image.outputs.ref }}
