@@ -39,8 +39,7 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         recipe = (ROOT / "recipes" / "common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("/usr/share/leos/launcher/main.py --select", entry)
         self.assertIn("src: desktop/autostart/leos-session.desktop", recipe)
-        self.assertIn("dest: /etc/xdg/autostart/", recipe)
-        self.assertNotIn("dest: /usr/etc/xdg/autostart/", recipe)
+        self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
 
     def test_theme_asset_worker_fallback_helper_is_imported(self):
         controller = ROOT / "desktop" / "theme_controller.py"
