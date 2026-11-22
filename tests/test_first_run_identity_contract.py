@@ -83,6 +83,8 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         self.assertIn("not self._colors_configured", start_source)
         self.assertIn("if self._colors_configured", refresh_source)
         self.assertIn("self._asset_attempt_snapshot = None", refresh_source)
+        self.assertIn("if configured_changed and self._colors_configured:", refresh_source)
+        self.assertIn("self._start_asset_generation()", refresh_source)
         self.assertIn("else {}", refresh_source)
 
     def test_theme_asset_worker_fallback_helper_is_imported(self):
