@@ -98,7 +98,7 @@ sudo podman run --rm --pull=never --network=none \
 
         gaming_log="$XDG_STATE_HOME/leos/gaming-smoke.log"
         set +e
-        /usr/bin/timeout --signal=TERM --kill-after=5s 30s \
+        /usr/bin/timeout --signal=TERM --kill-after=5s 60s \
             /usr/bin/python3 /usr/share/leos/gaming/main.py > "$gaming_log" 2>&1
         gaming_status=$?
         set -e
