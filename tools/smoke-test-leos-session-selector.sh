@@ -76,6 +76,33 @@ sudo podman run --rm --pull=never --network=none \
             exit 1
         fi
 
+        export PYTHONPATH="/usr/share/leos${PYTHONPATH:+:$PYTHONPATH}"
+        /usr/bin/python3 - <<'PY'
+        from desktop.icon_theme import PlasmaIconThemeManager
+        from desktop.kde_colors import KdeColorSchemeManager
+        from desktop.plasma_style import PlasmaStyleManager
+        from desktop.visual_chrome import PlasmaVisualChromeManager
+        import shutil
+
+        style = PlasmaStyleManager()
+        icons = PlasmaIconThemeManager()
+        colors = KdeColorSchemeManager()
+        chrome = PlasmaVisualChromeManager()
+        checks = {
+            "busctl": shutil.which("busctl") is not None,
+            "Plasma color-scheme tool": colors.tool_available(),
+            "LEOS Plasma Style": style.tool_available() and style.style_installed("leos"),
+            "LEOS icon theme": icons.tool_available() and icons.theme_installed("leos"),
+            "LEOS splash theme": chrome.tool_available() and chrome.splash_theme_installed("org.leos.desktop"),
+            "LEOS Aurorae window decoration": chrome.aurorae_theme_installed("leos"),
+        }
+        for name, available in checks.items():
+            print(f"Desktop profile prerequisite: {name}: {'OK' if available else 'MISSING'}")
+        missing = [name for name, available in checks.items() if not available]
+        if missing:
+            raise SystemExit("Desktop profile prerequisites are missing: " + ", ".join(missing))
+        PY
+
         expected_exec="Exec=/usr/bin/bash /usr/libexec/leos-session-selector"
         if ! grep -Fxq "$expected_exec" "$autostart"; then
             echo "The system XDG autostart entry does not invoke the diagnostic selector wrapper." >&2
