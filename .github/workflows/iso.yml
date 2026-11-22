@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat
+          sudo apt-get install -y podman skopeo xorriso libarchive-tools squashfs-tools qemu-system-x86 qemu-system-gui ovmf xvfb imagemagick tesseract-ocr socat jq
 
       - name: Verify and install BlueBuild CLI
         env:
@@ -84,28 +84,6 @@ jobs:
           chmod +x "$RUNNER_TEMP/bluebuild"
           "$RUNNER_TEMP/bluebuild" --version
 
-      - name: Select published image
-        id: image
-        env:
-          VARIANT: ${{ matrix.variant }}
-          IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
-          OWNER: ${{ github.repository_owner }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
-            echo "::error::Invalid image tag."
-            exit 1
-          fi
-          case "$VARIANT" in
-            standard) image_name="leos" ;;
-            nvidia-legacy) image_name="leos-nvidia" ;;
-            nvidia-modern) image_name="leos-nvidia-open" ;;
-            *) echo "::error::Unknown image variant."; exit 1 ;;
-          esac
-          owner="${OWNER,,}"
-          echo "ref=ghcr.io/$owner/$image_name:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
-
       - name: Authenticate to GitHub Container Registry
         env:
           GH_TOKEN: ${{ github.token }}
@@ -113,6 +91,53 @@ jobs:
           set -euo pipefail
           sudo mkdir -p /root/.docker
           printf '%s' "$GH_TOKEN" | sudo podman login --authfile /root/.docker/config.json ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Select published image
+        id: image
+        env:
+          VARIANT: ${{ matrix.variant }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          case "$VARIANT" in
+            standard) image_name="leos" ;;
+            nvidia-legacy) image_name="leos-nvidia" ;;
+            nvidia-modern) image_name="leos-nvidia-open" ;;
+            *) echo "::error::Unknown image variant."; exit 1 ;;
+          esac
+          owner="${OWNER,,}"
+          image_repository="ghcr.io/$owner/$image_name"
+
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+              echo "::error::The triggering Build LEOS commit SHA is invalid."
+              exit 1
+            fi
+            source_prefix="${SOURCE_SHA:0:7}-"
+            mapfile -t source_tags < <(
+              sudo skopeo list-tags --authfile /root/.docker/config.json "docker://$image_repository" |
+                jq -r --arg prefix "$source_prefix" '.Tags[]? | select(startswith($prefix))'
+            )
+            if [[ "${#source_tags[@]}" -ne 1 ]]; then
+              echo "::error::Expected exactly one published image tag for Build LEOS commit $SOURCE_SHA; found ${#source_tags[@]}."
+              printf 'Matching tags: %s\n' "${source_tags[*]:-none}"
+              exit 1
+            fi
+            IMAGE_TAG="${source_tags[0]}"
+          else
+            IMAGE_TAG="$INPUT_IMAGE_TAG"
+          fi
+
+          if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::Invalid or unresolved image tag."
+            exit 1
+          fi
+          echo "Using image built from $SOURCE_SHA: $image_repository:$IMAGE_TAG"
+          echo "ref=$image_repository:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
 
       - name: Resolve and verify LEOS image tag
         id: verified
