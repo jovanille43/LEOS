@@ -117,11 +117,18 @@ ApplicationWindow {
             finishModeTransition()
             return
         }
-        transitionInProgress = true
-        introOverlay.visible = true
-        introPlayer.source = mode === "gaming"
+        const introUrl = mode === "gaming"
             ? leosTheme.gamingIntroUrl
             : leosTheme.desktopIntroUrl
+        // On a fresh profile the custom intro may still be generated in the
+        // background. Never leave the user on a black overlay while waiting.
+        if (!introUrl) {
+            finishModeTransition()
+            return
+        }
+        transitionInProgress = true
+        introOverlay.visible = true
+        introPlayer.source = introUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
         introPlayer.play()
