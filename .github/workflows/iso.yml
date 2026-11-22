@@ -16,10 +16,6 @@ on:
         required: true
         default: latest
         type: string
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/iso.yml"
   workflow_run:
     workflows: ["Build LEOS"]
     types: [completed]
