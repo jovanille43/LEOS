@@ -117,6 +117,15 @@ def main() -> int:
         theme.shutdown()
         return 1
 
+    app.processEvents()
+    root_window = engine.rootObjects()[0]
+    if not theme.themeColorsConfigured and not root_window.property("firstRunIdentityPromptVisible"):
+        selector_controller.shutdown()
+        theme.shutdown()
+        print("LEOS first-run identity dialog did not become visible", file=sys.stderr, flush=True)
+        return 1
+    if not theme.themeColorsConfigured:
+        print("LEOS first-run identity dialog shown successfully", flush=True)
     print("LEOS mode selector QML loaded successfully", flush=True)
     exit_code = app.exec()
     if selected_mode["value"] == "desktop":
