@@ -111,6 +111,16 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('"desktop-intro.mov"', assets)
         self.assertNotIn('"desktop-intro.mp4"', assets)
 
+    def test_mode_selection_does_not_wait_on_an_empty_intro_source(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        transition = selector.split("function requestModeWithIntro(mode)", 1)[1].split(
+            "function finishModeTransition()", 1
+        )[0]
+        self.assertIn("const introUrl =", transition)
+        self.assertIn("if (!introUrl)", transition)
+        self.assertIn("finishModeTransition()", transition)
+        self.assertNotIn("introPlayer.play()", transition.split("if (!introUrl)", 1)[0].split("return", 1)[0])
+
     def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("MediaPlayer.InvalidMedia", qml)
