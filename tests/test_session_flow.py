@@ -266,6 +266,14 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('window.requestDesktopReturn()', gaming)
         self.assertIn('text: "CONFIRMER LE RETOUR AU DESKTOP"', gaming)
 
+    def test_gaming_reports_qml_readiness_only_after_the_window_loads(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        root_check = main.index("if not engine.rootObjects():")
+        ready_marker = main.index('print("LEOS Gaming QML loaded successfully", flush=True)')
+        remember_mode = main.index('controller.settings.set("last_mode", "gaming")')
+        self.assertLess(root_check, ready_marker)
+        self.assertLess(ready_marker, remember_mode)
+
     def test_gaming_mode_is_not_remembered_before_qml_load(self):
         main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
