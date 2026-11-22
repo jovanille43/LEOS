@@ -87,7 +87,7 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         for executable in ("plasma-apply-colorscheme", "plasma-apply-desktoptheme", "kreadconfig6", "kwriteconfig6"):
             self.assertIn(executable, smoke)
         self.assertIn("plasma-changeicons", smoke)
-        self.assertIn("PlasmaStyleManager().", smoke)
+        self.assertIn("style = PlasmaStyleManager()", smoke)
         self.assertIn("PlasmaIconThemeManager", smoke)
         self.assertIn("KdeColorSchemeManager", smoke)
         self.assertIn("PlasmaVisualChromeManager", smoke)
