@@ -92,8 +92,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("KdeColorSchemeManager", smoke)
         self.assertIn("PlasmaVisualChromeManager", smoke)
         self.assertIn("LEOS Aurorae window decoration", smoke)
-        self.assertIn("/usr/bin/python3 - <<PY\\nfrom desktop.icon_theme", smoke)
-        self.assertIn("\\nPY\\n\\n        expected_exec=", smoke)
+        self.assertIn("/usr/bin/python3 - <<PY\nfrom desktop.icon_theme", smoke)
+        self.assertIn("\nPY\n\n        expected_exec=", smoke)
 
     def test_iso_uses_the_exact_image_tag_from_its_triggering_main_commit(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
