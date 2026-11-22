@@ -124,7 +124,7 @@ modules:
 
   - type: copy
     src: desktop/autostart/leos-session.desktop
-    dest: /usr/etc/xdg/autostart/
+    dest: /etc/xdg/autostart/
 
   - type: initramfs
 
