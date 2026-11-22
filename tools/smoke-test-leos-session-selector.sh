@@ -94,5 +94,31 @@ sudo podman run --rm --pull=never --network=none \
             exit 1
         fi
 
-        echo "LEOS first-session image smoke test passed."
+        echo "LEOS first-session selector QML smoke test passed."
+
+        gaming_log="$XDG_STATE_HOME/leos/gaming-smoke.log"
+        set +e
+        /usr/bin/timeout --signal=TERM --kill-after=5s 30s \
+            /usr/bin/python3 /usr/share/leos/gaming/main.py > "$gaming_log" 2>&1
+        gaming_status=$?
+        set -e
+
+        if [[ -s "$gaming_log" ]]; then
+            cat "$gaming_log"
+        else
+            echo "The Gaming application did not produce startup diagnostics." >&2
+            exit 1
+        fi
+
+        if [[ "$gaming_status" -ne 124 ]]; then
+            echo "The LEOS Gaming interface exited before remaining in its Qt event loop (status: $gaming_status)." >&2
+            exit 1
+        fi
+
+        if ! grep -Fq "LEOS Gaming QML loaded successfully" "$gaming_log"; then
+            echo "The LEOS Gaming interface did not confirm that its QML window loaded." >&2
+            exit 1
+        fi
+
+        echo "LEOS first-session and Gaming QML smoke tests passed."
     '
