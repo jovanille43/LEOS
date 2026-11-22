@@ -41,6 +41,41 @@ sudo podman run --rm --pull=never --network=none \
             fi
         done
 
+        # The first-run Desktop profile must be complete in the immutable image,
+        # not merely present in the source tree.
+        desktop_assets=(
+            "/usr/share/leos/branding/wallpapers/desktop-leos.svg"
+            "/usr/share/leos/branding/wallpapers/gaming-leos.svg"
+            "/usr/share/plasma/desktoptheme/leos/metadata.json"
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/manifest.json"
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/contents/splash/Splash.qml"
+            "/usr/share/icons/leos/index.theme"
+            "/usr/share/aurorae/themes/leos/metadata.desktop"
+            "/usr/share/aurorae/themes/leos/leosrc"
+            "/usr/share/sddm/themes/leos/Main.qml"
+            "/usr/share/sddm/themes/leos/theme.conf"
+            "/usr/share/plymouth/themes/leos/leos.plymouth"
+        )
+        for required in "${desktop_assets[@]}"; do
+            if [[ ! -s "$required" ]]; then
+                echo "Required LEOS Desktop appearance asset is missing: $required" >&2
+                exit 1
+            fi
+        done
+
+        for executable in busctl plasma-apply-colorscheme plasma-apply-desktoptheme kreadconfig6 kwriteconfig6; do
+            if ! command -v "$executable" >/dev/null 2>&1; then
+                echo "Required KDE Desktop profile tool is missing: $executable" >&2
+                exit 1
+            fi
+        done
+        if ! command -v plasma-changeicons >/dev/null 2>&1 \
+            && [[ ! -x /usr/libexec/plasma-changeicons ]] \
+            && [[ ! -x /usr/lib64/libexec/plasma-changeicons ]]; then
+            echo "Required KDE icon-theme tool is missing: plasma-changeicons" >&2
+            exit 1
+        fi
+
         expected_exec="Exec=/usr/bin/bash /usr/libexec/leos-session-selector"
         if ! grep -Fxq "$expected_exec" "$autostart"; then
             echo "The system XDG autostart entry does not invoke the diagnostic selector wrapper." >&2
