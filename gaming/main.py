@@ -68,6 +68,8 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         theme.shutdown()
         return 1
 
+    print("LEOS Gaming QML loaded successfully", flush=True)
+
     # Persist Gaming only after its QML window loaded successfully. A
     # read-only/corrupt preference file must not prevent the session itself.
     try:

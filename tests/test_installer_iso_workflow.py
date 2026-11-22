@@ -54,18 +54,64 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             workflow.index("Upload installer ISO and checksum"),
         )
 
-    def test_iso_is_gated_and_main_iso_workflow_updates_start_all_variants(self):
+    def test_iso_waits_for_successful_main_image_build_and_avoids_stale_push_runs(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', workflow)
         self.assertIn("branches: [main]", workflow)
-        self.assertIn("  push:", workflow)
-        self.assertIn('      - ".github/workflows/iso.yml"', workflow)
+        self.assertIn("workflow_run:", workflow)
+        self.assertNotIn("  push:", workflow)
+        self.assertNotIn('      - ".github/workflows/iso.yml"', workflow)
         self.assertIn(
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertIn("(github.event_name == 'workflow_run' || github.event_name == 'push')", workflow)
+        self.assertIn("(github.event_name == 'workflow_run')", workflow)
+        smoke = workflow.index("Smoke-test the packaged LEOS first-session selector")
+        generate = workflow.index("Generate bootable installer ISO")
+        self.assertLess(smoke, generate)
         self.assertNotIn("  pull_request:", workflow)
+
+    def test_image_smoke_checks_the_complete_leos_desktop_profile(self):
+        smoke = (ROOT / "tools/smoke-test-leos-session-selector.sh").read_text(encoding="utf-8")
+        for asset in (
+            "/usr/share/plasma/desktoptheme/leos/metadata.json",
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/manifest.json",
+            "/usr/share/plasma/look-and-feel/org.leos.desktop/contents/splash/Splash.qml",
+            "/usr/share/icons/leos/index.theme",
+            "/usr/share/aurorae/themes/leos/metadata.desktop",
+            "/usr/share/aurorae/themes/leos/leosrc",
+            "/usr/share/sddm/themes/leos/Main.qml",
+            "/usr/share/plymouth/themes/leos/leos.plymouth",
+        ):
+            self.assertIn(asset, smoke)
+        for executable in ("plasma-apply-colorscheme", "plasma-apply-desktoptheme", "kreadconfig6", "kwriteconfig6"):
+            self.assertIn(executable, smoke)
+        self.assertIn("plasma-changeicons", smoke)
+        self.assertIn("style = PlasmaStyleManager()", smoke)
+        self.assertIn("PlasmaIconThemeManager", smoke)
+        self.assertIn("KdeColorSchemeManager", smoke)
+        self.assertIn("PlasmaVisualChromeManager", smoke)
+        self.assertIn("LEOS Aurorae window decoration", smoke)
+        self.assertIn("LEOS first-run identity dialog shown successfully", smoke)
+        self.assertIn("/usr/bin/python3 - <<PY\nfrom desktop.icon_theme", smoke)
+        self.assertIn("\nPY\n\n        expected_exec=", smoke)
+
+    def test_iso_uses_the_exact_image_tag_from_its_triggering_main_commit(self):
+        workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}", workflow)
+        self.assertIn('source_prefix="${SOURCE_SHA:0:7}-"', workflow)
+        self.assertIn('skopeo list-tags --authfile /root/.docker/config.json', workflow)
+        self.assertIn("Expected exactly one published image tag", workflow)
+        self.assertIn('echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"', workflow)
+        self.assertIn("steps.image.outputs.tag", workflow)
+        self.assertLess(
+            workflow.index("Authenticate to GitHub Container Registry"),
+            workflow.index("Select published image"),
+        )
+        self.assertLess(
+            workflow.index("Select published image"),
+            workflow.index("Resolve and verify LEOS image tag"),
+        )
 
     def test_successful_main_image_build_triggers_all_three_installer_isos(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
@@ -76,10 +122,11 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertIn('fromJSON((github.event_name == \'workflow_run\' || github.event_name == \'push\') && \'["standard","nvidia-legacy","nvidia-modern"]\'', workflow)
+        self.assertIn("(github.event_name == 'workflow_run')", workflow)
+        self.assertIn("'[\"standard\",\"nvidia-legacy\",\"nvidia-modern\"]'", workflow)
         self.assertIn("max-parallel: 1", workflow)
         self.assertIn("VARIANT: ${{ matrix.variant }}", workflow)
-        self.assertIn("name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}", workflow)
+        self.assertIn("name: LEOS-installer-${{ matrix.variant }}-${{ steps.image.outputs.tag }}", workflow)
         self.assertIn("inputs.variant || 'standard'", workflow)
         self.assertIn("inputs.image_tag || 'latest'", workflow)
 

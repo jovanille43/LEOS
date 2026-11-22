@@ -111,6 +111,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('"desktop-intro.mov"', assets)
         self.assertNotIn('"desktop-intro.mp4"', assets)
 
+    def test_mode_selection_does_not_wait_on_an_empty_intro_source(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        transition = selector.split("function requestModeWithIntro(mode)", 1)[1].split(
+            "function finishModeTransition()", 1
+        )[0]
+        empty_guard = transition.index("if (!introUrl)")
+        guard_body = transition[empty_guard:].split("}", 1)[0]
+        playback = transition.index("introPlayer.play()")
+        self.assertIn("const introUrl =", transition)
+        self.assertIn("finishModeTransition()", guard_body)
+        self.assertLess(empty_guard, playback)
+
     def test_gaming_return_finishes_on_invalid_media_and_timeout(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("MediaPlayer.InvalidMedia", qml)
@@ -265,6 +277,14 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('returnDialog.open()', gaming)
         self.assertIn('window.requestDesktopReturn()', gaming)
         self.assertIn('text: "CONFIRMER LE RETOUR AU DESKTOP"', gaming)
+
+    def test_gaming_reports_qml_readiness_only_after_the_window_loads(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        root_check = main.index("if not engine.rootObjects():")
+        ready_marker = main.index('print("LEOS Gaming QML loaded successfully", flush=True)')
+        remember_mode = main.index('controller.settings.set("last_mode", "gaming")')
+        self.assertLess(root_check, ready_marker)
+        self.assertLess(ready_marker, remember_mode)
 
     def test_gaming_mode_is_not_remembered_before_qml_load(self):
         main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
