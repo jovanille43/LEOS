@@ -2,7 +2,7 @@
 Type=Application
 Name=LEOS Mode Selector
 Comment=Choisir entre LEOS Desktop et LEOS Gaming au démarrage de la session
-Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select
+Exec=/usr/bin/bash /usr/libexec/leos-session-selector
 Terminal=false
 NoDisplay=true
 X-KDE-autostart-phase=2

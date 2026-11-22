@@ -178,7 +178,7 @@ class SessionFlowTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn(
-            "Exec=/usr/bin/python3 /usr/share/leos/launcher/main.py --select",
+            "Exec=/usr/bin/bash /usr/libexec/leos-session-selector",
             entry,
         )
 

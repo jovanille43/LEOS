@@ -37,10 +37,13 @@ class FirstRunIdentityContractTests(unittest.TestCase):
     def test_autostart_entry_is_packaged_in_the_system_image(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(encoding="utf-8")
         recipe = (ROOT / "recipes" / "common-modules.yml").read_text(encoding="utf-8")
-        self.assertIn("/usr/share/leos/launcher/main.py --select", entry)
+        wrapper = (ROOT / "packaging" / "leos-session-selector").read_text(encoding="utf-8")
+        self.assertIn("Exec=/usr/bin/bash /usr/libexec/leos-session-selector", entry)
+        self.assertIn("session-selector.log", wrapper)
+        self.assertIn("/usr/share/leos/launcher/main.py", wrapper)
         self.assertIn("src: desktop/autostart/leos-session.desktop", recipe)
+        self.assertIn("src: packaging/leos-session-selector", recipe)
         self.assertIn("dest: /usr/etc/xdg/autostart/", recipe)
-
 
     def test_theme_asset_worker_fallback_helper_is_imported(self):
         controller = ROOT / "desktop" / "theme_controller.py"
