@@ -117,6 +117,7 @@ def main() -> int:
         theme.shutdown()
         return 1
 
+    print("LEOS mode selector QML loaded successfully", flush=True)
     exit_code = app.exec()
     if selected_mode["value"] == "desktop":
         setup_script = Path("/usr/libexec/leos-default-apps-setup")
