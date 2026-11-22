@@ -225,6 +225,10 @@ class ThemeController(QObject):
             self._start_asset_generation()
         elif appearance_changed or configured_changed:
             self.themeChanged.emit()
+            if configured_changed and self._colors_configured:
+                # The user may explicitly keep the neutral default pair, so the
+                # configured flag must be enough to start asset generation.
+                self._start_asset_generation()
 
         # Another LEOS process may own the generation lock. Adopt its derived
         # files on a later poll without repeatedly competing for that lock.
