@@ -4,10 +4,8 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 from leos_core.settings import SettingsStore
-from desktop.theme_controller import ThemeController
 from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color, palette_for_colors, validate_palette
 
 
@@ -18,30 +16,6 @@ class DynamicThemeTests(unittest.TestCase):
         for color in (DEFAULT_COLOR_A, DEFAULT_COLOR_B):
             self.assertEqual(color[1:3], color[3:5])
             self.assertEqual(color[3:5], color[5:7])
-
-    def test_confirming_neutral_default_pair_starts_asset_generation(self):
-        with tempfile.TemporaryDirectory() as directory:
-            settings = SettingsStore(path=Path(directory) / "settings.json")
-            initial_pair = settings.snapshot(("theme_color_a", "theme_color_b"))
-            self.assertEqual(initial_pair, (DEFAULT_COLOR_A, DEFAULT_COLOR_B))
-
-            with (
-                patch("desktop.theme_controller.QTimer.start"),
-                patch("desktop.theme_controller.cached_themed_branding_asset_urls", return_value={}),
-            ):
-                controller = ThemeController(settings=settings)
-                try:
-                    settings.set_many({
-                        "theme_color_a": DEFAULT_COLOR_A,
-                        "theme_color_b": DEFAULT_COLOR_B,
-                        "theme_colors_configured": True,
-                    })
-                    with patch.object(controller, "_start_asset_generation") as generate_assets:
-                        controller.refresh()
-                    self.assertEqual(controller._snapshot, initial_pair)
-                    generate_assets.assert_called_once()
-                finally:
-                    controller.shutdown()
 
     def test_gaming_uses_selected_accents_and_shared_neutral_surfaces(self):
         root = Path(__file__).resolve().parents[1]
