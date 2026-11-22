@@ -54,17 +54,21 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             workflow.index("Upload installer ISO and checksum"),
         )
 
-    def test_iso_is_gated_and_main_iso_workflow_updates_start_all_variants(self):
+    def test_iso_waits_for_successful_main_image_build_and_avoids_stale_push_runs(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', workflow)
         self.assertIn("branches: [main]", workflow)
-        self.assertIn("  push:", workflow)
-        self.assertIn('      - ".github/workflows/iso.yml"', workflow)
+        self.assertIn("workflow_run:", workflow)
+        self.assertNotIn("  push:", workflow)
+        self.assertNotIn('      - ".github/workflows/iso.yml"', workflow)
         self.assertIn(
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertIn("(github.event_name == 'workflow_run' || github.event_name == 'push')", workflow)
+        self.assertIn("(github.event_name == 'workflow_run')", workflow)
+        smoke = workflow.index("Smoke-test the packaged LEOS first-session selector")
+        generate = workflow.index("Generate bootable installer ISO")
+        self.assertLess(smoke, generate)
         self.assertNotIn("  pull_request:", workflow)
 
     def test_successful_main_image_build_triggers_all_three_installer_isos(self):
@@ -76,7 +80,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertIn('fromJSON((github.event_name == \'workflow_run\' || github.event_name == \'push\') && \'["standard","nvidia-legacy","nvidia-modern"]\'', workflow)
+        self.assertIn("(github.event_name == 'workflow_run')", workflow)
+        self.assertIn("'[\"standard\",\"nvidia-legacy\",\"nvidia-modern\"]'", workflow)
         self.assertIn("max-parallel: 1", workflow)
         self.assertIn("VARIANT: ${{ matrix.variant }}", workflow)
         self.assertIn("name: LEOS-installer-${{ matrix.variant }}-${{ inputs.image_tag || 'latest' }}", workflow)
