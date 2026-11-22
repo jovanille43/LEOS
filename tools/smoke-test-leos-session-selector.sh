@@ -77,7 +77,7 @@ sudo podman run --rm --pull=never --network=none \
         fi
 
         export PYTHONPATH="/usr/share/leos${PYTHONPATH:+:$PYTHONPATH}"
-        /usr/bin/python3 - <<'PY'
+        /usr/bin/python3 - <<PY
         from desktop.icon_theme import PlasmaIconThemeManager
         from desktop.kde_colors import KdeColorSchemeManager
         from desktop.plasma_style import PlasmaStyleManager
@@ -97,7 +97,8 @@ sudo podman run --rm --pull=never --network=none \
             "LEOS Aurorae window decoration": chrome.aurorae_theme_installed("leos"),
         }
         for name, available in checks.items():
-            print(f"Desktop profile prerequisite: {name}: {'OK' if available else 'MISSING'}")
+            status = "OK" if available else "MISSING"
+            print(f"Desktop profile prerequisite: {name}: {status}")
         missing = [name for name, available in checks.items() if not available]
         if missing:
             raise SystemExit("Desktop profile prerequisites are missing: " + ", ".join(missing))
