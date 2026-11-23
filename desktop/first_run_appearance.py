@@ -204,7 +204,7 @@ class DesktopAppearanceSetup:
 
             self.settings.set(APPEARANCE_SETTING, APPLIED)
             return (
-                "L'apparence Desktop LEOS est activée : fond personnalisé, dégradé A/B, "
+                "L'apparence Desktop LEOS est activée : fond graphite et argent avec le lion officiel, identité A/B choisie, "
                 "style Plasma, icônes et curseur LEOS assortis à tes couleurs A/B, plus l'écran de chargement LEOS et le dock inférieur. Une sauvegarde de ta disposition "
                 f"précédente est conservée ({backup_id[:8]})."
             )
