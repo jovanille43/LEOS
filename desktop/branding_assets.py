@@ -136,8 +136,6 @@ def _remove_dark_edge_matte(image) -> bool:
     Only dark pixels connected to the image border are removed. This preserves
     enclosed black details in the lion and avoids a global black-colour key.
     """
-    from PySide6.QtGui import QColor
-
     width, height = image.width(), image.height()
     if width < 3 or height < 3:
         return False
