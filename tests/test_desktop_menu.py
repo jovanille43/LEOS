@@ -335,7 +335,7 @@ class DesktopMenuTests(unittest.TestCase):
                 self.assertNotIn('"white"', source)
                 self.assertIn("themeColors.text", source)
 
-    def test_gaming_focus_outline_uses_the_selected_leos_accent(self):
+    def test_gaming_focus_outline_tracks_the_active_appearance(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("property color focusColor: themeColors.text", qml)
         self.assertNotIn('property color focusColor: "#ffffff"', qml)
