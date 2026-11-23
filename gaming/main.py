@@ -69,22 +69,32 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         theme.shutdown()
         return 1
 
-    # Signal readiness only after the fullscreen Gaming QML window exists.
-    app.processEvents()
+    # Signal readiness only after the fullscreen Gaming window has rendered
+    # its first frame. Loading QML alone is too early: the selector cover must
+    # remain above Plasma until the compositor has a Gaming frame to display.
     ready_path = os.environ.pop("LEOS_HANDOFF_READY_FILE", "")
     if ready_path:
-        marker = Path(ready_path)
-        try:
-            if marker.is_file() and not marker.is_symlink() and marker.stat().st_size == 0:
-                descriptor = os.open(ready_path, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
-                try:
-                    os.write(descriptor, b"ready\n")
-                    os.fsync(descriptor)
-                finally:
-                    os.close(descriptor)
-        except OSError:
-            # Gaming remains usable; only the selector cover may time out.
-            pass
+        root_window = engine.rootObjects()[0]
+
+        def announce_gaming_ready() -> None:
+            try:
+                root_window.frameSwapped.disconnect(announce_gaming_ready)
+            except (RuntimeError, TypeError):
+                pass
+            try:
+                marker = Path(ready_path)
+                if marker.is_file() and not marker.is_symlink() and marker.stat().st_size == 0:
+                    descriptor = os.open(ready_path, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
+                    try:
+                        os.write(descriptor, b"ready\\n")
+                        os.fsync(descriptor)
+                    finally:
+                        os.close(descriptor)
+            except OSError:
+                # Gaming remains usable; only the selector cover may time out.
+                pass
+
+        root_window.frameSwapped.connect(announce_gaming_ready)
 
     print("LEOS Gaming QML loaded successfully", flush=True)
 
