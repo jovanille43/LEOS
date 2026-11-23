@@ -349,8 +349,8 @@ ApplicationWindow {
                                     spacing: 12
 
                                     Rectangle {
-                                        Layout.preferredWidth: 44
-                                        Layout.preferredHeight: 44
+                                        Layout.preferredWidth: 42
+                                        Layout.preferredHeight: 42
                                         radius: 12
                                         gradient: Gradient {
                                             GradientStop {

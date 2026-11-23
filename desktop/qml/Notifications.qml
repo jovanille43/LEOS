@@ -303,7 +303,7 @@ ApplicationWindow {
                                     Label {
                                         text: title
                                         color: window.themeColors.text
-                                        font.pixelSize: 13
+                                        font.pixelSize: 14
                                         font.weight: Font.DemiBold
                                         Layout.fillWidth: true
                                         wrapMode: Text.Wrap
@@ -330,7 +330,7 @@ ApplicationWindow {
                                 Label {
                                     text: body
                                     color: window.muted
-                                    font.pixelSize: 11
+                                    font.pixelSize: 12
                                     Layout.fillWidth: true
                                     wrapMode: Text.Wrap
                                     visible: body.length > 0

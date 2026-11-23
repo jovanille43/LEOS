@@ -52,7 +52,9 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
     def test_catalog_selection_and_filters_are_locked_during_flatpak_operations(self):
         qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("enabled: !store.busy", qml)
-        self.assertIn("model: catalogModel\n                        enabled: !store.busy", qml)
+        list_view = qml.split("id: appList", 1)[1].split("delegate:", 1)[0]
+        self.assertIn("model: catalogModel", list_view)
+        self.assertIn("enabled: !store.busy", list_view)
 
     def test_store_catalog_uses_a_bounded_validated_loader(self):
         model = (ROOT / "shop/catalog.py").read_text(encoding="utf-8")
