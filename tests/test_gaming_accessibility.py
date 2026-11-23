@@ -70,7 +70,7 @@ class GamingAccessibilityTests(unittest.TestCase):
         self.assertIn("elide: Text.ElideRight", self.qml)
 
     def test_focus_color_is_separate_from_selection_and_favorite_accents(self):
-        self.assertIn('property color focusColor: "#ffffff"', self.qml)
+        self.assertIn("property color focusColor: themeColors.text", self.qml)
         self.assertIn("window.focusColor", self.qml)
         self.assertIn('color: window.magenta', self.qml)
 
