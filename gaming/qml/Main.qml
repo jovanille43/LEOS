@@ -787,14 +787,16 @@ ApplicationWindow {
                             color: window.muted
                             font.pixelSize: window.fontCaption
                             wrapMode: Text.WordWrap
-                            Layout.maximumWidth: 190
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: 220
                         }
                         Label {
                             text: "Steam : ajouter « mangohud %command% » aux options de lancement du jeu."
                             color: window.muted
                             font.pixelSize: window.fontMicro
                             wrapMode: Text.WordWrap
-                            Layout.maximumWidth: 190
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: 220
                         }
                         Repeater {
                             model: leos.launcherStatuses
@@ -803,6 +805,9 @@ ApplicationWindow {
                                 text: modelData
                                 color: modelData.indexOf("DISPONIBLE") >= 0 ? window.cyan : window.muted
                                 font.pixelSize: window.fontMicro
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                                Layout.maximumWidth: 220
                             }
                         }
                     }
@@ -817,6 +822,7 @@ ApplicationWindow {
                             font.pixelSize: window.fontMicro
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
+                            Layout.maximumWidth: 240
                         }
                         Label {
                             text: leos.activePowerProfile.length > 0
