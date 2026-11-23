@@ -16,8 +16,8 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('"desktop-logo.jpeg"', assets)
         self.assertIn('"gaming-logo.jpeg"', assets)
         self.assertIn("visible: status === Image.Ready", source)
-        self.assertEqual(source.count("asynchronous: true"), 2)
-        self.assertEqual(source.count("smooth: true"), 2)
+        self.assertEqual(source.count("asynchronous: true"), 3)
+        self.assertEqual(source.count("smooth: true"), 3)
 
     def test_eden_setup_discloses_community_package_and_memory_requirements(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
@@ -34,11 +34,13 @@ class SessionFlowTests(unittest.TestCase):
 
     def test_gaming_handoff_keeps_a_branded_cover_until_the_gaming_ui_is_ready(self):
         selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        manager = (ROOT / "launcher/mode_manager.py").read_text(encoding="utf-8")
         launcher = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
         gaming = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
         self.assertIn('if (mode === "gaming")', selector)
         self.assertIn("introHandoffScreen.visible = true", selector)
-        self.assertIn("modeLaunchFailed", selector)
+        self.assertIn("modeLaunchFailed", manager)
+        self.assertIn("onModeLaunchFailed", selector)
         self.assertIn("LEOS_HANDOFF_READY_FILE", launcher)
         self.assertIn("handoff_timer", launcher)
         self.assertIn("modeLaunchFailed.emit", launcher)
