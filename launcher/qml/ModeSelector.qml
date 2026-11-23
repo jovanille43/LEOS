@@ -467,8 +467,8 @@ ApplicationWindow {
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 185
-                            Layout.preferredHeight: 175
+                            Layout.preferredWidth: 300
+                            Layout.preferredHeight: 250
                             visible: status === Image.Ready
                         }
                         Label {
