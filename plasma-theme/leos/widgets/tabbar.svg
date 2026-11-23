@@ -18,52 +18,48 @@
   <g id="north-active-tab-left" fill="#202020"><rect x="0" y="16" width="16" height="64"/></g>
   <g id="north-active-tab-center" fill="#202020"><rect x="16" y="16" width="64" height="64"/></g>
   <g id="north-active-tab-right" fill="#202020"><rect x="80" y="16" width="16" height="64"/></g>
-  <g id="north-active-tab-bottomleft" fill="#202020"><rect x="0" y="80" width="16" height="16"/></g>
-  <g id="north-active-tab-bottom" fill="#202020"><rect x="16" y="80" width="64" height="16"/></g>
-  <g id="north-active-tab-bottomright" fill="#202020"><rect x="80" y="80" width="16" height="16"/></g>
-  <g id="north-active-tab-accent" fill="none" stroke-linecap="round"><path d="M0 95H96" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
+  <g id="north-active-tab-bottomleft" fill="#202020"><rect x="0" y="80" width="16" height="16"/><path d="M0 95H16" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
+  <g id="north-active-tab-bottom" fill="#202020"><rect x="16" y="80" width="64" height="16"/><path d="M16 95H80" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
+  <g id="north-active-tab-bottomright" fill="#202020"><rect x="80" y="80" width="16" height="16"/><path d="M80 95H96" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
   <rect id="north-active-tab-hint-top-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="north-active-tab-hint-right-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="north-active-tab-hint-bottom-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="north-active-tab-hint-left-margin" x="0" y="0" width="1" height="1" fill="none"/>
-  <g id="east-active-tab-topleft" fill="#202020"><rect x="0" y="0" width="16" height="16"/></g>
+  <g id="east-active-tab-topleft" fill="#202020"><rect x="0" y="0" width="16" height="16"/><path d="M1 0V16" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <g id="east-active-tab-top" fill="#202020"><rect x="16" y="0" width="64" height="16"/></g>
   <g id="east-active-tab-topright" fill="#202020"><path d="M80 0H86Q96 0 96 10V16H80Z"/></g>
-  <g id="east-active-tab-left" fill="#202020"><rect x="0" y="16" width="16" height="64"/></g>
+  <g id="east-active-tab-left" fill="#202020"><rect x="0" y="16" width="16" height="64"/><path d="M1 16V80" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <g id="east-active-tab-center" fill="#202020"><rect x="16" y="16" width="64" height="64"/></g>
   <g id="east-active-tab-right" fill="#202020"><rect x="80" y="16" width="16" height="64"/></g>
-  <g id="east-active-tab-bottomleft" fill="#202020"><rect x="0" y="80" width="16" height="16"/></g>
+  <g id="east-active-tab-bottomleft" fill="#202020"><rect x="0" y="80" width="16" height="16"/><path d="M1 80V96" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <g id="east-active-tab-bottom" fill="#202020"><rect x="16" y="80" width="64" height="16"/></g>
   <g id="east-active-tab-bottomright" fill="#202020"><path d="M80 80H96V86Q96 96 86 96H80Z"/></g>
-  <g id="east-active-tab-accent" fill="none" stroke-linecap="round"><path d="M1 0V96" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <rect id="east-active-tab-hint-top-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="east-active-tab-hint-right-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="east-active-tab-hint-bottom-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="east-active-tab-hint-left-margin" x="0" y="0" width="1" height="1" fill="none"/>
-  <g id="south-active-tab-topleft" fill="#202020"><rect x="0" y="0" width="16" height="16"/></g>
-  <g id="south-active-tab-top" fill="#202020"><rect x="16" y="0" width="64" height="16"/></g>
-  <g id="south-active-tab-topright" fill="#202020"><rect x="80" y="0" width="16" height="16"/></g>
+  <g id="south-active-tab-topleft" fill="#202020"><rect x="0" y="0" width="16" height="16"/><path d="M0 1H16" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
+  <g id="south-active-tab-top" fill="#202020"><rect x="16" y="0" width="64" height="16"/><path d="M16 1H80" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
+  <g id="south-active-tab-topright" fill="#202020"><rect x="80" y="0" width="16" height="16"/><path d="M80 1H96" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
   <g id="south-active-tab-left" fill="#202020"><rect x="0" y="16" width="16" height="64"/></g>
   <g id="south-active-tab-center" fill="#202020"><rect x="16" y="16" width="64" height="64"/></g>
   <g id="south-active-tab-right" fill="#202020"><rect x="80" y="16" width="16" height="64"/></g>
   <g id="south-active-tab-bottomleft" fill="#202020"><path d="M0 80H16V96H10Q0 96 0 86Z"/></g>
   <g id="south-active-tab-bottom" fill="#202020"><rect x="16" y="80" width="64" height="16"/></g>
   <g id="south-active-tab-bottomright" fill="#202020"><path d="M80 80H96V86Q96 96 86 96H80Z"/></g>
-  <g id="south-active-tab-accent" fill="none" stroke-linecap="round"><path d="M0 1H96" stroke="url(#tabAccentHorizontal)" stroke-width="2"/></g>
   <rect id="south-active-tab-hint-top-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="south-active-tab-hint-right-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="south-active-tab-hint-bottom-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="south-active-tab-hint-left-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <g id="west-active-tab-topleft" fill="#202020"><path d="M10 0H16V16H0V10Q0 0 10 0Z"/></g>
   <g id="west-active-tab-top" fill="#202020"><rect x="16" y="0" width="64" height="16"/></g>
-  <g id="west-active-tab-topright" fill="#202020"><rect x="80" y="0" width="16" height="16"/></g>
+  <g id="west-active-tab-topright" fill="#202020"><rect x="80" y="0" width="16" height="16"/><path d="M95 0V16" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <g id="west-active-tab-left" fill="#202020"><rect x="0" y="16" width="16" height="64"/></g>
   <g id="west-active-tab-center" fill="#202020"><rect x="16" y="16" width="64" height="64"/></g>
-  <g id="west-active-tab-right" fill="#202020"><rect x="80" y="16" width="16" height="64"/></g>
+  <g id="west-active-tab-right" fill="#202020"><rect x="80" y="16" width="16" height="64"/><path d="M95 16V80" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <g id="west-active-tab-bottomleft" fill="#202020"><path d="M0 80H16V96H10Q0 96 0 86Z"/></g>
   <g id="west-active-tab-bottom" fill="#202020"><rect x="16" y="80" width="64" height="16"/></g>
-  <g id="west-active-tab-bottomright" fill="#202020"><rect x="80" y="80" width="16" height="16"/></g>
-  <g id="west-active-tab-accent" fill="none" stroke-linecap="round"><path d="M95 0V96" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
+  <g id="west-active-tab-bottomright" fill="#202020"><rect x="80" y="80" width="16" height="16"/><path d="M95 80V96" stroke="url(#tabAccentVertical)" stroke-width="2"/></g>
   <rect id="west-active-tab-hint-top-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="west-active-tab-hint-right-margin" x="0" y="0" width="1" height="1" fill="none"/>
   <rect id="west-active-tab-hint-bottom-margin" x="0" y="0" width="1" height="1" fill="none"/>

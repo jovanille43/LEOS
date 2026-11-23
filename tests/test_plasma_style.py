@@ -135,6 +135,23 @@ class PlasmaStylePackageTests(unittest.TestCase):
                     f"{direction}-active-tab-{hint}" for hint in hints
                 } <= ids)
         self.assertIn("hint-tile-center", ids)
+        elements = {node.attrib.get("id"): node for node in root.iter()}
+        accent_positions = {
+            "north": ("bottomleft", "bottom", "bottomright"),
+            "south": ("topleft", "top", "topright"),
+            "east": ("topleft", "left", "bottomleft"),
+            "west": ("topright", "right", "bottomright"),
+        }
+        for direction, parts in accent_positions.items():
+            for part in parts:
+                element = elements[f"{direction}-active-tab-{part}"]
+                self.assertTrue(any(
+                    child.attrib.get("stroke") in (
+                        "url(#tabAccentHorizontal)", "url(#tabAccentVertical)"
+                    )
+                    for child in element.iter()
+                ), f"{direction} {part} is missing its in-frame accent")
+        self.assertFalse(any("active-tab-accent" in item for item in ids))
 
     def test_plasmoid_heading_has_header_and_footer_frames(self):
         root = ET.parse(THEME / "widgets" / "plasmoidheading.svg").getroot()
