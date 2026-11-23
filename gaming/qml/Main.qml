@@ -18,7 +18,7 @@ ApplicationWindow {
     property color accentA: themeColors.accent_primary
     property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
-    property color focusColor: themeColors.accent_primary
+    property color focusColor: themeColors.text
     property int fontMicro: 14
     property int fontCaption: 15
     property int fontBody: 17
