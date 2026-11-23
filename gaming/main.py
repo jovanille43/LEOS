@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -67,6 +68,23 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         controller.shutdown()
         theme.shutdown()
         return 1
+
+    # Signal readiness only after the fullscreen Gaming QML window exists.
+    app.processEvents()
+    ready_path = os.environ.pop("LEOS_HANDOFF_READY_FILE", "")
+    if ready_path:
+        marker = Path(ready_path)
+        try:
+            if marker.is_file() and not marker.is_symlink() and marker.stat().st_size == 0:
+                descriptor = os.open(ready_path, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
+                try:
+                    os.write(descriptor, b"ready\\n")
+                    os.fsync(descriptor)
+                finally:
+                    os.close(descriptor)
+        except OSError:
+            # Gaming remains usable; only the selector cover may time out.
+            pass
 
     print("LEOS Gaming QML loaded successfully", flush=True)
 
