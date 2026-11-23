@@ -423,7 +423,7 @@ def _cache_directory(color_a: str, color_b: str, branding_root: Path) -> Path:
     # Bump when logo masking/recoloring changes so stale opaque cache files
     # are never reused after a branding pipeline update.
     pair_id = hashlib.sha256(
-        f"branding-pipeline-v2|{normalize_color(color_a)}|{normalize_color(color_b)}|{source_fingerprint}".encode("utf-8")
+        f"branding-pipeline-v3|{normalize_color(color_a)}|{normalize_color(color_b)}|{source_fingerprint}".encode("utf-8")
     ).hexdigest()[:20]
     return _cache_root() / pair_id
 
