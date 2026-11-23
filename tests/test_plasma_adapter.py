@@ -22,6 +22,7 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('panel.location = desired.position', script)
         self.assertIn('panel.hiding = desired.autoHide ? "autohide" : "none"', script)
         self.assertIn('panel.lengthMode = "fit"', script)
+        self.assertIn("panel.height = 64", script)
 
     def test_saved_favourites_are_resolved_and_written_to_task_manager(self):
         apps = ["org.kde.dolphin.desktop", "steam.desktop"]
