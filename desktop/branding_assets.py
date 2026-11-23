@@ -211,7 +211,7 @@ def _remove_dark_edge_matte(image) -> bool:
         ))
         # Feather the outer edge to avoid a harsh cut around antialiased
         # artwork; pixels matching the black matte become fully transparent.
-        alpha = max(0, min(255, round((distance - 7.0) * 255.0 / 48.0)))
+        alpha = max(0, min(255, round((distance - 24.0) * 255.0 / 54.0)))
         pixel.setAlpha(alpha)
         image.setPixelColor(index % width, index // width, pixel)
         removed = True
@@ -224,7 +224,7 @@ def _crop_transparent_bounds(image):
     left, top, right, bottom = width, height, -1, -1
     for y in range(height):
         for x in range(width):
-            if image.pixelColor(x, y).alpha() > 8:
+            if image.pixelColor(x, y).alpha() > 48:
                 left = min(left, x)
                 top = min(top, y)
                 right = max(right, x)
