@@ -71,6 +71,23 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertLess(smoke, generate)
         self.assertNotIn("  pull_request:", workflow)
 
+    def test_image_smoke_gate_changes_trigger_build_and_iso_workflows(self):
+        build = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
+        self.assertEqual(
+            build.count('- "tools/smoke-test-leos-session-selector.sh"'),
+            2,
+        )
+        iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn('workflows: ["Build LEOS"]', iso)
+        self.assertIn("types: [completed]", iso)
+
+    def test_image_smoke_checks_root_podman_credentials_with_privileges(self):
+        smoke = (ROOT / "tools/smoke-test-leos-session-selector.sh").read_text(encoding="utf-8")
+        self.assertIn('auth_file="${CONTAINERS_AUTH_FILE:-/root/.docker/config.json}"', smoke)
+        self.assertIn('if ! sudo test -s "$auth_file"; then', smoke)
+        self.assertIn('sudo podman pull --authfile "$auth_file" "$image_ref"', smoke)
+        self.assertNotIn('if [[ ! -s "$auth_file" ]]; then', smoke)
+
     def test_image_smoke_checks_the_complete_leos_desktop_profile(self):
         smoke = (ROOT / "tools/smoke-test-leos-session-selector.sh").read_text(encoding="utf-8")
         for asset in (

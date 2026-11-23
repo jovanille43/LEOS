@@ -15,7 +15,9 @@ if [[ ! "$image_ref" =~ ^[A-Za-z0-9./:_@-]+$ ]]; then
 fi
 
 auth_file="${CONTAINERS_AUTH_FILE:-/root/.docker/config.json}"
-if [[ ! -s "$auth_file" ]]; then
+# The ISO workflow authenticates Podman as root. The unprivileged
+# runner cannot stat /root/.docker/config.json directly, so inspect it via sudo.
+if ! sudo test -s "$auth_file"; then
     echo "Container registry authentication is missing: $auth_file" >&2
     exit 1
 fi
