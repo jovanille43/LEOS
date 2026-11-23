@@ -217,7 +217,7 @@ _SCRIPT = r'''(function () {
         panel.location = desired.position;
         panel.alignment = desired.alignment;
         panel.hiding = desired.autoHide ? "autohide" : "none";
-        panel.height = 56;
+        panel.height = 64;
         panel.lengthMode = "fit";
 
         var manager = findTaskManager(panel);
