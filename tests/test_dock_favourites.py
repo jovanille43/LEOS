@@ -9,6 +9,9 @@ from desktop.dock_favourites import DockFavourites, DEFAULT_PINNED_APPS
 
 
 class DockFavouritesTests(unittest.TestCase):
+    def test_mode_selector_is_pinned_by_default_for_easy_mode_switching(self):
+        self.assertIn("leos-mode-selector.desktop", DEFAULT_PINNED_APPS)
+
     def test_defaults_are_available_without_creating_a_file(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "dock.json"
