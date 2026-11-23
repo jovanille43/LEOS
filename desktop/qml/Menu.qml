@@ -163,7 +163,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: categoryMenuButton.text
-                                color: categoryMenuButton.categorySelected ? window.themeColors.text : "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                                 font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
                                 leftPadding: 10
