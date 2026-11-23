@@ -10,10 +10,10 @@ Desktop Mode conserve **KDE Plasma** comme moteur de bureau, mais fournit une ex
 
 ## Direction visuelle Desktop
 
-- Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
-- Fond d'écran 4K officiel disponible dans `branding/wallpapers/desktop-leos.svg`. Au premier choix de Desktop, le parcours LEOS peut l'appliquer avec le profil couleur, le Plasma Style, le thème d'icônes et le dock après consentement explicite et sauvegarde de la disposition KDE.
-- Fond sombre LEOS, deux accents A/B librement choisis, surfaces sobres et contrastes lisibles.
-- Dock inférieur centré, personnalisable et désactivable.
+- L'emblème officiel du lion provient de `branding/desktop-logo.jpeg`, reste la seule source de vérité graphique et est converti en PNG transparent pour les interfaces qui en ont besoin.
+- Le fond d'écran Desktop 4K `branding/wallpapers/desktop-leos.svg` adopte désormais une composition graphite et argent : lion officiel agrandi sur la droite, espace négatif à gauche, relief métallique subtil et géométrie gravée très discrète. Aucun accent cyan/magenta n'est imposé ; les couleurs A/B choisies par l'utilisateur restent libres.
+- Le profil LEOS applique le fond, le schéma de couleurs, le Plasma Style, le thème d'icônes, le décor de fenêtres et le dock après consentement explicite et sauvegarde de la disposition KDE.
+- Dock inférieur centré, plus ample et lisible, personnalisable et désactivable ; le sélecteur Desktop/Gaming reste épinglé pour un retour rapide.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
 - Historique local borné à 20 identifiants `.desktop` ; aucune commande de lancement ni chemin privé n’est conservé.
