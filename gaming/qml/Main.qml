@@ -18,7 +18,7 @@ ApplicationWindow {
     property color accentA: themeColors.accent_primary
     property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
-    property color focusColor: "#ffffff"
+    property color focusColor: themeColors.accent_primary
     property int fontMicro: 14
     property int fontCaption: 15
     property int fontBody: 17
@@ -625,7 +625,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: window.fontDisplay
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -664,7 +664,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: notificationCenterButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: window.fontCaption
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -683,7 +683,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
-                        color: leos.silentNotificationsInGaming ? window.cyan : "white"
+                        color: leos.silentNotificationsInGaming ? window.cyan : window.themeColors.text
                         font.pixelSize: window.fontCaption
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -705,7 +705,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: quickPanelButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: window.fontBody
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -733,17 +733,17 @@ ApplicationWindow {
 
                     ColumnLayout {
                         Label { text: "PERFORMANCES"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
-                        Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: "white"; font.pixelSize: window.fontBody }
-                        Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: "white"; font.pixelSize: window.fontBody }
-                        Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: "white"; font.pixelSize: window.fontBody }
+                        Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
+                        Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
+                        Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
                         Label { text: systemMonitor.gpuName; color: window.muted; font.pixelSize: window.fontMicro; elide: Text.ElideRight; Layout.maximumWidth: 210 }
                         Label { text: systemMonitor.gpuMemoryTotal > 0 && systemMonitor.gpuMemoryUsed >= 0 ? "VRAM  " + Math.round(systemMonitor.gpuMemoryUsed / 1048576) + " / " + Math.round(systemMonitor.gpuMemoryTotal / 1048576) + " Mo" : "VRAM  —"; color: window.muted; font.pixelSize: window.fontCaption }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
                         Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
-                        Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
-                        Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
+                        Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: window.themeColors.text; font.pixelSize: window.fontBody }
+                        Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: window.themeColors.text; font.pixelSize: window.fontBody }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
@@ -753,7 +753,7 @@ ApplicationWindow {
                             checked: leos.mangoHudEnabled
                             enabled: leos.mangoHudAvailable
                             onToggled: leos.setMangoHudEnabled(checked)
-                            palette.text: "white"
+                            palette.text: window.themeColors.text
                             background: Rectangle {
                                 radius: 6
                                 color: "transparent"
@@ -802,7 +802,7 @@ ApplicationWindow {
                             text: leos.activePowerProfile.length > 0
                                   ? "ACTIF · " + window.powerProfileLabel(leos.activePowerProfile)
                                   : "Aucun profil actif identifié"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: window.fontCaption
                         }
                         RowLayout {
@@ -830,7 +830,7 @@ ApplicationWindow {
                                     }
                                     contentItem: Label {
                                         text: powerProfileButton.text
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: window.fontMicro
                                         horizontalAlignment: Text.AlignHCenter
                                     }
@@ -922,7 +922,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: categoryButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 leftPadding: 9
                                 verticalAlignment: Text.AlignVCenter
                                 font.pixelSize: window.fontBody
@@ -951,7 +951,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Label {
                             text: window.selectedCategory
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: window.fontTitle
                             font.weight: Font.Bold
                         }
@@ -966,7 +966,7 @@ ApplicationWindow {
                             id: searchField
                             Layout.preferredWidth: 270
                             placeholderText: "Rechercher un jeu…"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: window.fontBody
                             Accessible.role: Accessible.EditableText
                             Accessible.name: "Rechercher un jeu"
@@ -1014,7 +1014,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: refreshLibraryButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: window.fontCaption
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
@@ -1042,7 +1042,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: importEmulatorFolderButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: window.fontMicro
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
@@ -1070,7 +1070,7 @@ ApplicationWindow {
                             }
                             contentItem: Label {
                                 text: emulatorPrerequisitesButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: window.fontCaption
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
@@ -1094,11 +1094,11 @@ ApplicationWindow {
                                 radius: 9
                                 color: window.themeColors.surface_elevated
                                 border.width: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? 2 : 1
-                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? "white" : window.accentA
+                                border.color: window.navigationArea === "toolbar" && window.toolbarFocusIndex === 4 ? window.focusColor : window.accentA
                             }
                             contentItem: Label {
                                 text: addGameButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: window.fontCaption
                                 font.weight: Font.DemiBold
                                 horizontalAlignment: Text.AlignHCenter
@@ -1180,7 +1180,7 @@ ApplicationWindow {
                                                 Label {
                                                     anchors.horizontalCenter: parent.horizontalCenter
                                                     text: window.gameMonogram(gameCard.title)
-                                                    color: "white"
+                                                    color: window.themeColors.text
                                                     font.pixelSize: window.fontTitle
                                                     font.weight: Font.Black
                                                     font.letterSpacing: 1
@@ -1215,7 +1215,7 @@ ApplicationWindow {
                                             spacing: 5
                                             Label {
                                                 text: gameCard.title
-                                                color: "white"
+                                                color: window.themeColors.text
                                                 font.pixelSize: window.fontBody
                                                 font.weight: Font.DemiBold
                                                 wrapMode: Text.WordWrap
@@ -1280,7 +1280,7 @@ ApplicationWindow {
                                     }
                                     contentItem: Label {
                                         text: emptyStatePrimaryButton.text
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                         horizontalAlignment: Text.AlignHCenter
@@ -1310,7 +1310,7 @@ ApplicationWindow {
                                     }
                                     contentItem: Label {
                                         text: emptyStateAddButton.text
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                         horizontalAlignment: Text.AlignHCenter
@@ -1384,7 +1384,7 @@ ApplicationWindow {
                                 }
                                 Label {
                                     text: window.selectedTitle || "Choisis un jeu"
-                                    color: "white"
+                                    color: window.themeColors.text
                                     font.pixelSize: window.fontTitle
                                     font.weight: Font.Bold
                                     wrapMode: Text.WordWrap
@@ -1415,7 +1415,7 @@ ApplicationWindow {
                                     Label {
                                         text: window.selectedInstallStatus || "—"
                                         color: window.selectedInstallStatus === "Installé" ? window.cyan :
-                                               window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d" : "white"
+                                               window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d" : window.themeColors.text
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                     }
@@ -1453,11 +1453,11 @@ ApplicationWindow {
                                         radius: 9
                                         color: window.themeColors.surface
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.accentB
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? window.focusColor : window.accentB
                                     }
                                     contentItem: Label {
                                         text: favoriteGameButton.text
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                         horizontalAlignment: Text.AlignHCenter
@@ -1479,7 +1479,7 @@ ApplicationWindow {
                                         radius: 10
                                         color: launchSelectedGameButton.enabled ? window.themeColors.surface_elevated : window.themeColors.surface
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.accentA : window.themeColors.border
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? window.focusColor : launchSelectedGameButton.enabled ? window.accentA : window.themeColors.border
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
@@ -1519,7 +1519,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: leos.gamepadButtonLegend + "   START / MENU · PANNEAU"
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: window.fontMicro
                     Accessible.role: Accessible.StaticText
                     Accessible.name: "Commandes de la manette : " + text
@@ -1628,7 +1628,7 @@ ApplicationWindow {
             spacing: 14
             Label {
                 text: "Gaming va se fermer et le bureau KDE réapparaître. Les applications déjà ouvertes resteront en arrière-plan ; aucune ne sera fermée automatiquement."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -1643,7 +1643,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: returnToDesktopButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -1665,7 +1665,7 @@ ApplicationWindow {
             Label {
                 text: "LEOS va demander au service natif de gestion d’énergie de passer sur « " +
                       window.powerProfileLabel(window.pendingPowerProfile) + " ». Ce réglage peut modifier la consommation et les performances selon le matériel. Il ne contrôle pas directement les ventilateurs."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -1681,7 +1681,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: confirmPowerProfileButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -1743,7 +1743,7 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 text: modelData
-                                color: modelData.toLowerCase().includes("détect") ? window.accentA : "white"
+                                color: modelData.toLowerCase().includes("détect") ? window.accentA : window.themeColors.text
                                 wrapMode: Text.WordWrap
                                 font.pixelSize: window.fontBody
                                 verticalAlignment: Text.AlignVCenter
@@ -1817,7 +1817,7 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 anchors.margins: 8
                                 text: modelData
-                                color: modelData.toLowerCase().includes("détecté") ? window.accentA : "white"
+                                color: modelData.toLowerCase().includes("détecté") ? window.accentA : window.themeColors.text
                                 wrapMode: Text.WordWrap
                                 font.pixelSize: window.fontBody
                                 verticalAlignment: Text.AlignVCenter
@@ -1860,7 +1860,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: edenOpenSetupButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.weight: Font.Bold
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -1883,7 +1883,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: retroArchOpenCoreUpdaterButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.weight: Font.Bold
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -1911,7 +1911,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: retroArchRefreshCoreStatusButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -1934,7 +1934,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: retroArchCloseDialogButton.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -1963,7 +1963,7 @@ ApplicationWindow {
             spacing: 12
             Label {
                 text: "Choisis la plateforme correspondant aux fichiers du dossier."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -2023,7 +2023,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.accentA }
                 contentItem: Label {
                     text: "CHOISIR LE DOSSIER"
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -2045,7 +2045,7 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: "GÉRER LES DOSSIERS AJOUTÉS"
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -2128,7 +2128,7 @@ ApplicationWindow {
                         }
                         contentItem: Label {
                             text: parent.text
-                            color: "white"
+                            color: window.themeColors.text
                             elide: Text.ElideMiddle
                             verticalAlignment: Text.AlignVCenter
                             leftPadding: 10
@@ -2184,7 +2184,7 @@ ApplicationWindow {
             }
             Label {
                 text: leos.emulatorFolderPath
-                color: "white"
+                color: window.themeColors.text
                 font.pixelSize: 12
                 Layout.fillWidth: true
                 elide: Text.ElideMiddle
@@ -2205,7 +2205,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: parent.text
-                        color: "white"
+                        color: window.themeColors.text
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
@@ -2258,7 +2258,7 @@ ApplicationWindow {
                         }
                         contentItem: Label {
                             text: parent.text
-                            color: "white"
+                            color: window.themeColors.text
                             verticalAlignment: Text.AlignVCenter
                             leftPadding: 10
                         }
@@ -2324,7 +2324,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: parent.text
-                        color: "white"
+                        color: window.themeColors.text
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
@@ -2345,7 +2345,7 @@ ApplicationWindow {
                     }
                     contentItem: Label {
                         text: parent.text
-                        color: "white"
+                        color: window.themeColors.text
                         font.weight: Font.Bold
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -2365,20 +2365,20 @@ ApplicationWindow {
         ColumnLayout {
             width: parent.width
             spacing: 12
-            Label { text: "Nom du jeu"; color: "white" }
+            Label { text: "Nom du jeu"; color: window.themeColors.text }
             TextField {
                 id: gameName
                 Layout.fillWidth: true
                 placeholderText: "Ex. : Mon jeu"
                 maximumLength: 256
             }
-            Label { text: "Plateforme"; color: "white" }
+            Label { text: "Plateforme"; color: window.themeColors.text }
             ComboBox {
                 id: gamePlatform
                 Layout.fillWidth: true
                 model: ["PC", "Nintendo", "PlayStation", "SEGA", "Arcade", "Autre"]
             }
-            Label { text: "Commande de lancement"; color: "white" }
+            Label { text: "Commande de lancement"; color: window.themeColors.text }
             TextField {
                 id: launchCommand
                 Layout.fillWidth: true
