@@ -2,70 +2,98 @@
 <svg xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink"
      width="3840" height="2160" viewBox="0 0 3840 2160">
-  <title>LEOS Desktop — fond officiel</title>
-  <desc>Fond noir profond avec halos cyan et magenta discrets et emblème officiel du lion seul au centre.</desc>
+  <title>LEOS Desktop — graphite et argent</title>
+  <desc>Fond de bureau graphite profond, reliefs métalliques discrets et emblème officiel du lion LEOS en grand sur la droite.</desc>
+
   <defs>
-    <radialGradient id="cyan-halo" cx="18%" cy="37%" r="68%">
-      <stop offset="0" stop-color="#00b9e8" stop-opacity=".20"/>
-      <stop offset=".48" stop-color="#006782" stop-opacity=".07"/>
-      <stop offset="1" stop-color="#001018" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="magenta-halo" cx="86%" cy="78%" r="65%">
-      <stop offset="0" stop-color="#d32ce8" stop-opacity=".17"/>
-      <stop offset=".48" stop-color="#67136f" stop-opacity=".06"/>
-      <stop offset="1" stop-color="#16051c" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="center-shade" cx="50%" cy="48%" r="72%">
-      <stop offset="0" stop-color="#090d14" stop-opacity="0"/>
-      <stop offset=".72" stop-color="#05070b" stop-opacity=".20"/>
-      <stop offset="1" stop-color="#020307" stop-opacity=".92"/>
-    </radialGradient>
-    <linearGradient id="fine-line" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#00d9ff" stop-opacity=".22"/>
-      <stop offset=".52" stop-color="#74869b" stop-opacity=".035"/>
-      <stop offset="1" stop-color="#e33bff" stop-opacity=".20"/>
+    <linearGradient id="graphite-base" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#171C23"/>
+      <stop offset=".42" stop-color="#0D1117"/>
+      <stop offset="1" stop-color="#06080C"/>
     </linearGradient>
-    <pattern id="micro-grid" width="96" height="96" patternUnits="userSpaceOnUse">
-      <path d="M96 0H0V96" fill="none" stroke="#9eb6c9" stroke-opacity=".035" stroke-width="1"/>
-      <circle cx="1" cy="1" r="1.5" fill="#b6c5d7" fill-opacity=".10"/>
+
+    <radialGradient id="silver-halo" cx="70%" cy="47%" r="61%">
+      <stop offset="0" stop-color="#D4D9E0" stop-opacity=".15"/>
+      <stop offset=".38" stop-color="#8F99A5" stop-opacity=".075"/>
+      <stop offset="1" stop-color="#07090D" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="left-light" cx="16%" cy="22%" r="70%">
+      <stop offset="0" stop-color="#AEB8C4" stop-opacity=".075"/>
+      <stop offset=".55" stop-color="#65717E" stop-opacity=".025"/>
+      <stop offset="1" stop-color="#07090D" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="vignette" cx="52%" cy="48%" r="78%">
+      <stop offset="0" stop-color="#05070A" stop-opacity="0"/>
+      <stop offset=".72" stop-color="#030508" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#020306" stop-opacity=".78"/>
+    </radialGradient>
+
+    <linearGradient id="etched-silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D7DDE4" stop-opacity=".23"/>
+      <stop offset=".48" stop-color="#7F8995" stop-opacity=".045"/>
+      <stop offset="1" stop-color="#C2CBD5" stop-opacity=".18"/>
+    </linearGradient>
+
+    <pattern id="micro-grid" width="112" height="112" patternUnits="userSpaceOnUse">
+      <path d="M112 0H0V112" fill="none" stroke="#AAB4C0" stroke-opacity=".026" stroke-width="1"/>
+      <circle cx="1" cy="1" r="1.4" fill="#D1D7DE" fill-opacity=".055"/>
     </pattern>
-    <mask id="grid-fade">
-      <rect width="3840" height="2160" fill="url(#center-shade)"/>
-    </mask>
-    <filter id="soft-blur" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="34"/>
+
+    <pattern id="fine-brush" width="7" height="7" patternUnits="userSpaceOnUse">
+      <path d="M0 1H7" stroke="#B5BEC8" stroke-opacity=".025" stroke-width=".7"/>
+    </pattern>
+
+    <filter id="soft-metal-glow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="54"/>
+    </filter>
+
+    <filter id="soft-shadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="72"/>
     </filter>
   </defs>
 
-  <rect width="3840" height="2160" fill="#05070b"/>
-  <rect width="3840" height="2160" fill="url(#cyan-halo)"/>
-  <rect width="3840" height="2160" fill="url(#magenta-halo)"/>
+  <rect width="3840" height="2160" fill="url(#graphite-base)"/>
+  <rect width="3840" height="2160" fill="url(#left-light)"/>
+  <rect width="3840" height="2160" fill="url(#silver-halo)"/>
 
-  <g fill="none" stroke="url(#fine-line)" stroke-width="2">
-    <path d="M-180 1510C420 1120 710 1110 1160 1280"/>
-    <path d="M-180 1570C420 1180 710 1170 1160 1340" stroke-opacity=".42"/>
-    <path d="M4020 520C3420 900 3130 930 2680 780"/>
-    <path d="M4020 580C3420 960 3130 990 2680 840" stroke-opacity=".42"/>
+  <!-- Quiet metallic light behind the official lion emblem. -->
+  <g filter="url(#soft-metal-glow)" opacity=".34">
+    <ellipse cx="2670" cy="1080" rx="650" ry="720" fill="#C4CCD5" fill-opacity=".16"/>
+  </g>
+  <g filter="url(#soft-shadow)" opacity=".56">
+    <ellipse cx="2690" cy="1250" rx="590" ry="670" fill="#000000" fill-opacity=".34"/>
   </g>
 
-  <g fill="none" stroke-width="2">
-    <ellipse cx="1920" cy="1080" rx="1120" ry="810"
-             stroke="#00d9ff" stroke-opacity=".075" stroke-dasharray="2 26"/>
-    <ellipse cx="1920" cy="1080" rx="1190" ry="875"
-             stroke="#e33bff" stroke-opacity=".055" stroke-dasharray="2 34"/>
+  <!-- Restrained etched geometry; the left side remains deliberately open. -->
+  <g fill="none" stroke="url(#etched-silver)" stroke-width="2">
+    <path d="M-120 1590C470 1300 890 1260 1390 1380"/>
+    <path d="M-120 1650C470 1360 890 1320 1390 1440" stroke-opacity=".42"/>
+    <path d="M2490 -120C2920 340 3160 560 3370 940" stroke-opacity=".42"/>
+    <path d="M2550 -120C2980 340 3220 560 3430 940" stroke-opacity=".24"/>
+    <path d="M1650 2030C2070 1870 2440 1850 2860 1970" stroke-opacity=".24"/>
   </g>
 
-  <g filter="url(#soft-blur)" opacity=".34">
-    <ellipse cx="1920" cy="1070" rx="600" ry="470" fill="#087b9a" fill-opacity=".13"/>
-    <ellipse cx="2110" cy="1190" rx="430" ry="350" fill="#a12eae" fill-opacity=".10"/>
+  <g fill="none" stroke="#AEB8C3" stroke-width="2">
+    <ellipse cx="2670" cy="1080" rx="930" ry="850"
+             stroke-opacity=".075" stroke-dasharray="2 30"
+             transform="rotate(-11 2670 1080)"/>
+    <ellipse cx="2670" cy="1080" rx="1010" ry="930"
+             stroke-opacity=".05" stroke-dasharray="2 38"
+             transform="rotate(8 2670 1080)"/>
+    <path d="M2670 80C2700 300 2700 420 2670 560" stroke-opacity=".075"/>
+    <path d="M2670 1600C2640 1780 2640 1900 2670 2080" stroke-opacity=".075"/>
   </g>
 
-  <rect width="3840" height="2160" fill="url(#micro-grid)" mask="url(#grid-fade)"/>
-  <rect width="3840" height="2160" fill="url(#center-shade)"/>
+  <rect width="3840" height="2160" fill="url(#micro-grid)"/>
+  <rect width="3840" height="2160" fill="url(#fine-brush)" opacity=".42"/>
+  <rect width="3840" height="2160" fill="url(#vignette)"/>
 
-  <!-- Keep the supplied emblem as the single source of truth. -->
-  <image x="1070" y="180" width="1700" height="1800"
+  <!-- The supplied LEOS lion remains the single source of truth. -->
+  <image x="1740" y="115" width="1830" height="1930"
          preserveAspectRatio="xMidYMid meet"
+         opacity=".96"
          href="../desktop-logo.jpeg"
          xlink:href="../desktop-logo.jpeg"/>
 </svg>
