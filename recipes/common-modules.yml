@@ -24,23 +24,23 @@ modules:
 
   - type: copy
     src: launcher
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/launcher/
 
   - type: copy
     src: control_center
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/control_center/
 
   - type: copy
     src: controller_center
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/controller_center/
 
   - type: copy
     src: shop
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/shop/
 
   - type: copy
     src: desktop
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/desktop/
 
   - type: copy
     src: plasma-theme/leos
@@ -76,7 +76,7 @@ modules:
 
   - type: copy
     src: leos_core
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/leos_core/
 
   - type: copy
     src: branding
