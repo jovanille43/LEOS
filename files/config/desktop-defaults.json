@@ -28,7 +28,8 @@
         "com.brave.Browser",
         "steam",
         "org.kde.dolphin",
-        "org.kde.systemsettings"
+        "org.kde.systemsettings",
+        "leos-mode-selector.desktop"
       ]
     },
     "widgets": {
