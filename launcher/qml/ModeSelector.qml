@@ -28,6 +28,7 @@ ApplicationWindow {
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
+    property bool gamingHandoffPending: false
     property int appearanceDialogFocusIndex: 0
     property int identityDialogFocusIndex: 0
 
@@ -128,6 +129,9 @@ ApplicationWindow {
             return
         }
         transitionInProgress = true
+        gamingHandoffPending = false
+        introHandoffScreen.visible = false
+        introVideoOutput.visible = true
         introOverlay.visible = true
         introPlayer.source = introUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
@@ -140,9 +144,24 @@ ApplicationWindow {
             return
         const mode = pendingMode
         pendingMode = ""
-        transitionInProgress = false
         introTimeout.stop()
         introPlayer.stop()
+        if (mode === "gaming") {
+            // Keep a branded cover over Plasma until Gaming confirms that its
+            // full-screen QML surface is loaded and visible. This removes the
+            // desktop flash between the animation and the separate process.
+            transitionInProgress = true
+            gamingHandoffPending = true
+            introVideoOutput.visible = false
+            introHandoffScreen.visible = true
+            introOverlay.visible = true
+            modeManager.requestMode(mode)
+            return
+        }
+        transitionInProgress = false
+        gamingHandoffPending = false
+        introHandoffScreen.visible = false
+        introVideoOutput.visible = true
         introOverlay.visible = false
         modeManager.requestMode(mode)
     }
@@ -400,8 +419,8 @@ ApplicationWindow {
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                             Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 185
-                            Layout.preferredHeight: 175
+                            Layout.preferredWidth: 300
+                            Layout.preferredHeight: 250
                             visible: status === Image.Ready
                         }
                         Label {
@@ -561,9 +580,67 @@ ApplicationWindow {
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
         }
+        Rectangle {
+            id: introHandoffScreen
+            anchors.fill: parent
+            visible: false
+            color: "#07090F"
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#111923" }
+                GradientStop { position: 0.52; color: "#07090F" }
+                GradientStop { position: 1.0; color: "#15111B" }
+            }
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 18
+                Image {
+                    source: leosTheme.gamingLogoUrl
+                    asynchronous: true
+                    smooth: true
+                    fillMode: Image.PreserveAspectFit
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 320
+                    Layout.preferredHeight: 270
+                    visible: status === Image.Ready
+                }
+                Label {
+                    text: "LEOS GAMING"
+                    color: "white"
+                    font.pixelSize: 30
+                    font.weight: Font.Black
+                    font.letterSpacing: 5
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: "PRÉPARATION DE VOTRE ESPACE DE JEU"
+                    color: window.muted
+                    font.pixelSize: 12
+                    font.letterSpacing: 2
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                BusyIndicator {
+                    running: introHandoffScreen.visible
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
+        }
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
+        }
+    }
+
+    Connections {
+        target: modeManager
+        function onModeLaunchFailed(message) {
+            window.transitionInProgress = false
+            window.gamingHandoffPending = false
+            window.pendingMode = ""
+            introTimeout.stop()
+            introPlayer.stop()
+            introHandoffScreen.visible = false
+            introVideoOutput.visible = true
+            introOverlay.visible = false
         }
     }
 
