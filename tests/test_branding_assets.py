@@ -16,6 +16,8 @@ from desktop.branding_assets import (
     cached_themed_branding_asset_urls,
     source_asset_urls,
     transform_rgb,
+    _remove_dark_edge_matte,
+    _crop_transparent_bounds,
 )
 
 
@@ -99,6 +101,35 @@ class BrandingAssetTests(unittest.TestCase):
                 self.assertEqual(urls["desktopLogoUrl"], generated.as_uri())
                 self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.jpeg"))
                 self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))
+
+    def test_dark_edge_matte_becomes_transparent_without_keying_enclosed_black_details(self):
+        from PySide6.QtGui import QColor, QImage
+
+        image = QImage(64, 64, QImage.Format.Format_ARGB32)
+        image.fill(QColor(0, 0, 0, 255))
+        for y in range(12, 52):
+            for x in range(14, 50):
+                image.setPixelColor(x, y, QColor(230, 230, 230, 255))
+        # An enclosed black eye/detail must remain opaque.
+        image.setPixelColor(32, 30, QColor(0, 0, 0, 255))
+
+        self.assertTrue(_remove_dark_edge_matte(image))
+        self.assertEqual(image.pixelColor(0, 0).alpha(), 0)
+        self.assertEqual(image.pixelColor(32, 20).alpha(), 255)
+        self.assertEqual(image.pixelColor(32, 30).alpha(), 255)
+
+        cropped = _crop_transparent_bounds(image)
+        self.assertLess(cropped.width(), image.width())
+        self.assertLess(cropped.height(), image.height())
+        self.assertEqual(cropped.pixelColor(0, 0).alpha(), 0)
+
+    def test_bright_edge_artwork_is_not_modified_by_dark_matte_removal(self):
+        from PySide6.QtGui import QColor, QImage
+
+        image = QImage(12, 12, QImage.Format.Format_ARGB32)
+        image.fill(QColor(220, 220, 220, 255))
+        self.assertFalse(_remove_dark_edge_matte(image))
+        self.assertEqual(image.pixelColor(0, 0).alpha(), 255)
 
     def test_cache_fingerprint_changes_when_an_official_source_changes(self):
         with tempfile.TemporaryDirectory() as directory:
