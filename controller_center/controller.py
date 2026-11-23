@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
+from controller_center.axis_visuals import build_stick_visuals
 from controller_center.input_state import ControllerInputState
 from controller_center.profiles import (
     ControllerProfileStore,
@@ -88,6 +89,10 @@ class ControllerCenterController(QObject):
     @Property(str, notify=changed)
     def axesText(self) -> str:
         return self.axes_text
+
+    @Property("QVariantMap", notify=changed)
+    def stickVisuals(self) -> dict[str, bool | float]:
+        return build_stick_visuals(self.backend.axes, self.backend.axis_ranges)
 
     @Property(str, notify=changed)
     def profileName(self) -> str:

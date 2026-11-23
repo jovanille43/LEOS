@@ -1580,7 +1580,7 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     visible: window.selectedDuplicateCount > 1
                                     text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"
-                                    color: "#d5a45d"
+                                    color: "#E2B875"
                                     font.pixelSize: window.fontMicro
                                     wrapMode: Text.WordWrap
                                 }

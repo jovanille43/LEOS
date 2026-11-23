@@ -17,10 +17,10 @@ WatermarkHorizontalAlignment=.5
 WatermarkVerticalAlignment=.45
 Transition=fade-over
 TransitionDuration=0.35
-BackgroundStartColor=0x090B10
-BackgroundEndColor=0x090B10
-ProgressBarBackgroundColor=0x303844
-ProgressBarForegroundColor=0xC5CBD3
+BackgroundStartColor=0x0B0B0B
+BackgroundEndColor=0x0B0B0B
+ProgressBarBackgroundColor=0x303030
+ProgressBarForegroundColor=0xC8C8C8
 DialogClearsFirmwareBackground=true
 MessageBelowAnimation=true
 

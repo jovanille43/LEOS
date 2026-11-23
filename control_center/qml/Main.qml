@@ -688,7 +688,7 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: "#050505"
                                                 clip: true
                                                 Image {
                                                     id: desktopWallpaperPreview
@@ -702,7 +702,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: desktopWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU DESKTOP"
-                                                    color: "#a9bacb"
+                                                    color: "#B8B8B8"
                                                     font.pixelSize: 10
                                                 }
                                             }
@@ -723,7 +723,7 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: "#050505"
                                                 clip: true
                                                 Image {
                                                     id: gamingWallpaperPreview
@@ -737,7 +737,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: gamingWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU GAMING"
-                                                    color: "#a9bacb"
+                                                    color: "#B8B8B8"
                                                     font.pixelSize: 10
                                                 }
                                             }

@@ -20,6 +20,7 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
     property color panel: themeColors.surface
     property color line: themeColors.border
+    property var stickReadings: controllerCenter.stickVisuals
 
     Rectangle {
         anchors.fill: parent
@@ -364,16 +365,162 @@ ApplicationWindow {
                                 color: window.line
                             }
                             Label {
-                                text: "AXES ANALOGIQUES"
+                                text: "STICKS ANALOGIQUES"
                                 color: window.muted
                                 font.pixelSize: 10
-                                font.letterSpacing: 2
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.8
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 132
+                                spacing: 16
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 5
+                                    Label {
+                                        text: "GAUCHE"
+                                        color: window.themeColors.text
+                                        font.pixelSize: 9
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 1
+                                        Layout.alignment: Qt.AlignHCenter
+                                    }
+                                    Rectangle {
+                                        id: leftStickTrack
+                                        Layout.preferredWidth: 100
+                                        Layout.preferredHeight: 100
+                                        Layout.alignment: Qt.AlignHCenter
+                                        radius: 50
+                                        color: window.themeColors.surface_elevated
+                                        border.color: window.themeColors.border
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 70
+                                            height: 70
+                                            radius: 35
+                                            color: "transparent"
+                                            border.color: window.themeColors.border
+                                        }
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 1
+                                            height: 88
+                                            color: window.themeColors.border
+                                            opacity: 0.8
+                                        }
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 88
+                                            height: 1
+                                            color: window.themeColors.border
+                                            opacity: 0.8
+                                        }
+                                        Rectangle {
+                                            id: leftStickMarker
+                                            width: 15
+                                            height: 15
+                                            radius: 8
+                                            x: Math.max(6, Math.min(parent.width - width - 6,
+                                                parent.width / 2 - width / 2 + window.stickReadings.leftX * 32))
+                                            y: Math.max(6, Math.min(parent.height - height - 6,
+                                                parent.height / 2 - height / 2 + window.stickReadings.leftY * 32))
+                                            gradient: Gradient {
+                                                GradientStop { position: 0.0; color: window.accentA }
+                                                GradientStop { position: 1.0; color: window.accentB }
+                                            }
+                                            border.color: window.themeColors.text
+                                            border.width: 1
+                                        }
+                                    }
+                                    Label {
+                                        text: window.stickReadings.leftAvailable ? "AXES ACTIFS" : "NON DÉTECTÉ"
+                                        color: window.stickReadings.leftAvailable ? window.cyan : window.muted
+                                        font.pixelSize: 8
+                                        font.weight: Font.DemiBold
+                                        Layout.alignment: Qt.AlignHCenter
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 5
+                                    Label {
+                                        text: "DROIT"
+                                        color: window.themeColors.text
+                                        font.pixelSize: 9
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 1
+                                        Layout.alignment: Qt.AlignHCenter
+                                    }
+                                    Rectangle {
+                                        id: rightStickTrack
+                                        Layout.preferredWidth: 100
+                                        Layout.preferredHeight: 100
+                                        Layout.alignment: Qt.AlignHCenter
+                                        radius: 50
+                                        color: window.themeColors.surface_elevated
+                                        border.color: window.themeColors.border
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 70
+                                            height: 70
+                                            radius: 35
+                                            color: "transparent"
+                                            border.color: window.themeColors.border
+                                        }
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 1
+                                            height: 88
+                                            color: window.themeColors.border
+                                            opacity: 0.8
+                                        }
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 88
+                                            height: 1
+                                            color: window.themeColors.border
+                                            opacity: 0.8
+                                        }
+                                        Rectangle {
+                                            id: rightStickMarker
+                                            width: 15
+                                            height: 15
+                                            radius: 8
+                                            x: Math.max(6, Math.min(parent.width - width - 6,
+                                                parent.width / 2 - width / 2 + window.stickReadings.rightX * 32))
+                                            y: Math.max(6, Math.min(parent.height - height - 6,
+                                                parent.height / 2 - height / 2 + window.stickReadings.rightY * 32))
+                                            gradient: Gradient {
+                                                GradientStop { position: 0.0; color: window.accentB }
+                                                GradientStop { position: 1.0; color: window.accentA }
+                                            }
+                                            border.color: window.themeColors.text
+                                            border.width: 1
+                                        }
+                                    }
+                                    Label {
+                                        text: window.stickReadings.rightAvailable ? "AXES ACTIFS" : "NON DÉTECTÉ"
+                                        color: window.stickReadings.rightAvailable ? window.cyan : window.muted
+                                        font.pixelSize: 8
+                                        font.weight: Font.DemiBold
+                                        Layout.alignment: Qt.AlignHCenter
+                                    }
+                                }
+                            }
+                            Label {
+                                text: "LECTURE DES CAPTEURS"
+                                color: window.muted
+                                font.pixelSize: 9
+                                font.letterSpacing: 1.4
                             }
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.axesText
-                                color: "white"
-                                font.pixelSize: 12
+                                color: window.themeColors.muted_text
+                                font.pixelSize: 10
                                 wrapMode: Text.WordWrap
                             }
                             Item { Layout.fillHeight: true }

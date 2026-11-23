@@ -28,6 +28,10 @@ class SecondDesignPassTests(unittest.TestCase):
         self.assertIn("opacity: 0.04", self.control)
         self.assertIn("PRÉFÉRENCES UTILISATEUR", self.control)
         self.assertIn("source: leosTheme.desktopLogoUrl", self.control)
+        self.assertIn('color: "#050505"', self.control)
+        self.assertIn('color: "#B8B8B8"', self.control)
+        self.assertNotIn("#05070b", self.control)
+        self.assertNotIn("#a9bacb", self.control)
 
     def test_controller_center_uses_live_ab_surfaces_and_a_clear_input_readout(self):
         self.assertIn("window.accentA.r, window.accentA.g, window.accentA.b", self.controllers)
