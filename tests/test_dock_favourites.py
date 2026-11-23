@@ -19,6 +19,18 @@ class DockFavouritesTests(unittest.TestCase):
             self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
             self.assertFalse(path.exists())
 
+    def test_default_desktop_profile_exposes_the_mode_switcher(self):
+        import json
+
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads(
+            (root / "files" / "config" / "desktop-defaults.json").read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            "leos-mode-selector.desktop",
+            config["desktop"]["dock"]["pinned_applications"],
+        )
+
     def test_pin_unpin_and_reorder_persist(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "dock.json"
