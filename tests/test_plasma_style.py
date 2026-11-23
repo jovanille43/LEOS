@@ -16,7 +16,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         plugin = metadata["KPlugin"]
         self.assertEqual(plugin["Id"], "leos")
         self.assertEqual(plugin["Name"], "LEOS")
-        self.assertTrue(plugin["Version"])
+        self.assertEqual(plugin["Version"], "0.2.0")
         self.assertTrue(plugin["License"])
 
     def test_style_has_plasmarc_effect_settings(self):
@@ -114,6 +114,28 @@ class PlasmaStylePackageTests(unittest.TestCase):
                 ids = {node.attrib.get("id") for node in root.iter()}
                 self.assertTrue(required <= ids, required - ids)
 
+    def test_tabbar_has_active_frames_for_all_four_orientations(self):
+        root = ET.parse(THEME / "widgets" / "tabbar.svg").getroot()
+        self.assertEqual(root.tag, f"{SVG_NS}svg")
+        ids = {node.attrib.get("id") for node in root.iter()}
+        positions = (
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        )
+        hints = (
+            "hint-top-margin", "hint-right-margin",
+            "hint-bottom-margin", "hint-left-margin",
+        )
+        for direction in ("north", "east", "south", "west"):
+            with self.subTest(direction=direction):
+                self.assertTrue({
+                    f"{direction}-active-tab-{position}" for position in positions
+                } <= ids)
+                self.assertTrue({
+                    f"{direction}-active-tab-{hint}" for hint in hints
+                } <= ids)
+        self.assertIn("hint-tile-center", ids)
+
     def test_plasmoid_heading_has_header_and_footer_frames(self):
         root = ET.parse(THEME / "widgets" / "plasmoidheading.svg").getroot()
         self.assertEqual(root.tag, f"{SVG_NS}svg")
@@ -156,7 +178,8 @@ class PlasmaStylePackageTests(unittest.TestCase):
         accent_sources = {"#00D9FF", "#E33BFF"}
         for relative in (
             "widgets/background.svg", "widgets/panel-background.svg",
-            "widgets/tasks.svg", "widgets/plasmoidheading.svg", "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
+            "widgets/tasks.svg", "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
+            "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "dialogs/background.svg",
         ):
             with self.subTest(relative=relative):
@@ -168,15 +191,18 @@ class PlasmaStylePackageTests(unittest.TestCase):
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
-            "widgets/plasmoidheading.svg",
+            "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             self.assertIn("#00D9FF", source, relative)
         self.assertIn("#E33BFF", (THEME / "widgets" / "arrows.svg").read_text(encoding="utf-8"))
         self.assertIn("#E33BFF", (THEME / "widgets" / "tasks.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "plasmoidheading.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "tabbar.svg").read_text(encoding="utf-8"))
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
+            "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             for stale in ("#67DFF8", "#A28CFF", "#E66BD5"):

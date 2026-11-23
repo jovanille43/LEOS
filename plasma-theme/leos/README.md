@@ -35,3 +35,8 @@ the task manager rather than adding a second, unrelated Kickoff menu.
 A dedicated `widgets/plasmoidheading.svg` also styles the two orientations
 of Plasma widget popups: LEOS graphite headers with a restrained A/B lower
 edge, and matching graphite footers with a neutral metallic separator.
+
+The style version is incremented whenever packaged SVG resources change so
+Plasma can refresh its cached assets. A dedicated `widgets/tabbar.svg` now
+provides active-tab frames for north, east, south and west orientations, with
+the active edge carrying the same subtle, user-recolored A/B accent.
