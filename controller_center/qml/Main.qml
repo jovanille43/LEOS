@@ -36,7 +36,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 28
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -86,7 +86,7 @@ ApplicationWindow {
                         spacing: 5
                         Label {
                             text: controllerCenter.selectedDeviceName
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 17
                             font.weight: Font.DemiBold
                         }
@@ -182,7 +182,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "Zone morte des sticks"
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                             }
                             Slider {
@@ -250,7 +250,7 @@ ApplicationWindow {
                                     Label {
                                         Layout.fillWidth: true
                                         text: controllerCenter.lastEventText
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: 16
                                         wrapMode: Text.WordWrap
                                     }
@@ -265,7 +265,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.buttonsText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 13
                                 wrapMode: Text.WordWrap
                             }
@@ -283,7 +283,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.axesText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }
