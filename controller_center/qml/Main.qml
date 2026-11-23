@@ -52,20 +52,35 @@ ApplicationWindow {
 
             RowLayout {
                 Layout.fillWidth: true
-                ColumnLayout {
-                    spacing: 2
-                    Label {
-                        text: "LEOS"
-                        color: "white"
-                        font.pixelSize: 28
-                        font.weight: Font.Black
-                        font.letterSpacing: 5
+                RowLayout {
+                    spacing: 11
+                    Image {
+                        id: controllerCenterLogo
+                        source: leosTheme.desktopLogoUrl
+                        asynchronous: true
+                        smooth: true
+                        fillMode: Image.PreserveAspectFit
+                        Layout.preferredWidth: 82
+                        Layout.preferredHeight: 50
+                        visible: status === Image.Ready
                     }
-                    Label {
-                        text: "CENTRE DES MANETTES"
-                        color: window.cyan
-                        font.pixelSize: 10
-                        font.letterSpacing: 3
+                    ColumnLayout {
+                        spacing: 2
+                        Label {
+                            text: "LEOS"
+                            color: window.themeColors.text
+                            font.pixelSize: 27
+                            font.weight: Font.Black
+                            font.letterSpacing: 5
+                            visible: controllerCenterLogo.status !== Image.Ready
+                        }
+                        Label {
+                            text: "CENTRE DES MANETTES"
+                            color: window.cyan
+                            font.pixelSize: 10
+                            font.weight: Font.Bold
+                            font.letterSpacing: 2.6
+                        }
                     }
                 }
                 Item { Layout.fillWidth: true }

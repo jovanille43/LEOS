@@ -21,12 +21,12 @@ AUTO_LIGHT_START_HOUR = 7
 AUTO_DARK_START_HOUR = 19
 
 _BASE_PALETTE: dict[str, str] = {
-    "background": "#090B10",
-    "surface": "#14181E",
-    "surface_elevated": "#1C2229",
-    "border": "#343D47",
-    "text": "#F3F5F7",
-    "muted_text": "#A0A9B2",
+    "background": "#0B0B0B",
+    "surface": "#151515",
+    "surface_elevated": "#202020",
+    "border": "#3A3A3A",
+    "text": "#F5F5F5",
+    "muted_text": "#A6A6A6",
 }
 
 _LIGHT_BASE_PALETTE: dict[str, str] = {

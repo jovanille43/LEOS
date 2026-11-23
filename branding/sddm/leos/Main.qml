@@ -12,9 +12,9 @@ Rectangle {
     property var clockNow: new Date()
 
     gradient: Gradient {
-        GradientStop { position: 0.0; color: "#090B10" }
-        GradientStop { position: 0.52; color: "#10151D" }
-        GradientStop { position: 1.0; color: "#080A0E" }
+        GradientStop { position: 0.0; color: "#0A0A0A" }
+        GradientStop { position: 0.52; color: "#151515" }
+        GradientStop { position: 1.0; color: "#080808" }
     }
 
     function attemptLogin() {
@@ -69,7 +69,7 @@ Rectangle {
                 : powerConfirmation.operation === "reboot"
                     ? "L’ordinateur va redémarrer."
                     : "La session sera suspendue en mémoire."
-            color: "#D0D5DC"
+            color: "#D6D6D6"
             wrapMode: Text.WordWrap
             padding: 12
         }
@@ -90,7 +90,7 @@ Rectangle {
         radius: width / 2
         x: root.width * 0.58
         y: -height * 0.56
-        color: "#222A34"
+        color: "#2A2A2A"
         opacity: 0.18
     }
 
@@ -100,7 +100,7 @@ Rectangle {
         radius: width / 2
         x: -width * 0.42
         y: root.height * 0.55
-        color: "#424A55"
+        color: "#4A4A4A"
         opacity: 0.12
     }
 
@@ -112,8 +112,8 @@ Rectangle {
         anchors.margins: 24
         height: 62
         radius: 16
-        color: "#111720"
-        border.color: "#303A47"
+        color: "#151515"
+        border.color: "#393939"
         border.width: 1
         opacity: 0.97
 
@@ -128,7 +128,7 @@ Rectangle {
 
                 Label {
                     text: Qt.formatDateTime(root.clockNow, "HH:mm")
-                    color: "#F1F3F6"
+                    color: "#F4F4F4"
                     font.family: "Noto Sans"
                     font.pixelSize: 19
                     font.weight: Font.DemiBold
@@ -136,7 +136,7 @@ Rectangle {
 
                 Label {
                     text: Qt.formatDateTime(root.clockNow, "dddd d MMMM")
-                    color: "#A5AFBB"
+                    color: "#A6A6A6"
                     font.family: "Noto Sans"
                     font.pixelSize: 10
                 }
@@ -147,7 +147,7 @@ Rectangle {
             Label {
                 visible: keyboard.enabled && keyboard.layouts.length > 0
                 text: "CLAVIER"
-                color: "#909BA8"
+                color: "#999999"
                 font.family: "Noto Sans"
                 font.pixelSize: 10
                 font.weight: Font.DemiBold
@@ -174,12 +174,12 @@ Rectangle {
                 font.pixelSize: 11
                 background: Rectangle {
                     radius: 9
-                    color: parent.down ? "#303B49" : "#1A232E"
-                    border.color: "#3A4654"
+                    color: parent.down ? "#303030" : "#202020"
+                    border.color: "#414141"
                 }
                 contentItem: Text {
                     text: parent.text
-                    color: "#D8DDE3"
+                    color: "#E0E0E0"
                     font: parent.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -194,12 +194,12 @@ Rectangle {
                 font.pixelSize: 11
                 background: Rectangle {
                     radius: 9
-                    color: parent.down ? "#303B49" : "#1A232E"
-                    border.color: "#3A4654"
+                    color: parent.down ? "#303030" : "#202020"
+                    border.color: "#414141"
                 }
                 contentItem: Text {
                     text: parent.text
-                    color: "#D8DDE3"
+                    color: "#E0E0E0"
                     font: parent.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -214,12 +214,12 @@ Rectangle {
                 font.pixelSize: 11
                 background: Rectangle {
                     radius: 9
-                    color: parent.down ? "#46343A" : "#2B2026"
-                    border.color: "#5A4149"
+                    color: parent.down ? "#303030" : "#252525"
+                    border.color: "#555555"
                 }
                 contentItem: Text {
                     text: parent.text
-                    color: "#E4D9DC"
+                    color: "#E2E2E2"
                     font: parent.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -246,7 +246,7 @@ Rectangle {
         Label {
             Layout.alignment: Qt.AlignHCenter
             text: "LEOS"
-            color: "#F1F3F6"
+            color: "#F4F4F4"
             font.family: "Noto Sans"
             font.pixelSize: 34
             font.weight: Font.DemiBold
@@ -256,7 +256,7 @@ Rectangle {
         Label {
             Layout.alignment: Qt.AlignHCenter
             text: "Bienvenue"
-            color: "#AEB6C1"
+            color: "#B8B8B8"
             font.family: "Noto Sans"
             font.pixelSize: 15
         }
@@ -270,13 +270,13 @@ Rectangle {
             selectByMouse: true
             font.family: "Noto Sans"
             font.pixelSize: 15
-            color: "#F4F6F8"
+            color: "#F5F5F5"
             leftPadding: 18
             rightPadding: 18
             background: Rectangle {
                 radius: 12
-                color: "#171D26"
-                border.color: userField.activeFocus ? "#C6CDD6" : "#343D49"
+                color: "#181818"
+                border.color: userField.activeFocus ? "#D4D4D4" : "#3A3A3A"
                 border.width: userField.activeFocus ? 2 : 1
             }
             onAccepted: passwordField.forceActiveFocus()
@@ -291,13 +291,13 @@ Rectangle {
             selectByMouse: true
             font.family: "Noto Sans"
             font.pixelSize: 15
-            color: "#F4F6F8"
+            color: "#F5F5F5"
             leftPadding: 18
             rightPadding: 18
             background: Rectangle {
                 radius: 12
-                color: "#171D26"
-                border.color: passwordField.activeFocus ? "#C6CDD6" : "#343D49"
+                color: "#181818"
+                border.color: passwordField.activeFocus ? "#D4D4D4" : "#3A3A3A"
                 border.width: passwordField.activeFocus ? 2 : 1
             }
             onAccepted: root.attemptLogin()
@@ -327,14 +327,14 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 color: loginButton.enabled
-                    ? (loginButton.down ? "#B8C0CA" : "#D8DDE3")
-                    : "#777F89"
-                border.color: "#F3F5F7"
+                    ? (loginButton.down ? "#C4C4C4" : "#E0E0E0")
+                    : "#777777"
+                border.color: "#F5F5F5"
                 border.width: 1
             }
             contentItem: Text {
                 text: loginButton.text
-                color: "#11161D"
+                color: "#151515"
                 font: loginButton.font
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -345,7 +345,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.minimumHeight: 24
             text: root.statusMessage
-            color: "#D0D5DC"
+            color: "#D6D6D6"
             font.family: "Noto Sans"
             font.pixelSize: 12
             horizontalAlignment: Text.AlignHCenter

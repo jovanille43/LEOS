@@ -614,48 +614,77 @@ ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 34
-            spacing: 22
+            anchors.margins: 30
+            spacing: 18
 
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 18
 
-                ColumnLayout {
-                    spacing: 1
+                RowLayout {
+                    spacing: 12
                     Image {
                         id: gamingHeaderLogo
                         source: leosTheme.gamingLogoUrl
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
-                        Layout.preferredWidth: 240
-                        Layout.preferredHeight: 124
+                        Layout.preferredWidth: 164
+                        Layout.preferredHeight: 86
                         visible: status === Image.Ready
                     }
-                    Label {
-                        text: "LEOS"
-                        color: "white"
-                        font.pixelSize: window.fontDisplay
-                        font.weight: Font.Black
-                        font.letterSpacing: 5
-                        visible: gamingHeaderLogo.status !== Image.Ready
-                    }
-                    Label {
-                        text: "GAMING MODE"
-                        color: window.cyan
-                        font.pixelSize: window.fontCaption
-                        font.letterSpacing: 3
+                    ColumnLayout {
+                        spacing: 4
+                        Label {
+                            text: "LEOS"
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontDisplay
+                            font.weight: Font.Black
+                            font.letterSpacing: 4
+                            visible: gamingHeaderLogo.status !== Image.Ready
+                        }
+                        Label {
+                            text: "GAMING MODE"
+                            color: window.cyan
+                            font.pixelSize: window.fontCaption
+                            font.weight: Font.Bold
+                            font.letterSpacing: 2.4
+                        }
+                        Label {
+                            text: "TA BIBLIOTHÈQUE, SANS FRONTIÈRE"
+                            color: window.muted
+                            font.pixelSize: window.fontMicro - 2
+                            font.letterSpacing: 0.8
+                        }
                     }
                 }
 
                 Item { Layout.fillWidth: true }
 
-                Label {
-                    text: leos.gamepadStatus
-                    color: window.muted
-                    font.pixelSize: window.fontCaption
-                    elide: Text.ElideRight
+                Rectangle {
+                    radius: 11
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    implicitWidth: gamepadStatusLabel.implicitWidth + 24
+                    implicitHeight: 36
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        Rectangle {
+                            width: 7
+                            height: 7
+                            radius: 4
+                            color: window.accentA
+                        }
+                        Label {
+                            id: gamepadStatusLabel
+                            text: leos.gamepadStatus
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontMicro - 1
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 190
+                        }
+                    }
                 }
 
                 Button {
@@ -703,7 +732,7 @@ ApplicationWindow {
 
                 Button {
                     id: quickPanelButton
-                    text: "PANORAMA RAPIDE  ☰"
+                    text: "RÉGLAGES RAPIDES"
                     onClicked: {
                         quickPanel.visible = !quickPanel.visible
                         quickPanelFocusIndex = 0
@@ -921,10 +950,10 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 26
+                spacing: 20
 
                 ColumnLayout {
-                    Layout.preferredWidth: 190
+                    Layout.preferredWidth: 184
                     Layout.fillHeight: true
                     spacing: 10
 
@@ -952,17 +981,38 @@ ApplicationWindow {
                                 }
                             }
                             background: Rectangle {
-                                radius: 9
-                                color: modelData === window.selectedCategory ? window.themeColors.surface_elevated : "transparent"
-                                border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
-                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.focusColor : (modelData === window.selectedCategory ? window.accentA : "transparent")
+                                radius: 10
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: modelData === window.selectedCategory
+                                            ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.10)
+                                            : categoryButton.hovered ? window.themeColors.surface_elevated : "transparent"
+                                    }
+                                    GradientStop { position: 1.0; color: "transparent" }
+                                }
+                                border.width: modelData === window.categoryNames[window.selectedCategoryIndex]
+                                              && window.navigationArea === "categories" ? 2
+                                              : modelData === window.selectedCategory ? 1 : 0
+                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex]
+                                              && window.navigationArea === "categories" ? window.focusColor
+                                              : modelData === window.selectedCategory ? window.accentA : "transparent"
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    width: modelData === window.selectedCategory ? 3 : 0
+                                    radius: 2
+                                    color: window.accentA
+                                }
                             }
                             contentItem: Label {
                                 text: categoryButton.text
-                                color: "white"
-                                leftPadding: 9
+                                color: window.themeColors.text
+                                leftPadding: 12
                                 verticalAlignment: Text.AlignVCenter
                                 font.pixelSize: window.fontBody
+                                font.weight: modelData === window.selectedCategory ? Font.DemiBold : Font.Normal
                             }
                             onClicked: {
                                 window.chooseCategory(window.categoryNames.indexOf(modelData))
@@ -1001,7 +1051,8 @@ ApplicationWindow {
                         Item { Layout.fillWidth: true }
                         TextField {
                             id: searchField
-                            Layout.preferredWidth: 270
+                            Layout.preferredWidth: 220
+                            Layout.minimumWidth: 150
                             placeholderText: "Rechercher un jeu…"
                             color: "white"
                             font.pixelSize: window.fontBody
@@ -1059,7 +1110,8 @@ ApplicationWindow {
                         }
                         Button {
                             id: importEmulatorFolderButton
-                            text: "IMPORTER UN DOSSIER"
+                            text: "IMPORTER"
+                            Accessible.name: "Importer un dossier d’émulateur"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"
@@ -1115,7 +1167,8 @@ ApplicationWindow {
                         }
                         Button {
                             id: addGameButton
-                            text: "+ AJOUTER UN JEU"
+                            text: "+ JEU"
+                            Accessible.name: "Ajouter un jeu à la bibliothèque"
                             onActiveFocusChanged: {
                                 if (activeFocus) {
                                     window.navigationArea = "toolbar"

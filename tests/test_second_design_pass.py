@@ -27,12 +27,14 @@ class SecondDesignPassTests(unittest.TestCase):
         self.assertIn("opacity: 0.045", self.control)
         self.assertIn("opacity: 0.04", self.control)
         self.assertIn("PRÉFÉRENCES UTILISATEUR", self.control)
+        self.assertIn("source: leosTheme.desktopLogoUrl", self.control)
 
     def test_controller_center_uses_live_ab_surfaces_and_a_clear_input_readout(self):
         self.assertIn("window.accentA.r, window.accentA.g, window.accentA.b", self.controllers)
         self.assertIn("DERNIÈRE ENTRÉE", self.controllers)
         self.assertIn("font.weight: Font.DemiBold", self.controllers)
         self.assertIn("CENTRE DES MANETTES", self.controllers)
+        self.assertIn("source: leosTheme.desktopLogoUrl", self.controllers)
         self.assertIn("Layout.preferredHeight: 116", self.controllers)
         self.assertIn("window.accentB.r, window.accentB.g, window.accentB.b", self.controllers)
 

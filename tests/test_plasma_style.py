@@ -111,6 +111,22 @@ class PlasmaStylePackageTests(unittest.TestCase):
         readme = (THEME / "README.md").read_text(encoding="utf-8")
         self.assertIn("official LEOS lion artwork", readme)
 
+    def test_plasma_surfaces_are_neutral_and_leave_user_accents_dynamic(self):
+        accent_sources = {"#00D9FF", "#E33BFF", "#67DFF8", "#A28CFF", "#E66BD5"}
+        for relative in (
+            "widgets/background.svg", "widgets/panel-background.svg",
+            "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
+            "widgets/tooltip.svg", "widgets/viewitem.svg", "dialogs/background.svg",
+        ):
+            with self.subTest(relative=relative):
+                content = (THEME / relative).read_text(encoding="utf-8")
+                colors = set(__import__("re").findall(r"#[0-9A-Fa-f]{6}", content))
+                for color in colors - accent_sources:
+                    self.assertEqual(color[1:3], color[3:5], f"{relative}: {color} is not neutral")
+                    self.assertEqual(color[3:5], color[5:7], f"{relative}: {color} is not neutral")
+        self.assertIn("#00D9FF", (THEME / "widgets" / "background.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "background.svg").read_text(encoding="utf-8"))
+
     def test_bluebuild_recipe_installs_style_to_plasma_directory(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("src: plasma-theme/leos", recipe)

@@ -56,16 +56,28 @@ class DesktopThemeTests(unittest.TestCase):
 
     def test_live_ab_theme_uses_neutral_graphite_surfaces(self):
         palette = palette_for_colors("#A0A0A0", "#D0D0D0")
-        self.assertEqual(palette["background"], "#090B10")
-        self.assertEqual(palette["surface"], "#14181E")
-        self.assertEqual(palette["surface_elevated"], "#1C2229")
-        self.assertEqual(palette["border"], "#343D47")
+        self.assertEqual(palette["background"], "#0B0B0B")
+        self.assertEqual(palette["surface"], "#151515")
+        self.assertEqual(palette["surface_elevated"], "#202020")
+        self.assertEqual(palette["border"], "#3A3A3A")
+        for token in ("background", "surface", "surface_elevated", "border"):
+            value = palette[token]
+            self.assertEqual(value[1:3], value[3:5])
+            self.assertEqual(value[3:5], value[5:7])
         self.assertEqual(palette["accent_primary"], "#A0A0A0")
         self.assertEqual(palette["accent_secondary"], "#D0D0D0")
         self.assertGreaterEqual(
             _contrast_ratio(palette["muted_text"], palette["surface_elevated"]),
             4.5,
         )
+
+    def test_dark_leos_foundation_is_true_graphite_not_blue_tinted(self):
+        palette = palette_for_colors("#A0A0A0", "#D0D0D0")
+        for token in ("background", "surface", "surface_elevated", "border"):
+            value = palette[token]
+            with self.subTest(token=token):
+                self.assertEqual(value[1:3], value[3:5])
+                self.assertEqual(value[3:5], value[5:7])
 
     def test_unknown_theme_falls_back_to_leos_original(self):
         self.assertEqual(palette_for_theme("not-a-theme"), THEME_PALETTES[DEFAULT_THEME])

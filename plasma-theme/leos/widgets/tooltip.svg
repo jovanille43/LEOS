@@ -4,7 +4,7 @@
 <g id="top"><path d="M22 8 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="left"><path d="M8 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
-<g id="center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#090D18" fill-opacity=".92"/></g>
+<g id="center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#141414" fill-opacity=".92"/></g>
 <g id="right"><path d="M82 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="bottom"><path d="M22 82 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>

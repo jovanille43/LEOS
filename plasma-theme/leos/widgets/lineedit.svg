@@ -4,7 +4,7 @@
 <g id="base-top"><path d="M22 8 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="base-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="base-left"><path d="M8 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
-<g id="base-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#090D18" fill-opacity=".92"/></g>
+<g id="base-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#111111" fill-opacity=".92"/></g>
 <g id="base-right"><path d="M82 22 V68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="base-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
 <g id="base-bottom"><path d="M22 82 H68" fill="none" stroke="#67DFF8" stroke-width="2"/></g>
@@ -13,7 +13,7 @@
 <g id="hover-top"><path d="M22 8 H68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
 <g id="hover-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
 <g id="hover-left"><path d="M8 22 V68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
-<g id="hover-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#090D18" fill-opacity=".92"/></g>
+<g id="hover-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#111111" fill-opacity=".92"/></g>
 <g id="hover-right"><path d="M82 22 V68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
 <g id="hover-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
 <g id="hover-bottom"><path d="M22 82 H68" fill="none" stroke="#A28CFF" stroke-width="2"/></g>
@@ -22,7 +22,7 @@
 <g id="focus-top"><path d="M22 8 H68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
 <g id="focus-topright"><path d="M68 8 Q82 8 82 22" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
 <g id="focus-left"><path d="M8 22 V68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
-<g id="focus-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#0B1020" fill-opacity=".92"/></g>
+<g id="focus-center"><rect x="8" y="8" width="74" height="74" rx="8" fill="#181818" fill-opacity=".92"/></g>
 <g id="focus-right"><path d="M82 22 V68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
 <g id="focus-bottomleft"><path d="M8 68 Q8 82 22 82" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
 <g id="focus-bottom"><path d="M22 82 H68" fill="none" stroke="#E66BD5" stroke-width="2"/></g>
