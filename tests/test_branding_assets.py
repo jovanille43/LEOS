@@ -103,7 +103,10 @@ class BrandingAssetTests(unittest.TestCase):
                 self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))
 
     def test_dark_edge_matte_becomes_transparent_without_keying_enclosed_black_details(self):
-        from PySide6.QtGui import QColor, QImage
+        try:
+            from PySide6.QtGui import QColor, QImage
+        except ImportError:
+            self.skipTest("PySide6 is not installed in the lightweight Python CI image")
 
         image = QImage(64, 64, QImage.Format.Format_ARGB32)
         image.fill(QColor(0, 0, 0, 255))
@@ -124,7 +127,10 @@ class BrandingAssetTests(unittest.TestCase):
         self.assertEqual(cropped.pixelColor(0, 0).alpha(), 0)
 
     def test_bright_edge_artwork_is_not_modified_by_dark_matte_removal(self):
-        from PySide6.QtGui import QColor, QImage
+        try:
+            from PySide6.QtGui import QColor, QImage
+        except ImportError:
+            self.skipTest("PySide6 is not installed in the lightweight Python CI image")
 
         image = QImage(12, 12, QImage.Format.Format_ARGB32)
         image.fill(QColor(220, 220, 220, 255))
