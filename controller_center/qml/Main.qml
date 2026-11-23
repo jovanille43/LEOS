@@ -24,6 +24,26 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: window.color
+        clip: true
+
+        Rectangle {
+            width: 500
+            height: width
+            radius: width / 2
+            x: parent.width - width * 0.58
+            y: -height * 0.62
+            color: window.accentA
+            opacity: 0.045
+        }
+        Rectangle {
+            width: 420
+            height: width
+            radius: width / 2
+            x: -width * 0.52
+            y: parent.height * 0.62
+            color: window.accentB
+            opacity: 0.04
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -59,9 +79,28 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 112
-                radius: 15
-                color: window.panel
+                Layout.preferredHeight: 2
+                radius: 1
+                opacity: 0.72
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: window.accentA }
+                    GradientStop { position: 0.52; color: window.themeColors.border }
+                    GradientStop { position: 1.0; color: window.accentB }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 116
+                radius: 17
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.07)
+                    }
+                    GradientStop { position: 1.0; color: window.panel }
+                }
                 border.color: window.line
 
                 RowLayout {
@@ -71,9 +110,18 @@ ApplicationWindow {
                     Rectangle {
                         Layout.preferredWidth: 54
                         Layout.preferredHeight: 54
-                        radius: 14
-                        color: window.themeColors.surface_elevated
-                        border.color: window.cyan
+                        radius: 16
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.22)
+                            }
+                            GradientStop {
+                                position: 1.0
+                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.12)
+                            }
+                        }
+                        border.color: window.accentA
                         Label {
                             anchors.centerIn: parent
                             text: "⌘"
@@ -117,8 +165,14 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 158
-                        radius: 14
-                        color: window.panel
+                        radius: 16
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.045)
+                            }
+                            GradientStop { position: 1.0; color: window.panel }
+                        }
                         border.color: window.line
                         ColumnLayout {
                             anchors.fill: parent
@@ -150,8 +204,14 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 14
-                        color: window.panel
+                        radius: 16
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.045)
+                            }
+                            GradientStop { position: 1.0; color: window.panel }
+                        }
                         border.color: window.line
                         ColumnLayout {
                             anchors.fill: parent
@@ -218,8 +278,14 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 14
-                        color: window.panel
+                        radius: 16
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.045)
+                            }
+                            GradientStop { position: 1.0; color: window.panel }
+                        }
                         border.color: window.line
                         ColumnLayout {
                             anchors.fill: parent
@@ -233,9 +299,15 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 104
-                                radius: 10
-                                color: window.themeColors.background
+                                Layout.preferredHeight: 112
+                                radius: 12
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.09)
+                                    }
+                                    GradientStop { position: 1.0; color: window.themeColors.background }
+                                }
                                 border.color: window.themeColors.border
                                 ColumnLayout {
                                     anchors.fill: parent
@@ -243,15 +315,17 @@ ApplicationWindow {
                                     spacing: 7
                                     Label {
                                         text: "DERNIÈRE ENTRÉE"
-                                        color: window.muted
-                                        font.pixelSize: 9
-                                        font.letterSpacing: 2
+                                        color: window.cyan
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 1.8
                                     }
                                     Label {
                                         Layout.fillWidth: true
                                         text: controllerCenter.lastEventText
-                                        color: "white"
-                                        font.pixelSize: 16
+                                        color: window.themeColors.text
+                                        font.pixelSize: 17
+                                        font.weight: Font.DemiBold
                                         wrapMode: Text.WordWrap
                                     }
                                 }

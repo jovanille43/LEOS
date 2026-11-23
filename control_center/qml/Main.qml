@@ -162,6 +162,26 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: window.color
+        clip: true
+
+        Rectangle {
+            width: 560
+            height: width
+            radius: width / 2
+            x: parent.width - width * 0.56
+            y: -height * 0.62
+            color: window.accentA
+            opacity: 0.045
+        }
+        Rectangle {
+            width: 470
+            height: width
+            radius: width / 2
+            x: -width * 0.52
+            y: parent.height * 0.62
+            color: window.accentB
+            opacity: 0.04
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -187,11 +207,33 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillWidth: true }
-                Label {
-                    text: "PRÉFÉRENCES UTILISATEUR"
-                    color: window.muted
-                    font.pixelSize: 10
-                    font.letterSpacing: 2
+                Rectangle {
+                    radius: 10
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    Layout.preferredHeight: 32
+                    Layout.preferredWidth: 196
+                    Label {
+                        anchors.centerIn: parent
+                        text: "PRÉFÉRENCES UTILISATEUR"
+                        color: window.muted
+                        font.pixelSize: 9
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 1.5
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 2
+                radius: 1
+                opacity: 0.72
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: window.accentA }
+                    GradientStop { position: 0.52; color: window.themeColors.border }
+                    GradientStop { position: 1.0; color: window.accentB }
                 }
             }
 
@@ -223,23 +265,52 @@ ApplicationWindow {
                             id: settingsNavigationButton
                             required property var modelData
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 48
+                            Layout.preferredHeight: 50
                             text: modelData.label
+                            scale: window.selectedPage === modelData.page || settingsNavigationButton.hovered ? 1.008 : 1.0
+                            Behavior on scale {
+                                NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                            }
                             onClicked: {
                                 window.selectedPage = modelData.page
                                 window.launchNotice = ""
                             }
                             background: Rectangle {
-                                radius: 10
-                                color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.accentA : window.themeColors.border
+                                radius: 12
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b,
+                                                       window.selectedPage === modelData.page ? 0.14
+                                                       : settingsNavigationButton.hovered ? 0.055 : 0.0)
+                                    }
+                                    GradientStop {
+                                        position: 1.0
+                                        color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b,
+                                                       window.selectedPage === modelData.page ? 0.07 : 0.0)
+                                    }
+                                }
+                                border.width: window.selectedPage === modelData.page ? 1 : 0
+                                border.color: window.selectedPage === modelData.page
+                                              ? window.accentA : "transparent"
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    anchors.leftMargin: 1
+                                    width: window.selectedPage === modelData.page ? 3 : 0
+                                    radius: 2
+                                    color: window.accentA
+                                }
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
                             }
                             contentItem: Label {
                                 text: settingsNavigationButton.text
                                 color: window.themeColors.text
-                                font.pixelSize: 12
+                                font.pixelSize: 13
+                                font.weight: window.selectedPage === modelData.page ? Font.DemiBold : Font.Normal
                                 verticalAlignment: Text.AlignVCenter
-                                leftPadding: 8
+                                leftPadding: 13
                             }
                         }
                     }

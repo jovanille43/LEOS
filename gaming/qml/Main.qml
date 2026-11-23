@@ -1380,8 +1380,14 @@ ApplicationWindow {
                         Rectangle {
                             Layout.preferredWidth: 280
                             Layout.fillHeight: true
-                            radius: 16
-                            color: window.themeColors.surface
+                            radius: 18
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0.0
+                                    color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.065)
+                                }
+                                GradientStop { position: 1.0; color: window.themeColors.surface }
+                            }
                             border.color: window.themeColors.border
                             Accessible.role: Accessible.Grouping
                             Accessible.name: "Détails du jeu sélectionné"
@@ -1399,10 +1405,19 @@ ApplicationWindow {
                                 }
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: 172
-                                    radius: 11
+                                    Layout.preferredHeight: 184
+                                    radius: 13
                                     clip: true
-                                    color: window.themeColors.background
+                                    gradient: Gradient {
+                                        GradientStop {
+                                            position: 0.0
+                                            color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.08)
+                                        }
+                                        GradientStop {
+                                            position: 1.0
+                                            color: window.themeColors.background
+                                        }
+                                    }
                                     border.color: window.themeColors.border
                                     Image {
                                         id: selectedGameArtwork
@@ -1459,22 +1474,45 @@ ApplicationWindow {
                                     implicitHeight: 1
                                     color: window.themeColors.border
                                 }
-                                RowLayout {
+                                Rectangle {
                                     Layout.fillWidth: true
-                                    spacing: 8
-                                    Label {
-                                        text: "STATUT"
-                                        color: window.muted
-                                        font.pixelSize: window.fontMicro
-                                        font.letterSpacing: 1
-                                    }
-                                    Item { Layout.fillWidth: true }
-                                    Label {
-                                        text: window.selectedInstallStatus || "—"
-                                        color: window.selectedInstallStatus === "Installé" ? window.cyan :
-                                               window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d" : "white"
-                                        font.pixelSize: window.fontCaption
-                                        font.weight: Font.DemiBold
+                                    Layout.preferredHeight: 38
+                                    radius: 10
+                                    color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.075)
+                                    border.color: window.themeColors.border
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 11
+                                        anchors.rightMargin: 11
+                                        spacing: 8
+                                        Label {
+                                            text: "STATUT"
+                                            color: window.muted
+                                            font.pixelSize: window.fontMicro
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 1
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        Rectangle {
+                                            radius: 7
+                                            color: window.selectedInstallStatus === "Installé"
+                                                   ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.14)
+                                                   : window.selectedInstallStatus === "Fichiers absents"
+                                                     ? "#332719" : window.themeColors.surface_elevated
+                                            border.color: window.selectedInstallStatus === "Fichiers absents"
+                                                          ? "#8B683D" : window.themeColors.border
+                                            implicitHeight: 25
+                                            implicitWidth: installStatusText.implicitWidth + 18
+                                            Label {
+                                                id: installStatusText
+                                                anchors.centerIn: parent
+                                                text: window.selectedInstallStatus || "—"
+                                                color: window.selectedInstallStatus === "Installé" ? window.cyan :
+                                                       window.selectedInstallStatus === "Fichiers absents" ? "#E2B875" : window.themeColors.text
+                                                font.pixelSize: window.fontMicro
+                                                font.weight: Font.DemiBold
+                                            }
+                                        }
                                     }
                                 }
                                 Label {
@@ -1507,10 +1545,16 @@ ApplicationWindow {
                                     }
                                     onClicked: window.toggleSelectedFavorite()
                                     background: Rectangle {
-                                        radius: 9
-                                        color: window.themeColors.surface
+                                        radius: 11
+                                        gradient: Gradient {
+                                            GradientStop {
+                                                position: 0.0
+                                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.11)
+                                            }
+                                            GradientStop { position: 1.0; color: window.themeColors.surface }
+                                        }
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 0 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? "white" : window.accentB
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 0 ? window.focusColor : window.accentB
                                     }
                                     contentItem: Label {
                                         text: favoriteGameButton.text
@@ -1533,10 +1577,30 @@ ApplicationWindow {
                                     }
                                     onClicked: window.launchSelectedGame()
                                     background: Rectangle {
-                                        radius: 10
-                                        color: launchSelectedGameButton.enabled ? window.themeColors.surface_elevated : window.themeColors.surface
+                                        radius: 12
+                                        gradient: Gradient {
+                                            GradientStop {
+                                                position: 0.0
+                                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b,
+                                                               launchSelectedGameButton.enabled ? 0.2 : 0.035)
+                                            }
+                                            GradientStop {
+                                                position: 1.0
+                                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b,
+                                                               launchSelectedGameButton.enabled ? 0.07 : 0.0)
+                                            }
+                                        }
                                         border.width: window.navigationArea === "details" && window.detailsActionIndex === 1 ? 2 : 1
-                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? "white" : launchSelectedGameButton.enabled ? window.accentA : window.themeColors.border
+                                        border.color: window.navigationArea === "details" && window.detailsActionIndex === 1 ? window.focusColor : launchSelectedGameButton.enabled ? window.accentA : window.themeColors.border
+                                        Rectangle {
+                                            anchors.left: parent.left
+                                            anchors.top: parent.top
+                                            anchors.bottom: parent.bottom
+                                            anchors.leftMargin: 1
+                                            width: launchSelectedGameButton.enabled ? 3 : 0
+                                            radius: 2
+                                            color: window.accentA
+                                        }
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
