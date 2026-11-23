@@ -21,7 +21,13 @@ Item {
             required property int index
 
             readonly property real particleRadius: 1.2 + (index % 4) * 0.48
-            readonly property color tint: index % 2 === 0 ? root.colorA : root.colorB
+            readonly property real blend: ((index * 29) % 101) / 100.0
+            readonly property color tint: Qt.rgba(
+                root.colorA.r * (1.0 - blend) + root.colorB.r * blend,
+                root.colorA.g * (1.0 - blend) + root.colorB.g * blend,
+                root.colorA.b * (1.0 - blend) + root.colorB.b * blend,
+                1.0
+            )
             readonly property real startX: root.width * (((index * 71) % 101) / 100.0)
             readonly property real startY: root.height * (0.08 + (((index * 37) % 83) / 100.0))
             readonly property real driftX: (index % 2 === 0 ? 1 : -1)
