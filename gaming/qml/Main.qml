@@ -619,8 +619,8 @@ ApplicationWindow {
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
-                        Layout.preferredWidth: 184
-                        Layout.preferredHeight: 96
+                        Layout.preferredWidth: 240
+                        Layout.preferredHeight: 124
                         visible: status === Image.Ready
                     }
                     Label {
