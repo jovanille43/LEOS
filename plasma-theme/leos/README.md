@@ -1,24 +1,32 @@
-# LEOS Plasma Style — base template
+# LEOS Plasma Style — metallic base theme
 
-This is an original, minimal Plasma 6 desktop theme package. It deliberately
-provides only a small set of SVG assets and lets Plasma fall back to Breeze
-for elements not yet customized.
+This original Plasma 6 style gives LEOS a coordinated, near-black metallic
+surface system with restrained A/B accent details. It includes native SVG
+assets for panels, widget backgrounds, dialogs, buttons, line edits, selections,
+tooltips, widget headers and footers, task-manager states, and panel editing
+controls. Less-common Plasma elements continue to use the Breeze fallback
+until they receive a dedicated LEOS treatment.
 
-The packaged files are immutable base templates. On first-run Desktop
-activation, LEOS creates a uniquely named copy in the user's
-`XDG_DATA_HOME/plasma/desktoptheme`, recolors its SVG assets from the user's
-freely selected A/B accent pair, and applies that per-user variant. The
-metallic neutral axis and dark surfaces are preserved. The original files
-under `/usr/share/plasma/desktoptheme/leos` are never modified.
+The accent endpoints in the source artwork are transformation inputs only.
+On first-run Desktop activation, LEOS creates a uniquely named copy in the
+user's `XDG_DATA_HOME/plasma/desktoptheme`, recolors all supported SVG accents
+with the user's exact A/B pair, and applies that per-user variant. The neutral
+metallic surfaces remain intact. The original files under
+`/usr/share/plasma/desktoptheme/leos` are never modified.
 
+Key files:
 - `metadata.json`: Plasma 6 style metadata.
-- `plasmarc`: subtle background contrast and blur settings.
-- `widgets/` and `dialogs/`: dark glass-like Plasma surfaces and controls.
-- Missing SVG elements intentionally use the installed Breeze fallback.
+- `plasmarc`: restrained background contrast and blur settings.
+- `dialogs/background.svg`: panel popup and widget dialog surfaces.
+- `widgets/panel-background.svg` and `widgets/background.svg`: panel and desktop widget surfaces.
+- `widgets/button.svg`, `lineedit.svg`, and `viewitem.svg`: controls, input fields, and selection states.
+- `widgets/plasmoidheading.svg`: native widget headers and footers.
+- `widgets/tasks.svg`: task-manager states, including keyboard focus and hover.
+- `widgets/containment-controls.svg`: panel edit-mode and resize controls.
+- `widgets/arrows.svg` and `widgets/tooltip.svg`: matching navigation and task tooltips.
 
-The package does not include the official LEOS lion artwork; branding assets
-are generated separately from the official source artwork and are never
-fabricated here.
+The package does not include or fabricate the official LEOS lion artwork;
+branding resources are generated separately from the supplied source assets.
 
 Install path in the image: `/usr/share/plasma/desktoptheme/leos`.
 The base template is not selected directly by the first-run flow. LEOS first
