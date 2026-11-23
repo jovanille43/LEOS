@@ -9,8 +9,8 @@ neutral. JPEGs, SVG color stops and intro videos use the same transform.
 from __future__ import annotations
 
 import fcntl
-import math
 import hashlib
+import math
 import os
 import re
 import shutil
