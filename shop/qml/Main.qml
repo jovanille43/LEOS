@@ -51,7 +51,7 @@ ApplicationWindow {
                     spacing: 3
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 30
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -78,7 +78,7 @@ ApplicationWindow {
                     id: searchField
                     Layout.fillWidth: true
                     placeholderText: "Rechercher une application…"
-                    color: "white"
+                    color: window.themeColors.text
                     enabled: !store.busy
                 }
                 ComboBox {
@@ -146,7 +146,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 3
-                                    Label { text: name; color: "white"; font.pixelSize: 14; font.weight: Font.DemiBold }
+                                    Label { text: name; color: window.themeColors.text; font.pixelSize: 14; font.weight: Font.DemiBold }
                                     Label { text: category + "  •  " + source; color: window.muted; font.pixelSize: 10 }
                                 }
                                 Label {
@@ -198,7 +198,7 @@ ApplicationWindow {
                         Label { text: "FICHE APPLICATION"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
                         Label {
                             text: detailsPane.appName
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 22
                             font.weight: Font.Bold
                             wrapMode: Text.WordWrap
@@ -212,7 +212,7 @@ ApplicationWindow {
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
                         Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
-                        Label { text: detailsPane.appSource; color: "white"; font.pixelSize: 12 }
+                        Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
                         Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
@@ -244,12 +244,12 @@ ApplicationWindow {
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 8
-                                color: detailsPane.installedScope === "system" ? "#19322e" : detailsPane.isInstalled ? window.themeColors.surface_elevated : window.themeColors.surface_elevated
-                                border.color: detailsPane.installedScope === "system" ? "#4aaf91" : detailsPane.isInstalled ? window.magenta : window.cyan
+                                color: window.themeColors.surface_elevated
+                                border.color: detailsPane.installedScope === "system" ? window.accentA : detailsPane.isInstalled ? window.magenta : window.cyan
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
-                                color: "white"
+                                color: window.themeColors.text
                                 font.weight: Font.Bold
                                 horizontalAlignment: Text.AlignHCenter
                             }
@@ -286,7 +286,7 @@ ApplicationWindow {
             Label {
                 text: (detailsPane.isInstalled ? "Tu vas désinstaller " : "Tu vas installer ")
                       + detailsPane.appName + "."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -347,7 +347,7 @@ ApplicationWindow {
             width: parent.width
             Label {
                 text: "Flathub confirme que " + detailsPane.appName + " est disponible. Confirmer maintenant son installation ?"
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
