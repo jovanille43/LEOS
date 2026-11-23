@@ -736,6 +736,7 @@ ApplicationWindow {
                     contentWidth: Math.max(quickPanelContent.implicitWidth, width)
                     contentHeight: Math.max(quickPanelContent.implicitHeight, height)
                     ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
                     RowLayout {
                         id: quickPanelContent
