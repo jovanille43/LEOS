@@ -86,7 +86,7 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
                 if marker.is_file() and not marker.is_symlink() and marker.stat().st_size == 0:
                     descriptor = os.open(ready_path, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
                     try:
-                        os.write(descriptor, b"ready\\n")
+                        os.write(descriptor, b"ready\n")
                         os.fsync(descriptor)
                     finally:
                         os.close(descriptor)
