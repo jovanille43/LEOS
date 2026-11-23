@@ -40,7 +40,10 @@ class SecondDesignPassTests(unittest.TestCase):
         self.assertIn("CENTRE DES MANETTES", self.controllers)
         self.assertIn("source: leosTheme.desktopLogoUrl", self.controllers)
         self.assertIn("Layout.preferredHeight: 116", self.controllers)
-        self.assertIn("window.accentB.r, window.accentB.g, window.accentB.b", self.controllers)
+        self.assertIn("window.accentB", self.controllers)
+        self.assertIn("window.stickReadings", self.controllers)
+        self.assertIn("leftStickMarker", self.controllers)
+        self.assertIn("rightStickMarker", self.controllers)
 
     def test_gaming_detail_status_and_launch_action_have_distinct_visual_priority(self):
         self.assertIn("installStatusText", self.gaming)
