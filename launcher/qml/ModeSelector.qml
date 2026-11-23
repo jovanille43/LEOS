@@ -387,9 +387,32 @@ ApplicationWindow {
                     onClicked: window.requestDesktopMode()
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.colorA : window.themeColors.border
+                        color: desktopCard.down || desktopCard.activeFocus || desktopCard.hovered
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: desktopCard.activeFocus ? 2 : (desktopCard.hovered ? 1.5 : 1)
+                        border.color: desktopCard.activeFocus ? window.colorA
+                                      : desktopCard.hovered ? window.colorAText
+                                      : window.themeColors.border
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            radius: parent.radius - 1
+                            color: window.colorA
+                            opacity: desktopCard.activeFocus ? 0.10 : (desktopCard.hovered ? 0.055 : 0)
+                        }
+                        Rectangle {
+                            anchors { left: parent.left; right: parent.right; top: parent.top }
+                            anchors.leftMargin: 30
+                            anchors.rightMargin: 30
+                            height: 2
+                            radius: 1
+                            visible: desktopCard.activeFocus || desktopCard.hovered
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.colorA }
+                                GradientStop { position: 1; color: window.colorB }
+                            }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -435,9 +458,32 @@ ApplicationWindow {
                     onClicked: window.requestGamingMode()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.colorB : window.themeColors.border
+                        color: gamingCard.down || gamingCard.activeFocus || gamingCard.hovered
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: gamingCard.activeFocus ? 2 : (gamingCard.hovered ? 1.5 : 1)
+                        border.color: gamingCard.activeFocus ? window.colorB
+                                      : gamingCard.hovered ? window.colorBText
+                                      : window.themeColors.border
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            radius: parent.radius - 1
+                            color: window.colorB
+                            opacity: gamingCard.activeFocus ? 0.10 : (gamingCard.hovered ? 0.055 : 0)
+                        }
+                        Rectangle {
+                            anchors { left: parent.left; right: parent.right; top: parent.top }
+                            anchors.leftMargin: 30
+                            anchors.rightMargin: 30
+                            height: 2
+                            radius: 1
+                            visible: gamingCard.activeFocus || gamingCard.hovered
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.colorA }
+                                GradientStop { position: 1; color: window.colorB }
+                            }
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
