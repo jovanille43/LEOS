@@ -9,6 +9,7 @@ neutral. JPEGs, SVG color stops and intro videos use the same transform.
 from __future__ import annotations
 
 import fcntl
+import math
 import hashlib
 import os
 import re
@@ -129,8 +130,96 @@ def _safe_cache_directory(path: Path) -> None:
         raise OSError("LEOS theme asset cache is not a regular directory")
 
 
+def _remove_dark_edge_matte(image) -> bool:
+    """Make a JPEG's connected near-black edge background transparent.
+
+    Only dark pixels connected to the image border are removed. This preserves
+    enclosed black details in the lion and avoids a global black-colour key.
+    """
+    from PySide6.QtGui import QColor
+
+    width, height = image.width(), image.height()
+    if width < 3 or height < 3:
+        return False
+
+    corners = [
+        image.pixelColor(0, 0), image.pixelColor(width - 1, 0),
+        image.pixelColor(0, height - 1), image.pixelColor(width - 1, height - 1),
+    ]
+    dark_corners = [
+        (pixel.red(), pixel.green(), pixel.blue())
+        for pixel in corners
+        if max(pixel.red(), pixel.green(), pixel.blue()) <= 96
+    ]
+    if len(dark_corners) < 3:
+        return False
+
+    background = tuple(
+        sorted(channel)[len(channel) // 2]
+        for channel in zip(*dark_corners)
+    )
+    total = width * height
+    # 0 = unseen, 1 = queued, 2 = connected matte, 3 = non-matte boundary.
+    state = bytearray(total)
+    pending: list[int] = []
+
+    def enqueue(index: int) -> None:
+        if state[index] == 0:
+            state[index] = 1
+            pending.append(index)
+
+    for x in range(width):
+        enqueue(x)
+        enqueue((height - 1) * width + x)
+    for y in range(height):
+        enqueue(y * width)
+        enqueue(y * width + width - 1)
+
+    while pending:
+        index = pending.pop()
+        x = index % width
+        pixel = image.pixelColor(x, index // width)
+        rgb = (pixel.red(), pixel.green(), pixel.blue())
+        distance = math.sqrt(sum(
+            (rgb[channel] - background[channel]) ** 2
+            for channel in range(3)
+        ))
+        # The edge matte is expected to be almost black. A conservative
+        # distance and brightness bound prevents the lion itself being keyed.
+        if max(rgb) > 108 or distance > 78:
+            state[index] = 3
+            continue
+        state[index] = 2
+        if x > 0:
+            enqueue(index - 1)
+        if x + 1 < width:
+            enqueue(index + 1)
+        if index >= width:
+            enqueue(index - width)
+        if index + width < total:
+            enqueue(index + width)
+
+    removed = False
+    for index, status in enumerate(state):
+        if status != 2:
+            continue
+        pixel = image.pixelColor(index % width, index // width)
+        rgb = (pixel.red(), pixel.green(), pixel.blue())
+        distance = math.sqrt(sum(
+            (rgb[channel] - background[channel]) ** 2
+            for channel in range(3)
+        ))
+        # Feather the outer edge to avoid a harsh cut around antialiased
+        # artwork; pixels matching the black matte become fully transparent.
+        alpha = max(0, min(255, round((distance - 7.0) * 255.0 / 48.0)))
+        pixel.setAlpha(alpha)
+        image.setPixelColor(index % width, index // width, pixel)
+        removed = True
+    return removed
+
+
 def _image_transform(source: Path, destination: Path, matrix) -> bool:
-    """Recolour a logo into a PNG variant without editing the JPEG source."""
+    """Recolour a logo into a cropped, transparent PNG without editing its JPEG."""
     from PySide6.QtGui import QColor, QImage
 
     if source.is_symlink() or not source.is_file():
@@ -139,6 +228,7 @@ def _image_transform(source: Path, destination: Path, matrix) -> bool:
     if image.isNull():
         return False
     image = image.convertToFormat(QImage.Format.Format_ARGB32)
+    _remove_dark_edge_matte(image)
     for y in range(image.height()):
         for x in range(image.width()):
             pixel = image.pixelColor(x, y)
@@ -308,8 +398,10 @@ def _cache_directory(color_a: str, color_b: str, branding_root: Path) -> Path:
         except OSError:
             fingerprints.append(f"{relative}:missing")
     source_fingerprint = "|".join(fingerprints)
+    # Bump when logo masking/recoloring changes so stale opaque cache files
+    # are never reused after a branding pipeline update.
     pair_id = hashlib.sha256(
-        f"{normalize_color(color_a)}|{normalize_color(color_b)}|{source_fingerprint}".encode("utf-8")
+        f"branding-pipeline-v2|{normalize_color(color_a)}|{normalize_color(color_b)}|{source_fingerprint}".encode("utf-8")
     ).hexdigest()[:20]
     return _cache_root() / pair_id
 
