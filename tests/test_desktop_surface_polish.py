@@ -29,6 +29,29 @@ class DesktopSurfacePolishTests(unittest.TestCase):
         self.assertIn("font.pixelSize: 12", self.notifications)
         self.assertIn("radius: 14", self.notifications)
 
+    def test_notifications_have_a_consistent_header_and_custom_action_surfaces(self):
+        for token in (
+            "source: leosTheme.desktopLogoUrl",
+            "CENTRE DE NOTIFICATIONS",
+            "markAllReadButton",
+            "refreshNotificationsButton",
+            "GradientStop { position: 0.50; color: window.themeColors.border }",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, self.notifications)
+
+    def test_notification_level_and_unread_state_are_independently_visible(self):
+        for token in (
+            "function levelColor(level)",
+            "function levelLabel(level)",
+            "window.levelLabel(level)",
+            "isRead ? \"LUE\" : \"NON LUE\"",
+            "notificationModel.markRead(notificationId)",
+            "notificationModel.dismiss(notificationId)",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, self.notifications)
+
 
 if __name__ == "__main__":
     unittest.main()
