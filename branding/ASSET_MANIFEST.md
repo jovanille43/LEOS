@@ -16,10 +16,10 @@ Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libe
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/wallpapers/desktop-leos.svg` | Fond source LEOS Desktop 4K (3840 × 2160), lion seul ; accents d'origine utilisés uniquement comme points de transformation A/B |
+| `branding/wallpapers/desktop-leos.svg` | Fond LEOS Desktop 4K (3840 × 2160), graphite et argent, lion seul en grand à droite avec espace négatif à gauche |
 | `branding/wallpapers/gaming-leos.svg` | Fond source LEOS Gaming 4K (3840 × 2160), lion avec manette ; accents d'origine utilisés uniquement comme points de transformation A/B |
 
-Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
+Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Le fond Desktop reste composé de neutres graphite et argent et ne reprend pas les anciens halos colorés ; les variantes privées recolorent le lion selon les couleurs A/B choisies tout en préservant les gris neutres. Les accents de la ressource Gaming restent des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
 
 ## Animations intégrées
 
