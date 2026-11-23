@@ -240,6 +240,24 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: desktopMenuLogo.status !== Image.Ready", qml)
 
+    def test_application_cards_expose_a_keyboard_and_mouse_context_menu(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        for token in (
+            "acceptedButtons: Qt.LeftButton | Qt.RightButton",
+            "mouse.button === Qt.RightButton",
+            "applicationContextMenu.popup(point.x, point.y)",
+            "event.key === Qt.Key_Menu",
+            "text: \"Ouvrir \" + name",
+            "text: isPinned ? \"Retirer des favoris\" : \"Épingler au dock\"",
+            "applicationCatalog.toggleFavourite(desktopId)",
+            "applicationCatalog.moveFavourite(desktopId, -1)",
+            "applicationCatalog.moveFavourite(desktopId, 1)",
+            "window.themeColors.surface_elevated",
+            "applicationContextMenuItem.highlighted",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, qml)
+
     def test_menu_button_content_uses_explicit_button_ids(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("categoryMenuButton.text", qml)

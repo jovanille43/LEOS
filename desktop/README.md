@@ -14,6 +14,8 @@ Desktop Mode conserve **KDE Plasma** comme moteur de bureau, mais fournit une ex
 - Le fond d'écran Desktop 4K `branding/wallpapers/desktop-leos.svg` adopte désormais une composition graphite et argent : lion officiel agrandi sur la droite, espace négatif à gauche, relief métallique subtil et géométrie gravée très discrète. Aucun accent cyan/magenta n'est imposé ; les couleurs A/B choisies par l'utilisateur restent libres.
 - Le profil LEOS applique le fond, le schéma de couleurs, le Plasma Style, le thème d'icônes, le décor de fenêtres et le dock après consentement explicite et sauvegarde de la disposition KDE.
 - Dock inférieur centré, plus ample et lisible, personnalisable et désactivable ; le sélecteur Desktop/Gaming reste épinglé pour un retour rapide.
+- Décor de fenêtres Aurorae affiné : barre de titre graphite, bordure argentée inactive et fin liseré A/B sur la fenêtre active ; les boutons minimiser/agrandir/fermer partagent des états normaux, survolés et pressés cohérents.
+- Le menu d'applications accepte maintenant le clic droit et la touche Menu sur une carte : lancer, épingler/désépingler et réordonner les favoris, avec un menu graphite assorti aux états Plasma.
 - Sélecteur de modes renforcé : deux grandes cartes distinctes, halos A/B discrets, surfaces graphite en dégradé, et retour visuel doux au survol comme au focus clavier/manette.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
@@ -27,7 +29,7 @@ Aucune configuration Plasma existante ne sera écrasée silencieusement.
 
 ## À finaliser
 
-- Valider sur une session Bazzite réelle le parcours d'activation initial : fond d'écran, schéma couleur, Plasma Style, dock et retour arrière.
+- Valider sur une session Bazzite réelle le parcours d'activation initial : fond d'écran, schéma couleur, Plasma Style, dock, menus contextuels et décor de fenêtres, puis le retour arrière.
 - Le profil de dock est maintenant proposé lors du premier démarrage après consentement et sauvegarde. Les widgets de bureau restent facultatifs et non appliqués.
 - Recherche universelle dans les réglages système et les applications, au-delà du catalogue du menu LEOS.
 - Raccourcis globaux KDE personnalisables (dont Super+G / Super+D).

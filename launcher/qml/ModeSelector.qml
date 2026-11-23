@@ -130,9 +130,13 @@ ApplicationWindow {
         }
         transitionInProgress = true
         gamingHandoffPending = false
+        introHandoffCrossfade.stop()
         introHandoffScreen.visible = false
+        introHandoffScreen.opacity = 0
         introVideoOutput.visible = true
+        introVideoOutput.opacity = 1
         introOverlay.visible = true
+        introOverlay.opacity = 1
         introPlayer.source = introUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
@@ -150,18 +154,31 @@ ApplicationWindow {
             // Keep a branded cover over Plasma until Gaming confirms that its
             // full-screen QML surface is loaded and visible. This removes the
             // desktop flash between the animation and the separate process.
+            const canCrossfade = introOverlay.visible && introVideoOutput.visible
             transitionInProgress = true
             gamingHandoffPending = true
-            introVideoOutput.visible = false
-            introHandoffScreen.visible = true
             introOverlay.visible = true
+            introOverlay.opacity = 1
+            introHandoffScreen.visible = true
+            introHandoffScreen.opacity = canCrossfade ? 0 : 1
+            if (canCrossfade) {
+                introVideoOutput.opacity = 1
+                introHandoffCrossfade.start()
+            } else {
+                introVideoOutput.visible = false
+                introVideoOutput.opacity = 1
+            }
             modeManager.requestMode(mode)
             return
         }
         transitionInProgress = false
         gamingHandoffPending = false
+        introHandoffCrossfade.stop()
         introHandoffScreen.visible = false
+        introHandoffScreen.opacity = 0
         introVideoOutput.visible = true
+        introVideoOutput.opacity = 1
+        introOverlay.opacity = 1
         introOverlay.visible = false
         modeManager.requestMode(mode)
     }
@@ -623,9 +640,31 @@ ApplicationWindow {
             id: introVideoOutput
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
+            opacity: 1
+        }
+        ParallelAnimation {
+            id: introHandoffCrossfade
+            NumberAnimation {
+                target: introVideoOutput
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 260
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: introHandoffScreen
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 260
+                easing.type: Easing.InOutCubic
+            }
+            onFinished: introVideoOutput.visible = false
         }
         Rectangle {
             id: introHandoffScreen
+            opacity: 0
             anchors.fill: parent
             visible: false
             color: "#080808"
@@ -700,8 +739,12 @@ ApplicationWindow {
             window.pendingMode = ""
             introTimeout.stop()
             introPlayer.stop()
+            introHandoffCrossfade.stop()
             introHandoffScreen.visible = false
+            introHandoffScreen.opacity = 0
             introVideoOutput.visible = true
+            introVideoOutput.opacity = 1
+            introOverlay.opacity = 1
             introOverlay.visible = false
         }
     }

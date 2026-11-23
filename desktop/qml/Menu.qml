@@ -329,6 +329,12 @@ ApplicationWindow {
                                         || event.key === Qt.Key_Space) {
                                     activateApplication()
                                     event.accepted = true
+                                } else if (event.key === Qt.Key_Menu) {
+                                    const point = appTile.mapToItem(
+                                        window.contentItem, appTile.width / 2, appTile.height / 2
+                                    )
+                                    applicationContextMenu.popup(point.x, point.y)
+                                    event.accepted = true
                                 }
                             }
                             Rectangle {
@@ -359,7 +365,94 @@ ApplicationWindow {
                                 id: appMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onClicked: window.launchApplication(desktopId, name)
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                onPressed: function(mouse) {
+                                    if (mouse.button === Qt.RightButton) {
+                                        appTile.forceActiveFocus()
+                                        const point = appMouse.mapToItem(window.contentItem, mouse.x, mouse.y)
+                                        applicationContextMenu.popup(point.x, point.y)
+                                        mouse.accepted = true
+                                    }
+                                }
+                                onClicked: function(mouse) {
+                                    if (mouse.button === Qt.LeftButton)
+                                        window.launchApplication(desktopId, name)
+                                }
+                            }
+
+                            Menu {
+                                id: applicationContextMenu
+                                width: 224
+                                background: Rectangle {
+                                    radius: 12
+                                    color: window.themeColors.surface_elevated
+                                    border.color: window.themeColors.border
+                                }
+                                delegate: MenuItem {
+                                    id: applicationContextMenuItem
+                                    implicitWidth: applicationContextMenu.width
+                                    implicitHeight: 40
+                                    contentItem: Label {
+                                        text: applicationContextMenuItem.text
+                                        color: applicationContextMenuItem.enabled
+                                            ? window.themeColors.text : window.themeColors.muted_text
+                                        font.pixelSize: 12
+                                        font.weight: applicationContextMenuItem.highlighted
+                                            ? Font.DemiBold : Font.Normal
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: 12
+                                    }
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: applicationContextMenuItem.highlighted
+                                            ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.12)
+                                            : "transparent"
+                                        border.width: applicationContextMenuItem.highlighted ? 1 : 0
+                                        border.color: window.accentA
+                                    }
+                                }
+
+                                MenuItem {
+                                    text: "Ouvrir " + name
+                                    onTriggered: appTile.activateApplication()
+                                }
+                                MenuSeparator {
+                                    contentItem: Rectangle {
+                                        implicitHeight: 1
+                                        color: window.themeColors.border
+                                    }
+                                }
+                                MenuItem {
+                                    text: isPinned ? "Retirer des favoris" : "Épingler au dock"
+                                    onTriggered: {
+                                        const wasPinned = isPinned
+                                        if (!applicationCatalog.toggleFavourite(desktopId)) {
+                                            status.text = "Impossible de modifier les favoris du dock."
+                                        } else {
+                                            status.text = wasPinned
+                                                ? "Application retirée des favoris."
+                                                : "Application ajoutée aux favoris."
+                                        }
+                                    }
+                                }
+                                MenuItem {
+                                    visible: applicationCatalog.currentCategory === "Favoris"
+                                    enabled: search.text.length === 0 && index > 0
+                                    text: "Déplacer vers le haut"
+                                    onTriggered: {
+                                        if (!applicationCatalog.moveFavourite(desktopId, -1))
+                                            status.text = "Impossible de réordonner les favoris."
+                                    }
+                                }
+                                MenuItem {
+                                    visible: applicationCatalog.currentCategory === "Favoris"
+                                    enabled: search.text.length === 0 && index < appGrid.count - 1
+                                    text: "Déplacer vers le bas"
+                                    onTriggered: {
+                                        if (!applicationCatalog.moveFavourite(desktopId, 1))
+                                            status.text = "Impossible de réordonner les favoris."
+                                    }
+                                }
                             }
                             ColumnLayout {
                                 anchors.fill: parent

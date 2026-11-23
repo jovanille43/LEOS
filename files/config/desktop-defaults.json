@@ -5,12 +5,12 @@
   "theme": "leos-original",
   "appearance": {
     "color_scheme": "dark",
-    "background": "#090B10",
-    "surface": "#14181E",
-    "surface_elevated": "#1C2229",
-    "border": "#343D47",
-    "text": "#F3F5F7",
-    "muted_text": "#A0A9B2",
+    "background": "#0B0B0B",
+    "surface": "#151515",
+    "surface_elevated": "#202020",
+    "border": "#3A3A3A",
+    "text": "#F5F5F5",
+    "muted_text": "#A6A6A6",
     "accent_primary": "#A0A0A0",
     "accent_secondary": "#D0D0D0",
     "corner_radius": 12,
@@ -24,12 +24,12 @@
       "alignment": "center",
       "auto_hide": false,
       "pinned_applications": [
-        "org.mozilla.firefox",
-        "com.brave.Browser",
-        "steam",
-        "org.kde.dolphin",
-        "org.kde.systemsettings",
-        "leos-mode-selector.desktop"
+        "leos-menu.desktop",
+        "leos-mode-selector.desktop",
+        "org.kde.dolphin.desktop",
+        "firefox.desktop",
+        "steam.desktop",
+        "leos-control-center.desktop"
       ]
     },
     "widgets": {

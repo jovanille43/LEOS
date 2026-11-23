@@ -63,6 +63,17 @@ class AuroraeWindowDecorationTests(unittest.TestCase):
         self.assertIn("PaddingRight", layout)
         self.assertEqual(layout["TitleHeight"], "36")
 
+    def test_window_button_states_keep_their_supported_aurorae_ids(self):
+        states = (
+            "active", "inactive", "hover", "pressed", "deactivated",
+            "hover-inactive", "pressed-inactive", "deactivated-inactive",
+        )
+        for button in ("close", "minimize", "maximize", "restore"):
+            with self.subTest(button=button):
+                content = (THEME / f"{button}.svg").read_text(encoding="utf-8")
+                for state in states:
+                    self.assertIn(f'id="{state}-center"', content)
+
     def test_bluebuild_installs_aurorae_runtime_and_theme(self):
         recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
         self.assertIn("- aurorae", recipe)
