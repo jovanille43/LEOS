@@ -61,7 +61,7 @@ class AuroraeWindowDecorationTests(unittest.TestCase):
         self.assertIn("PaddingBottom", layout)
         self.assertIn("PaddingLeft", layout)
         self.assertIn("PaddingRight", layout)
-        self.assertEqual(layout["TitleHeight"], "36")
+        self.assertEqual(layout["TitleHeight"], "38")
 
     def test_window_button_states_keep_their_supported_aurorae_ids(self):
         states = (
