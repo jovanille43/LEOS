@@ -314,6 +314,16 @@ class SessionFlowTests(unittest.TestCase):
         self.assertLess(root_check, ready_marker)
         self.assertLess(ready_marker, remember_mode)
 
+    def test_gaming_handoff_waits_for_a_presented_fullscreen_frame(self):
+        main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
+        self.assertIn("root_window.frameSwapped.connect(announce_gaming_ready)", main)
+        self.assertIn("root_window.frameSwapped.disconnect(announce_gaming_ready)", main)
+        self.assertNotIn("app.processEvents()", main[
+            main.index("ready_path = os.environ.pop"):main.index(
+                'print("LEOS Gaming QML loaded successfully"'
+            )
+        ])
+
     def test_gaming_mode_is_not_remembered_before_qml_load(self):
         main = (ROOT / "gaming" / "main.py").read_text(encoding="utf-8")
         controller = (ROOT / "gaming" / "backend" / "controller.py").read_text(encoding="utf-8")
