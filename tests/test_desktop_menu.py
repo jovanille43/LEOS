@@ -303,5 +303,22 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('return "-".join(relative.parts)', entries)
 
 
+    def test_category_menu_keeps_a_persistent_selected_state(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("property bool categorySelected: applicationCatalog.currentCategory === modelData", qml)
+        self.assertIn("categoryMenuButton.categorySelected", qml)
+        self.assertIn("categoryMenuButton.hovered", qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
+
+    def test_application_grid_has_a_visible_keyboard_focus_state(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem", qml)
+        self.assertIn("color: appMouse.containsMouse || keyboardFocused", qml)
+        self.assertIn("border.width: keyboardFocused ? 2 : 1", qml)
+        self.assertIn("border.color: keyboardFocused ? window.accentA", qml)
+
+
+
 if __name__ == "__main__":
     unittest.main()
