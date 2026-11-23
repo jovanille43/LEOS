@@ -21,6 +21,7 @@ ApplicationWindow {
     property color panel: themeColors.surface
     property color line: themeColors.border
     property var stickReadings: controllerCenter.stickVisuals
+    property var stickReadings: controllerCenter.stickVisuals
 
     Rectangle {
         anchors.fill: parent
@@ -123,26 +124,127 @@ ApplicationWindow {
                     anchors.fill: parent
                     anchors.margins: 20
                     spacing: 16
-                    Rectangle {
-                        Layout.preferredWidth: 54
-                        Layout.preferredHeight: 54
-                        radius: 16
-                        gradient: Gradient {
-                            GradientStop {
-                                position: 0.0
-                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.22)
+                    RowLayout {
+                        Layout.preferredWidth: 128
+                        Layout.preferredHeight: 72
+                        spacing: 8
+
+                        ColumnLayout {
+                            spacing: 2
+                            Label {
+                                text: "L"
+                                color: window.muted
+                                font.pixelSize: 8
+                                font.weight: Font.Bold
+                                Layout.alignment: Qt.AlignHCenter
                             }
-                            GradientStop {
-                                position: 1.0
-                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.12)
+                            Rectangle {
+                                id: leftStickTrack
+                                Layout.preferredWidth: 50
+                                Layout.preferredHeight: 50
+                                radius: 25
+                                color: window.themeColors.surface_elevated
+                                border.color: window.themeColors.border
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 32
+                                    height: 32
+                                    radius: 16
+                                    color: "transparent"
+                                    border.color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 1
+                                    height: 42
+                                    color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 42
+                                    height: 1
+                                    color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    id: leftStickMarker
+                                    width: 9
+                                    height: 9
+                                    radius: 5
+                                    x: parent.width / 2 - width / 2 + window.stickReadings.leftX * 13
+                                    y: parent.height / 2 - height / 2 + window.stickReadings.leftY * 13
+                                    color: window.stickReadings.leftAvailable ? window.accentA : window.muted
+                                    border.color: window.themeColors.text
+                                    border.width: 1
+                                }
+                                ToolTip.visible: leftStickHover.containsMouse
+                                ToolTip.text: window.stickReadings.leftAvailable
+                                    ? "Stick gauche · axes actifs" : "Stick gauche · axes non détectés"
+                                MouseArea {
+                                    id: leftStickHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    acceptedButtons: Qt.NoButton
+                                }
                             }
                         }
-                        border.color: window.accentA
-                        Label {
-                            anchors.centerIn: parent
-                            text: "⌘"
-                            color: window.cyan
-                            font.pixelSize: 28
+
+                        ColumnLayout {
+                            spacing: 2
+                            Label {
+                                text: "R"
+                                color: window.muted
+                                font.pixelSize: 8
+                                font.weight: Font.Bold
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+                            Rectangle {
+                                id: rightStickTrack
+                                Layout.preferredWidth: 50
+                                Layout.preferredHeight: 50
+                                radius: 25
+                                color: window.themeColors.surface_elevated
+                                border.color: window.themeColors.border
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 32
+                                    height: 32
+                                    radius: 16
+                                    color: "transparent"
+                                    border.color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 1
+                                    height: 42
+                                    color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 42
+                                    height: 1
+                                    color: window.themeColors.border
+                                }
+                                Rectangle {
+                                    id: rightStickMarker
+                                    width: 9
+                                    height: 9
+                                    radius: 5
+                                    x: parent.width / 2 - width / 2 + window.stickReadings.rightX * 13
+                                    y: parent.height / 2 - height / 2 + window.stickReadings.rightY * 13
+                                    color: window.stickReadings.rightAvailable ? window.accentB : window.muted
+                                    border.color: window.themeColors.text
+                                    border.width: 1
+                                }
+                                ToolTip.visible: rightStickHover.containsMouse
+                                ToolTip.text: window.stickReadings.rightAvailable
+                                    ? "Stick droit · axes actifs" : "Stick droit · axes non détectés"
+                                MouseArea {
+                                    id: rightStickHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    acceptedButtons: Qt.NoButton
+                                }
+                            }
                         }
                     }
                     ColumnLayout {
