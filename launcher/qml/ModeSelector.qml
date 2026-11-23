@@ -274,18 +274,18 @@ ApplicationWindow {
         Rectangle {
             width: 650; height: 650; radius: 325
             x: parent.width * 0.55; y: -height * 0.55
-            color: window.colorA; opacity: 0.14
+            color: window.colorA; opacity: 0.075
         }
         Rectangle {
             width: 560; height: 560; radius: 280
             x: -width * 0.4; y: parent.height * 0.55
-            color: window.colorB; opacity: 0.12
+            color: window.colorB; opacity: 0.065
         }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 48
-            spacing: 20
+            anchors.margins: 44
+            spacing: 22
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
@@ -404,11 +404,33 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     focus: true
                     onClicked: window.requestDesktopMode()
+                    scale: desktopCard.activeFocus || desktopCard.hovered ? 1.012 : 1.0
+                    Behavior on scale {
+                        NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                    }
                     background: Rectangle {
-                        radius: 22
-                        color: desktopCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.colorA : window.themeColors.border
+                        radius: 24
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.colorA.r, window.colorA.g, window.colorA.b,
+                                               desktopCard.down ? 0.19 : desktopCard.hovered ? 0.13 : 0.075)
+                            }
+                            GradientStop { position: 1.0; color: window.themeColors.surface }
+                        }
+                        border.width: desktopCard.activeFocus || desktopCard.hovered ? 2 : 1
+                        border.color: desktopCard.activeFocus || desktopCard.hovered
+                                      ? window.colorA : window.themeColors.border
+                        Label {
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.margins: 18
+                            text: "01  /  ESPACE DE TRAVAIL"
+                            color: window.colorAText
+                            font.pixelSize: 10
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.8
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -452,11 +474,33 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     onClicked: window.requestGamingMode()
+                    scale: gamingCard.activeFocus || gamingCard.hovered ? 1.012 : 1.0
+                    Behavior on scale {
+                        NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                    }
                     background: Rectangle {
-                        radius: 22
-                        color: gamingCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.colorB : window.themeColors.border
+                        radius: 24
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.0
+                                color: Qt.rgba(window.colorB.r, window.colorB.g, window.colorB.b,
+                                               gamingCard.down ? 0.19 : gamingCard.hovered ? 0.13 : 0.075)
+                            }
+                            GradientStop { position: 1.0; color: window.themeColors.surface }
+                        }
+                        border.width: gamingCard.activeFocus || gamingCard.hovered ? 2 : 1
+                        border.color: gamingCard.activeFocus || gamingCard.hovered
+                                      ? window.colorB : window.themeColors.border
+                        Label {
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.margins: 18
+                            text: "02  /  IMMERSION"
+                            color: window.colorBText
+                            font.pixelSize: 10
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.8
+                        }
                     }
                     contentItem: ColumnLayout {
                         spacing: 15
@@ -584,11 +628,29 @@ ApplicationWindow {
             id: introHandoffScreen
             anchors.fill: parent
             visible: false
-            color: "#07090F"
+            color: "#080808"
             gradient: Gradient {
-                GradientStop { position: 0.0; color: "#111923" }
-                GradientStop { position: 0.52; color: "#07090F" }
-                GradientStop { position: 1.0; color: "#15111B" }
+                GradientStop { position: 0.0; color: "#1A1A1A" }
+                GradientStop { position: 0.52; color: "#080808" }
+                GradientStop { position: 1.0; color: "#202020" }
+            }
+            Rectangle {
+                width: 620
+                height: width
+                radius: width / 2
+                x: parent.width * 0.62
+                y: -height * 0.48
+                color: window.colorA
+                opacity: 0.055
+            }
+            Rectangle {
+                width: 520
+                height: width
+                radius: width / 2
+                x: -width * 0.46
+                y: parent.height * 0.55
+                color: window.colorB
+                opacity: 0.05
             }
             ColumnLayout {
                 anchors.centerIn: parent

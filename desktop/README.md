@@ -14,6 +14,7 @@ Desktop Mode conserve **KDE Plasma** comme moteur de bureau, mais fournit une ex
 - Le fond d'écran Desktop 4K `branding/wallpapers/desktop-leos.svg` adopte désormais une composition graphite et argent : lion officiel agrandi sur la droite, espace négatif à gauche, relief métallique subtil et géométrie gravée très discrète. Aucun accent cyan/magenta n'est imposé ; les couleurs A/B choisies par l'utilisateur restent libres.
 - Le profil LEOS applique le fond, le schéma de couleurs, le Plasma Style, le thème d'icônes, le décor de fenêtres et le dock après consentement explicite et sauvegarde de la disposition KDE.
 - Dock inférieur centré, plus ample et lisible, personnalisable et désactivable ; le sélecteur Desktop/Gaming reste épinglé pour un retour rapide.
+- Sélecteur de modes renforcé : deux grandes cartes distinctes, halos A/B discrets, surfaces graphite en dégradé, et retour visuel doux au survol comme au focus clavier/manette.
 - Widgets facultatifs, désactivés par défaut.
 - Menu LEOS donnant accès aux applications, à la recherche, aux catégories, aux favoris et aux applications récemment utilisées ; navigation clavier et effacement explicite de l’historique.
 - Historique local borné à 20 identifiants `.desktop` ; aucune commande de lancement ni chemin privé n’est conservé.

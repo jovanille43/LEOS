@@ -594,12 +594,12 @@ ApplicationWindow {
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
-            color: window.accentA; opacity: 0.14
+            color: window.accentA; opacity: 0.075
         }
         Rectangle {
             width: 520; height: 520; radius: 260
             x: -width * 0.5; y: parent.height - height * 0.45
-            color: window.accentB; opacity: 0.12
+            color: window.accentB; opacity: 0.065
         }
 
         ParticleField {
@@ -1153,7 +1153,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             cellWidth: Math.max(220, Math.min(300, Math.floor(gameGrid.width / 3)))
-                            cellHeight: 190
+                            cellHeight: 208
                             clip: true
                             model: gameLibrary
                             currentIndex: window.selectedIndex
@@ -1171,6 +1171,10 @@ ApplicationWindow {
                                 required property string artwork
                                 width: gameGrid.cellWidth - 12
                                 height: gameGrid.cellHeight - 12
+                                scale: window.selectedIndex === gameCard.index ? 1.012 : 1.0
+                                Behavior on scale {
+                                    NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+                                }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: gameCard.title
                                 Accessible.selected: window.selectedIndex === gameCard.index
@@ -1180,12 +1184,28 @@ ApplicationWindow {
                                     + ". Activer pour afficher la fiche du jeu."
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
-                                    radius: 13
-                                    color: window.selectedIndex === gameCard.index ? window.themeColors.surface_elevated : window.themeColors.surface
+                                    radius: 16
+                                    gradient: Gradient {
+                                        GradientStop {
+                                            position: 0.0
+                                            color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b,
+                                                           window.selectedIndex === gameCard.index ? 0.15 : 0.035)
+                                        }
+                                        GradientStop { position: 1.0; color: window.themeColors.surface }
+                                    }
                                     border.width: window.selectedIndex === gameCard.index ? 2 : 1
-                                    border.color: window.selectedIndex === gameCard.index ? window.focusColor : window.themeColors.border
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    border.color: gameCard.activeFocus ? window.focusColor
+                                                  : window.selectedIndex === gameCard.index
+                                                    ? window.accentA : window.themeColors.border
                                     Behavior on border.color { ColorAnimation { duration: 150 } }
+                                    Rectangle {
+                                        anchors.left: parent.left
+                                        anchors.top: parent.top
+                                        anchors.bottom: parent.bottom
+                                        width: window.selectedIndex === gameCard.index ? 3 : 0
+                                        radius: 2
+                                        color: window.accentA
+                                    }
                                 }
                                 contentItem: ColumnLayout {
                                     spacing: 7
@@ -1194,8 +1214,8 @@ ApplicationWindow {
                                         Layout.fillHeight: true
                                         spacing: 10
                                         Rectangle {
-                                            Layout.preferredWidth: 88
-                                            Layout.preferredHeight: 126
+                                            Layout.preferredWidth: 96
+                                            Layout.preferredHeight: 136
                                             Layout.alignment: Qt.AlignVCenter
                                             radius: 8
                                             visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
@@ -1233,8 +1253,8 @@ ApplicationWindow {
                                         }
                                         Image {
                                             id: gameArtwork
-                                            Layout.preferredWidth: 88
-                                            Layout.preferredHeight: 126
+                                            Layout.preferredWidth: 96
+                                            Layout.preferredHeight: 136
                                             Layout.alignment: Qt.AlignVCenter
                                             source: gameCard.artwork
                                             visible: gameCard.artwork.length > 0
