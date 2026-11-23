@@ -16,6 +16,7 @@ ApplicationWindow {
     property color magenta: themeColors.accent_secondary_text
     property color accentA: themeColors.accent_primary
     property color accentB: themeColors.accent_secondary
+    property color focusColor: "#FFFFFF"
     property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
