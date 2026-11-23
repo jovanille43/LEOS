@@ -64,7 +64,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 27
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -111,7 +111,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             placeholderText: "Rechercher une application…"
             font.pixelSize: 16
-            color: "white"
+            color: window.themeColors.text
             onTextChanged: applicationCatalog.setSearch(text)
             background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : window.themeColors.border }
         }
@@ -188,7 +188,7 @@ ApplicationWindow {
                     anchors.margins: 14
                     RowLayout {
                         Layout.fillWidth: true
-                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: window.themeColors.text; font.pixelSize: 18; font.weight: Font.DemiBold }
                         Item { Layout.fillWidth: true }
                         Button {
                             visible: applicationCatalog.currentCategory === "Récemment utilisées"
@@ -209,8 +209,8 @@ ApplicationWindow {
                         keyNavigationEnabled: true
                         keyNavigationWraps: false
                         activeFocusOnTab: true
-                        cellWidth: 180
-                        cellHeight: 112
+                        cellWidth: 188
+                        cellHeight: 124
                         model: applicationCatalog
                         delegate: Item {
                             required property string name
@@ -236,13 +236,26 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 anchors.fill: parent
-                                radius: 11
+                                radius: 13
                                 color: appMouse.containsMouse || keyboardFocused
                                        ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: keyboardFocused ? 2 : 1
                                 border.color: keyboardFocused ? window.accentA
                                               : appMouse.containsMouse ? window.colorAText
                                               : window.themeColors.border
+
+                                Rectangle {
+                                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                                    anchors.leftMargin: 16
+                                    anchors.rightMargin: 16
+                                    height: 2
+                                    radius: 1
+                                    visible: keyboardFocused || appMouse.containsMouse
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
                             }
                             MouseArea {
                                 id: appMouse
@@ -304,8 +317,8 @@ ApplicationWindow {
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
-                                Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: name; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: category; color: window.muted; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
                         }
                         Label {
