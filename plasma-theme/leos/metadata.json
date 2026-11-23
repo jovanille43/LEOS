@@ -6,11 +6,11 @@
       }
     ],
     "Category": "Plasma Theme",
-    "Description": "A restrained dark Plasma style with metallic surfaces and a freely chosen LEOS A/B accent gradient.",
+    "Description": "A dark metallic Plasma 6 style with A/B recolorable panels, widget headers, task states and panel controls.",
     "Id": "leos",
     "License": "GPL-3.0-or-later",
     "Name": "LEOS",
-    "Version": "0.1.0",
+    "Version": "0.2.0",
     "Website": "https://github.com/jovanille43/LEOS"
   }
 }
