@@ -18,6 +18,21 @@ ApplicationWindow {
     property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
 
+    Rectangle {
+        anchors.fill: parent
+        color: "transparent"
+        Rectangle {
+            width: 420; height: 420; radius: 210
+            x: parent.width - 220; y: -230
+            color: window.accentA; opacity: 0.06
+        }
+        Rectangle {
+            width: 340; height: 340; radius: 170
+            x: -190; y: parent.height - 180
+            color: window.accentB; opacity: 0.05
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 26
@@ -26,16 +41,26 @@ ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true
             ColumnLayout {
-                spacing: 3
-                Label { text: "LEOS"; color: "white"; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
+                spacing: 6
+                Label { text: "LEOS"; color: window.themeColors.text; font.pixelSize: 27; font.weight: Font.Black; font.letterSpacing: 5 }
+                Rectangle {
+                    Layout.preferredWidth: 76
+                    Layout.preferredHeight: 2
+                    radius: 1
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0.0; color: window.accentA }
+                        GradientStop { position: 1.0; color: window.accentB }
+                    }
+                }
                 Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
-                radius: 12
-                color: window.themeColors.surface_elevated
+                radius: 11
+                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.09)
                 border.color: window.themeColors.border
-                implicitWidth: 90
+                implicitWidth: 104
                 implicitHeight: 34
                 Label {
                     anchors.centerIn: parent
@@ -65,7 +90,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.margins: 12
                 clip: true
-                spacing: 9
+                spacing: 11
                 model: notificationModel
                 delegate: Rectangle {
                     required property string notificationId
@@ -75,41 +100,42 @@ ApplicationWindow {
                     required property string createdAt
                     required property bool isRead
                     width: list.width
-                    height: content.implicitHeight + 22
-                    radius: 11
+                    height: content.implicitHeight + 26
+                    radius: 14
                     color: isRead ? window.themeColors.surface : window.themeColors.surface_elevated
                     border.width: isRead ? 1 : 2
-                    border.color: isRead ? window.themeColors.border : window.cyan
+                    border.color: isRead ? window.themeColors.border : window.accentA
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
                     RowLayout {
                         id: content
                         anchors.fill: parent
-                        anchors.margins: 11
-                        spacing: 10
+                        anchors.margins: 13
+                        spacing: 12
                         Rectangle {
                             Layout.preferredWidth: 3
                             Layout.fillHeight: true
                             radius: 2
-                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.cyan : window.magenta
+                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.accentA : window.accentB
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 4
-                            Label { text: title; color: "white"; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; wrapMode: Text.Wrap }
-                            Label { text: body; color: window.muted; font.pixelSize: 11; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
-                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                            Label { text: title; color: window.themeColors.text; font.pixelSize: 14; font.weight: Font.DemiBold; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                            Label { text: body; color: window.muted; font.pixelSize: 12; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
+                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideMiddle }
                         }
                         ColumnLayout {
                             ToolButton {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.cyan; font.pixelSize: 17 }
+                                contentItem: Label { text: markNotificationReadButton.text; color: window.accentA; font.pixelSize: 17 }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.magenta; font.pixelSize: 18 }
+                                contentItem: Label { text: dismissNotificationButton.text; color: window.accentB; font.pixelSize: 18 }
                             }
                         }
                     }

@@ -37,14 +37,14 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.themeColors.accent_secondary); opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.accentA); opacity: 0.065 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.accentB); opacity: 0.055 }
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
-        spacing: 18
+        anchors.margins: 30
+        spacing: 20
 
         RowLayout {
             Layout.fillWidth: true
@@ -74,6 +74,7 @@ ApplicationWindow {
                         text: "APPLICATIONS"
                         color: window.cyan
                         font.pixelSize: 10
+                        font.weight: Font.Bold
                         font.letterSpacing: 3
                     }
                 }
@@ -110,10 +111,16 @@ ApplicationWindow {
             id: search
             Layout.fillWidth: true
             placeholderText: "Rechercher une application…"
-            font.pixelSize: 16
-            color: "white"
+            font.pixelSize: 17
+            color: window.themeColors.text
+            selectByMouse: true
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : window.themeColors.border }
+            background: Rectangle {
+                radius: 14
+                color: window.themeColors.surface_elevated
+                border.width: search.activeFocus ? 2 : 1
+                border.color: search.activeFocus ? window.focusColor : window.themeColors.border
+            }
         }
 
         RowLayout {
@@ -122,9 +129,9 @@ ApplicationWindow {
             spacing: 18
 
             Rectangle {
-                Layout.preferredWidth: 205
+                Layout.preferredWidth: 215
                 Layout.fillHeight: true
-                radius: 15
+                radius: 18
                 color: window.themeColors.surface
                 border.color: window.themeColors.border
                 ColumnLayout {
@@ -139,8 +146,22 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? window.themeColors.surface_elevated : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
-                            contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                            background: Rectangle {
+                                radius: 9
+                                color: categoryMenuButton.down || categoryMenuButton.hovered
+                                       || modelData === applicationCatalog.currentCategory
+                                       ? window.themeColors.surface_elevated : "transparent"
+                                border.width: modelData === applicationCatalog.currentCategory ? 1 : 0
+                                border.color: window.accentA
+                            }
+                            contentItem: Label {
+                                text: categoryMenuButton.text
+                                color: window.themeColors.text
+                                font.pixelSize: 13
+                                leftPadding: 9
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
                         }
                     }
                     Item { Layout.fillHeight: true }
@@ -151,7 +172,7 @@ ApplicationWindow {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                radius: 15
+                radius: 18
                 color: window.themeColors.surface
                 border.color: window.themeColors.border
                 ColumnLayout {
@@ -180,8 +201,8 @@ ApplicationWindow {
                         keyNavigationEnabled: true
                         keyNavigationWraps: false
                         activeFocusOnTab: true
-                        cellWidth: 180
-                        cellHeight: 112
+                        cellWidth: 196
+                        cellHeight: 126
                         model: applicationCatalog
                         delegate: Item {
                             required property string name
@@ -190,8 +211,9 @@ ApplicationWindow {
                             required property string category
                             required property string description
                             required property bool isPinned
-                            width: appGrid.cellWidth - 8
-                            height: appGrid.cellHeight - 8
+                            id: appTile
+                            width: appGrid.cellWidth - 10
+                            height: appGrid.cellHeight - 10
                             activeFocusOnTab: true
                             focus: GridView.isCurrentItem
                             function activateApplication() {
@@ -206,9 +228,27 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 anchors.fill: parent
-                                radius: 11
-                                color: appMouse.containsMouse ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: appMouse.containsMouse ? window.cyan : window.themeColors.border
+                                radius: 14
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b,
+                                                       appMouse.containsMouse || appTile.activeFocus ? 0.11 : 0.035)
+                                    }
+                                    GradientStop { position: 1.0; color: window.themeColors.surface }
+                                }
+                                border.width: appMouse.containsMouse || appTile.activeFocus ? 2 : 1
+                                border.color: appTile.activeFocus ? window.focusColor
+                                              : appMouse.containsMouse ? window.accentA : window.themeColors.border
+                                Behavior on border.color { ColorAnimation { duration: 140 } }
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    width: appMouse.containsMouse || appTile.activeFocus ? 3 : 0
+                                    radius: 2
+                                    color: window.accentA
+                                }
                             }
                             MouseArea {
                                 id: appMouse
@@ -218,15 +258,15 @@ ApplicationWindow {
                             }
                             ColumnLayout {
                                 anchors.fill: parent
-                                anchors.margins: 10
-                                spacing: 5
+                                anchors.margins: 12
+                                spacing: 7
                                 RowLayout {
                                     Layout.fillWidth: true
                                     Image {
                                         source: "image://desktop-icons/" + encodeURIComponent(icon)
                                         sourceSize: Qt.size(64, 64)
-                                        Layout.preferredWidth: 28
-                                        Layout.preferredHeight: 28
+                                        Layout.preferredWidth: 36
+                                        Layout.preferredHeight: 36
                                         fillMode: Image.PreserveAspectFit
                                     }
                                     Item { Layout.fillWidth: true }
@@ -270,8 +310,8 @@ ApplicationWindow {
                                         background: Rectangle { color: "transparent" }
                                     }
                                 }
-                                Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: name; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: category; color: window.muted; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
                         }
                         Label {
@@ -284,7 +324,7 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
-                    Label { id: status; Layout.fillWidth: true; color: window.magenta; font.pixelSize: 10; elide: Text.ElideRight }
+                    Label { id: status; Layout.fillWidth: true; color: window.themeColors.muted_text; font.pixelSize: 11; elide: Text.ElideRight }
                 }
             }
         }
