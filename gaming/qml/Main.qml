@@ -1483,7 +1483,7 @@ ApplicationWindow {
                                     }
                                     contentItem: Label {
                                         text: launchSelectedGameButton.text
-                                        color: launchSelectedGameButton.enabled ? "white" : window.themeColors.muted_text
+                                        color: launchSelectedGameButton.enabled ? window.themeColors.text : window.themeColors.muted_text
                                         font.pixelSize: window.fontBody
                                         font.weight: Font.Bold
                                         horizontalAlignment: Text.AlignHCenter
