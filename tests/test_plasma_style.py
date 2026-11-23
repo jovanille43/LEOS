@@ -67,6 +67,14 @@ class PlasmaStylePackageTests(unittest.TestCase):
 
     def test_extended_plasma_assets_have_required_kde_ids(self):
         expected = {
+            "widgets/plasmoidheading.svg": {
+                f"{frame}-{position}"
+                for frame in ("header", "footer")
+                for position in (
+                    "topleft", "top", "topright", "left", "center", "right",
+                    "bottomleft", "bottom", "bottomright",
+                )
+            },
             "widgets/tooltip.svg": {
                 "topleft", "top", "topright", "left", "center", "right",
                 "bottomleft", "bottom", "bottomright", "hint-stretch-borders",
@@ -106,6 +114,24 @@ class PlasmaStylePackageTests(unittest.TestCase):
                 ids = {node.attrib.get("id") for node in root.iter()}
                 self.assertTrue(required <= ids, required - ids)
 
+    def test_plasmoid_heading_has_header_and_footer_frames(self):
+        root = ET.parse(THEME / "widgets" / "plasmoidheading.svg").getroot()
+        self.assertEqual(root.tag, f"{SVG_NS}svg")
+        ids = {node.attrib.get("id") for node in root.iter()}
+        positions = (
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        )
+        for frame in ("header", "footer"):
+            with self.subTest(frame=frame):
+                self.assertTrue({f"{frame}-{position}" for position in positions} <= ids)
+        self.assertIn("hint-stretch-borders", ids)
+        for hint in (
+            "hint-top-margin", "hint-right-margin",
+            "hint-bottom-margin", "hint-left-margin",
+        ):
+            self.assertIn(hint, ids)
+
     def test_task_manager_has_all_five_nine_slice_states(self):
         root = ET.parse(THEME / "widgets" / "tasks.svg").getroot()
         self.assertEqual(root.tag, f"{SVG_NS}svg")
@@ -130,7 +156,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         accent_sources = {"#00D9FF", "#E33BFF"}
         for relative in (
             "widgets/background.svg", "widgets/panel-background.svg",
-            "widgets/tasks.svg", "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
+            "widgets/tasks.svg", "widgets/plasmoidheading.svg", "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "dialogs/background.svg",
         ):
             with self.subTest(relative=relative):
@@ -142,6 +168,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
+            "widgets/plasmoidheading.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             self.assertIn("#00D9FF", source, relative)

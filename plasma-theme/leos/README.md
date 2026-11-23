@@ -31,3 +31,7 @@ for the active or attention state. The indicator uses the same two source
 endpoints as the other LEOS surfaces so the first-run recoloring keeps the
 user's chosen accents. A newly created dock uses the LEOS menu launcher from
 the task manager rather than adding a second, unrelated Kickoff menu.
+
+A dedicated `widgets/plasmoidheading.svg` also styles the two orientations
+of Plasma widget popups: LEOS graphite headers with a restrained A/B lower
+edge, and matching graphite footers with a neutral metallic separator.
