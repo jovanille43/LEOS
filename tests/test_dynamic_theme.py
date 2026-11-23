@@ -20,8 +20,8 @@ class DynamicThemeTests(unittest.TestCase):
     def test_gaming_uses_selected_accents_and_shared_neutral_surfaces(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn("color: window.accentA; opacity: 0.14", qml)
-        self.assertIn("color: window.accentB; opacity: 0.12", qml)
+        self.assertIn("color: window.accentA; opacity: 0.075", qml)
+        self.assertIn("color: window.accentB; opacity: 0.065", qml)
         for legacy in ('#102331', '#2a1232', '#123847', '#17313d'):
             self.assertNotIn(legacy, qml)
         self.assertIn("window.themeColors.surface_elevated", qml)
