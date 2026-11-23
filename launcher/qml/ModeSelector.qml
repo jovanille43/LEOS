@@ -274,7 +274,7 @@ ApplicationWindow {
 
                 Label {
                     text: "LEOS"
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 39
                     font.weight: Font.Black
                     font.letterSpacing: 9
@@ -289,7 +289,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: window.currentDate.toLocaleTimeString(Qt.locale("fr_FR"), "HH:mm")
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 48
                     font.weight: Font.Light
                     font.letterSpacing: 2
@@ -339,7 +339,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Un seul système, deux expériences : Desktop pour le quotidien et Gaming pour jouer."
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 13
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -364,7 +364,7 @@ ApplicationWindow {
                         }
                         contentItem: Label {
                             text: "COMPRIS"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 10
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignHCenter
@@ -429,7 +429,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS DESKTOP"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -500,7 +500,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS GAMING"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -713,7 +713,7 @@ ApplicationWindow {
 
             Label {
                 text: "LEOS va appliquer ton dégradé personnalisé A/B aux ressources de marque compatibles, créer un schéma KDE correspondant et installer le fond, le style et le dock. Une sauvegarde KDE sera créée avant toute modification. Aucun accent ne sera imposé."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -812,7 +812,7 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: applyAppearanceButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -830,7 +830,7 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: keepAppearanceButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
@@ -850,7 +850,7 @@ ApplicationWindow {
             spacing: 14
             Label {
                 text: "Les applications actuellement ouvertes resteront en arrière-plan. Aucune application ne sera fermée automatiquement."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -865,7 +865,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.colorA }
                 contentItem: Label {
                     text: continueGamingButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
