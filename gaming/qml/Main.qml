@@ -602,6 +602,16 @@ ApplicationWindow {
             color: window.accentB; opacity: 0.12
         }
 
+        ParticleField {
+            id: gamingParticleField
+            anchors.fill: parent
+            colorA: window.accentA
+            colorB: window.accentB
+            active: leos.animationsEnabled && !window.returningToDesktop
+            particleCount: Math.min(52, Math.max(30, Math.floor(window.width / 32)))
+            z: 0
+        }
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 34
