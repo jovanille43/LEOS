@@ -619,8 +619,8 @@ ApplicationWindow {
                         asynchronous: true
                         smooth: true
                         fillMode: Image.PreserveAspectFit
-                        Layout.preferredWidth: 118
-                        Layout.preferredHeight: 58
+                        Layout.preferredWidth: 184
+                        Layout.preferredHeight: 96
                         visible: status === Image.Ready
                     }
                     Label {
@@ -693,7 +693,7 @@ ApplicationWindow {
 
                 Button {
                     id: quickPanelButton
-                    text: "PANNEAU RAPIDE  ☰"
+                    text: "PANORAMA RAPIDE  ☰"
                     onClicked: {
                         quickPanel.visible = !quickPanel.visible
                         quickPanelFocusIndex = 0
@@ -718,7 +718,8 @@ ApplicationWindow {
                 id: quickPanel
                 Layout.fillWidth: true
                 visible: false
-                implicitHeight: 230
+                implicitHeight: Math.min(Math.max(270, quickPanelContent.implicitHeight + 36), Math.floor(window.height * 0.42))
+                Layout.preferredHeight: implicitHeight
                 radius: 15
                 color: window.themeColors.surface_elevated
                 border.color: window.themeColors.border
@@ -726,12 +727,25 @@ ApplicationWindow {
                 Accessible.name: "Panneau rapide Gaming"
                 Accessible.description: "Statistiques, réglages de jeu, profils d’énergie et accès aux commandes de session."
 
-                RowLayout {
+                Flickable {
+                    id: quickPanelViewport
                     anchors.fill: parent
                     anchors.margins: 18
-                    spacing: 22
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    contentWidth: Math.max(quickPanelContent.implicitWidth, width)
+                    contentHeight: Math.max(quickPanelContent.implicitHeight, height)
+                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                    RowLayout {
+                        id: quickPanelContent
+                        width: Math.max(implicitWidth, quickPanelViewport.width)
+                        height: implicitHeight
+                        spacing: 22
 
                     ColumnLayout {
+                        Layout.minimumWidth: 205
+                        Layout.preferredWidth: 205
                         Label { text: "PERFORMANCES"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: "white"; font.pixelSize: window.fontBody }
                         Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: "white"; font.pixelSize: window.fontBody }
@@ -741,12 +755,16 @@ ApplicationWindow {
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
+                        Layout.minimumWidth: 145
+                        Layout.preferredWidth: 145
                         Label { text: "TEMPÉRATURE"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         Label { text: "CPU  " + window.metric(systemMonitor.cpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
                         Label { text: "GPU  " + window.metric(systemMonitor.gpuTemperature, " °C"); color: "white"; font.pixelSize: window.fontBody }
                     }
                     Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: window.themeColors.border }
                     ColumnLayout {
+                        Layout.minimumWidth: 220
+                        Layout.preferredWidth: 220
                         Label { text: "JEUX"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         CheckBox {
                             text: "Overlay FPS · MangoHud"
@@ -788,7 +806,8 @@ ApplicationWindow {
                         }
                     }
                     ColumnLayout {
-                        Layout.preferredWidth: 220
+                        Layout.minimumWidth: 240
+                        Layout.preferredWidth: 240
                         spacing: 6
                         Label { text: "PROFIL ÉNERGIE"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
                         Label {
@@ -877,6 +896,7 @@ ApplicationWindow {
                             border.width: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? 2 : 1
                             border.color: window.quickPanelFocusIndex === leos.availablePowerProfiles.length + 3 ? window.focusColor : window.themeColors.border
                         }
+                    }
                     }
                 }
             }
