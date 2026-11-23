@@ -132,16 +132,32 @@ class BrandingAssetTests(unittest.TestCase):
             self.assertNotIn("../desktop-logo.jpeg", result)
             self.assertIn("#00D9FF", source.read_text(encoding="utf-8"))
 
-    def test_desktop_wallpaper_is_graphite_silver_and_uses_the_official_lion(self):
+    def test_desktop_background_is_neutral_while_the_official_lion_keeps_ab_recoloring(self):
         root = Path(__file__).resolve().parents[1]
         wallpaper = root / "branding" / "wallpapers" / "desktop-leos.svg"
-        source = wallpaper.read_text(encoding="utf-8")
-        ET.fromstring(source)
-        self.assertIn("graphite et argent", source)
-        self.assertIn("../desktop-logo.jpeg", source)
-        self.assertIn("#171C23", source)
-        self.assertNotIn("#00D9FF", source.upper())
-        self.assertNotIn("#E33BFF", source.upper())
+        svg = wallpaper.read_text(encoding="utf-8")
+        ET.fromstring(svg)
+        self.assertIn("graphite et argent", svg)
+        self.assertIn("../desktop-logo.jpeg", svg)
+        self.assertIn("#171C23", svg)
+        # The SVG background is deliberately neutral, but the official lion
+        # is transformed separately by _image_transform using the same A/B
+        # matrix before _transform_svg links the generated transparent PNG.
+        self.assertNotIn("#00D9FF", svg.upper())
+        self.assertNotIn("#E33BFF", svg.upper())
+        color_a, color_b = "#F0A030", "#7C68E8"
+        matrix = build_color_matrix(color_a, color_b)
+        for actual, expected in (
+            (transform_rgb(_rgb(SOURCE_COLOR_A), matrix), _rgb(color_a)),
+            (transform_rgb(_rgb(SOURCE_COLOR_B), matrix), _rgb(color_b)),
+        ):
+            for channel, target in zip(actual, expected):
+                self.assertAlmostEqual(channel, target, places=6)
+        builder = __import__("inspect").getsource(
+            __import__("desktop.branding_assets", fromlist=["build_themed_branding_assets"]).build_themed_branding_assets
+        )
+        self.assertIn("_image_transform(source, output, matrix)", builder)
+        self.assertIn("_transform_svg(source, output, matrix, logo_paths[emblem_key])", builder)
 
     def test_cached_variants_are_discovered_without_regenerating_them(self):
         with tempfile.TemporaryDirectory() as directory:
