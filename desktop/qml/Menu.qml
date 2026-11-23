@@ -138,9 +138,38 @@ ApplicationWindow {
                             required property string modelData
                             Layout.fillWidth: true
                             text: modelData
+                            property bool categorySelected: applicationCatalog.currentCategory === modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? window.themeColors.surface_elevated : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
-                            contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                            background: Rectangle {
+                                radius: 9
+                                color: categoryMenuButton.categorySelected
+                                       ? window.themeColors.surface_elevated
+                                       : (categoryMenuButton.down || categoryMenuButton.hovered
+                                          ? window.themeColors.surface : "transparent")
+                                border.width: categoryMenuButton.categorySelected || categoryMenuButton.activeFocus ? 1 : 0
+                                border.color: categoryMenuButton.categorySelected ? window.accentA : window.themeColors.border
+
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                    anchors.leftMargin: 1
+                                    width: 3
+                                    radius: 2
+                                    visible: categoryMenuButton.categorySelected
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
+                            }
+                            contentItem: Label {
+                                text: categoryMenuButton.text
+                                color: categoryMenuButton.categorySelected ? window.themeColors.text : "white"
+                                font.pixelSize: 12
+                                font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
+                                leftPadding: 10
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
                         }
                     }
                     Item { Layout.fillHeight: true }
@@ -190,6 +219,7 @@ ApplicationWindow {
                             required property string category
                             required property string description
                             required property bool isPinned
+                            property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem
                             width: appGrid.cellWidth - 8
                             height: appGrid.cellHeight - 8
                             activeFocusOnTab: true
@@ -207,8 +237,12 @@ ApplicationWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 11
-                                color: appMouse.containsMouse ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: appMouse.containsMouse ? window.cyan : window.themeColors.border
+                                color: appMouse.containsMouse || keyboardFocused
+                                       ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: keyboardFocused ? 2 : 1
+                                border.color: keyboardFocused ? window.accentA
+                                              : appMouse.containsMouse ? window.colorAText
+                                              : window.themeColors.border
                             }
                             MouseArea {
                                 id: appMouse
