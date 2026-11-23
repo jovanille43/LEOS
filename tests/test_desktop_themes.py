@@ -8,6 +8,7 @@ from desktop.themes import (
     REQUIRED_TOKENS,
     THEME_PALETTES,
     palette_for_theme,
+    palette_for_colors,
     validate_palette,
 )
 
@@ -52,6 +53,19 @@ class DesktopThemeTests(unittest.TestCase):
                             _contrast_ratio(palette[text_token], palette[surface_token]),
                             4.5,
                         )
+
+    def test_live_ab_theme_uses_neutral_graphite_surfaces(self):
+        palette = palette_for_colors("#A0A0A0", "#D0D0D0")
+        self.assertEqual(palette["background"], "#090B10")
+        self.assertEqual(palette["surface"], "#14181E")
+        self.assertEqual(palette["surface_elevated"], "#1C2229")
+        self.assertEqual(palette["border"], "#343D47")
+        self.assertEqual(palette["accent_primary"], "#A0A0A0")
+        self.assertEqual(palette["accent_secondary"], "#D0D0D0")
+        self.assertGreaterEqual(
+            _contrast_ratio(palette["muted_text"], palette["surface_elevated"]),
+            4.5,
+        )
 
     def test_unknown_theme_falls_back_to_leos_original(self):
         self.assertEqual(palette_for_theme("not-a-theme"), THEME_PALETTES[DEFAULT_THEME])
