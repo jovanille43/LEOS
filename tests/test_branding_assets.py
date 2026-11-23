@@ -3,6 +3,7 @@
 import os
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 from pathlib import Path
 
@@ -130,6 +131,17 @@ class BrandingAssetTests(unittest.TestCase):
             self.assertIn(emblem.resolve().as_uri(), result)
             self.assertNotIn("../desktop-logo.jpeg", result)
             self.assertIn("#00D9FF", source.read_text(encoding="utf-8"))
+
+    def test_desktop_wallpaper_is_graphite_silver_and_uses_the_official_lion(self):
+        root = Path(__file__).resolve().parents[1]
+        wallpaper = root / "branding" / "wallpapers" / "desktop-leos.svg"
+        source = wallpaper.read_text(encoding="utf-8")
+        ET.fromstring(source)
+        self.assertIn("graphite et argent", source)
+        self.assertIn("../desktop-logo.jpeg", source)
+        self.assertIn("#171C23", source)
+        self.assertNotIn("#00D9FF", source.upper())
+        self.assertNotIn("#E33BFF", source.upper())
 
     def test_cached_variants_are_discovered_without_regenerating_them(self):
         with tempfile.TemporaryDirectory() as directory:
