@@ -54,7 +54,7 @@ class SessionFlowTests(unittest.TestCase):
 
     def test_gaming_header_and_quick_panorama_have_room_for_content(self):
         gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("Layout.preferredWidth: 184", gaming)
+        self.assertIn("Layout.preferredWidth: 240", gaming)
         self.assertIn('text: "PANORAMA RAPIDE', gaming)
         self.assertIn("Flickable {", gaming)
         self.assertIn("id: quickPanelContent", gaming)
