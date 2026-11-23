@@ -76,9 +76,10 @@ class GamingAccessibilityTests(unittest.TestCase):
 
     def test_warning_state_uses_amber_not_the_favorite_accent(self):
         self.assertIn(
-            'window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d"',
+            'window.selectedInstallStatus === "Fichiers absents"',
             self.qml,
         )
+        self.assertIn(' ? "#E2B875" : window.themeColors.text', self.qml)
         self.assertIn('color: window.magenta', self.qml)
 
     def test_controller_legend_is_exposed_to_qml(self):
