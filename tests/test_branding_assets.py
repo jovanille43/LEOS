@@ -21,6 +21,57 @@ from desktop.branding_assets import (
 )
 
 
+
+class _FakeColor:
+    def __init__(self, red, green, blue, alpha=255):
+        self._red, self._green, self._blue, self._alpha = red, green, blue, alpha
+
+    def red(self):
+        return self._red
+
+    def green(self):
+        return self._green
+
+    def blue(self):
+        return self._blue
+
+    def alpha(self):
+        return self._alpha
+
+    def setAlpha(self, value):
+        self._alpha = value
+
+    def clone(self):
+        return _FakeColor(self._red, self._green, self._blue, self._alpha)
+
+
+class _FakeImage:
+    def __init__(self, width, height, fill=(0, 0, 0, 255), pixels=None):
+        self._width, self._height = width, height
+        self._pixels = pixels or [
+            [_FakeColor(*fill) for _ in range(width)] for _ in range(height)
+        ]
+
+    def width(self):
+        return self._width
+
+    def height(self):
+        return self._height
+
+    def pixelColor(self, x, y):
+        return self._pixels[y][x].clone()
+
+    def setPixelColor(self, x, y, color):
+        self._pixels[y][x] = color.clone()
+
+    def copy(self, x, y, width, height):
+        pixels = [
+            [self._pixels[row][column].clone() for column in range(x, x + width)]
+            for row in range(y, y + height)
+        ]
+        return _FakeImage(width, height, pixels=pixels)
+
+
 def _rgb(hex_color):
     value = hex_color.lstrip("#")
     return tuple(int(value[index:index + 2], 16) / 255 for index in (0, 2, 4))
@@ -103,18 +154,12 @@ class BrandingAssetTests(unittest.TestCase):
                 self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))
 
     def test_dark_edge_matte_becomes_transparent_without_keying_enclosed_black_details(self):
-        try:
-            from PySide6.QtGui import QColor, QImage
-        except ImportError:
-            self.skipTest("PySide6 is not installed in the lightweight Python CI image")
-
-        image = QImage(64, 64, QImage.Format.Format_ARGB32)
-        image.fill(QColor(0, 0, 0, 255))
+        image = _FakeImage(64, 64)
         for y in range(12, 52):
             for x in range(14, 50):
-                image.setPixelColor(x, y, QColor(230, 230, 230, 255))
+                image.setPixelColor(x, y, _FakeColor(230, 230, 230))
         # An enclosed black eye/detail must remain opaque.
-        image.setPixelColor(32, 30, QColor(0, 0, 0, 255))
+        image.setPixelColor(32, 30, _FakeColor(0, 0, 0))
 
         self.assertTrue(_remove_dark_edge_matte(image))
         self.assertEqual(image.pixelColor(0, 0).alpha(), 0)
@@ -127,13 +172,7 @@ class BrandingAssetTests(unittest.TestCase):
         self.assertEqual(cropped.pixelColor(0, 0).alpha(), 0)
 
     def test_bright_edge_artwork_is_not_modified_by_dark_matte_removal(self):
-        try:
-            from PySide6.QtGui import QColor, QImage
-        except ImportError:
-            self.skipTest("PySide6 is not installed in the lightweight Python CI image")
-
-        image = QImage(12, 12, QImage.Format.Format_ARGB32)
-        image.fill(QColor(220, 220, 220, 255))
+        image = _FakeImage(12, 12, fill=(220, 220, 220, 255))
         self.assertFalse(_remove_dark_edge_matte(image))
         self.assertEqual(image.pixelColor(0, 0).alpha(), 255)
 
