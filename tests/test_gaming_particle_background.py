@@ -16,7 +16,11 @@ class GamingParticleBackgroundTests(unittest.TestCase):
     def test_particle_field_uses_live_user_selected_a_and_b_colors(self):
         self.assertIn("property color colorA", self.field)
         self.assertIn("property color colorB", self.field)
-        self.assertIn("index % 2 === 0 ? root.colorA : root.colorB", self.field)
+        self.assertIn("readonly property real blend", self.field)
+        self.assertIn("readonly property color tint: Qt.rgba(", self.field)
+        self.assertIn("root.colorA.r * (1.0 - blend) + root.colorB.r * blend", self.field)
+        self.assertIn("root.colorA.g * (1.0 - blend) + root.colorB.g * blend", self.field)
+        self.assertIn("root.colorA.b * (1.0 - blend) + root.colorB.b * blend", self.field)
         self.assertIn("colorA: window.accentA", self.main)
         self.assertIn("colorB: window.accentB", self.main)
 
