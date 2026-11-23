@@ -320,5 +320,27 @@ class DesktopMenuTests(unittest.TestCase):
 
 
 
+    def test_leos_qml_screens_use_appearance_aware_text_tokens(self):
+        files = (
+            "launcher/qml/ModeSelector.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "gaming/qml/Main.qml",
+            "controller_center/qml/Main.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative_path in files:
+            source = (ROOT / relative_path).read_text(encoding="utf-8")
+            with self.subTest(path=relative_path):
+                self.assertNotIn('"white"', source)
+                self.assertIn("themeColors.text", source)
+
+    def test_gaming_focus_outline_uses_the_selected_leos_accent(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("property color focusColor: themeColors.accent_primary", qml)
+        self.assertNotIn('property color focusColor: "#ffffff"', qml)
+
+
+
 if __name__ == "__main__":
     unittest.main()
