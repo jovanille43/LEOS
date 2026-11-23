@@ -218,6 +218,28 @@ def _remove_dark_edge_matte(image) -> bool:
     return removed
 
 
+def _crop_transparent_bounds(image):
+    """Trim the fully transparent outer canvas while preserving a small halo."""
+    width, height = image.width(), image.height()
+    left, top, right, bottom = width, height, -1, -1
+    for y in range(height):
+        for x in range(width):
+            if image.pixelColor(x, y).alpha() > 8:
+                left = min(left, x)
+                top = min(top, y)
+                right = max(right, x)
+                bottom = max(bottom, y)
+    if right < left or bottom < top:
+        return image
+    content_width, content_height = right - left + 1, bottom - top + 1
+    padding = max(6, round(max(content_width, content_height) * 0.025))
+    left = max(0, left - padding)
+    top = max(0, top - padding)
+    right = min(width - 1, right + padding)
+    bottom = min(height - 1, bottom + padding)
+    return image.copy(left, top, right - left + 1, bottom - top + 1)
+
+
 def _image_transform(source: Path, destination: Path, matrix) -> bool:
     """Recolour a logo into a cropped, transparent PNG without editing its JPEG."""
     from PySide6.QtGui import QColor, QImage
@@ -240,6 +262,8 @@ def _image_transform(source: Path, destination: Path, matrix) -> bool:
                 y,
                 QColor.fromRgbF(red, green, blue, pixel.alphaF()),
             )
+
+    image = _crop_transparent_bounds(image)
 
     fd, temporary_name = tempfile.mkstemp(
         prefix=f".{destination.stem}.", suffix=".png", dir=destination.parent
