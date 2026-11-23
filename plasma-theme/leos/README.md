@@ -24,3 +24,10 @@ Install path in the image: `/usr/share/plasma/desktoptheme/leos`.
 The base template is not selected directly by the first-run flow. LEOS first
 creates the user's A/B variant and then applies it. The Control Center can
 regenerate and apply a new variant after the user changes A or B.
+
+The panel treatment now includes a dedicated `widgets/tasks.svg`: task tiles
+remain graphite at rest, lift subtly on hover, and use a narrow A/B indicator
+for the active or attention state. The indicator uses the same two source
+endpoints as the other LEOS surfaces so the first-run recoloring keeps the
+user's chosen accents. A newly created dock uses the LEOS menu launcher from
+the task manager rather than adding a second, unrelated Kickoff menu.

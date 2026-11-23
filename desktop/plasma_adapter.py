@@ -15,7 +15,8 @@ from desktop.layouts import validate_layout
 LEOS_PANEL_MARKER = "leos-panel-v1"
 LEOS_PANEL_CONFIG_GROUP = "LEOS"
 PANEL_WIDGETS = (
-    "org.kde.plasma.kickoff",
+    # LEOS pins its own launcher and mode selector in the task manager.
+    # Adding Kickoff here would create a duplicate, visually inconsistent menu.
     "org.kde.plasma.icontasks",
     "org.kde.plasma.marginsseparator",
     "org.kde.plasma.systemtray",

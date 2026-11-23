@@ -57,6 +57,24 @@ class PlasmaAdapterTests(unittest.TestCase):
         self.assertIn('panel.writeConfig("managedBy", markerValue)', script)
         self.assertIn('addedWidgets[r].remove()', script)
 
+    def test_new_dock_uses_leos_menu_instead_of_duplicate_kickoff(self):
+        self.assertEqual(
+            PANEL_WIDGETS,
+            (
+                "org.kde.plasma.icontasks",
+                "org.kde.plasma.marginsseparator",
+                "org.kde.plasma.systemtray",
+                "org.kde.plasma.digitalclock",
+                "org.kde.plasma.showdesktop",
+            ),
+        )
+        script = build_panel_management_script(self.store.get())
+        self.assertNotIn('"org.kde.plasma.kickoff"', script)
+        leos_script = build_panel_management_script(
+            self.store.get(), ["leos-menu.desktop", "leos-mode-selector.desktop"]
+        )
+        self.assertIn('"leos-menu.desktop","leos-mode-selector.desktop"', leos_script)
+
     def test_script_checks_widget_availability_before_panel_creation(self):
         script = build_panel_management_script(self.store.get())
         for widget in PANEL_WIDGETS:

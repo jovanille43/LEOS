@@ -10,9 +10,6 @@
       <stop offset="0.52" stop-color="#606060" stop-opacity="0.36"/>
       <stop offset="1" stop-color="#E33BFF" stop-opacity="0.72"/>
     </linearGradient>
-    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="1.5"/>
-    </filter>
   </defs>
   <g fill="url(#panelFill)" stroke="url(#panelEdge)" stroke-width="1.1">
     <path id="topleft" d="M9 0H18V18H0V9Q0 0 9 0Z"/>
@@ -25,7 +22,7 @@
     <rect id="bottom" x="18" y="78" width="60" height="18"/>
     <path id="bottomright" d="M78 78H96V87Q96 96 87 96H78Z"/>
   </g>
-  <path id="shadow-center" d="M9 2H87Q94 2 94 9V87Q94 94 87 94H9Q2 94 2 87V9Q2 2 9 2Z" fill="none" stroke="#00D9FF" stroke-opacity="0.16" stroke-width="2" filter="url(#softGlow)"/>
+  <path id="shadow-center" d="M9 2H87Q94 2 94 9V87Q94 94 87 94H9Q2 94 2 87V9Q2 2 9 2Z" fill="none" stroke="#707070" stroke-opacity="0.14" stroke-width="1.2"/>
   <rect id="hint-stretch-borders" x="0" y="0" width="96" height="96" fill="none"/>
   <rect id="hint-top-margin" x="0" y="0" width="1" height="4" fill="none"/>
   <rect id="hint-bottom-margin" x="0" y="0" width="1" height="4" fill="none"/>

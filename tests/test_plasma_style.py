@@ -106,6 +106,21 @@ class PlasmaStylePackageTests(unittest.TestCase):
                 ids = {node.attrib.get("id") for node in root.iter()}
                 self.assertTrue(required <= ids, required - ids)
 
+    def test_task_manager_has_all_five_nine_slice_states(self):
+        root = ET.parse(THEME / "widgets" / "tasks.svg").getroot()
+        self.assertEqual(root.tag, f"{SVG_NS}svg")
+        ids = {node.attrib.get("id") for node in root.iter()}
+        positions = (
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        )
+        for state in ("normal", "hover", "focus", "attention", "minimized"):
+            with self.subTest(state=state):
+                self.assertTrue({f"{state}-{position}" for position in positions} <= ids)
+        self.assertIn("hint-stretch-borders", ids)
+        self.assertIn("normal-hint-top-margin", ids)
+        self.assertIn("normal-hint-bottom-margin", ids)
+
     def test_package_does_not_claim_official_lion_asset_exists(self):
         self.assertFalse((THEME / "widgets" / "branding.svg").exists())
         readme = (THEME / "README.md").read_text(encoding="utf-8")
@@ -115,7 +130,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         accent_sources = {"#00D9FF", "#E33BFF"}
         for relative in (
             "widgets/background.svg", "widgets/panel-background.svg",
-            "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
+            "widgets/tasks.svg", "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "dialogs/background.svg",
         ):
             with self.subTest(relative=relative):
@@ -126,14 +141,15 @@ class PlasmaStylePackageTests(unittest.TestCase):
                     self.assertEqual(color[3:5], color[5:7], f"{relative}: {color} is not neutral")
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
-            "widgets/tooltip.svg", "widgets/viewitem.svg",
+            "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             self.assertIn("#00D9FF", source, relative)
         self.assertIn("#E33BFF", (THEME / "widgets" / "arrows.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "tasks.svg").read_text(encoding="utf-8"))
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
-            "widgets/tooltip.svg", "widgets/viewitem.svg",
+            "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             for stale in ("#67DFF8", "#A28CFF", "#E66BD5"):
