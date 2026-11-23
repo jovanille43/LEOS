@@ -20,7 +20,7 @@ modules:
 
   - type: copy
     src: gaming
-    dest: /usr/share/leos/
+    dest: /usr/share/leos/gaming/
 
   - type: copy
     src: launcher
