@@ -140,7 +140,7 @@ class BrandingAssetTests(unittest.TestCase):
         ET.fromstring(svg)
         self.assertIn("graphite et argent", svg)
         self.assertIn("../desktop-logo.jpeg", svg)
-        self.assertIn("#171C23", svg)
+        self.assertIn("#1B1B1B", svg)
         # The SVG background is deliberately neutral, but the official lion
         # is transformed separately by _image_transform using the same A/B
         # matrix before _transform_svg links the generated transparent PNG.
