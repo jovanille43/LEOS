@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="activeGroove" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00D9FF" stop-opacity="0.38"/>
+      <stop offset="0.52" stop-color="#777777" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#E33BFF" stop-opacity="0.38"/>
+    </linearGradient>
+    <linearGradient id="handleAccent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00D9FF"/>
+      <stop offset="0.52" stop-color="#777777"/>
+      <stop offset="1" stop-color="#E33BFF"/>
+    </linearGradient>
+  </defs>
+  <g id="groove-topleft"><path d="M6 0H8V8H0V6Q0 0 6 0Z" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-top"><rect x="8" y="0" width="8" height="8" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-topright"><path d="M16 0H18Q24 0 24 6V8H16Z" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-left"><rect x="0" y="8" width="8" height="8" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-center"><rect x="8" y="8" width="8" height="8" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-right"><rect x="16" y="8" width="8" height="8" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-bottomleft"><path d="M0 16H8V24H6Q0 24 0 18Z" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-bottom"><rect x="8" y="16" width="8" height="8" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-bottomright"><path d="M16 16H24V18Q24 24 18 24H16Z" fill="#171717" stroke="#414141" stroke-width="0.7"/></g>
+  <g id="groove-highlight-topleft"><path d="M6 0H8V8H0V6Q0 0 6 0Z" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-top"><rect x="8" y="0" width="8" height="8" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-topright"><path d="M16 0H18Q24 0 24 6V8H16Z" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-left"><rect x="0" y="8" width="8" height="8" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-center"><rect x="8" y="8" width="8" height="8" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-right"><rect x="16" y="8" width="8" height="8" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-bottomleft"><path d="M0 16H8V24H6Q0 24 0 18Z" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-bottom"><rect x="8" y="16" width="8" height="8" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <g id="groove-highlight-bottomright"><path d="M16 16H24V18Q24 24 18 24H16Z" fill="url(#activeGroove)" stroke="#646464" stroke-width="0.7"/></g>
+  <path id="horizontal-slider-line" d="M2 12H22" stroke="#626262" stroke-width="2" stroke-linecap="round"/>
+  <path id="vertical-slider-line" d="M12 2V22" stroke="#626262" stroke-width="2" stroke-linecap="round"/>
+  <circle id="horizontal-slider-shadow" cx="12" cy="12" r="7.8" fill="#000000" fill-opacity="0.28"/>
+  <circle id="vertical-slider-shadow" cx="12" cy="12" r="7.8" fill="#000000" fill-opacity="0.28"/>
+  <circle id="horizontal-slider-handle" cx="12" cy="12" r="6.6" fill="#E7E7E7" stroke="#757575" stroke-width="1"/>
+  <circle id="vertical-slider-handle" cx="12" cy="12" r="6.6" fill="#E7E7E7" stroke="#757575" stroke-width="1"/>
+  <circle id="horizontal-slider-hover" cx="12" cy="12" r="8.8" fill="none" stroke="#B8B8B8" stroke-width="1.1"/>
+  <circle id="vertical-slider-hover" cx="12" cy="12" r="8.8" fill="none" stroke="#B8B8B8" stroke-width="1.1"/>
+  <circle id="horizontal-slider-focus" cx="12" cy="12" r="9.2" fill="none" stroke="url(#handleAccent)" stroke-width="1.4"/>
+  <circle id="vertical-slider-focus" cx="12" cy="12" r="9.2" fill="none" stroke="url(#handleAccent)" stroke-width="1.4"/>
+  <circle id="hint-handle-size" cx="12" cy="12" r="11" fill="none"/>
+  <rect id="hint-stretch-borders" x="0" y="0" width="1" height="1" fill="none"/>
+</svg>

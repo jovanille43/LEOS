@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs><linearGradient id="radioAccent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00D9FF"/><stop offset="0.52" stop-color="#777777"/><stop offset="1" stop-color="#E33BFF"/></linearGradient></defs>
+  <circle id="shadow" cx="24" cy="24" r="10" fill="#000000" fill-opacity="0.26"/>
+  <circle id="normal" cx="24" cy="24" r="8" fill="#171717" stroke="#777777" stroke-width="1.4"/>
+  <circle id="checked" cx="24" cy="24" r="8" fill="#171717" stroke="#D8D8D8" stroke-width="1.4"/>
+  <circle id="hover" cx="24" cy="24" r="9.2" fill="none" stroke="#B0B0B0" stroke-width="1.2"/>
+  <circle id="focus" cx="24" cy="24" r="10.4" fill="none" stroke="url(#radioAccent)" stroke-width="1.5"/>
+  <circle id="symbol" cx="24" cy="24" r="4.2" fill="url(#radioAccent)"/>
+  <rect id="hint-size" x="12" y="12" width="24" height="24" fill="none"/>
+</svg>

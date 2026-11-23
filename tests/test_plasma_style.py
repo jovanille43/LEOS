@@ -16,7 +16,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         plugin = metadata["KPlugin"]
         self.assertEqual(plugin["Id"], "leos")
         self.assertEqual(plugin["Name"], "LEOS")
-        self.assertEqual(plugin["Version"], "0.2.0")
+        self.assertEqual(plugin["Version"], "0.3.0")
         self.assertTrue(plugin["License"])
 
     def test_style_has_plasmarc_effect_settings(self):
@@ -114,6 +114,32 @@ class PlasmaStylePackageTests(unittest.TestCase):
                 ids = {node.attrib.get("id") for node in root.iter()}
                 self.assertTrue(required <= ids, required - ids)
 
+    def test_slider_has_groove_frames_and_interaction_handles(self):
+        root = ET.parse(THEME / "widgets" / "slider.svg").getroot()
+        self.assertEqual(root.tag, f"{SVG_NS}svg")
+        ids = {node.attrib.get("id") for node in root.iter() if node.attrib.get("id")}
+        positions = (
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        )
+        for prefix in ("groove", "groove-highlight"):
+            self.assertTrue({f"{prefix}-{position}" for position in positions} <= ids)
+        for orientation in ("horizontal", "vertical"):
+            for state in ("line", "handle", "focus", "hover", "shadow"):
+                self.assertIn(f"{orientation}-slider-{state}", ids)
+        self.assertIn("hint-handle-size", ids)
+        self.assertIn("hint-stretch-borders", ids)
+
+    def test_radio_and_checkmark_assets_have_native_kde_ids(self):
+        radio = ET.parse(THEME / "widgets" / "radiobutton.svg").getroot()
+        radio_ids = {node.attrib.get("id") for node in radio.iter() if node.attrib.get("id")}
+        self.assertTrue({
+            "normal", "checked", "hover", "focus", "shadow", "symbol", "hint-size"
+        } <= radio_ids)
+        checkmarks = ET.parse(THEME / "widgets" / "checkmarks.svg").getroot()
+        checkmark_ids = {node.attrib.get("id") for node in checkmarks.iter() if node.attrib.get("id")}
+        self.assertTrue({"radiobutton", "checkbox"} <= checkmark_ids)
+
     def test_tabbar_has_active_frames_for_all_four_orientations(self):
         root = ET.parse(THEME / "widgets" / "tabbar.svg").getroot()
         self.assertEqual(root.tag, f"{SVG_NS}svg")
@@ -198,6 +224,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
         for relative in (
             "widgets/background.svg", "widgets/panel-background.svg",
             "widgets/tasks.svg", "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
+            "widgets/slider.svg", "widgets/radiobutton.svg", "widgets/checkmarks.svg",
             "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "dialogs/background.svg",
         ):
@@ -211,6 +238,7 @@ class PlasmaStylePackageTests(unittest.TestCase):
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
             "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
+            "widgets/slider.svg", "widgets/radiobutton.svg", "widgets/checkmarks.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             self.assertIn("#00D9FF", source, relative)
@@ -218,10 +246,14 @@ class PlasmaStylePackageTests(unittest.TestCase):
         self.assertIn("#E33BFF", (THEME / "widgets" / "tasks.svg").read_text(encoding="utf-8"))
         self.assertIn("#E33BFF", (THEME / "widgets" / "plasmoidheading.svg").read_text(encoding="utf-8"))
         self.assertIn("#E33BFF", (THEME / "widgets" / "tabbar.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "slider.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "radiobutton.svg").read_text(encoding="utf-8"))
+        self.assertIn("#E33BFF", (THEME / "widgets" / "checkmarks.svg").read_text(encoding="utf-8"))
         for relative in (
             "widgets/arrows.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
             "widgets/tooltip.svg", "widgets/viewitem.svg", "widgets/tasks.svg",
             "widgets/plasmoidheading.svg", "widgets/tabbar.svg",
+            "widgets/slider.svg", "widgets/radiobutton.svg", "widgets/checkmarks.svg",
         ):
             source = (THEME / relative).read_text(encoding="utf-8")
             for stale in ("#67DFF8", "#A28CFF", "#E66BD5"):

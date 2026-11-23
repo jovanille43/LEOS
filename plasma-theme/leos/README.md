@@ -40,3 +40,10 @@ The style version is incremented whenever packaged SVG resources change so
 Plasma can refresh its cached assets. A dedicated `widgets/tabbar.svg` now
 provides active-tab frames for north, east, south and west orientations, with
 the active edge carrying the same subtle, user-recolored A/B accent.
+
+Native Plasma controls are now covered by `widgets/slider.svg`,
+`widgets/radiobutton.svg` and `widgets/checkmarks.svg`. Sliders use a
+neutral graphite rail, a low-intensity A/B active segment and a metallic
+handle with visible hover/focus rings. Radio and check marks remain legible
+without introducing a fixed accent color. The Plasma style version is raised
+to invalidate cached theme resources.
