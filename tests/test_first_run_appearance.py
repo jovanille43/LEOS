@@ -240,6 +240,8 @@ class DesktopAppearanceSetupTests(unittest.TestCase):
         self.assertEqual(self.plasma_resource_calls, [("#FF8800", "#0055CC")])
         self.assertEqual(self.scripts, [("plasma-script", 30.0)])
         self.assertIn("sauvegarde", message.lower())
+        self.assertIn("graphite et argent", message.lower())
+        self.assertIn("lion officiel", message.lower())
 
     def test_custom_pair_must_be_explicitly_configured_before_any_change(self):
         self.settings.set("theme_colors_configured", False)
