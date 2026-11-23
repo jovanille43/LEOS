@@ -49,7 +49,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertEqual(manifest["KPackageStructure"], "Plasma/LookAndFeel")
         self.assertEqual(manifest["KPlugin"]["Id"], "org.leos.desktop")
         self.assertIn("desktop-logo.jpeg", qml)
-        self.assertIn("#090B10", qml)
+        self.assertIn('color: "#090909"', qml)
         self.assertNotIn("#00D9FF", qml)
         self.assertNotIn("#E33BFF", qml)
 

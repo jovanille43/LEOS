@@ -85,7 +85,8 @@ class SettingsModuleCommandTests(unittest.TestCase):
         qml = (root / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('source: "../../branding/wallpapers/desktop-leos.svg"', qml)
         self.assertIn('source: "../../branding/wallpapers/gaming-leos.svg"', qml)
-        self.assertEqual(qml.count("fillMode: Image.PreserveAspectFit"), 2)
+        # Two wallpaper previews plus the newly branded header emblem.
+        self.assertEqual(qml.count("fillMode: Image.PreserveAspectFit"), 3)
         wallpaper_start = qml.index("FONDS D")
         wallpaper_end = qml.index("THÈME KDE PLASMA", wallpaper_start)
         self.assertNotIn("Image.PreserveAspectCrop", qml[wallpaper_start:wallpaper_end])

@@ -732,7 +732,7 @@ ApplicationWindow {
 
                 Button {
                     id: quickPanelButton
-                    text: "RÉGLAGES RAPIDES"
+                    text: "PANORAMA RAPIDE"
                     onClicked: {
                         quickPanel.visible = !quickPanel.visible
                         quickPanelFocusIndex = 0
