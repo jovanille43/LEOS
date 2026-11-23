@@ -21,6 +21,19 @@ class DesktopSurfacePolishTests(unittest.TestCase):
         self.assertIn("font.pixelSize: 13", self.menu)
         self.assertIn("window.themeColors.surface", self.menu)
 
+    def test_application_menu_header_actions_share_a_consistent_a_b_surface_language(self):
+        for token in (
+            "applicationCountLabel",
+            "id: modeButton",
+            "id: controlCenterButton",
+            "id: notificationsButton",
+            "GradientStop { position: 0.0; color: window.accentA }",
+            "search.activeFocus ? window.accentA",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, self.menu)
+
+
     def test_notifications_share_the_live_a_b_identity_and_improved_readability(self):
         self.assertIn("color: window.accentA", self.notifications)
         self.assertIn("color: window.accentB", self.notifications)

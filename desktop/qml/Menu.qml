@@ -81,30 +81,133 @@ ApplicationWindow {
                 }
             }
             Item { Layout.fillWidth: true }
-            Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
+            Rectangle {
+                radius: 10
+                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.07)
+                border.color: window.themeColors.border
+                implicitWidth: applicationCountLabel.implicitWidth + 22
+                implicitHeight: 34
+                Label {
+                    id: applicationCountLabel
+                    anchors.centerIn: parent
+                    text: applicationCatalog.applicationCount() + " APPLICATIONS"
+                    color: window.muted
+                    font.pixelSize: 9
+                    font.weight: Font.DemiBold
+                    font.letterSpacing: 0.8
+                }
+            }
             Button {
+                id: modeButton
                 text: "MODES"
+                implicitHeight: 36
                 onClicked: {
                     window.launchApplication("leos-mode-selector.desktop", "le sélecteur de modes")
                 }
+                background: Rectangle {
+                    radius: 10
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, modeButton.down ? 0.18 : 0.12) }
+                        GradientStop { position: 1.0; color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, modeButton.down ? 0.12 : 0.07) }
+                    }
+                    border.color: modeButton.hovered ? window.accentA : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: modeButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 9
+                    font.weight: Font.Bold
+                    letterSpacing: 0.8
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
+                    rightPadding: 10
+                }
             }
             Button {
+                id: controlCenterButton
                 text: "CENTRE DE CONTRÔLE"
+                implicitHeight: 36
                 onClicked: {
                     window.launchApplication("leos-control-center.desktop", "le Centre de contrôle")
                 }
-            }
-            Button {
-                text: applicationCatalog.unreadNotificationCount > 0
-                      ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
-                      : "NOTIFICATIONS"
-                onClicked: {
-                    window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
+                background: Rectangle {
+                    radius: 10
+                    color: controlCenterButton.hovered ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.color: controlCenterButton.hovered ? window.accentA : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: controlCenterButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 9
+                    font.weight: Font.DemiBold
+                    letterSpacing: 0.4
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
+                    rightPadding: 10
                 }
             }
             Button {
+                id: notificationsButton
+                text: applicationCatalog.unreadNotificationCount > 0
+                      ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
+                      : "NOTIFICATIONS"
+                implicitHeight: 36
+                onClicked: {
+                    window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
+                }
+                background: Rectangle {
+                    radius: 10
+                    color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, notificationsButton.hovered ? 0.13 : 0.07)
+                    border.color: notificationsButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: notificationsButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 9
+                    font.weight: Font.DemiBold
+                    letterSpacing: 0.4
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
+                    rightPadding: 10
+                }
+            }
+            Button {
+                id: refreshButton
                 text: "ACTUALISER"
+                implicitHeight: 36
                 onClicked: applicationCatalog.refresh()
+                background: Rectangle {
+                    radius: 10
+                    color: refreshButton.hovered ? window.themeColors.surface_elevated : "transparent"
+                    border.color: refreshButton.hovered ? window.themeColors.muted_text : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: refreshButton.text
+                    color: window.muted
+                    font.pixelSize: 9
+                    font.weight: Font.DemiBold
+                    letterSpacing: 0.4
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
+                    rightPadding: 10
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 2
+            radius: 1
+            opacity: 0.70
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: window.accentA }
+                GradientStop { position: 0.50; color: window.themeColors.border }
+                GradientStop { position: 1.0; color: window.accentB }
             }
         }
 
@@ -120,7 +223,8 @@ ApplicationWindow {
                 radius: 14
                 color: window.themeColors.surface_elevated
                 border.width: search.activeFocus ? 2 : 1
-                border.color: search.activeFocus ? window.focusColor : window.themeColors.border
+                border.color: search.activeFocus ? window.accentA : window.themeColors.border
+                Behavior on border.color { ColorAnimation { duration: 140 } }
             }
         }
 
