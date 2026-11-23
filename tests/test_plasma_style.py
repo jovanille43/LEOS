@@ -151,7 +151,9 @@ class PlasmaStylePackageTests(unittest.TestCase):
                     )
                     for child in element.iter()
                 ), f"{direction} {part} is missing its in-frame accent")
-        self.assertFalse(any("active-tab-accent" in item for item in ids))
+        self.assertFalse(any(
+            item is not None and "active-tab-accent" in item for item in ids
+        ))
 
     def test_plasmoid_heading_has_header_and_footer_frames(self):
         root = ET.parse(THEME / "widgets" / "plasmoidheading.svg").getroot()
