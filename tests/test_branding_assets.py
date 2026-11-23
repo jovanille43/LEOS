@@ -1,6 +1,7 @@
 """Tests for recoloring official LEOS branding without changing source assets."""
 
 import os
+import re
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -145,6 +146,9 @@ class BrandingAssetTests(unittest.TestCase):
         # matrix before _transform_svg links the generated transparent PNG.
         self.assertNotIn("#00D9FF", svg.upper())
         self.assertNotIn("#E33BFF", svg.upper())
+        for colour in set(re.findall(r"#[0-9A-Fa-f]{6}", svg)):
+            self.assertEqual(colour[1:3].upper(), colour[3:5].upper(), colour)
+            self.assertEqual(colour[3:5].upper(), colour[5:7].upper(), colour)
         color_a, color_b = "#F0A030", "#7C68E8"
         matrix = build_color_matrix(color_a, color_b)
         for actual, expected in (
