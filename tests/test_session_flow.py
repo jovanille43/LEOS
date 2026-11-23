@@ -32,6 +32,32 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("asynchronous: true", qml)
         self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
 
+    def test_gaming_handoff_keeps_a_branded_cover_until_the_gaming_ui_is_ready(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        launcher = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/main.py").read_text(encoding="utf-8")
+        self.assertIn('if (mode === "gaming")', selector)
+        self.assertIn("introHandoffScreen.visible = true", selector)
+        self.assertIn("modeLaunchFailed", selector)
+        self.assertIn("LEOS_HANDOFF_READY_FILE", launcher)
+        self.assertIn("handoff_timer", launcher)
+        self.assertIn("modeLaunchFailed.emit", launcher)
+        self.assertIn("LEOS_HANDOFF_READY_FILE", gaming)
+        self.assertIn('b"ready\\n"', gaming)
+
+    def test_selector_mode_cards_use_large_emblem_artwork(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertEqual(selector.count("Layout.preferredWidth: 300"), 2)
+        self.assertEqual(selector.count("Layout.preferredHeight: 250"), 2)
+
+    def test_gaming_header_and_quick_panorama_have_room_for_content(self):
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("Layout.preferredWidth: 184", gaming)
+        self.assertIn('text: "PANORAMA RAPIDE', gaming)
+        self.assertIn("Flickable {", gaming)
+        self.assertIn("id: quickPanelContent", gaming)
+        self.assertIn("ScrollBar.horizontal", gaming)
+
     def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         controller = (ROOT / "launcher/controller.py").read_text(encoding="utf-8")
