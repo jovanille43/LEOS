@@ -34,7 +34,7 @@ class DynamicThemeTests(unittest.TestCase):
         source_accents = {SOURCE_COLOR_A, SOURCE_COLOR_B}
         for filename in ("desktop-leos.svg", "gaming-leos.svg"):
             wallpaper = (root / "branding" / "wallpapers" / filename).read_text(encoding="utf-8")
-            colors = {color.upper() for color in re.findall(r"#[0-9A-Fa-f]{6}\\b", wallpaper)}
+            colors = {color.upper() for color in re.findall(r"#[0-9A-Fa-f]{6}(?=[^0-9A-Fa-f]|$)", wallpaper)}
             for color in colors - source_accents:
                 self.assertEqual(
                     color[1:3], color[3:5],
