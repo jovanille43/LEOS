@@ -396,6 +396,18 @@ ApplicationWindow {
                         border.color: desktopCard.activeFocus ? window.colorA
                                       : desktopCard.hovered ? window.colorAText
                                       : window.themeColors.border
+                        Behavior on color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.width {
+                            enabled: modeSelectorController.animationsEnabled
+                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        }
 
                         Rectangle {
                             anchors.fill: parent
@@ -403,6 +415,10 @@ ApplicationWindow {
                             radius: parent.radius - 1
                             color: window.colorA
                             opacity: desktopCard.activeFocus ? 0.10 : (desktopCard.hovered ? 0.055 : 0)
+                            Behavior on opacity {
+                                enabled: modeSelectorController.animationsEnabled
+                                NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                            }
                         }
                         Rectangle {
                             anchors { left: parent.left; right: parent.right; top: parent.top }
@@ -514,6 +530,18 @@ ApplicationWindow {
                         border.color: gamingCard.activeFocus ? window.colorB
                                       : gamingCard.hovered ? window.colorBText
                                       : window.themeColors.border
+                        Behavior on color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.width {
+                            enabled: modeSelectorController.animationsEnabled
+                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        }
 
                         Rectangle {
                             anchors.fill: parent
@@ -521,6 +549,10 @@ ApplicationWindow {
                             radius: parent.radius - 1
                             color: window.colorB
                             opacity: gamingCard.activeFocus ? 0.10 : (gamingCard.hovered ? 0.055 : 0)
+                            Behavior on opacity {
+                                enabled: modeSelectorController.animationsEnabled
+                                NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                            }
                         }
                         Rectangle {
                             anchors { left: parent.left; right: parent.right; top: parent.top }
