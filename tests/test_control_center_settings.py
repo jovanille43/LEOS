@@ -139,5 +139,25 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("time.monotonic()", monitor)
 
 
+    def test_navigation_has_persistent_a_b_selection_and_visible_keyboard_focus(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("activeFocusOnTab: true", qml)
+        self.assertIn("settingsNavigationButton.hovered", qml)
+        self.assertIn("settingsNavigationButton.activeFocus", qml)
+        self.assertIn("visible: window.selectedPage === modelData.page", qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
+
+    def test_overview_has_responsive_a_b_usage_meters(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("columns: pages.width < 680 ? 2 : 3", qml)
+        self.assertIn("Math.min(100, systemMonitor.cpuUsage)", qml)
+        self.assertIn("Math.min(100, systemMonitor.memoryUsage)", qml)
+        self.assertIn("Math.min(100, systemMonitor.diskUsage)", qml)
+        self.assertGreaterEqual(qml.count("color: window.accentA"), 3)
+        self.assertIn("Qt.color(controlCenter.themeColorA)", qml)
+        self.assertIn("Qt.color(controlCenter.themeColorB)", qml)
+
+
 if __name__ == "__main__":
     unittest.main()
