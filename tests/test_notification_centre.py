@@ -59,6 +59,12 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("except (OSError, ValueError, TypeError):", silent)
         self.assertIn("Impossible d'enregistrer le réglage des notifications.", silent)
 
+    def test_notification_cards_use_the_configured_primary_and_secondary_accents(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn("border.color: isRead ? window.themeColors.border : window.accentA", qml)
+        self.assertIn('level === "success" ? window.accentA', qml)
+        self.assertIn(' : window.accentB', qml)
+
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)
