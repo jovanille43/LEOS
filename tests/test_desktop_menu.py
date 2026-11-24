@@ -350,6 +350,17 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("refreshButton.activeFocus", qml)
         self.assertIn("window.accentB : window.themeColors.border", qml)
 
+    def test_desktop_menu_header_and_catalog_grid_adapt_to_compact_windows(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("anchors.margins: window.width < 900 ? 16 : 28", qml)
+        self.assertIn("visible: window.width >= 980", qml)
+        self.assertIn('text: window.width < 900 ? "CONTRÔLE" : "CENTRE DE CONTRÔLE"', qml)
+        self.assertIn('window.width < 900 ? "NOTIFS"', qml)
+        self.assertIn('text: window.width < 900 ? "↻" : "ACTUALISER"', qml)
+        self.assertIn("Layout.preferredWidth: window.width < 900 ? 160 : 205", qml)
+        self.assertIn("cellWidth: window.width < 900 ? 164 : 188", qml)
+        self.assertIn('Accessible.name: "Actualiser le catalogue d\'applications"', qml)
+
     def test_application_card_hover_uses_declared_a_b_theme_tokens(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("appMouse.containsMouse ? window.accentB", qml)
