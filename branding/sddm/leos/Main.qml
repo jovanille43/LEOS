@@ -12,9 +12,9 @@ Rectangle {
     property var clockNow: new Date()
 
     gradient: Gradient {
-        GradientStop { position: 0.0; color: "#090B10" }
-        GradientStop { position: 0.52; color: "#10151D" }
-        GradientStop { position: 1.0; color: "#080A0E" }
+        GradientStop { position: 0.0; color: "#090909" }
+        GradientStop { position: 0.48; color: "#141414" }
+        GradientStop { position: 1.0; color: "#080808" }
     }
 
     function attemptLogin() {
@@ -90,8 +90,8 @@ Rectangle {
         radius: width / 2
         x: root.width * 0.58
         y: -height * 0.56
-        color: "#222A34"
-        opacity: 0.18
+        color: "#00D9FF"
+        opacity: 0.045
     }
 
     Rectangle {
@@ -100,8 +100,8 @@ Rectangle {
         radius: width / 2
         x: -width * 0.42
         y: root.height * 0.55
-        color: "#424A55"
-        opacity: 0.12
+        color: "#E33BFF"
+        opacity: 0.035
     }
 
     Rectangle {
@@ -112,10 +112,21 @@ Rectangle {
         anchors.margins: 24
         height: 62
         radius: 16
-        color: "#111720"
-        border.color: "#303A47"
+        clip: true
+        color: "#141414"
+        border.color: "#343434"
         border.width: 1
         opacity: 0.97
+
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; top: parent.top }
+            height: 2
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#00D9FF" }
+                GradientStop { position: 1; color: "#E33BFF" }
+            }
+            opacity: 0.62
+        }
 
         RowLayout {
             anchors.fill: parent
@@ -228,14 +239,49 @@ Rectangle {
         }
     }
 
-    ColumnLayout {
+    Rectangle {
+        id: loginCard
+        width: Math.min(472, root.width - 32)
+        height: loginContent.implicitHeight + 56
         anchors.centerIn: parent
-        width: Math.min(420, root.width - 48)
-        spacing: 16
+        anchors.verticalCenterOffset: 30
+        radius: 22
+        color: "#131313"
+        border.color: "#343434"
+        border.width: 1
+        opacity: 0.985
+        clip: true
+
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; top: parent.top }
+            height: 2
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#00D9FF" }
+                GradientStop { position: 1; color: "#E33BFF" }
+            }
+            opacity: 0.78
+        }
+        Rectangle {
+            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+            width: 3
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#00D9FF" }
+                GradientStop { position: 1; color: "#E33BFF" }
+            }
+            opacity: 0.28
+        }
+    }
+
+    ColumnLayout {
+        id: loginContent
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: 30
+        width: Math.min(420, loginCard.width - 56)
+        spacing: 13
 
         Image {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: Math.min(206, root.height * 0.20)
+            Layout.preferredWidth: Math.min(178, root.height * 0.17)
             Layout.preferredHeight: Layout.preferredWidth
             source: "file:///usr/share/leos/branding/desktop-logo.jpeg"
             fillMode: Image.PreserveAspectFit
@@ -248,8 +294,8 @@ Rectangle {
             text: "LEOS"
             color: "#F1F3F6"
             font.family: "Noto Sans"
-            font.pixelSize: 34
-            font.weight: Font.DemiBold
+            font.pixelSize: 32
+            font.weight: Font.Bold
             font.letterSpacing: 7
         }
 
@@ -261,10 +307,30 @@ Rectangle {
             font.pixelSize: 15
         }
 
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            text: "ACCÈS À VOTRE ENVIRONNEMENT"
+            color: "#00D9FF"
+            font.family: "Noto Sans"
+            font.pixelSize: 10
+            font.weight: Font.DemiBold
+            font.letterSpacing: 1.7
+        }
+
+        Label {
+            Layout.fillWidth: true
+            text: "IDENTIFIANT"
+            color: "#929292"
+            font.family: "Noto Sans"
+            font.pixelSize: 10
+            font.weight: Font.DemiBold
+            font.letterSpacing: 1.1
+        }
+
         TextField {
             id: userField
             Layout.fillWidth: true
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 48
             text: userModel.lastUser
             placeholderText: "Nom d’utilisateur"
             selectByMouse: true
@@ -276,16 +342,26 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 color: "#171D26"
-                border.color: userField.activeFocus ? "#C6CDD6" : "#343D49"
+                border.color: userField.activeFocus ? "#00D9FF" : "#373737"
                 border.width: userField.activeFocus ? 2 : 1
             }
             onAccepted: passwordField.forceActiveFocus()
         }
 
+        Label {
+            Layout.fillWidth: true
+            text: "MOT DE PASSE"
+            color: "#929292"
+            font.family: "Noto Sans"
+            font.pixelSize: 10
+            font.weight: Font.DemiBold
+            font.letterSpacing: 1.1
+        }
+
         TextField {
             id: passwordField
             Layout.fillWidth: true
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 48
             placeholderText: "Mot de passe"
             echoMode: TextInput.Password
             selectByMouse: true
@@ -297,7 +373,7 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 color: "#171D26"
-                border.color: passwordField.activeFocus ? "#C6CDD6" : "#343D49"
+                border.color: passwordField.activeFocus ? "#E33BFF" : "#373737"
                 border.width: passwordField.activeFocus ? 2 : 1
             }
             onAccepted: root.attemptLogin()
@@ -312,12 +388,27 @@ Rectangle {
             currentIndex: sessionModel.lastIndex
             font.family: "Noto Sans"
             font.pixelSize: 14
+            contentItem: Text {
+                leftPadding: 16
+                rightPadding: 30
+                text: sessionSelector.displayText
+                color: "#E4E7EB"
+                font: sessionSelector.font
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+            background: Rectangle {
+                radius: 11
+                color: "#171717"
+                border.width: sessionSelector.activeFocus ? 2 : 1
+                border.color: sessionSelector.activeFocus ? "#00D9FF" : "#373737"
+            }
         }
 
         Button {
             id: loginButton
             Layout.fillWidth: true
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 48
             text: root.authenticating ? "Connexion…" : "Se connecter"
             enabled: !root.authenticating
             font.family: "Noto Sans"
@@ -326,15 +417,17 @@ Rectangle {
             onClicked: root.attemptLogin()
             background: Rectangle {
                 radius: 12
-                color: loginButton.enabled
-                    ? (loginButton.down ? "#B8C0CA" : "#D8DDE3")
-                    : "#777F89"
-                border.color: "#F3F5F7"
+                gradient: Gradient {
+                    GradientStop { position: 0; color: loginButton.down ? "#00B7D8" : "#00D9FF" }
+                    GradientStop { position: 1; color: loginButton.down ? "#C62DDC" : "#E33BFF" }
+                }
+                border.color: "#F1F1F1"
                 border.width: 1
+                opacity: loginButton.enabled ? 1 : 0.42
             }
             contentItem: Text {
                 text: loginButton.text
-                color: "#11161D"
+                color: "#101010"
                 font: loginButton.font
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -345,7 +438,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.minimumHeight: 24
             text: root.statusMessage
-            color: "#D0D5DC"
+            color: root.authenticating ? "#00D9FF" : "#E33BFF"
             font.family: "Noto Sans"
             font.pixelSize: 12
             horizontalAlignment: Text.AlignHCenter
