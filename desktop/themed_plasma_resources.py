@@ -293,7 +293,7 @@ def install_themed_plasma_resources(
     icon_theme_root: Path = ICON_SOURCE,
     aurorae_theme_root: Path = AURORAE_SOURCE,
 ) -> dict[str, str]:
-    """Install matched user-scoped Plasma, icon, and window-decoration variants."""
+    """Install matched user-scoped dark/light Plasma, icon and decoration variants."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
     if appearance not in {"dark", "light"}:
