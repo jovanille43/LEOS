@@ -205,11 +205,46 @@ ApplicationWindow {
                         }
                     }
                 }
-                Label {
+                ColumnLayout {
                     anchors.centerIn: parent
+                    width: Math.max(220, parent.width - 56)
                     visible: list.count === 0
-                    text: "Aucune notification LEOS pour le moment."
-                    color: window.muted
+                    spacing: 10
+                    Accessible.role: Accessible.Grouping
+                    Accessible.name: "Aucune notification LEOS"
+
+                    Rectangle {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredWidth: 58
+                        Layout.preferredHeight: 58
+                        radius: 29
+                        color: window.themeColors.surface_elevated
+                        border.color: window.themeColors.border
+                        Label {
+                            anchors.centerIn: parent
+                            text: "✓"
+                            color: window.cyan
+                            font.pixelSize: 25
+                            font.weight: Font.DemiBold
+                        }
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: "TOUT EST CALME"
+                        color: window.themeColors.text
+                        font.pixelSize: 13
+                        font.weight: Font.Bold
+                        font.letterSpacing: 1.5
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Aucune notification LEOS pour le moment."
+                        color: window.muted
+                        font.pixelSize: 11
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
                 }
             }
         }
