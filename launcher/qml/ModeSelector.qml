@@ -1230,7 +1230,7 @@ ApplicationWindow {
                 id: applyAppearanceButton
                 text: modeSelectorController.appearanceSetupRunning
                       ? "APPLICATION EN COURS…"
-                      : "ACTIVER LE PROFIL LEOS · RECOMMANDÉ"
+                      : "ACTIVER L'APPARENCE LEOS · RECOMMANDÉ"
                 Accessible.description: "Appliquer l'apparence graphite LEOS, le schéma A/B, le style Plasma, les icônes et le dock après sauvegarde du bureau actuel."
                 enabled: !modeSelectorController.appearanceSetupRunning && window.draftColorAChosen && window.draftColorBChosen
                 Layout.fillWidth: true
