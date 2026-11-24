@@ -178,6 +178,18 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("enabled: controlCenter.animationsEnabled", qml)
         self.assertIn("Easing.OutCubic", qml)
 
+    def test_overview_surfaces_system_health_and_uses_semantic_status_colors(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        overview = qml[qml.index('text: "VUE D\'ENSEMBLE"'):qml.index('text: "APPARENCE"')]
+        self.assertIn("SANTÉ DU SYSTÈME", overview)
+        self.assertIn("controlCenter.diagnosticsSnapshot.summary", overview)
+        self.assertIn("window.selectedPage = 7", overview)
+        self.assertIn("semanticCritical", qml)
+        self.assertIn("semanticWarning", qml)
+        self.assertIn("semanticHealthy", qml)
+        self.assertNotIn('severity === "Critique" ? window.accentB', qml)
+        self.assertNotIn('severity === "Attention" ? window.accentA', qml)
+
     def test_overview_has_responsive_a_b_usage_meters(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("columns: pages.width < 680 ? 2 : 3", qml)
