@@ -35,6 +35,21 @@ class LeosVisualSystemTests(unittest.TestCase):
         self.assertIn('property: "x"', atmosphere)
         self.assertIn('property: "y"', atmosphere)
 
+    def test_mode_selector_reports_first_run_status_and_remembers_mode_choice(self):
+        selector = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        for status in (
+            "IDENTITÉ A/B",
+            "GUIDE DE BIENVENUE",
+            "PROFIL DESKTOP",
+            "IGNORÉE À TA DEMANDE",
+            "firstRunCompletedCount",
+        ):
+            self.assertIn(status, selector)
+        mode_request = selector.split("function requestModeWithIntro(mode)", 1)[1].split(
+            "function finishModeTransition()", 1
+        )[0]
+        self.assertIn("modeSelectorController.completeOnboarding()", mode_request)
+
     def test_operational_screens_use_the_same_subtle_ab_highlight(self):
         screens = [
             "control_center/qml/Main.qml",
