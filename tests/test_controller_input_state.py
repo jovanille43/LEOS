@@ -101,7 +101,7 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertAlmostEqual(normalize_axis_value(32767, -32768, 32767), 1.0)
         self.assertAlmostEqual(normalize_axis_value(0, -32768, 32767), 0.0, places=4)
         self.assertAlmostEqual(normalize_axis_value(-16000, -32768, 32767, -16000), 0.0)
-        self.assertAlmostEqual(normalize_axis_value(100, -32768, 32767, -16000), 0.492, places=2)
+        self.assertAlmostEqual(normalize_axis_value(8000, -32768, 32767, -16000), 0.492, places=2)
         self.assertEqual(normalize_axis_value(10, 10, 10), 0.0)
         self.assertEqual(normalize_axis_value(0, -10, 10, 50), 0.0)
 
