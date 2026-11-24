@@ -20,8 +20,8 @@ ApplicationWindow {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 26
-        spacing: 16
+        anchors.margins: window.width < 640 ? 16 : 26
+        spacing: window.width < 640 ? 12 : 16
 
         RowLayout {
             Layout.fillWidth: true
@@ -48,10 +48,71 @@ ApplicationWindow {
 
         RowLayout {
             Layout.fillWidth: true
-            Button { text: "TOUT MARQUER COMME LU"; onClicked: notificationModel.markAllRead() }
-            Button { text: "TOUT EFFACER"; onClicked: confirmClear.open() }
+            spacing: 8
+            Button {
+                id: markAllReadButton
+                text: "TOUT MARQUER COMME LU"
+                onClicked: notificationModel.markAllRead()
+                background: Rectangle {
+                    radius: 9
+                    color: markAllReadButton.down || markAllReadButton.hovered || markAllReadButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: markAllReadButton.activeFocus ? 2 : 1
+                    border.color: markAllReadButton.activeFocus ? window.accentA
+                                  : markAllReadButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: markAllReadButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Button {
+                id: clearAllButton
+                text: "TOUT EFFACER"
+                onClicked: confirmClear.open()
+                background: Rectangle {
+                    radius: 9
+                    color: clearAllButton.down || clearAllButton.hovered || clearAllButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: clearAllButton.activeFocus ? 2 : 1
+                    border.color: clearAllButton.activeFocus ? window.accentB
+                                  : clearAllButton.hovered ? window.accentA : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: clearAllButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
             Item { Layout.fillWidth: true }
-            Button { text: "ACTUALISER"; onClicked: notificationModel.refresh() }
+            Button {
+                id: refreshNotificationsButton
+                text: "ACTUALISER"
+                onClicked: notificationModel.refresh()
+                background: Rectangle {
+                    radius: 9
+                    color: refreshNotificationsButton.down || refreshNotificationsButton.hovered || refreshNotificationsButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: refreshNotificationsButton.activeFocus ? 2 : 1
+                    border.color: refreshNotificationsButton.activeFocus ? window.accentA
+                                  : refreshNotificationsButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: refreshNotificationsButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
         }
 
         Rectangle {
@@ -102,14 +163,44 @@ ApplicationWindow {
                             ToolButton {
                                 id: markNotificationReadButton
                                 text: isRead ? "✓" : "○"
+                                Accessible.name: "Marquer cette notification comme lue"
+                                Accessible.description: "Conserver l'événement dans l'historique et le signaler comme lu."
                                 onClicked: notificationModel.markRead(notificationId)
-                                contentItem: Label { text: markNotificationReadButton.text; color: window.cyan; font.pixelSize: 17 }
+                                background: Rectangle {
+                                    radius: 7
+                                    color: markNotificationReadButton.down || markNotificationReadButton.hovered || markNotificationReadButton.activeFocus
+                                           ? window.themeColors.surface_elevated : "transparent"
+                                    border.width: markNotificationReadButton.activeFocus ? 1 : 0
+                                    border.color: window.accentA
+                                }
+                                contentItem: Label {
+                                    text: markNotificationReadButton.text
+                                    color: window.accentA
+                                    font.pixelSize: 17
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                             }
                             ToolButton {
                                 id: dismissNotificationButton
                                 text: "×"
+                                Accessible.name: "Supprimer cette notification"
+                                Accessible.description: "Retirer cet événement de l'historique local LEOS."
                                 onClicked: notificationModel.dismiss(notificationId)
-                                contentItem: Label { text: dismissNotificationButton.text; color: window.magenta; font.pixelSize: 18 }
+                                background: Rectangle {
+                                    radius: 7
+                                    color: dismissNotificationButton.down || dismissNotificationButton.hovered || dismissNotificationButton.activeFocus
+                                           ? window.themeColors.surface_elevated : "transparent"
+                                    border.width: dismissNotificationButton.activeFocus ? 1 : 0
+                                    border.color: window.accentB
+                                }
+                                contentItem: Label {
+                                    text: dismissNotificationButton.text
+                                    color: window.accentB
+                                    font.pixelSize: 18
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                             }
                         }
                     }
