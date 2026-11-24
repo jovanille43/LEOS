@@ -34,6 +34,17 @@ MANIFEST_NAME = ".leos-theme.json"
 # remain untouched.
 _LIGHT_SURFACE_COLORS = {
     "#0B0B0B": "#F4F6FA",
+    "#0D0D0D": "#F4F6FA",
+    "#141414": "#FFFFFF",
+    "#151515": "#FFFFFF",
+    "#181818": "#FFFFFF",
+    "#1D1D1D": "#E9EEF4",
+    "#232323": "#E9EEF4",
+    "#2B2B2B": "#D3DCE7",
+    "#333333": "#D3DCE7",
+    "#373D44": "#D3DCE7",
+    "#3A424B": "#D3DCE7",
+    "#424A53": "#C2CCD8",
     "#101010": "#FFFFFF",
     "#111111": "#F4F6FA",
     "#161616": "#E9EEF4",
