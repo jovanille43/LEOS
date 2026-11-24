@@ -163,6 +163,25 @@ ApplicationWindow {
         anchors.fill: parent
         color: window.color
 
+        Rectangle {
+            width: 620
+            height: 620
+            radius: 310
+            x: parent.width - width * 0.58
+            y: -height * 0.48
+            color: window.themeColors.accent_primary
+            opacity: 0.055
+        }
+        Rectangle {
+            width: 520
+            height: 520
+            radius: 260
+            x: -width * 0.52
+            y: parent.height - height * 0.48
+            color: window.themeColors.accent_secondary
+            opacity: 0.045
+        }
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: window.width < 980 ? 20 : 30
@@ -187,6 +206,37 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillWidth: true }
+                Rectangle {
+                    Layout.preferredHeight: 32
+                    Layout.preferredWidth: window.width < 980 ? 92 : 154
+                    radius: 9
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    Accessible.role: Accessible.Grouping
+                    Accessible.name: systemMonitor.available ? "Surveillance système active" : "Mesures système indisponibles"
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 7
+                        Rectangle {
+                            Layout.preferredWidth: 7
+                            Layout.preferredHeight: 7
+                            radius: 4
+                            color: systemMonitor.available ? "#78C99B" : window.muted
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            text: window.width < 980
+                                ? (systemMonitor.available ? "EN LIGNE" : "INACTIF")
+                                : (systemMonitor.available ? "SURVEILLANCE ACTIVE" : "MESURES INDISPONIBLES")
+                            color: systemMonitor.available ? window.themeColors.text : window.muted
+                            font.pixelSize: 8
+                            font.letterSpacing: 0.6
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
                 RowLayout {
                     spacing: 7
                     Label {
@@ -247,6 +297,9 @@ ApplicationWindow {
                             Layout.preferredHeight: 46
                             activeFocusOnTab: true
                             text: modelData.label
+                            Accessible.name: modelData.label
+                            Accessible.description: "Ouvrir la section " + modelData.label + " du Centre de contrôle."
+                            Accessible.selected: window.selectedPage === modelData.page
                             onClicked: {
                                 window.selectedPage = modelData.page
                                 window.launchNotice = ""
@@ -257,6 +310,8 @@ ApplicationWindow {
                                        ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: window.selectedPage === modelData.page || settingsNavigationButton.activeFocus ? 1 : 0
                                 border.color: settingsNavigationButton.activeFocus ? window.accentB : window.accentA
+                                Behavior on color { ColorAnimation { duration: controlCenter.animationsEnabled ? 150 : 0 } }
+                                Behavior on border.color { ColorAnimation { duration: controlCenter.animationsEnabled ? 150 : 0 } }
 
                                 Rectangle {
                                     anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
@@ -270,13 +325,40 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                            contentItem: Label {
-                                text: settingsNavigationButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                font.weight: window.selectedPage === modelData.page ? Font.DemiBold : Font.Normal
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: 15
+                            contentItem: RowLayout {
+                                spacing: 10
+                                Rectangle {
+                                    Layout.preferredWidth: 28
+                                    Layout.preferredHeight: 25
+                                    radius: 6
+                                    color: window.selectedPage === modelData.page
+                                        ? window.themeColors.surface_elevated : window.themeColors.background
+                                    border.color: window.selectedPage === modelData.page
+                                        ? window.accentA : window.themeColors.border
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: ("0" + (modelData.page + 1)).slice(-2)
+                                        color: window.selectedPage === modelData.page ? window.cyan : window.muted
+                                        font.pixelSize: 9
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 0.5
+                                    }
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: settingsNavigationButton.text
+                                    color: window.themeColors.text
+                                    font.pixelSize: 12
+                                    font.weight: window.selectedPage === modelData.page ? Font.DemiBold : Font.Normal
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: window.selectedPage === modelData.page ? "›" : ""
+                                    color: window.cyan
+                                    font.pixelSize: 17
+                                    font.weight: Font.DemiBold
+                                }
                             }
                         }
                     }
@@ -359,6 +441,10 @@ ApplicationWindow {
                                             color: window.themeColors.surface_elevated
                                             Rectangle {
                                                 width: parent.width * Math.max(0, Math.min(100, systemMonitor.cpuUsage)) / 100
+                                                Behavior on width {
+                                                    enabled: controlCenter.animationsEnabled
+                                                    NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                                }
                                                 height: parent.height
                                                 radius: 2
                                                 gradient: Gradient {
@@ -406,6 +492,10 @@ ApplicationWindow {
                                             color: window.themeColors.surface_elevated
                                             Rectangle {
                                                 width: parent.width * Math.max(0, Math.min(100, systemMonitor.memoryUsage)) / 100
+                                                Behavior on width {
+                                                    enabled: controlCenter.animationsEnabled
+                                                    NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                                }
                                                 height: parent.height
                                                 radius: 2
                                                 gradient: Gradient {
@@ -488,6 +578,10 @@ ApplicationWindow {
                                         color: window.themeColors.surface_elevated
                                         Rectangle {
                                             width: parent.width * Math.max(0, Math.min(100, systemMonitor.diskUsage)) / 100
+                                            Behavior on width {
+                                                enabled: controlCenter.animationsEnabled
+                                                NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                            }
                                             height: parent.height
                                             radius: 2
                                             gradient: Gradient {
