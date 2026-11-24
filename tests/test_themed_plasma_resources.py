@@ -67,9 +67,9 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def build(self, color_a="#FF8800", color_b="#0055CC"):
+    def build(self, color_a="#FF8800", color_b="#0055CC", appearance="dark"):
         return install_themed_plasma_resources(
-            color_a, color_b,
+            color_a, color_b, appearance=appearance,
             data_home=self.data,
             plasma_theme_root=self.plasma,
             icon_theme_root=self.icons,
@@ -110,6 +110,55 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
         aurorae_svg = ET.parse(aurorae_root / "decoration.svg").getroot()
         aurorae_colors = [item.attrib["stop-color"] for item in aurorae_svg.iter() if "stop-color" in item.attrib]
         self.assertEqual(aurorae_colors, ["#FF8800", "#0055CC"])
+
+    def test_light_appearance_recolors_graphite_surfaces_without_changing_accents(self):
+        panel_path = self.plasma / "widgets" / "panel.svg"
+        panel_path.write_text(
+            panel_path.read_text(encoding="utf-8").replace(
+                "</svg>", '<rect fill="#171717" stroke="#363636"/></svg>'
+            ),
+            encoding="utf-8",
+        )
+        aurorae_path = self.aurorae / "decoration.svg"
+        aurorae_path.write_text(
+            aurorae_path.read_text(encoding="utf-8").replace(
+                "</svg>", '<path fill="#101010"/></svg>'
+            ),
+            encoding="utf-8",
+        )
+        result = self.build(appearance="light")
+        self.assertEqual(result["appearance"], "light")
+        style_root = Path(result["plasmaStylePath"])
+        icon_root = Path(result["iconThemePath"])
+        aurorae_root = Path(result["auroraeThemePath"])
+        manifest = json.loads((style_root / ".leos-theme.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["appearance"], "light")
+        metadata = json.loads((style_root / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual(metadata["KPlugin"]["Name"], "LEOS clair personnalisé")
+
+        style_svg = ET.parse(style_root / "widgets" / "panel.svg").getroot()
+        fills = [node.attrib["fill"] for node in style_svg.iter() if "fill" in node.attrib]
+        strokes = [node.attrib["stroke"] for node in style_svg.iter() if "stroke" in node.attrib]
+        self.assertEqual(fills, ["#FFFFFF", "#FFFFFF"])
+        self.assertEqual(strokes, ["#D3DCE7"])
+
+        icon_svg = ET.parse(icon_root / "scalable" / "apps" / "demo.svg").getroot()
+        icon_strokes = [node.attrib["stroke"] for node in icon_svg.iter() if "stroke" in node.attrib]
+        self.assertEqual(icon_strokes, ["#FF8800", "#0055CC"])
+
+        aurorae_svg = ET.parse(aurorae_root / "decoration.svg").getroot()
+        aurorae_fills = [node.attrib["fill"] for node in aurorae_svg.iter() if "fill" in node.attrib]
+        self.assertEqual(aurorae_fills, ["#FFFFFF", "#FFFFFF"])
+
+    def test_dark_and_light_variants_have_distinct_installation_ids(self):
+        dark = self.build(appearance="dark")
+        light = self.build(appearance="light")
+        self.assertNotEqual(dark["plasmaStyleId"], light["plasmaStyleId"])
+        self.assertNotEqual(dark["auroraeThemeId"], light["auroraeThemeId"])
+
+    def test_invalid_appearance_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Appearance must be dark or light"):
+            self.build(appearance="auto")
 
     def test_source_assets_are_never_modified(self):
         self.build()

@@ -116,5 +116,27 @@ class FirstRunIdentityContractTests(unittest.TestCase):
         )
 
 
+    def test_mode_cards_use_a_split_layout_and_preserve_distinct_visual_identities(self):
+        qml = SELECTOR.read_text(encoding="utf-8")
+        desktop = qml.split("id: desktopCard", 1)[1].split("id: gamingCard", 1)[0]
+        gaming = qml.split("id: gamingCard", 1)[1].split("text: modeManager.status", 1)[0]
+
+        self.assertIn("contentItem: Item", desktop)
+        self.assertIn("contentItem: Item", gaming)
+        self.assertIn("source: leosTheme.desktopLogoUrl", desktop)
+        self.assertIn("source: leosTheme.gamingLogoUrl", gaming)
+        self.assertIn('text: "PERSONNALISATION KDE"', desktop)
+        self.assertIn('text: "MULTITÂCHE & FENÊTRES"', desktop)
+        self.assertIn('text: "JEUX PC & LANCEURS"', gaming)
+        self.assertIn('text: "ÉMULATION CENTRALISÉE"', gaming)
+        self.assertIn('text: "NAVIGATION À LA MANETTE"', gaming)
+        self.assertIn("window.width < 980 ? 116 : 196", desktop)
+        self.assertIn("window.width < 980 ? 116 : 196", gaming)
+        self.assertIn("GradientStop { position: 1; color: window.colorA }", desktop)
+        self.assertIn("GradientStop { position: 1; color: window.colorB }", gaming)
+        self.assertIn('Accessible.name: "LEOS Desktop"', qml)
+        self.assertIn('Accessible.name: "LEOS Gaming"', qml)
+
+
 if __name__ == "__main__":
     unittest.main()

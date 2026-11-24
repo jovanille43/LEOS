@@ -32,6 +32,7 @@ ApplicationWindow {
     property bool draftColorBChosen: controlCenter.themeColorsConfigured
     property bool draftColorsDirty: false
     property string themeColorNotice: ""
+    property string appearanceNotice: ""
 
     function colorToHex(color) {
         function part(value) {
@@ -416,6 +417,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -467,6 +478,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -518,6 +539,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -667,6 +698,126 @@ ApplicationWindow {
                         ColumnLayout {
                             width: pages.width - 12
                             spacing: 14
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 236
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "APPARENCE"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Choisis une apparence claire, sombre ou une bascule automatique. Les couleurs A et B restent identiques dans les trois cas."
+                                        color: window.muted
+                                        font.pixelSize: 12
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Button {
+                                            id: appearanceDarkButton
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 42
+                                            text: "SOMBRE"
+                                            onClicked: window.appearanceNotice = controlCenter.setAppearanceMode("dark")
+                                            background: Rectangle {
+                                                radius: 8
+                                                color: controlCenter.appearanceMode === "dark"
+                                                    ? window.themeColors.surface_elevated : window.themeColors.background
+                                                border.width: controlCenter.appearanceMode === "dark" ? 1.5 : 1
+                                                border.color: controlCenter.appearanceMode === "dark"
+                                                    ? window.accentA : window.themeColors.border
+                                            }
+                                            contentItem: Label {
+                                                text: appearanceDarkButton.text
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.weight: Font.Bold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+                                        }
+                                        Button {
+                                            id: appearanceLightButton
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 42
+                                            text: "CLAIR"
+                                            onClicked: window.appearanceNotice = controlCenter.setAppearanceMode("light")
+                                            background: Rectangle {
+                                                radius: 8
+                                                color: controlCenter.appearanceMode === "light"
+                                                    ? window.themeColors.surface_elevated : window.themeColors.background
+                                                border.width: controlCenter.appearanceMode === "light" ? 1.5 : 1
+                                                border.color: controlCenter.appearanceMode === "light"
+                                                    ? window.accentA : window.themeColors.border
+                                            }
+                                            contentItem: Label {
+                                                text: appearanceLightButton.text
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.weight: Font.Bold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+                                        }
+                                        Button {
+                                            id: appearanceAutoButton
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 42
+                                            text: "AUTO"
+                                            onClicked: window.appearanceNotice = controlCenter.setAppearanceMode("auto")
+                                            background: Rectangle {
+                                                radius: 8
+                                                color: controlCenter.appearanceMode === "auto"
+                                                    ? window.themeColors.surface_elevated : window.themeColors.background
+                                                border.width: controlCenter.appearanceMode === "auto" ? 1.5 : 1
+                                                border.color: controlCenter.appearanceMode === "auto"
+                                                    ? window.accentB : window.themeColors.border
+                                            }
+                                            contentItem: Label {
+                                                text: appearanceAutoButton.text
+                                                color: window.themeColors.text
+                                                font.pixelSize: 10
+                                                font.weight: Font.Bold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+                                        }
+                                    }
+                                    Label {
+                                        text: controlCenter.appearanceMode === "auto"
+                                            ? "AUTOMATIQUE · " + (controlCenter.effectiveAppearance === "light" ? "MODE CLAIR ACTIF" : "MODE SOMBRE ACTIF")
+                                            : (controlCenter.effectiveAppearance === "light" ? "MODE CLAIR ACTIF" : "MODE SOMBRE ACTIF")
+                                        color: window.themeColors.text
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                    }
+                                    Label {
+                                        text: "En automatique : clair de 07:00 à 18:59, sombre de 19:00 à 06:59 (heure locale). Les interfaces LEOS suivent le changement ; l’application aux applications KDE et au style Plasma reste disponible dans les réglages ci-dessous."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Label {
+                                        text: window.appearanceNotice
+                                        visible: text.length > 0
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                    }
+                                }
+                            }
 
                             Rectangle {
                                 Layout.fillWidth: true

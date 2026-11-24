@@ -32,3 +32,27 @@ Install path in the image: `/usr/share/plasma/desktoptheme/leos`.
 The base template is not selected directly by the first-run flow. LEOS first
 creates the user's A/B variant and then applies it. The Control Center can
 regenerate and apply a new variant after the user changes A or B.
+
+
+## Refined visual language
+
+The panel, widget and dialog surfaces use a neutral graphite perimeter. A fine
+A-to-B line is reserved for the leading edge, while active/hover/focus states
+carry the stronger brand accents. This avoids wrapping every desktop surface
+in neon and keeps the workspace calm when nothing is being interacted with.
+
+The native task manager, line edits, menu items, list selections, arrows and
+Aurorae window controls all use the same source A/B endpoints
+(`#00D9FF` and `#E33BFF`) plus a neutral midpoint. LEOS transforms those
+endpoints to the user's chosen pair in the per-user theme copy, without
+modifying the packaged source assets.
+
+
+## Light and dark variants
+
+The user-scoped resource generator accepts either `dark` or `light`
+appearance. It creates distinct Plasma Style and Aurorae variants for the
+selected appearance while keeping the icon artwork and exact A/B accent
+endpoints intact. The light variant replaces only the known graphite surface
+tones with white, cool-light-gray and restrained silver-gray surfaces. It
+never edits the packaged assets under `/usr/share`.

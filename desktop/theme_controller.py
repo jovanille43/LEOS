@@ -44,7 +44,7 @@ class _BrandingAssetTask(QRunnable):
 
 
 class ThemeController(QObject):
-    """Expose and refresh the shared A/B gradient and theme-aware identity assets."""
+    """Expose live A/B colors, appearance modes and theme-aware identity assets."""
 
     themeChanged = Signal()
     themeAssetsChanged = Signal()
@@ -195,7 +195,7 @@ class ThemeController(QObject):
 
     @Slot()
     def refresh(self) -> None:
-        """Reflect a gradient changed by Control Center or another LEOS process."""
+        """Reflect shared settings and time-based light/dark transitions across LEOS apps."""
         snapshot = self._read_snapshot()
         colors_configured = bool(self.settings.get("theme_colors_configured", False))
         appearance_mode = self._read_appearance_mode()

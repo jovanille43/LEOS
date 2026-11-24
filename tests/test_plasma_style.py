@@ -117,5 +117,41 @@ class PlasmaStylePackageTests(unittest.TestCase):
         self.assertIn("dest: /usr/share/plasma/desktoptheme/leos/", recipe)
 
 
+    def test_panel_and_widget_surfaces_keep_metal_edges_and_only_a_fine_ab_leading_edge(self):
+        panel = (THEME / "widgets/panel-background.svg").read_text(encoding="utf-8")
+        widget = (THEME / "widgets/background.svg").read_text(encoding="utf-8")
+        dialog = (THEME / "dialogs/background.svg").read_text(encoding="utf-8")
+        for source in (panel, widget, dialog):
+            self.assertIn('id="accent-top-line"', source)
+            self.assertIn("#00D9FF", source)
+            self.assertIn("#E33BFF", source)
+        self.assertIn('stop-color="#383838"', panel)
+        self.assertIn('stroke="#808080"', panel)
+        self.assertIn('id="metal-bottom-line"', panel)
+        self.assertIn('stop-color="#393939"', widget)
+        self.assertIn('stop-color="#3A3A3A"', dialog)
+
+    def test_interactive_plasma_assets_use_canonical_ab_endpoints(self):
+        paths = (
+            "widgets/button.svg", "widgets/lineedit.svg", "widgets/menubaritem.svg",
+            "widgets/viewitem.svg", "widgets/tasks.svg", "widgets/plasmoidheading.svg",
+            "widgets/containment-controls.svg",
+        )
+        forbidden = ("#67DFF8", "#A28CFF", "#E66BD5", "#74869B")
+        for relative in paths:
+            source = (THEME / relative).read_text(encoding="utf-8").upper()
+            with self.subTest(relative=relative):
+                for color in forbidden:
+                    self.assertNotIn(color, source)
+                self.assertIn("#00D9FF", source)
+                self.assertIn("#E33BFF", source)
+
+    def test_view_item_selected_hover_uses_one_configurable_a_b_gradient(self):
+        source = (THEME / "widgets/viewitem.svg").read_text(encoding="utf-8")
+        self.assertIn('id="leosSelectedHover"', source)
+        self.assertIn('stroke="url(#leosSelectedHover)"', source)
+
+
+
 if __name__ == "__main__":
     unittest.main()

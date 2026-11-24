@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, 
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
-from desktop.themes import normalize_color, palette_for_theme, palette_for_colors, resolve_appearance_mode
+from desktop.themes import APPEARANCE_MODES, normalize_color, palette_for_theme, palette_for_colors, resolve_appearance_mode
 from desktop.branding_assets import build_themed_branding_assets, source_asset_urls
 from desktop.kde_colors import KdeColorSchemeManager
 from desktop.plasma_style import PlasmaStyleManager
@@ -153,6 +153,9 @@ class ControlCenterController(QObject):
         super().__init__()
         self.settings = SettingsStore()
         self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self._effective_appearance = resolve_appearance_mode(
+            str(self.settings.get("appearance_mode", "dark"))
+        )
         self._settings_sync_timer = QTimer(self)
         self._settings_sync_timer.setInterval(1500)
         self._settings_sync_timer.timeout.connect(self.refreshSharedSettings)
@@ -274,8 +277,10 @@ class ControlCenterController(QObject):
     def refreshSharedSettings(self) -> None:
         """Reflect preferences changed by another LEOS process."""
         snapshot = self._read_shared_settings_snapshot()
-        if snapshot != self._shared_settings_snapshot:
+        effective_appearance = resolve_appearance_mode(str(snapshot[5] or "dark"))
+        if snapshot != self._shared_settings_snapshot or effective_appearance != self._effective_appearance:
             self._shared_settings_snapshot = snapshot
+            self._effective_appearance = effective_appearance
             self.settingsChanged.emit()
 
     @Property("QVariantMap", notify=hardwareChanged)
@@ -612,6 +617,14 @@ class ControlCenterController(QObject):
     def theme(self) -> str:
         return str(self.settings.get("theme"))
 
+    @Property(str, notify=settingsChanged)
+    def appearanceMode(self) -> str:
+        return str(self.settings.get("appearance_mode", "dark"))
+
+    @Property(str, notify=settingsChanged)
+    def effectiveAppearance(self) -> str:
+        return self._effective_appearance
+
     @Property("QVariantMap", notify=settingsChanged)
     def themePalette(self) -> dict[str, str]:
         """Expose the shared A/B palette while preserving neutral appearance surfaces."""
@@ -761,6 +774,20 @@ class ControlCenterController(QObject):
         })
         self.settingsChanged.emit()
 
+    @Slot(str, result=str)
+    def setAppearanceMode(self, mode: str) -> str:
+        """Persist the user's light, dark, or scheduled appearance preference."""
+        if mode not in APPEARANCE_MODES:
+            return "Mode d'apparence invalide."
+        try:
+            self.settings.set("appearance_mode", mode)
+        except (OSError, ValueError, TypeError, KeyError):
+            return "Le mode d'apparence n'a pas pu être enregistré."
+        self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+        self._effective_appearance = resolve_appearance_mode(mode)
+        self.settingsChanged.emit()
+        return "Apparence mise à jour."
+
     @Slot(str, str, result=str)
     def setThemeColors(self, color_a: str, color_b: str) -> str:
         """Persist one complete A/B pair shared by all LEOS applications."""
@@ -824,9 +851,14 @@ class ControlCenterController(QObject):
         """Apply matching, user-scoped A/B variants of the Plasma Style and icons."""
         if not self.settings.get("theme_colors_configured", False):
             return "Choisis et enregistre d’abord les deux couleurs A et B."
-        color_a, color_b = self.settings.snapshot(("theme_color_a", "theme_color_b"))
+        color_a, color_b, appearance_mode = self.settings.snapshot(
+            ("theme_color_a", "theme_color_b", "appearance_mode")
+        )
+        appearance = resolve_appearance_mode(str(appearance_mode or "dark"))
         try:
-            resources = install_themed_plasma_resources(color_a, color_b)
+            resources = install_themed_plasma_resources(
+                color_a, color_b, appearance=appearance
+            )
             style_id = resources["plasmaStyleId"]
             icon_id = resources["iconThemeId"]
             aurorae_id = resources["auroraeThemeId"]
