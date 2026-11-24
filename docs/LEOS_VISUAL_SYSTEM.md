@@ -50,3 +50,10 @@ not a permanently lit neon outline; a restrained A/B highlight is reserved for
 the leading edge and the active state. Window controls use source A for
 minimize/maximize/restore, source B for close, and neutral gray for the
 gradient midpoint so per-user recolouring remains deterministic.
+
+
+## Connexion et démarrage
+
+- **SDDM :** carte de connexion graphite, champs explicitement libellés, focus A/B distinct et action principale signée du dégradé A/B.
+- **Splash KDE :** fond neutre, halos A/B très faibles et progression dans le même langage que les actions principales.
+- Les contrôles de veille, redémarrage, extinction et choix de session restent séparés et fonctionnels.
