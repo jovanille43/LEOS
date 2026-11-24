@@ -1431,14 +1431,14 @@ ApplicationWindow {
                                                     spacing: 4
                                                     Label {
                                                         text: "★"
-                                                        color: window.accentB
-                                                        font.pixelSize: 9
+                                                        color: window.magenta
+                                                        font.pixelSize: 12
                                                     }
                                                     Label {
                                                         id: favoriteChipLabel
                                                         text: "FAVORI"
                                                         color: window.themeColors.text
-                                                        font.pixelSize: 9
+                                                        font.pixelSize: 12
                                                         font.weight: Font.Bold
                                                         font.letterSpacing: 0.6
                                                     }
@@ -1460,7 +1460,7 @@ ApplicationWindow {
                                                 anchors.centerIn: parent
                                                 text: gameCard.platform
                                                 color: window.themeColors.text
-                                                font.pixelSize: 9
+                                                font.pixelSize: 12
                                                 font.weight: Font.DemiBold
                                             }
                                         }
