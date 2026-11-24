@@ -74,8 +74,8 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
 
     def test_control_center_offers_a_manual_non_destructive_ostree_recovery_guide(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        start = qml.index('    Dialog {\\n        id: recoveryGuideDialog')
-        end = qml.index('\\n    Rectangle {\\n        anchors.fill: parent', start)
+        start = qml.index("id: recoveryGuideDialog")
+        end = qml.index("anchors.fill: parent", start)
         recovery = qml[start:end]
         self.assertIn("OUVRIR LE GUIDE DE RÉCUPÉRATION", qml)
         self.assertIn("recoveryGuideDialog.open()", qml)
