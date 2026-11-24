@@ -640,14 +640,39 @@ ApplicationWindow {
         Repeater {
             model: 28
             delegate: Rectangle {
+                id: particle
                 required property int index
+                property real baseOpacity: index % 7 === 0 ? 0.22 : 0.10
                 width: index % 7 === 0 ? 3 : 1.5
                 height: width
                 radius: width / 2
                 x: (index * 211 + 83) % Math.max(1, gamingContent.width)
                 y: (index * 127 + 51) % Math.max(1, gamingContent.height)
                 color: index % 2 === 0 ? window.accentA : window.themeColors.text
-                opacity: index % 7 === 0 ? 0.22 : 0.10
+                opacity: baseOpacity
+
+                SequentialAnimation {
+                    running: leos.animationsEnabled
+                    loops: Animation.Infinite
+                    onRunningChanged: {
+                        if (!running)
+                            particle.opacity = particle.baseOpacity
+                    }
+                    NumberAnimation {
+                        target: particle
+                        property: "opacity"
+                        to: particle.baseOpacity * 0.46
+                        duration: 1500 + particle.index * 31
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        target: particle
+                        property: "opacity"
+                        to: particle.baseOpacity
+                        duration: 1800 + particle.index * 29
+                        easing.type: Easing.InOutSine
+                    }
+                }
             }
         }
 
