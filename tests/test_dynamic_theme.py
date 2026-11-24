@@ -31,11 +31,10 @@ class DynamicThemeTests(unittest.TestCase):
 
     def test_cinematic_wallpapers_keep_materials_neutral_for_a_b_recoloring(self):
         root = Path(__file__).resolve().parents[1]
-        source_accents = set()
         for filename in ("desktop-leos.svg", "gaming-leos.svg"):
             wallpaper = (root / "branding" / "wallpapers" / filename).read_text(encoding="utf-8")
             colors = {color.upper() for color in re.findall(r"#[0-9A-Fa-f]{6}(?=[^0-9A-Fa-f]|$)", wallpaper)}
-            self.assertTrue(source_accents.isdisjoint(colors))
+            self.assertTrue({"#00D9FF", "#E33BFF"}.isdisjoint(colors))
             for color in colors:
                 self.assertEqual(
                     color[1:3], color[3:5],
