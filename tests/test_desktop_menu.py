@@ -341,6 +341,20 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertNotIn('property color focusColor: "#ffffff"', qml)
 
 
+    def test_header_actions_use_theme_surfaces_and_visible_hover_focus_states(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("modesButton.hovered", qml)
+        self.assertIn("controlCenterButton.activeFocus", qml)
+        self.assertIn("notificationsButton.hovered", qml)
+        self.assertIn("refreshButton.activeFocus", qml)
+        self.assertIn("window.accentB : window.themeColors.border", qml)
+
+    def test_application_card_hover_uses_declared_a_b_theme_tokens(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("appMouse.containsMouse ? window.accentB", qml)
+        self.assertNotIn("window.colorAText", qml)
+
+
 
 if __name__ == "__main__":
     unittest.main()
