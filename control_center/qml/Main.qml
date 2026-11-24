@@ -390,6 +390,17 @@ ApplicationWindow {
                 }
             }
 
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                gradient: Gradient {
+                    GradientStop { position: 0; color: window.accentA }
+                    GradientStop { position: 0.5; color: window.themeColors.border }
+                    GradientStop { position: 1; color: window.accentB }
+                }
+                opacity: 0.32
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
