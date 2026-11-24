@@ -414,7 +414,8 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn('"source_commit": source_commit', generator)
         self.assertIn('"source_image_digest": source_image_digest', generator)
         self.assertIn('"installer_uefi_qemu_smoke": "passed"', generator)
-        self.assertIn("full installed LEOS session and physical hardware require separate validation", generator)
+        self.assertIn("Anaconda WebUI boot verified", generator)
+        self.assertIn("require separate validation", generator)
         self.assertIn('${{ steps.image.outputs.filename }}.manifest.json', source)
         self.assertLess(
             source.index("Boot installer ISO with UEFI firmware in QEMU"),
