@@ -14,6 +14,7 @@ class DockFavouritesTests(unittest.TestCase):
             path = Path(directory) / "dock.json"
             store = DockFavourites(path)
             self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
+            self.assertIn("leos-mode-selector.desktop", store.items())
             self.assertFalse(path.exists())
 
     def test_pin_unpin_and_reorder_persist(self):
