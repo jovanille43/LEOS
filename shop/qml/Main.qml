@@ -92,6 +92,20 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillWidth: true }
+                ColumnLayout {
+                    spacing: 2
+                    Label {
+                        text: "DÉCOUVRIR · INSTALLER · GÉRER"
+                        color: window.muted
+                        font.pixelSize: 9
+                        font.letterSpacing: 1.1
+                    }
+                    Label {
+                        text: "Un catalogue clair, des actions toujours confirmées."
+                        color: window.themeColors.text
+                        font.pixelSize: 11
+                    }
+                }
                 Button {
                     id: refreshStoreButton
                     text: "ACTUALISER"
@@ -169,10 +183,33 @@ ApplicationWindow {
                     radius: 14
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
+                    RowLayout {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.topMargin: 12
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        height: 20
+                        Label {
+                            text: "CATALOGUE"
+                            color: window.cyan
+                            font.pixelSize: 10
+                            font.letterSpacing: 1.8
+                        }
+                        Item { Layout.fillWidth: true }
+                        Label {
+                            text: appList.count + " APPLICATIONS"
+                            color: window.muted
+                            font.pixelSize: 9
+                            font.letterSpacing: 0.8
+                        }
+                    }
                     ListView {
                         id: appList
                         anchors.fill: parent
                         anchors.margins: 8
+                        anchors.topMargin: 40
                         clip: true
                         spacing: 6
                         model: catalogModel
@@ -276,6 +313,20 @@ ApplicationWindow {
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
 
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.leftMargin: 16
+                        anchors.rightMargin: 16
+                        height: 2
+                        radius: 1
+                        gradient: Gradient {
+                            GradientStop { position: 0; color: window.accentA }
+                            GradientStop { position: 1; color: window.accentB }
+                        }
+                    }
+
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 20
@@ -316,6 +367,14 @@ ApplicationWindow {
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
                         Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
                         Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
+                        Label { text: "IDENTIFIANT"; color: window.cyan; font.pixelSize: 9 }
+                        Label {
+                            text: detailsPane.appId || "—"
+                            color: window.themeColors.muted_text
+                            font.pixelSize: 10
+                            wrapMode: Text.WrapAnywhere
+                            Layout.fillWidth: true
+                        }
                         Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
                         Label {
                             text: detailsPane.appCompatibility
