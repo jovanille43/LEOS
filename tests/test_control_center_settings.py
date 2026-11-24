@@ -148,6 +148,15 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
         self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
 
+    def test_control_center_sidebar_scrolls_when_window_height_is_compact(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        sidebar_start = qml.index("ScrollView {", qml.index("Layout.fillHeight: true", qml.index("RowLayout {", qml.index("CENTRE DE CONTRÔLE"))))
+        sidebar_end = qml.index("StackLayout {", sidebar_start)
+        sidebar = qml[sidebar_start:sidebar_end]
+        self.assertIn("ScrollBar.vertical.policy: ScrollBar.AsNeeded", sidebar)
+        self.assertIn("model: [", sidebar)
+        self.assertIn('label: "Réseau", page: 9', sidebar)
+
     def test_control_center_navigation_has_numbered_accessible_selection(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: ("0" + (modelData.page + 1)).slice(-2)', qml)
