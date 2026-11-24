@@ -17,14 +17,14 @@
     <linearGradient id="ribbon-metal" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#DEDEDE" stop-opacity=".015"/>
       <stop offset=".34" stop-color="#B0B0B0" stop-opacity=".16"/>
-      <stop offset=".52" stop-color="#00D9FF" stop-opacity=".12"/>
+      <stop offset=".52" stop-color="#A0A0A0" stop-opacity=".12"/>
       <stop offset=".72" stop-color="#8F8F8F" stop-opacity=".07"/>
-      <stop offset="1" stop-color="#E33BFF" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#B8B8B8" stop-opacity=".12"/>
     </linearGradient>
     <linearGradient id="accent-flow" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#00D9FF" stop-opacity=".22"/>
+      <stop offset="0" stop-color="#A0A0A0" stop-opacity=".22"/>
       <stop offset=".5" stop-color="#D8D8D8" stop-opacity=".045"/>
-      <stop offset="1" stop-color="#E33BFF" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#B8B8B8" stop-opacity=".20"/>
     </linearGradient>
     <radialGradient id="vignette" cx="50%" cy="48%" r="72%">
       <stop offset=".42" stop-color="#020202" stop-opacity="0"/>
@@ -48,8 +48,8 @@
 
   <g filter="url(#ribbon-blur)" opacity=".48" fill="none" stroke-width="88">
     <path d="M-220 1770C560 1520 820 620 1710 700S2860 1570 4070 300" stroke="#A0A0A0" stroke-opacity=".12"/>
-    <path d="M-180 1620C600 1370 890 560 1740 640S2870 1430 4050 170" stroke="#00D9FF" stroke-opacity=".13"/>
-    <path d="M-120 1880C700 1610 1030 870 1840 890S2920 1520 4010 520" stroke="#E33BFF" stroke-opacity=".10"/>
+    <path d="M-180 1620C600 1370 890 560 1740 640S2870 1430 4050 170" stroke="#A0A0A0" stroke-opacity=".13"/>
+    <path d="M-120 1880C700 1610 1030 870 1840 890S2920 1520 4010 520" stroke="#B8B8B8" stroke-opacity=".10"/>
   </g>
 
   <g fill="none" stroke="url(#ribbon-metal)" stroke-width="5">

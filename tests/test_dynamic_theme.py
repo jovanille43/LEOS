@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 from leos_core.settings import SettingsStore
-from desktop.themes import (DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color, palette_for_colors, resolve_appearance_mode, validate_palette)
+from desktop.themes import (DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors, resolve_appearance_mode, validate_palette)
 
 
 class DynamicThemeTests(unittest.TestCase):
@@ -31,11 +31,12 @@ class DynamicThemeTests(unittest.TestCase):
 
     def test_cinematic_wallpapers_keep_materials_neutral_for_a_b_recoloring(self):
         root = Path(__file__).resolve().parents[1]
-        source_accents = {SOURCE_COLOR_A, SOURCE_COLOR_B}
+        source_accents = set()
         for filename in ("desktop-leos.svg", "gaming-leos.svg"):
             wallpaper = (root / "branding" / "wallpapers" / filename).read_text(encoding="utf-8")
             colors = {color.upper() for color in re.findall(r"#[0-9A-Fa-f]{6}(?=[^0-9A-Fa-f]|$)", wallpaper)}
-            for color in colors - source_accents:
+            self.assertTrue(source_accents.isdisjoint(colors))
+            for color in colors:
                 self.assertEqual(
                     color[1:3], color[3:5],
                     f"{filename} contains a non-neutral material color: {color}",
