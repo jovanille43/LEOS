@@ -67,3 +67,12 @@ gradient midpoint so per-user recolouring remains deterministic.
 - **SDDM :** carte de connexion graphite, champs explicitement libellés et contrôles argent neutre. La greeter ne force pas la paire A/B avant que le profil utilisateur soit disponible.
 - **Splash KDE :** fond graphite neutre, halos métalliques très faibles et progression argent ; les accents A/B restent réservés aux surfaces utilisateur configurées.
 - Les contrôles de veille, redémarrage, extinction et choix de session restent séparés et fonctionnels.
+
+
+## Cohérence de la Boutique et du Centre de contrôle — passe de finition
+
+- Les catégories de la Boutique sont lues depuis le catalogue validé : aucun filtre ne doit dépendre d'une liste QML maintenue séparément.
+- Le compteur distingue les résultats visibles du nombre total de fiches ; un état vide doit toujours proposer une sortie simple (effacer les filtres ou changer de catégorie).
+- Les états de santé système (critique, attention, normal) utilisent des couleurs sémantiques indépendantes des accents A/B choisis. Les accents de marque restent dédiés à la sélection, à l'identité et aux actions actives.
+- La vue d'ensemble du Centre de contrôle résume l'état de santé et permet d'ouvrir le diagnostic détaillé en une action.
+- Les raccourcis système Desktop gardent le même focus, le même contraste et les mêmes surfaces que le catalogue LEOS ; les applications KDE absentes doivent produire un retour visible sans fermer le menu.
