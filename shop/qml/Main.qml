@@ -340,10 +340,10 @@ ApplicationWindow {
                                 color: detailsPane.isInstalled ? window.themeColors.surface_elevated : window.themeColors.background
                                 border.color: detailsPane.isInstalled ? window.accentA : window.themeColors.border
                                 Layout.preferredHeight: 22
-                                Layout.preferredWidth: detailsPane.isInstalled ? 86 : 96
+                                Layout.preferredWidth: detailsPane.appId.length === 0 ? 92 : detailsPane.isInstalled ? 86 : 96
                                 Label {
                                     anchors.centerIn: parent
-                                    text: detailsPane.isInstalled ? "INSTALLÉE" : "À DÉCOUVRIR"
+                                    text: detailsPane.appId.length === 0 ? "EN ATTENTE" : detailsPane.isInstalled ? "INSTALLÉE" : "À DÉCOUVRIR"
                                     color: detailsPane.isInstalled ? window.cyan : window.muted
                                     font.pixelSize: 9
                                     font.weight: Font.DemiBold
