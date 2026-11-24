@@ -642,35 +642,99 @@ ApplicationWindow {
             delegate: Rectangle {
                 id: particle
                 required property int index
-                property real baseOpacity: index % 7 === 0 ? 0.22 : 0.10
                 width: index % 7 === 0 ? 3 : 1.5
                 height: width
                 radius: width / 2
-                x: (index * 211 + 83) % Math.max(1, gamingContent.width)
-                y: (index * 127 + 51) % Math.max(1, gamingContent.height)
+                property real baseX: (index * 211 + 83) % Math.max(1, gamingContent.width - width)
+                property real baseY: (index * 127 + 51) % Math.max(1, gamingContent.height - height)
+                property real driftX: Math.max(0, Math.min(6 + (index % 4) * 2,
+                    Math.min(baseX, gamingContent.width - width - baseX)))
+                property real driftY: Math.max(0, Math.min(5 + (index % 3) * 2,
+                    Math.min(baseY, gamingContent.height - height - baseY)))
+                property real baseOpacity: index % 7 === 0 ? 0.22 : 0.10
+                x: baseX
+                y: baseY
                 color: index % 2 === 0 ? window.accentA : window.themeColors.text
                 opacity: baseOpacity
 
-                SequentialAnimation {
+                ParallelAnimation {
                     running: leos.animationsEnabled
                     loops: Animation.Infinite
                     onRunningChanged: {
-                        if (!running)
+                        if (!running) {
+                            particle.x = particle.baseX
+                            particle.y = particle.baseY
                             particle.opacity = particle.baseOpacity
+                        }
                     }
-                    NumberAnimation {
-                        target: particle
-                        property: "opacity"
-                        to: particle.baseOpacity * 0.46
-                        duration: 1500 + particle.index * 31
-                        easing.type: Easing.InOutSine
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX + particle.driftX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX - particle.driftX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
                     }
-                    NumberAnimation {
-                        target: particle
-                        property: "opacity"
-                        to: particle.baseOpacity
-                        duration: 1800 + particle.index * 29
-                        easing.type: Easing.InOutSine
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY - particle.driftY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY + particle.driftY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                    }
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity * 0.52
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity * 0.78
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
                     }
                 }
             }
