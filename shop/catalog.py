@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, QByteArray, Property
 
-from shop.catalog_data import load_catalog
+from shop.catalog_data import catalog_categories, load_catalog
 
 
 class CatalogModel(QAbstractListModel):
@@ -49,10 +49,7 @@ class CatalogModel(QAbstractListModel):
     @Property("QStringList")
     def availableCategories(self) -> list[str]:
         """Expose categories from the validated catalogue, never from a stale UI list."""
-        return sorted(
-            {str(item["category"]) for item in self._items},
-            key=str.casefold,
-        )
+        return catalog_categories(self._items)
 
     def roleNames(self):
         return self.ROLE_NAMES
