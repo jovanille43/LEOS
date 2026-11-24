@@ -172,6 +172,10 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("window.width < 1080 ? 18 : 30", qml)
         self.assertIn("Layout.preferredWidth: window.width < 1080 ? 300 : 360", qml)
         self.assertIn("Layout.minimumWidth: 280", qml)
+        self.assertIn('text: "DÉCOUVRIR · INSTALLER · GÉRER"', qml)
+        self.assertIn('text: appList.count + " APPLICATIONS"', qml)
+        self.assertIn('text: "IDENTIFIANT"', qml)
+        self.assertIn('text: detailsPane.appId || "—"', qml)
 
     def test_v2_emulator_catalogue_has_curated_automatic_flathub_apps(self):
         items = load_catalog(ROOT / "shop" / "catalog.json")
