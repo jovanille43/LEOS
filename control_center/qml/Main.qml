@@ -202,7 +202,7 @@ ApplicationWindow {
                     readOnly: true
                     selectByMouse: true
                     wrapMode: TextEdit.NoWrap
-                    text: "rpm-ostree status\\nsystemctl --failed\\nsystemctl --user --failed"
+                    text: "rpm-ostree status\nsystemctl --failed\nsystemctl --user --failed"
                     color: window.themeColors.text
                     background: Rectangle {
                         radius: 8
@@ -240,7 +240,7 @@ ApplicationWindow {
                     readOnly: true
                     selectByMouse: true
                     wrapMode: TextEdit.NoWrap
-                    text: "sudo rpm-ostree rollback\\nsystemctl reboot"
+                    text: "sudo rpm-ostree rollback\nsystemctl reboot"
                     color: window.themeColors.text
                     background: Rectangle {
                         radius: 8
@@ -260,7 +260,7 @@ ApplicationWindow {
                     readOnly: true
                     selectByMouse: true
                     wrapMode: TextEdit.NoWrap
-                    text: "rpm-ostree status\\nsystemctl --failed\\nsystemctl --user --failed"
+                    text: "rpm-ostree status\nsystemctl --failed\nsystemctl --user --failed"
                     color: window.themeColors.text
                     background: Rectangle {
                         radius: 8
