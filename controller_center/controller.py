@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
-from controller_center.input_state import ControllerInputState
+from controller_center.input_state import ControllerInputState, normalize_axis_value
 from controller_center.profiles import (
     ControllerProfileStore,
     detect_controller_profile,
@@ -98,20 +98,8 @@ class ControllerCenterController(QObject):
             return 0.0
         minimum = int(limits.get("minimum", -32768))
         maximum = int(limits.get("maximum", 32767))
-        span = maximum - minimum
-        if span <= 0:
-            return 0.0
-        default_center = (minimum + maximum) / 2.0
-        stored_center = self._axis_centers.get(name, default_center)
-        center = float(stored_center)
-        if not minimum <= center <= maximum:
-            center = default_center
-        delta = float(value) - center
-        available_range = maximum - center if delta >= 0 else center - minimum
-        if available_range <= 0:
-            return 0.0
-        normalized = delta / available_range
-        return max(-1.0, min(1.0, normalized))
+        center = self._axis_centers.get(name)
+        return normalize_axis_value(value, minimum, maximum, center)
 
     @Property(bool, notify=changed)
     def hasLeftStick(self) -> bool:
