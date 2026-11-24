@@ -264,6 +264,76 @@ ApplicationWindow {
             color: window.colorB; opacity: 0.12
         }
 
+        // A restrained PS5-inspired particle field: slow, layered drift using
+        // the user's own A/B accents. It stays behind the cards and can be
+        // disabled through the existing animation preference.
+        Repeater {
+            model: 44
+            delegate: Item {
+                required property int index
+                property real originX: (index * 173 + 41) % Math.max(1, modeSelectorContent.width)
+                property real originY: (index * 97 + 23) % Math.max(1, modeSelectorContent.height)
+                x: originX
+                y: originY
+                width: 8
+                height: 8
+                opacity: 0.18 + (index % 4) * 0.035
+                visible: modeSelectorController.animationsEnabled
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: index % 7 === 0 ? 7 : 4
+                    height: width
+                    radius: width / 2
+                    color: index % 2 === 0 ? window.colorA : window.colorB
+                    opacity: 0.16
+                }
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 2
+                    height: 2
+                    radius: 1
+                    color: window.themeColors.text
+                    opacity: 0.7
+                }
+
+                SequentialAnimation on x {
+                    running: modeSelectorController.animationsEnabled
+                    loops: Animation.Infinite
+                    NumberAnimation {
+                        to: originX + (index % 2 === 0 ? 34 : -34)
+                        duration: 8500 + (index % 9) * 1150
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        to: originX
+                        duration: 8500 + (index % 9) * 1150
+                        easing.type: Easing.InOutSine
+                    }
+                }
+                SequentialAnimation on y {
+                    running: modeSelectorController.animationsEnabled
+                    loops: Animation.Infinite
+                    NumberAnimation {
+                        to: originY + (index % 3 === 0 ? -42 : 42)
+                        duration: 11000 + (index % 7) * 1300
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        to: originY
+                        duration: 11000 + (index % 7) * 1300
+                        easing.type: Easing.InOutSine
+                    }
+                }
+                SequentialAnimation on opacity {
+                    running: modeSelectorController.animationsEnabled
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.42; duration: 2600 + (index % 5) * 350; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.12; duration: 3100 + (index % 6) * 300; easing.type: Easing.InOutSine }
+                }
+            }
+        }
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: window.width < 1120 ? 24 : 48
