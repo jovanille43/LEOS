@@ -5,20 +5,20 @@
   <desc>Une scène de jeu cinématique aux rubans métalliques en mouvement, aux particules suspendues et à l'emblème LEOS Gaming.</desc>
   <defs>
     <linearGradient id="deep-stage" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#10151E"/>
-      <stop offset=".38" stop-color="#070A10"/>
-      <stop offset="1" stop-color="#020407"/>
+      <stop offset="0" stop-color="#141414"/>
+      <stop offset=".38" stop-color="#080808"/>
+      <stop offset="1" stop-color="#020202"/>
     </linearGradient>
     <radialGradient id="stage-light" cx="50%" cy="50%" r="64%">
-      <stop offset="0" stop-color="#AAB8C9" stop-opacity=".16"/>
-      <stop offset=".34" stop-color="#596779" stop-opacity=".07"/>
+      <stop offset="0" stop-color="#B0B0B0" stop-opacity=".16"/>
+      <stop offset=".34" stop-color="#5D5D5D" stop-opacity=".07"/>
       <stop offset="1" stop-color="#030509" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="ribbon-metal" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#DCE4EE" stop-opacity=".015"/>
-      <stop offset=".34" stop-color="#AEBBCC" stop-opacity=".16"/>
+      <stop offset="0" stop-color="#DEDEDE" stop-opacity=".015"/>
+      <stop offset=".34" stop-color="#B0B0B0" stop-opacity=".16"/>
       <stop offset=".52" stop-color="#00D9FF" stop-opacity=".12"/>
-      <stop offset=".72" stop-color="#8B96A5" stop-opacity=".07"/>
+      <stop offset=".72" stop-color="#8F8F8F" stop-opacity=".07"/>
       <stop offset="1" stop-color="#E33BFF" stop-opacity=".12"/>
     </linearGradient>
     <linearGradient id="accent-flow" x1="0" y1="0" x2="1" y2="0">
@@ -27,7 +27,7 @@
       <stop offset="1" stop-color="#E33BFF" stop-opacity=".20"/>
     </linearGradient>
     <radialGradient id="vignette" cx="50%" cy="48%" r="72%">
-      <stop offset=".42" stop-color="#020407" stop-opacity="0"/>
+      <stop offset=".42" stop-color="#020202" stop-opacity="0"/>
       <stop offset="1" stop-color="#010204" stop-opacity=".94"/>
     </radialGradient>
     <pattern id="star-field" width="170" height="170" patternUnits="userSpaceOnUse">
@@ -47,7 +47,7 @@
   <rect width="3840" height="2160" fill="url(#stage-light)"/>
 
   <g filter="url(#ribbon-blur)" opacity=".48" fill="none" stroke-width="88">
-    <path d="M-220 1770C560 1520 820 620 1710 700S2860 1570 4070 300" stroke="#9EACBD" stroke-opacity=".12"/>
+    <path d="M-220 1770C560 1520 820 620 1710 700S2860 1570 4070 300" stroke="#A0A0A0" stroke-opacity=".12"/>
     <path d="M-180 1620C600 1370 890 560 1740 640S2870 1430 4050 170" stroke="#00D9FF" stroke-opacity=".13"/>
     <path d="M-120 1880C700 1610 1030 870 1840 890S2920 1520 4010 520" stroke="#E33BFF" stroke-opacity=".10"/>
   </g>
@@ -63,13 +63,13 @@
     <path d="M-120 1920C700 1650 1030 910 1840 930S2920 1560 4010 560"/>
   </g>
 
-  <g fill="none" stroke="#B7C3D2" stroke-opacity=".095">
+  <g fill="none" stroke="#B8B8B8" stroke-opacity=".095">
     <ellipse cx="1920" cy="1080" rx="1190" ry="870" stroke-width="2" transform="rotate(-8 1920 1080)"/>
     <ellipse cx="1920" cy="1080" rx="1280" ry="940" stroke-width="1" stroke-dasharray="2 28" transform="rotate(7 1920 1080)"/>
     <ellipse cx="1920" cy="1080" rx="1380" ry="1010" stroke-width="1" stroke-dasharray="1 42"/>
   </g>
 
-  <g fill="#DCE5F0">
+  <g fill="#D8D8D8">
     <circle cx="430" cy="520" r="3" opacity=".34"/>
     <circle cx="760" cy="360" r="2" opacity=".22"/>
     <circle cx="1120" cy="1840" r="3" opacity=".24"/>
@@ -79,7 +79,7 @@
     <circle cx="1880" cy="260" r="2" opacity=".25"/>
     <circle cx="2240" cy="1940" r="2.5" opacity=".22"/>
   </g>
-  <g fill="none" stroke="#DCE5F0" stroke-opacity=".16" filter="url(#soft-glow)">
+  <g fill="none" stroke="#D8D8D8" stroke-opacity=".16" filter="url(#soft-glow)">
     <path d="M430 520l330-160M2920 340l420 1120M1120 1840l1120 100"/>
   </g>
 
