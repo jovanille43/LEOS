@@ -361,6 +361,28 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("cellWidth: window.width < 900 ? 164 : 188", qml)
         self.assertIn('Accessible.name: "Actualiser le catalogue d\'applications"', qml)
 
+    def test_desktop_search_can_be_cleared_with_an_accessible_action(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Rechercher une application"', qml)
+        self.assertIn("id: clearSearchButton", qml)
+        self.assertIn("visible: search.text.length > 0", qml)
+        self.assertIn('Accessible.name: "Effacer la recherche"', qml)
+        self.assertIn("search.clear()", qml)
+
+    def test_desktop_category_and_application_tiles_expose_accessible_selection(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("Accessible.selected: categoryMenuButton.categorySelected", qml)
+        self.assertIn("Accessible.role: Accessible.Button", qml)
+        self.assertIn("Accessible.name: name", qml)
+        self.assertIn("categoryMenuButton.categorySelected ? \"›\" : \"\"", qml)
+
+    def test_symbolic_favourite_actions_have_names_and_focus_surfaces(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("Accessible.name: \"Monter \" + name + \" dans les favoris\"", qml)
+        self.assertIn("Accessible.name: \"Descendre \" + name + \" dans les favoris\"", qml)
+        self.assertIn("Accessible.name: isPinned ? \"Retirer \" + name + \" des favoris\"", qml)
+        self.assertIn("favouritePinButton.activeFocus", qml)
+
     def test_application_card_hover_uses_declared_a_b_theme_tokens(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn("appMouse.containsMouse ? window.accentB", qml)
