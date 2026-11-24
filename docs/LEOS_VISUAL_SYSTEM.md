@@ -40,3 +40,13 @@ LEOS doit évoquer un environnement matériel haut de gamme : calme et précis s
 - Les transitions respectent les préférences d'animation LEOS.
 - Les emblèmes et jaquettes disposent de solutions de repli lisibles lorsqu'ils ne sont pas disponibles.
 - La navigation clavier et manette ne perd jamais son indicateur de focus.
+
+
+## Native KDE chrome — refinement pass
+
+The Plasma panel, widget cards, popups and KWin Aurorae frame now use the same
+surface hierarchy as the LEOS applications. The outer perimeter is graphite,
+not a permanently lit neon outline; a restrained A/B highlight is reserved for
+the leading edge and the active state. Window controls use source A for
+minimize/maximize/restore, source B for close, and neutral gray for the
+gradient midpoint so per-user recolouring remains deterministic.

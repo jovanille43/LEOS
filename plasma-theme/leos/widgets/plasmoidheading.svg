@@ -3,32 +3,32 @@
 <defs>
   <linearGradient id="leosAccent" x1="0" y1="0" x2="1" y2="0">
     <stop offset="0" stop-color="#00D9FF"/>
-    <stop offset="0.52" stop-color="#74869B"/>
+    <stop offset="0.52" stop-color="#808080"/>
     <stop offset="1" stop-color="#E33BFF"/>
   </linearGradient>
   <linearGradient id="surface" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#1A2633"/>
-    <stop offset="1" stop-color="#0D131D"/>
+    <stop offset="0" stop-color="#171717"/>
+    <stop offset="1" stop-color="#0D0D0D"/>
   </linearGradient>
 </defs>
-  <g id="header-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="header-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
-  <g id="header-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="header-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="header-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="header-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="header-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="header-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
   <g id="header-center" opacity="0.98"><rect x="18" y="18" width="54" height="54" fill="url(#surface)" stroke="none" stroke-width="1.1" /></g>
-  <g id="header-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="header-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="header-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
-  <g id="header-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="footer-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="footer-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
-  <g id="footer-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="footer-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="header-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="header-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="header-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="header-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="footer-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="footer-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="footer-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="footer-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
   <g id="footer-center" opacity="0.98"><rect x="18" y="18" width="54" height="54" fill="url(#surface)" stroke="none" stroke-width="1.1" /></g>
-  <g id="footer-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="footer-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
-  <g id="footer-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
-  <g id="footer-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="url(#surface)" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="footer-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="footer-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
+  <g id="footer-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="footer-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="url(#surface)" stroke="#333333" stroke-width="1.1" /></g>
   <rect id="hint-top-margin" x="0" y="0" width="1" height="4" fill="none"/>
   <rect id="hint-right-margin" x="0" y="0" width="4" height="1" fill="none"/>
   <rect id="hint-bottom-margin" x="0" y="0" width="1" height="4" fill="none"/>

@@ -75,5 +75,19 @@ class AuroraeWindowDecorationTests(unittest.TestCase):
         self.assertIn("not selected automatically", readme)
 
 
+    def test_all_window_controls_use_canonical_recolorable_ab_source_colors(self):
+        paths = ("decoration.svg", "close.svg", "minimize.svg", "maximize.svg", "restore.svg")
+        forbidden = ("#65E5FF", "#899BFF", "#EF70D9", "#F078D7", "#6BE6FF", "#83BFFF")
+        for relative in paths:
+            source = (THEME / relative).read_text(encoding="utf-8").upper()
+            with self.subTest(relative=relative):
+                for color in forbidden:
+                    self.assertNotIn(color, source)
+                self.assertIn("#00D9FF", source)
+                self.assertIn("#E33BFF", source)
+        self.assertIn("#808080", (THEME / "decoration.svg").read_text(encoding="utf-8").upper())
+
+
+
 if __name__ == "__main__":
     unittest.main()
