@@ -25,6 +25,7 @@ DEFAULT_PINNED_APPS = (
     "firefox.desktop",
     "steam.desktop",
     "leos-control-center.desktop",
+    "leos-mode-selector.desktop",
 )
 MAX_PINNED_APPS = 32
 MAX_DOCK_FILE_BYTES = 16 * 1024
