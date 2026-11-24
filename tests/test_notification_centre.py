@@ -65,6 +65,20 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn('level === "success" ? window.accentA', qml)
         self.assertIn(' : window.accentB', qml)
 
+    def test_notification_actions_are_accessible_and_have_theme_aware_focus_states(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Marquer cette notification comme lue"', qml)
+        self.assertIn('Accessible.name: "Supprimer cette notification"', qml)
+        self.assertIn("markAllReadButton.activeFocus", qml)
+        self.assertIn("clearAllButton.activeFocus", qml)
+        self.assertIn("refreshNotificationsButton.activeFocus", qml)
+        self.assertIn("markNotificationReadButton.hovered", qml)
+        self.assertIn("dismissNotificationButton.hovered", qml)
+
+    def test_notification_centre_uses_compact_margins_on_smaller_windows(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn("anchors.margins: window.width < 640 ? 16 : 26", qml)
+
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)
