@@ -591,15 +591,64 @@ ApplicationWindow {
         color: window.color
         focus: true
 
+        // Cinematic graphite atmosphere: restrained light pools and
+        // metallic orbit lines frame the library without competing with art.
         Rectangle {
-            width: 620; height: 620; radius: 310
-            x: parent.width - width * 0.55; y: -height * 0.48
-            color: window.accentA; opacity: 0.085
+            width: 720; height: 720; radius: 360
+            x: parent.width - width * 0.55; y: -height * 0.52
+            color: window.accentA; opacity: 0.052
         }
         Rectangle {
             width: 520; height: 520; radius: 260
-            x: -width * 0.5; y: parent.height - height * 0.45
-            color: window.accentB; opacity: 0.07
+            x: parent.width - width * 0.62; y: -height * 0.34
+            color: window.themeColors.text; opacity: 0.018
+        }
+        Rectangle {
+            width: 640; height: 640; radius: 320
+            x: -width * 0.48; y: parent.height - height * 0.48
+            color: window.accentB; opacity: 0.042
+        }
+        Rectangle {
+            width: 570; height: 570; radius: 285
+            x: -width * 0.40; y: parent.height - height * 0.56
+            color: window.themeColors.text; opacity: 0.014
+        }
+        Rectangle {
+            width: Math.max(parent.width * 0.72, 980)
+            height: Math.max(parent.height * 0.88, 720)
+            radius: height / 2
+            x: parent.width * 0.18
+            y: parent.height * 0.08
+            rotation: -17
+            color: "transparent"
+            border.width: 1
+            border.color: window.themeColors.text
+            opacity: 0.035
+        }
+        Rectangle {
+            width: Math.max(parent.width * 0.78, 1040)
+            height: Math.max(parent.height * 0.94, 780)
+            radius: height / 2
+            x: parent.width * 0.14
+            y: parent.height * 0.02
+            rotation: -17
+            color: "transparent"
+            border.width: 1
+            border.color: window.accentA
+            opacity: 0.045
+        }
+        Repeater {
+            model: 28
+            delegate: Rectangle {
+                required property int index
+                width: index % 7 === 0 ? 3 : 1.5
+                height: width
+                radius: width / 2
+                x: (index * 211 + 83) % Math.max(1, gamingContent.width)
+                y: (index * 127 + 51) % Math.max(1, gamingContent.height)
+                color: index % 2 === 0 ? window.accentA : window.themeColors.text
+                opacity: index % 7 === 0 ? 0.22 : 0.10
+            }
         }
 
         ColumnLayout {
