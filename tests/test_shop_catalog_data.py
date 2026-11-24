@@ -173,7 +173,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("Layout.preferredWidth: window.width < 1080 ? 300 : 360", qml)
         self.assertIn("Layout.minimumWidth: 280", qml)
         self.assertIn('text: "DÉCOUVRIR · INSTALLER · GÉRER"', qml)
-        self.assertIn('text: appList.count + " APPLICATIONS"', qml)
+        self.assertIn('text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"', qml)
         self.assertIn('text: "IDENTIFIANT"', qml)
         self.assertIn('text: detailsPane.appId || "—"', qml)
         self.assertIn("opacity: 0.05", qml)
