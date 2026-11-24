@@ -670,7 +670,7 @@ ApplicationWindow {
                             contentItem: Label {
                                 text: returnDesktopHeaderButton.text
                                 color: window.themeColors.text
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 font.weight: Font.Bold
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
