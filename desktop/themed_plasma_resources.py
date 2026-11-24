@@ -29,6 +29,44 @@ MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_TOTAL_BYTES = 96 * 1024 * 1024
 MANIFEST_NAME = ".leos-theme.json"
 
+# Neutral surfaces used by the packaged graphite SVG artwork. A light variant
+# changes only these structural tones; A/B brand endpoints and icon artwork
+# remain untouched.
+_LIGHT_SURFACE_COLORS = {
+    "#0B0B0B": "#F4F6FA",
+    "#101010": "#FFFFFF",
+    "#111111": "#F4F6FA",
+    "#161616": "#E9EEF4",
+    "#171717": "#FFFFFF",
+    "#191919": "#FFFFFF",
+    "#1A1A1A": "#FFFFFF",
+    "#1B1B1B": "#FFFFFF",
+    "#202020": "#E9EEF4",
+    "#222222": "#E9EEF4",
+    "#242424": "#E9EEF4",
+    "#252525": "#E9EEF4",
+    "#282828": "#D3DCE7",
+    "#292929": "#D3DCE7",
+    "#303030": "#D3DCE7",
+    "#363636": "#D3DCE7",
+    "#383838": "#D3DCE7",
+    "#393939": "#D3DCE7",
+    "#3A3A3A": "#D3DCE7",
+    "#747474": "#929DAD",
+    "#808080": "#C2CCD8",
+}
+
+def _apply_light_surface_colors(path: Path) -> None:
+    """Replace only known graphite surface tones in a generated SVG variant."""
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise OSError(f"Could not read generated LEOS SVG: {path}") from error
+    for source, target in _LIGHT_SURFACE_COLORS.items():
+        content = re.sub(re.escape(source), target, content, flags=re.IGNORECASE)
+    path.write_text(content, encoding="utf-8")
+    os.chmod(path, 0o644)
+
 
 def _files(root: Path) -> list[tuple[Path, Path]]:
     if root.is_symlink() or not root.is_dir():
@@ -102,10 +140,12 @@ def _manifest(
     aurorae_id: str,
     color_a: str,
     color_b: str,
+    appearance: str,
     fingerprint: str,
 ) -> dict[str, str]:
     return {
-        "schema": "leos-themed-plasma-resources-v2",
+        "schema": "leos-themed-plasma-resources-v3",
+        "appearance": appearance,
         "style_id": style_id,
         "icon_id": icon_id,
         "aurorae_id": aurorae_id,
@@ -142,6 +182,7 @@ def _copy_variant(
     theme_id: str,
     manifest: dict[str, str],
     matrix,
+    appearance: str,
 ) -> None:
     if destination.is_symlink():
         raise OSError(f"User theme destination is a symbolic link: {destination}")
@@ -173,6 +214,8 @@ def _copy_variant(
             if relative.suffix.lower() == ".svg":
                 if not _transform_svg(source, target, matrix, emblem=None):
                     raise OSError(f"Could not recolor LEOS SVG theme asset: {relative}")
+                if appearance == "light" and kind in {"style", "aurorae"}:
+                    _apply_light_surface_colors(target)
             else:
                 shutil.copyfile(source, target)
                 os.chmod(target, 0o644)
@@ -184,8 +227,12 @@ def _copy_variant(
             if not isinstance(plugin, dict) or plugin.get("Id") != "leos":
                 raise ValueError("The packaged LEOS Plasma Style metadata is invalid")
             plugin["Id"] = theme_id
-            plugin["Name"] = "LEOS personnalisé"
-            plugin["Description"] = "LEOS Plasma Style with the user's A/B accent gradient."
+            plugin["Name"] = "LEOS clair personnalisé" if appearance == "light" else "LEOS personnalisé"
+            plugin["Description"] = (
+                "LEOS light Plasma surfaces with the user's A/B accent gradient."
+                if appearance == "light"
+                else "LEOS graphite Plasma surfaces with the user's A/B accent gradient."
+            )
             metadata_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             os.chmod(metadata_path, 0o644)
         elif kind == "icons":
@@ -240,6 +287,7 @@ def install_themed_plasma_resources(
     color_a: str,
     color_b: str,
     *,
+    appearance: str = "dark",
     data_home: Path | None = None,
     plasma_theme_root: Path = STYLE_SOURCE,
     icon_theme_root: Path = ICON_SOURCE,
@@ -248,11 +296,13 @@ def install_themed_plasma_resources(
     """Install matched user-scoped Plasma, icon, and window-decoration variants."""
     first = normalize_color(color_a)
     second = normalize_color(color_b)
+    if appearance not in {"dark", "light"}:
+        raise ValueError("Appearance must be dark or light")
     style_files = _files(plasma_theme_root)
     icon_files = _files(icon_theme_root)
     aurorae_files = _files(aurorae_theme_root)
     fingerprint = _source_fingerprint(style_files, icon_files, aurorae_files)
-    identity = hashlib.sha256(f"{first}|{second}|{fingerprint}".encode("utf-8")).hexdigest()[:16]
+    identity = hashlib.sha256(f"{first}|{second}|{appearance}|{fingerprint}".encode("utf-8")).hexdigest()[:16]
     style_id = f"leos-custom-{identity}"
     icon_id = f"leos-custom-{identity}"
     aurorae_id = f"leos-custom-{identity}"
@@ -268,7 +318,7 @@ def install_themed_plasma_resources(
     _assert_no_symlink_components(style_destination.parent, base)
     _assert_no_symlink_components(icon_destination.parent, base)
     _assert_no_symlink_components(aurorae_destination.parent, base)
-    manifest = _manifest(style_id, icon_id, aurorae_id, first, second, fingerprint)
+    manifest = _manifest(style_id, icon_id, aurorae_id, first, second, appearance, fingerprint)
     matrix = build_color_matrix(first, second)
 
     lock_root = base / "leos" / "theme-resources"
@@ -285,15 +335,15 @@ def install_themed_plasma_resources(
         try:
             _copy_variant(
                 style_files, style_destination, kind="style",
-                theme_id=style_id, manifest=manifest, matrix=matrix,
+                theme_id=style_id, manifest=manifest, matrix=matrix, appearance=appearance,
             )
             _copy_variant(
                 icon_files, icon_destination, kind="icons",
-                theme_id=icon_id, manifest=manifest, matrix=matrix,
+                theme_id=icon_id, manifest=manifest, matrix=matrix, appearance=appearance,
             )
             _copy_variant(
                 aurorae_files, aurorae_destination, kind="aurorae",
-                theme_id=aurorae_id, manifest=manifest, matrix=matrix,
+                theme_id=aurorae_id, manifest=manifest, matrix=matrix, appearance=appearance,
             )
         finally:
             fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
@@ -304,4 +354,5 @@ def install_themed_plasma_resources(
         "iconThemePath": str(icon_destination),
         "auroraeThemeId": aurorae_id,
         "auroraeThemePath": str(aurorae_destination),
+        "appearance": appearance,
     }
