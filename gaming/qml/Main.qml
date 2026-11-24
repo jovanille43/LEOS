@@ -596,7 +596,7 @@ ApplicationWindow {
         Rectangle {
             width: 720; height: 720; radius: 360
             x: parent.width - width * 0.55; y: -height * 0.52
-            color: window.accentA; opacity: 0.052
+            color: window.accentA; opacity: 0.085
         }
         Rectangle {
             width: 520; height: 520; radius: 260
@@ -606,7 +606,7 @@ ApplicationWindow {
         Rectangle {
             width: 640; height: 640; radius: 320
             x: -width * 0.48; y: parent.height - height * 0.48
-            color: window.accentB; opacity: 0.042
+            color: window.accentB; opacity: 0.07
         }
         Rectangle {
             width: 570; height: 570; radius: 285
