@@ -19,8 +19,10 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
 
     function launchApplication(desktopId, applicationName) {
-        if (!applicationCatalog.launch(desktopId))
+        if (!applicationCatalog.launch(desktopId)) {
+            status.text = applicationName + " est introuvable ou ne peut pas être lancé."
             return false
+        }
         status.text = applicationName + " : lancement demandé."
         window.close()
         return true
@@ -175,6 +177,50 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: notificationsButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Button {
+                id: filesButton
+                text: "FICHIERS"
+                Accessible.name: "Ouvrir le gestionnaire de fichiers Dolphin"
+                onClicked: window.launchApplication("org.kde.dolphin.desktop", "le gestionnaire de fichiers")
+                background: Rectangle {
+                    radius: 9
+                    color: filesButton.down || filesButton.hovered || filesButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: filesButton.activeFocus ? 2 : 1
+                    border.color: filesButton.activeFocus ? window.cyan
+                                  : filesButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: filesButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Button {
+                id: settingsButton
+                text: "RÉGLAGES"
+                Accessible.name: "Ouvrir les paramètres système KDE"
+                onClicked: window.launchApplication("systemsettings.desktop", "les paramètres KDE")
+                background: Rectangle {
+                    radius: 9
+                    color: settingsButton.down || settingsButton.hovered || settingsButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: settingsButton.activeFocus ? 2 : 1
+                    border.color: settingsButton.activeFocus ? window.cyan
+                                  : settingsButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: settingsButton.text
                     color: window.themeColors.text
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
