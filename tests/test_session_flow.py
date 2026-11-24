@@ -192,7 +192,7 @@ class SessionFlowTests(unittest.TestCase):
         )[0]
         self.assertIn("appearanceDialogFocusIndex = 2", request)
         self.assertIn("applyAppearanceButton.forceActiveFocus()", request)
-        self.assertIn("ACTIVER LE PROFIL LEOS · RECOMMANDÉ", qml)
+        self.assertIn("ACTIVER L'APPARENCE LEOS · RECOMMANDÉ", qml)
         self.assertIn("GARDER MON BUREAU ACTUEL", qml)
         self.assertIn("conserve volontairement ton bureau KDE actuel", qml)
 
