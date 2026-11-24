@@ -265,8 +265,8 @@ ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 48
-            spacing: 20
+            anchors.margins: window.width < 1120 ? 24 : 48
+            spacing: window.height < 760 ? 14 : 20
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
@@ -305,7 +305,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.colorAText
+                    color: modeManager.lastMode === "gaming" ? window.colorBText : window.colorAText
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -384,6 +384,9 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "LEOS Desktop"
+                    Accessible.description: "Bureau, création et quotidien dans un environnement KDE personnalisé."
                     onClicked: window.requestDesktopMode()
                     background: Rectangle {
                         radius: 22
@@ -415,8 +418,25 @@ ApplicationWindow {
                         }
                     }
                     contentItem: ColumnLayout {
-                        spacing: 15
+                        spacing: 13
                         Item { Layout.fillHeight: true }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 8
+                            Rectangle {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 2
+                                radius: 1
+                                color: window.colorA
+                            }
+                            Label {
+                                text: "MODE 01 · QUOTIDIEN"
+                                color: window.colorAText
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.4
+                            }
+                        }
                         Image {
                             source: leosTheme.desktopLogoUrl
                             asynchronous: true
@@ -447,6 +467,33 @@ ApplicationWindow {
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
+                        Rectangle {
+                            Layout.preferredWidth: 220
+                            Layout.preferredHeight: 38
+                            Layout.alignment: Qt.AlignHCenter
+                            radius: 9
+                            color: window.themeColors.surface
+                            border.width: desktopCard.activeFocus ? 1.5 : 1
+                            border.color: desktopCard.activeFocus || desktopCard.hovered ? window.colorA : window.themeColors.border
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 13
+                                anchors.rightMargin: 13
+                                Label {
+                                    text: "OUVRIR DESKTOP"
+                                    color: window.colorAText
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 1
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: "→"
+                                    color: window.colorAText
+                                    font.pixelSize: 16
+                                }
+                            }
+                        }
                         Item { Layout.fillHeight: true }
                     }
                 }
@@ -455,6 +502,9 @@ ApplicationWindow {
                     id: gamingCard
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "LEOS Gaming"
+                    Accessible.description: "Bibliothèque de jeux, émulation et navigation à la manette."
                     onClicked: window.requestGamingMode()
                     background: Rectangle {
                         radius: 22
@@ -486,8 +536,25 @@ ApplicationWindow {
                         }
                     }
                     contentItem: ColumnLayout {
-                        spacing: 15
+                        spacing: 13
                         Item { Layout.fillHeight: true }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 8
+                            Rectangle {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 2
+                                radius: 1
+                                color: window.colorB
+                            }
+                            Label {
+                                text: "MODE 02 · JEUX"
+                                color: window.colorBText
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.4
+                            }
+                        }
                         Image {
                             source: leosTheme.gamingLogoUrl
                             asynchronous: true
@@ -513,10 +580,37 @@ ApplicationWindow {
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Label {
-                            text: "Vos jeux et lanceurs réunis au même endroit"
+                            text: "Tes jeux et lanceurs réunis au même endroit"
                             color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
+                        }
+                        Rectangle {
+                            Layout.preferredWidth: 220
+                            Layout.preferredHeight: 38
+                            Layout.alignment: Qt.AlignHCenter
+                            radius: 9
+                            color: window.themeColors.surface
+                            border.width: gamingCard.activeFocus ? 1.5 : 1
+                            border.color: gamingCard.activeFocus || gamingCard.hovered ? window.colorB : window.themeColors.border
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 13
+                                anchors.rightMargin: 13
+                                Label {
+                                    text: "OUVRIR GAMING"
+                                    color: window.colorBText
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 1
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: "→"
+                                    color: window.colorBText
+                                    font.pixelSize: 16
+                                }
+                            }
                         }
                         Item { Layout.fillHeight: true }
                     }
