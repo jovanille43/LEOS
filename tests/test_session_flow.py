@@ -213,6 +213,17 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("Keys.onPressed: function(event)", qml)
         self.assertNotIn("    focus: true", qml.split("ApplicationWindow {", 1)[1].split("id: modeSelectorContent", 1)[0])
 
+    def test_mode_selector_has_opt_out_ambient_particle_animation(self):
+        qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("id: ambientParticles", qml)
+        self.assertIn("model: 30", qml)
+        self.assertIn("SequentialAnimation on y", qml)
+        self.assertIn("SequentialAnimation on opacity", qml)
+        self.assertIn("visible: modeSelectorController.animationsEnabled", qml)
+        self.assertIn("running: modeSelectorController.animationsEnabled", qml)
+
     def test_selector_shows_clock_date_and_remembered_mode(self):
         qml = (ROOT / "launcher" / "qml" / "ModeSelector.qml").read_text(
             encoding="utf-8"
