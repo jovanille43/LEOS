@@ -4,9 +4,10 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from datetime import datetime
 
 from leos_core.settings import SettingsStore
-from desktop.themes import DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color, palette_for_colors, validate_palette
+from desktop.themes import (DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color, palette_for_colors, resolve_appearance_mode, validate_palette)
 
 
 class DynamicThemeTests(unittest.TestCase):
@@ -26,6 +27,33 @@ class DynamicThemeTests(unittest.TestCase):
             self.assertNotIn(legacy, qml)
         self.assertIn("window.themeColors.surface_elevated", qml)
         self.assertIn("window.themeColors.border", qml)
+
+    def test_light_and_dark_palettes_keep_user_accents_unchanged(self):
+        dark = palette_for_colors("#FF8800", "#0055CC", appearance="dark")
+        light = palette_for_colors("#FF8800", "#0055CC", appearance="light")
+        self.assertNotEqual(dark["background"], light["background"])
+        self.assertGreaterEqual(
+            int(light["background"][1:3], 16),
+            int(dark["background"][1:3], 16),
+        )
+        for key in ("accent_primary", "accent_secondary"):
+            self.assertEqual(dark[key], light[key])
+
+    def test_automatic_appearance_uses_local_day_and_night_boundaries(self):
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 11, 24, 6, 59)), "dark")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 11, 24, 7, 0)), "light")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 11, 24, 18, 59)), "light")
+        self.assertEqual(resolve_appearance_mode("auto", datetime(2026, 11, 24, 19, 0)), "dark")
+
+    def test_control_center_exposes_all_three_appearance_modes(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("def setAppearanceMode(self, mode: str)", controller)
+        self.assertIn("def appearanceMode(self)", controller)
+        self.assertIn("def effectiveAppearance(self)", controller)
+        for mode in ('"dark"', '"light"', '"auto"'):
+            self.assertIn(f"setAppearanceMode({mode})", qml)
 
     def test_selected_endpoints_are_never_replaced_for_low_contrast(self):
         palette = palette_for_colors("#111111", "#111111")
