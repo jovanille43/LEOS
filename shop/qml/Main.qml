@@ -115,7 +115,7 @@ ApplicationWindow {
             x: -width * 0.48
             y: parent.height - height * 0.52
             color: window.themeColors.accent_secondary
-            opacity: 0.026
+            opacity: 0.04
         }
         ColumnLayout {
             anchors.fill: parent
