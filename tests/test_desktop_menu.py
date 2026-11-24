@@ -382,6 +382,8 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("Accessible.name: \"Descendre \" + name + \" dans les favoris\"", qml)
         self.assertIn("Accessible.name: isPinned ? \"Retirer \" + name + \" des favoris\"", qml)
         self.assertIn("favouritePinButton.activeFocus", qml)
+        self.assertIn("favouriteMoveUpButton.activeFocus", qml)
+        self.assertIn("favouriteMoveDownButton.activeFocus", qml)
 
     def test_application_card_hover_uses_declared_a_b_theme_tokens(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
