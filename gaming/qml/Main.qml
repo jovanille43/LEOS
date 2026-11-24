@@ -609,7 +609,7 @@ ApplicationWindow {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: window.width < 1360 ? 10 : 18
+                spacing: window.width < 1180 ? 7 : window.width < 1360 ? 10 : 18
 
                 ColumnLayout {
                     spacing: 1
@@ -642,7 +642,7 @@ ApplicationWindow {
                 Item { Layout.fillWidth: true }
 
                 Rectangle {
-                    Layout.preferredWidth: window.width < 1360 ? 190 : 250
+                    Layout.preferredWidth: window.width < 1180 ? 150 : window.width < 1360 ? 190 : 250
                     Layout.minimumWidth: 130
                     Layout.maximumWidth: 250
                     Layout.preferredHeight: 40
@@ -758,7 +758,7 @@ ApplicationWindow {
                 id: quickPanel
                 Layout.fillWidth: true
                 visible: false
-                implicitHeight: 230
+                implicitHeight: window.height < 760 ? 214 : 230
                 radius: 15
                 color: window.themeColors.surface_elevated
                 border.color: window.themeColors.border
@@ -768,14 +768,77 @@ ApplicationWindow {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 18
-                    spacing: 22
+                    anchors.margins: window.width < 1180 ? 12 : 18
+                    spacing: window.width < 1180 ? 12 : 22
 
                     ColumnLayout {
                         Label { text: "PERFORMANCES"; color: window.cyan; font.pixelSize: window.fontCaption; font.letterSpacing: 2 }
-                        Label { text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
-                        Label { text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
-                        Label { text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%"); color: window.themeColors.text; font.pixelSize: window.fontBody }
+                        Label {
+                            text: "CPU  " + window.metric(systemMonitor.cpuUsage, "%")
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontBody
+                            Accessible.name: "Utilisation processeur : " + text
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 4
+                            radius: 2
+                            visible: systemMonitor.cpuUsage >= 0
+                            color: window.themeColors.background
+                            Rectangle {
+                                width: parent.width * Math.max(0, Math.min(100, systemMonitor.cpuUsage)) / 100
+                                height: parent.height
+                                radius: 2
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: window.accentA }
+                                    GradientStop { position: 1; color: window.accentB }
+                                }
+                            }
+                        }
+                        Label {
+                            text: "RAM  " + window.metric(systemMonitor.memoryUsage, "%")
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontBody
+                            Accessible.name: "Utilisation mémoire : " + text
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 4
+                            radius: 2
+                            visible: systemMonitor.memoryUsage >= 0
+                            color: window.themeColors.background
+                            Rectangle {
+                                width: parent.width * Math.max(0, Math.min(100, systemMonitor.memoryUsage)) / 100
+                                height: parent.height
+                                radius: 2
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: window.accentA }
+                                    GradientStop { position: 1; color: window.accentB }
+                                }
+                            }
+                        }
+                        Label {
+                            text: "GPU  " + window.metric(systemMonitor.gpuUsage, "%")
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontBody
+                            Accessible.name: "Utilisation graphique : " + text
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 4
+                            radius: 2
+                            visible: systemMonitor.gpuUsage >= 0
+                            color: window.themeColors.background
+                            Rectangle {
+                                width: parent.width * Math.max(0, Math.min(100, systemMonitor.gpuUsage)) / 100
+                                height: parent.height
+                                radius: 2
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: window.accentA }
+                                    GradientStop { position: 1; color: window.accentB }
+                                }
+                            }
+                        }
                         Label { text: systemMonitor.gpuName; color: window.muted; font.pixelSize: window.fontMicro; elide: Text.ElideRight; Layout.maximumWidth: 210 }
                         Label { text: systemMonitor.gpuMemoryTotal > 0 && systemMonitor.gpuMemoryUsed >= 0 ? "VRAM  " + Math.round(systemMonitor.gpuMemoryUsed / 1048576) + " / " + Math.round(systemMonitor.gpuMemoryTotal / 1048576) + " Mo" : "VRAM  —"; color: window.muted; font.pixelSize: window.fontCaption }
                     }
@@ -924,10 +987,11 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 26
+                spacing: window.width < 1180 ? 12 : 26
 
                 ColumnLayout {
-                    Layout.preferredWidth: 190
+                    Layout.preferredWidth: window.width < 1180 ? 150 : 190
+                    Layout.minimumWidth: 140
                     Layout.fillHeight: true
                     spacing: 10
 
@@ -1393,7 +1457,8 @@ ApplicationWindow {
                         }
 
                         Rectangle {
-                            Layout.preferredWidth: 280
+                            Layout.preferredWidth: window.width < 1180 ? 230 : 280
+                            Layout.minimumWidth: 210
                             Layout.fillHeight: true
                             radius: 16
                             color: window.themeColors.surface
