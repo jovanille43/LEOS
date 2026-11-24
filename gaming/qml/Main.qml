@@ -659,8 +659,11 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: notificationCenterButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.color: window.themeColors.border
+                        color: notificationCenterButton.down || notificationCenterButton.hovered || notificationCenterButton.activeFocus
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: notificationCenterButton.activeFocus ? 2 : 1
+                        border.color: notificationCenterButton.activeFocus ? window.focusColor
+                                      : notificationCenterButton.hovered ? window.accentB : window.themeColors.border
                     }
                     contentItem: Label {
                         text: notificationCenterButton.text
@@ -678,8 +681,12 @@ ApplicationWindow {
                     onClicked: leos.toggleSilentNotifications()
                     background: Rectangle {
                         radius: 10
-                        color: notificationSilenceButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.color: leos.silentNotificationsInGaming ? window.accentA : window.themeColors.border
+                        color: notificationSilenceButton.down || notificationSilenceButton.hovered || notificationSilenceButton.activeFocus
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: notificationSilenceButton.activeFocus ? 2 : 1
+                        border.color: notificationSilenceButton.activeFocus ? window.focusColor
+                                      : leos.silentNotificationsInGaming ? window.accentA
+                                      : notificationSilenceButton.hovered ? window.accentB : window.themeColors.border
                     }
                     contentItem: Label {
                         text: notificationSilenceButton.text
@@ -700,8 +707,12 @@ ApplicationWindow {
                     }
                     background: Rectangle {
                         radius: 10
-                        color: quickPanelButton.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.color: window.themeColors.border
+                        color: quickPanelButton.down || quickPanelButton.hovered || quickPanelButton.activeFocus || quickPanel.visible
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: quickPanelButton.activeFocus ? 2 : 1
+                        border.color: quickPanelButton.activeFocus ? window.focusColor
+                                      : quickPanel.visible ? window.accentA
+                                      : quickPanelButton.hovered ? window.accentB : window.themeColors.border
                     }
                     contentItem: Label {
                         text: quickPanelButton.text
@@ -916,9 +927,25 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: 9
-                                color: modelData === window.selectedCategory ? window.themeColors.surface_elevated : "transparent"
+                                color: modelData === window.selectedCategory || categoryButton.hovered
+                                       ? window.themeColors.surface_elevated : "transparent"
                                 border.width: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? 2 : 1
-                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories" ? window.focusColor : (modelData === window.selectedCategory ? window.accentA : "transparent")
+                                border.color: modelData === window.categoryNames[window.selectedCategoryIndex] && window.navigationArea === "categories"
+                                              ? window.focusColor
+                                              : modelData === window.selectedCategory ? window.accentA
+                                              : categoryButton.hovered ? window.accentB : "transparent"
+
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                    anchors.leftMargin: 1
+                                    width: 3
+                                    radius: 2
+                                    visible: modelData === window.selectedCategory
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
                             }
                             contentItem: Label {
                                 text: categoryButton.text
@@ -1144,9 +1171,25 @@ ApplicationWindow {
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
                                     radius: 13
-                                    color: window.selectedIndex === gameCard.index ? window.themeColors.surface_elevated : window.themeColors.surface
-                                    border.width: window.selectedIndex === gameCard.index ? 2 : 1
-                                    border.color: window.selectedIndex === gameCard.index ? window.focusColor : window.themeColors.border
+                                    color: window.selectedIndex === gameCard.index || gameCard.hovered
+                                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                                    border.width: gameCard.activeFocus ? 2 : 1
+                                    border.color: gameCard.activeFocus ? window.focusColor
+                                                  : window.selectedIndex === gameCard.index ? window.accentA
+                                                  : gameCard.hovered ? window.accentB : window.themeColors.border
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        anchors.leftMargin: 16
+                                        anchors.rightMargin: 16
+                                        height: 2
+                                        radius: 1
+                                        visible: window.selectedIndex === gameCard.index || gameCard.hovered
+                                        opacity: window.selectedIndex === gameCard.index ? 1 : 0.7
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                    }
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     Behavior on border.color { ColorAnimation { duration: 150 } }
                                 }
