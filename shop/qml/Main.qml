@@ -68,6 +68,24 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: window.color
+        Rectangle {
+            width: 500
+            height: 500
+            radius: 250
+            x: parent.width - width * 0.52
+            y: -height * 0.5
+            color: window.themeColors.accent_primary
+            opacity: 0.05
+        }
+        Rectangle {
+            width: 420
+            height: 420
+            radius: 210
+            x: -width * 0.48
+            y: parent.height - height * 0.52
+            color: window.themeColors.accent_secondary
+            opacity: 0.04
+        }
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: window.width < 1080 ? 18 : 30
