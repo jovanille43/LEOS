@@ -148,6 +148,27 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
         self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
 
+    def test_control_center_navigation_has_numbered_accessible_selection(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('text: ("0" + (modelData.page + 1)).slice(-2)', qml)
+        self.assertIn("Accessible.selected: window.selectedPage === modelData.page", qml)
+        self.assertIn('text: window.selectedPage === modelData.page ? "›" : ""', qml)
+        self.assertIn("settingsNavigationButton.activeFocus", qml)
+
+    def test_control_center_header_exposes_live_monitor_status(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: systemMonitor.available ? "Surveillance système active" : "Mesures système indisponibles"', qml)
+        self.assertIn('systemMonitor.available ? "SURVEILLANCE ACTIVE" : "MESURES INDISPONIBLES"', qml)
+        self.assertIn('systemMonitor.available ? "EN LIGNE" : "INACTIF"', qml)
+
+    def test_control_center_uses_subtle_theme_ambient_background_and_responsive_meter_motion(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("opacity: 0.055", qml)
+        self.assertIn("opacity: 0.045", qml)
+        self.assertGreaterEqual(qml.count("Behavior on width"), 3)
+        self.assertIn("enabled: controlCenter.animationsEnabled", qml)
+        self.assertIn("Easing.OutCubic", qml)
+
     def test_overview_has_responsive_a_b_usage_meters(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("columns: pages.width < 680 ? 2 : 3", qml)
