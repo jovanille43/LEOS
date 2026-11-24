@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtMultimedia
+import "../../branding/qml" as Branding
 
 ApplicationWindow {
     id: window
@@ -591,6 +592,15 @@ ApplicationWindow {
         color: window.color
         focus: true
 
+        Branding.ParticleBackdrop {
+            anchors.fill: parent
+            z: 0
+            colorA: window.accentA
+            colorB: window.accentB
+            particleOpacity: 0.78
+            motionEnabled: leos.animationsEnabled
+        }
+
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
@@ -631,11 +641,41 @@ ApplicationWindow {
                         font.letterSpacing: 5
                         visible: gamingHeaderLogo.status !== Image.Ready
                     }
-                    Label {
-                        text: "GAMING MODE"
-                        color: window.cyan
-                        font.pixelSize: window.fontCaption
-                        font.letterSpacing: 3
+                    RowLayout {
+                        spacing: 12
+                        Label {
+                            text: "GAMING MODE"
+                            color: window.cyan
+                            font.pixelSize: window.fontCaption
+                            font.letterSpacing: 3
+                        }
+                        Button {
+                            id: returnDesktopHeaderButton
+                            text: "RETOUR DESKTOP"
+                            Accessible.name: "Retourner à LEOS Desktop"
+                            Accessible.description: "Quitter Gaming et revenir au bureau KDE."
+                            Layout.preferredWidth: 148
+                            Layout.preferredHeight: 32
+                            onClicked: returnDialog.open()
+                            background: Rectangle {
+                                radius: 8
+                                color: returnDesktopHeaderButton.down || returnDesktopHeaderButton.hovered
+                                       || returnDesktopHeaderButton.activeFocus
+                                       ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: returnDesktopHeaderButton.activeFocus ? 2 : 1
+                                border.color: returnDesktopHeaderButton.activeFocus ? window.focusColor
+                                              : returnDesktopHeaderButton.hovered ? window.accentA
+                                              : window.themeColors.border
+                            }
+                            contentItem: Label {
+                                text: returnDesktopHeaderButton.text
+                                color: window.themeColors.text
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
                     }
                 }
 
