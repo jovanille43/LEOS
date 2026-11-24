@@ -79,7 +79,7 @@ exit 0
         df.write_text(
             "#!/usr/bin/bash\n"
             "printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\\n'\n"
-            "printf '/dev/test 100000000 1 %s 1%% /home\\n' \"\$AVAILABLE_KIB\"\n",
+            "printf '/dev/test 100000000 1 %s 1%% /home\\n' \"$AVAILABLE_KIB\"\n",
             encoding="utf-8",
         )
         df.chmod(0o755)
