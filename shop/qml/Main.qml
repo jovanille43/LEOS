@@ -97,16 +97,25 @@ ApplicationWindow {
             x: parent.width - width * 0.52
             y: -height * 0.5
             color: window.themeColors.accent_primary
-            opacity: 0.05
+            opacity: 0.032
         }
         Rectangle {
-            width: 420
-            height: 420
-            radius: 210
+            width: 520
+            height: 520
+            radius: 260
+            x: parent.width - width * 0.58
+            y: -height * 0.42
+            color: window.themeColors.text
+            opacity: 0.018
+        }
+        Rectangle {
+            width: 460
+            height: 460
+            radius: 230
             x: -width * 0.48
             y: parent.height - height * 0.52
             color: window.themeColors.accent_secondary
-            opacity: 0.04
+            opacity: 0.026
         }
         ColumnLayout {
             anchors.fill: parent
@@ -166,6 +175,17 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                gradient: Gradient {
+                    GradientStop { position: 0; color: window.accentA }
+                    GradientStop { position: 0.52; color: window.themeColors.border }
+                    GradientStop { position: 1; color: window.accentB }
+                }
+                opacity: 0.38
             }
 
             RowLayout {
@@ -243,7 +263,7 @@ ApplicationWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    radius: 14
+                    radius: 16
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
                     RowLayout {
@@ -297,7 +317,7 @@ ApplicationWindow {
                             height: visible ? 86 : 0
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
                                 && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
-                            radius: 9
+                            radius: 12
                             color: window.selectedRow === index || appRowButton.hovered || appRowButton.activeFocus
                                    ? window.themeColors.surface_elevated : window.themeColors.surface
                             border.width: window.selectedRow === index || appRowButton.activeFocus ? 1 : 0
