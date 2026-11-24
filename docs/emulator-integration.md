@@ -62,7 +62,9 @@ La présence d'un exécutable ou d'un déploiement Flatpak confirme uniquement q
 - [x] Construire les commandes de lancement en arguments séparés, sans shell, et accorder uniquement un accès Flatpak en lecture au dossier sélectionné.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur juste avant le lancement.
 - [x] Actualiser automatiquement la bibliothèque lorsqu'un émulateur est installé/désinstallé et rescanner périodiquement les dossiers sélectionnés pour suivre les jeux ajoutés et les disques amovibles remontés au même chemin.
-- [ ] Ajouter les parcours d'import et de lancement pour RPCS3 et les cœurs RetroArch ; ne pas activer un profil tant que ses arguments et prérequis ne sont pas vérifiés.
+- [x] RPCS3 : importer les jeux PS3 uniquement depuis les dossiers sélectionnés, après validation de la disposition `PS3_GAME/PARAM.SFO/USRDIR/EBOOT.BIN` ou du dossier de titre PSN (`PARAM.SFO` + `USRDIR/EBOOT.BIN`).
+- [x] RetroArch : importer les entrées des playlists locales `.lpl`, utiliser le cœur propre à l'entrée ou le cœur par défaut déclaré par la playlist lorsqu'il est disponible, et transmettre des arguments séparés au lanceur natif ou Flatpak.
+- [ ] Valider réellement ces deux parcours et leurs retours dans Gaming sur Bazzite ; aucun test unitaire de commande ne remplace un lancement de jeu réel.
 - [x] Ajouter dans Gaming un gestionnaire accessible à la manette pour retirer les dossiers mémorisés sans toucher aux jeux ; un support externe débranché peut aussi être retiré.
 - [ ] Valider réellement les montages externes et les retours de supports amovibles sur Bazzite.
 
@@ -77,6 +79,8 @@ Les jeux ne sont jamais modifiés, déplacés, renommés ou supprimés. Les édi
 - [x] Eden : transmettre un fichier Switch/homebrew comme argument de jeu avec le plein écran (`-f`) ; le Flatpak reçoit uniquement le dossier sélectionné en lecture seule.
 - [x] Construire chaque lancement comme une liste d'arguments explicites ; aucun shell ni commande issue d'un nom de fichier.
 - [x] Pour Flatpak, n'accorder qu'un accès en lecture au dossier choisi ; aucun accès global au dossier personnel n'est ajouté.
+- [x] RPCS3 : lancer uniquement la cible `EBOOT.BIN` validée, sans shell, avec le dossier sélectionné monté en lecture seule si Flatpak est utilisé.
+- [x] RetroArch : lancer les entrées de playlists avec le cœur configuré lorsqu'il existe ; pour Flatpak, limiter les accès en lecture au dossier de contenu et au dossier du cœur externe si nécessaire.
 - [x] Revalider l'existence du fichier, son appartenance au dossier choisi et la disponibilité de l'émulateur immédiatement avant le lancement.
 - [ ] Tester le lancement et le retour au Gaming Mode sur Bazzite réel, avec manette et jeux sur stockage externe.
 
