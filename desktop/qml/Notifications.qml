@@ -79,7 +79,7 @@ ApplicationWindow {
                     radius: 11
                     color: isRead ? window.themeColors.surface : window.themeColors.surface_elevated
                     border.width: isRead ? 1 : 2
-                    border.color: isRead ? window.themeColors.border : window.cyan
+                    border.color: isRead ? window.themeColors.border : window.accentA
                     RowLayout {
                         id: content
                         anchors.fill: parent
@@ -89,7 +89,7 @@ ApplicationWindow {
                             Layout.preferredWidth: 3
                             Layout.fillHeight: true
                             radius: 2
-                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.cyan : window.magenta
+                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.accentA : window.accentB
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
