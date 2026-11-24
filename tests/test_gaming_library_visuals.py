@@ -42,6 +42,21 @@ class GamingLibraryVisualTests(unittest.TestCase):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")', source)
 
+    def test_game_cards_distinguish_selected_hovered_and_keyboard_focused_states(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("window.selectedIndex === gameCard.index || gameCard.hovered", qml)
+        self.assertIn("gameCard.activeFocus ? 2 : 1", qml)
+        self.assertIn("gameCard.hovered ? window.accentB", qml)
+        self.assertIn("visible: window.selectedIndex === gameCard.index || gameCard.hovered", qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
+
+    def test_category_buttons_keep_selection_when_hovering_other_categories(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("modelData === window.selectedCategory || categoryButton.hovered", qml)
+        self.assertIn("visible: modelData === window.selectedCategory", qml)
+
+
 
 if __name__ == "__main__":
     unittest.main()
