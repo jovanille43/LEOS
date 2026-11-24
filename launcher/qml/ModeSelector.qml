@@ -264,7 +264,68 @@ ApplicationWindow {
             color: window.colorB; opacity: 0.12
         }
 
+        // Ambient LEOS particles: restrained, GPU-friendly QML items rather
+        // than a static decorative circle. Disabled with the global animation setting.
+        Item {
+            id: ambientParticles
+            anchors.fill: parent
+            z: 0
+            clip: true
+            Repeater {
+                model: 30
+                delegate: Item {
+                    id: particle
+                    required property int index
+                    property real originX: ((index * 73 + 19) % 997) / 997 * ambientParticles.width
+                    property real originY: ((index * 137 + 41) % 991) / 991 * ambientParticles.height
+                    x: originX
+                    y: originY
+                    width: 5 + (index % 3) * 2
+                    height: width
+                    visible: modeSelectorController.animationsEnabled
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width * 2.8
+                        height: width
+                        radius: width / 2
+                        color: index % 2 === 0 ? window.colorA : window.colorB
+                        opacity: 0.10
+                    }
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        height: width
+                        radius: width / 2
+                        color: index % 2 === 0 ? window.colorAText : window.colorBText
+                        opacity: 0.42
+                    }
+                    SequentialAnimation on y {
+                        running: modeSelectorController.animationsEnabled
+                        loops: Animation.Infinite
+                        NumberAnimation {
+                            to: Math.max(0, particle.originY - 58 - (particle.index % 5) * 13)
+                            duration: 5200 + (particle.index % 7) * 730
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            to: particle.originY
+                            duration: 5200 + (particle.index % 7) * 730
+                            easing.type: Easing.InOutSine
+                        }
+                    }
+                    SequentialAnimation on opacity {
+                        running: modeSelectorController.animationsEnabled
+                        loops: Animation.Infinite
+                        NumberAnimation { to: 0.18; duration: 1700 + (particle.index % 4) * 300 }
+                        NumberAnimation { to: 0.78; duration: 2100 + (particle.index % 5) * 260 }
+                    }
+                }
+            }
+        }
+
         ColumnLayout {
+            z: 1
             anchors.fill: parent
             anchors.margins: window.width < 1120 ? 24 : 48
             spacing: window.height < 760 ? 14 : 20
