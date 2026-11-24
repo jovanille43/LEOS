@@ -143,6 +143,36 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
                 load_catalog(path)
 
 
+    def test_store_catalogue_entries_are_keyboard_accessible_buttons(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Catalogue d\'applications LEOS"', qml)
+        self.assertIn("id: appRowButton", qml)
+        self.assertIn("activeFocusOnTab: true", qml)
+        self.assertIn("Accessible.selected: window.selectedRow === index", qml)
+        self.assertIn("appRowButton.activeFocus", qml)
+        self.assertNotIn("MouseArea {", qml)
+
+    def test_store_search_and_category_filters_reset_stale_details(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("onTextChanged: window.clearSelection()", qml)
+        self.assertIn("onCurrentTextChanged: window.clearSelection()", qml)
+        self.assertIn("function clearSelection()", qml)
+        self.assertIn("function selectApp(", qml)
+
+    def test_store_details_action_and_controls_expose_accessible_focus_states(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Rechercher dans la Boutique LEOS"', qml)
+        self.assertIn('Accessible.name: "Filtrer par catégorie"', qml)
+        self.assertIn("installRemoveButton.activeFocus", qml)
+        self.assertIn("Une confirmation sera demandée avant toute modification.", qml)
+
+    def test_store_window_and_catalogue_details_adapt_to_compact_widths(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("minimumWidth: 900", qml)
+        self.assertIn("window.width < 1080 ? 18 : 30", qml)
+        self.assertIn("Layout.preferredWidth: window.width < 1080 ? 300 : 360", qml)
+        self.assertIn("Layout.minimumWidth: 280", qml)
+
     def test_v2_emulator_catalogue_has_curated_automatic_flathub_apps(self):
         items = load_catalog(ROOT / "shop" / "catalog.json")
         emulators = {
