@@ -317,6 +317,14 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('text: "OUVRIR DESKTOP"', qml)
         self.assertIn('text: "OUVRIR GAMING"', qml)
 
+    def test_mode_cards_use_preference_aware_hover_and_focus_transitions(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertGreaterEqual(qml.count("Behavior on color"), 2)
+        self.assertGreaterEqual(qml.count("Behavior on border.color"), 2)
+        self.assertGreaterEqual(qml.count("Behavior on opacity"), 2)
+        self.assertIn("enabled: modeSelectorController.animationsEnabled", qml)
+        self.assertIn("Easing.OutCubic", qml)
+
     def test_mode_selector_adapts_outer_spacing_and_last_mode_accent(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
         self.assertIn("anchors.margins: window.width < 1120 ? 24 : 48", qml)
