@@ -157,6 +157,8 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertGreaterEqual(qml.count("color: window.accentA"), 3)
         self.assertIn("Qt.color(controlCenter.themeColorA)", qml)
         self.assertIn("Qt.color(controlCenter.themeColorB)", qml)
+        self.assertIn('text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "PERSONNALISER A/B"', qml)
+        self.assertEqual(qml.count("visible: controlCenter.themeColorsConfigured"), 2)
 
 
 if __name__ == "__main__":
