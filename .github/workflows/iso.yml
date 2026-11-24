@@ -366,52 +366,7 @@ jobs:
           VARIANT: ${{ matrix.variant }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import re
-          from pathlib import Path
-
-          iso = Path(os.environ["ISO_NAME"])
-          source_sha = os.environ["SOURCE_SHA"]
-          image_digest = os.environ["IMAGE_DIGEST"]
-          variant = os.environ["VARIANT"]
-          image_tag = os.environ["IMAGE_TAG"]
-          if not re.fullmatch(r"[0-9a-f]{40}", source_sha):
-              raise SystemExit("Invalid LEOS source commit in installer provenance.")
-          if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_digest):
-              raise SystemExit("Invalid immutable image digest in installer provenance.")
-          if variant not in {"standard", "nvidia-legacy", "nvidia-modern"}:
-              raise SystemExit("Unknown LEOS installer variant.")
-          if not iso.is_file() or iso.stat().st_size <= 0:
-              raise SystemExit("Installer ISO is missing or empty.")
-          hasher = hashlib.sha256()
-          with iso.open("rb") as stream:
-              for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
-                  hasher.update(chunk)
-          checksum = hasher.hexdigest()
-          checksum_file = Path(str(iso) + ".sha256")
-          digest_file = Path(str(iso) + ".source-digest")
-          if not checksum_file.is_file() or checksum_file.read_text().split()[0] != checksum:
-              raise SystemExit("Installer checksum does not match the ISO.")
-          if not digest_file.is_file() or digest_file.read_text().strip() != image_digest:
-              raise SystemExit("Installer source digest does not match the verified image.")
-          manifest = {
-              "product": "LEOS",
-              "variant": variant,
-              "iso_file": iso.name,
-              "iso_sha256": checksum,
-              "image_tag": image_tag,
-              "source_commit": source_sha,
-              "source_image_digest": image_digest,
-              "installer_uefi_qemu_smoke": "passed",
-              "validation_scope": "Anaconda WebUI boot verified; full installed LEOS session and physical hardware require separate validation"
-          }
-          output = Path(str(iso) + ".manifest.json")
-          output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          print(f"Wrote {output}")
-          PY
+          python3 tools/installer_manifest.py "$ISO_NAME" "$VARIANT" "$IMAGE_TAG" "$SOURCE_SHA" "$IMAGE_DIGEST"
 
       - name: Upload installer ISO and checksum
         if: github.event_name != 'pull_request'
