@@ -386,7 +386,11 @@ jobs:
               raise SystemExit("Unknown LEOS installer variant.")
           if not iso.is_file() or iso.stat().st_size <= 0:
               raise SystemExit("Installer ISO is missing or empty.")
-          checksum = hashlib.sha256(iso.read_bytes()).hexdigest()
+          hasher = hashlib.sha256()
+          with iso.open("rb") as stream:
+              for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
+                  hasher.update(chunk)
+          checksum = hasher.hexdigest()
           checksum_file = Path(str(iso) + ".sha256")
           digest_file = Path(str(iso) + ".source-digest")
           if not checksum_file.is_file() or checksum_file.read_text().split()[0] != checksum:
