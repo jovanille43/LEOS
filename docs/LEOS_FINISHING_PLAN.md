@@ -11,7 +11,7 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Vérifier que le sélecteur, son QML et les ressources de bureau sont présents dans l'image publiée.
 - [x] Mettre le choix d'activation du profil LEOS au premier plan pour le clavier et la manette.
 - [ ] Valider l'ensemble du parcours après une installation complète de l'ISO courante dans une VM : création de compte, ouverture de session, identité A/B, activation Desktop, Gaming et retour Desktop.
-- [ ] Ajouter une vue d'état du premier démarrage qui indique les étapes terminées et celles laissées volontairement de côté.
+- [x] Ajouter une vue d'état du premier démarrage qui indique les étapes terminées et celles laissées volontairement de côté.
 
 ### 2. Identité visuelle cohérente
 
