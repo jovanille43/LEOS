@@ -81,28 +81,96 @@ ApplicationWindow {
             Item { Layout.fillWidth: true }
             Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
             Button {
+                id: modesButton
                 text: "MODES"
                 onClicked: {
                     window.launchApplication("leos-mode-selector.desktop", "le sélecteur de modes")
                 }
+                background: Rectangle {
+                    radius: 9
+                    color: modesButton.down || modesButton.hovered || modesButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: modesButton.activeFocus ? 2 : 1
+                    border.color: modesButton.activeFocus ? window.cyan
+                                  : modesButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: modesButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
             Button {
+                id: controlCenterButton
                 text: "CENTRE DE CONTRÔLE"
                 onClicked: {
                     window.launchApplication("leos-control-center.desktop", "le Centre de contrôle")
                 }
+                background: Rectangle {
+                    radius: 9
+                    color: controlCenterButton.down || controlCenterButton.hovered || controlCenterButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: controlCenterButton.activeFocus ? 2 : 1
+                    border.color: controlCenterButton.activeFocus ? window.cyan
+                                  : controlCenterButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: controlCenterButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
             Button {
+                id: notificationsButton
                 text: applicationCatalog.unreadNotificationCount > 0
                       ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
                       : "NOTIFICATIONS"
                 onClicked: {
                     window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
                 }
+                background: Rectangle {
+                    radius: 9
+                    color: notificationsButton.down || notificationsButton.hovered || notificationsButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: notificationsButton.activeFocus ? 2 : 1
+                    border.color: notificationsButton.activeFocus ? window.cyan
+                                  : notificationsButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: notificationsButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
             Button {
+                id: refreshButton
                 text: "ACTUALISER"
                 onClicked: applicationCatalog.refresh()
+                background: Rectangle {
+                    radius: 9
+                    color: refreshButton.down || refreshButton.hovered || refreshButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: refreshButton.activeFocus ? 2 : 1
+                    border.color: refreshButton.activeFocus ? window.cyan
+                                  : refreshButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: refreshButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
         }
 
@@ -113,7 +181,12 @@ ApplicationWindow {
             font.pixelSize: 16
             color: window.themeColors.text
             onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : window.themeColors.border }
+            background: Rectangle {
+                radius: 12
+                color: window.themeColors.surface
+                border.width: search.activeFocus ? 2 : 1
+                border.color: search.activeFocus ? window.cyan : window.themeColors.border
+            }
         }
 
         RowLayout {
@@ -240,8 +313,8 @@ ApplicationWindow {
                                 color: appMouse.containsMouse || keyboardFocused
                                        ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: keyboardFocused ? 2 : 1
-                                border.color: keyboardFocused ? window.accentA
-                                              : appMouse.containsMouse ? window.colorAText
+                                border.color: keyboardFocused ? window.cyan
+                                              : appMouse.containsMouse ? window.accentB
                                               : window.themeColors.border
 
                                 Rectangle {
