@@ -43,21 +43,21 @@ ApplicationWindow {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
-        spacing: 18
+        anchors.margins: window.width < 900 ? 16 : 28
+        spacing: window.width < 900 ? 12 : 18
 
         RowLayout {
             Layout.fillWidth: true
             RowLayout {
-                spacing: 10
+                spacing: window.width < 900 ? 7 : 10
                 Image {
                     id: desktopMenuLogo
                     source: leosTheme.desktopLogoUrl
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
-                    Layout.preferredWidth: 92
-                    Layout.preferredHeight: 52
+                    Layout.preferredWidth: window.width < 900 ? 70 : 92
+                    Layout.preferredHeight: window.width < 900 ? 42 : 52
                     visible: status === Image.Ready
                 }
                 ColumnLayout {
@@ -65,9 +65,9 @@ ApplicationWindow {
                     Label {
                         text: "LEOS"
                         color: window.themeColors.text
-                        font.pixelSize: 27
+                        font.pixelSize: window.width < 900 ? 23 : 27
                         font.weight: Font.Black
-                        font.letterSpacing: 5
+                        font.letterSpacing: window.width < 900 ? 3 : 5
                         visible: desktopMenuLogo.status !== Image.Ready
                     }
                     Label {
@@ -79,7 +79,12 @@ ApplicationWindow {
                 }
             }
             Item { Layout.fillWidth: true }
-            Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
+            Label {
+                text: applicationCatalog.applicationCount() + " applications détectées"
+                color: window.muted
+                font.pixelSize: 11
+                visible: window.width >= 980
+            }
             Button {
                 id: modesButton
                 text: "MODES"
@@ -105,7 +110,7 @@ ApplicationWindow {
             }
             Button {
                 id: controlCenterButton
-                text: "CENTRE DE CONTRÔLE"
+                text: window.width < 900 ? "CONTRÔLE" : "CENTRE DE CONTRÔLE"
                 onClicked: {
                     window.launchApplication("leos-control-center.desktop", "le Centre de contrôle")
                 }
@@ -129,8 +134,9 @@ ApplicationWindow {
             Button {
                 id: notificationsButton
                 text: applicationCatalog.unreadNotificationCount > 0
-                      ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
-                      : "NOTIFICATIONS"
+                      ? (window.width < 900 ? "NOTIFS · " : "NOTIFICATIONS · ") + applicationCatalog.unreadNotificationCount
+                      : (window.width < 900 ? "NOTIFS" : "NOTIFICATIONS")
+                Accessible.name: "Ouvrir le centre de notifications LEOS"
                 onClicked: {
                     window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
                 }
@@ -153,7 +159,8 @@ ApplicationWindow {
             }
             Button {
                 id: refreshButton
-                text: "ACTUALISER"
+                text: window.width < 900 ? "↻" : "ACTUALISER"
+                Accessible.name: "Actualiser le catalogue d'applications"
                 onClicked: applicationCatalog.refresh()
                 background: Rectangle {
                     radius: 9
@@ -192,10 +199,10 @@ ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 18
+            spacing: window.width < 900 ? 12 : 18
 
             Rectangle {
-                Layout.preferredWidth: 205
+                Layout.preferredWidth: window.width < 900 ? 160 : 205
                 Layout.fillHeight: true
                 radius: 15
                 color: window.themeColors.surface
@@ -282,8 +289,8 @@ ApplicationWindow {
                         keyNavigationEnabled: true
                         keyNavigationWraps: false
                         activeFocusOnTab: true
-                        cellWidth: 188
-                        cellHeight: 124
+                        cellWidth: window.width < 900 ? 164 : 188
+                        cellHeight: window.width < 900 ? 116 : 124
                         model: applicationCatalog
                         delegate: Item {
                             required property string name
