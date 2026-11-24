@@ -407,12 +407,14 @@ class BuildWorkflowTests(unittest.TestCase):
 
     def test_iso_artifact_includes_a_verified_provenance_manifest(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        generator = (ROOT / "tools/installer_manifest.py").read_text(encoding="utf-8")
         self.assertIn("Write installer provenance manifest", source)
-        self.assertIn('"iso_sha256": checksum', source)
-        self.assertIn('"source_commit": source_sha', source)
-        self.assertIn('"source_image_digest": image_digest', source)
-        self.assertIn('"installer_uefi_qemu_smoke": "passed"', source)
-        self.assertIn("full installed LEOS session and physical hardware require separate validation", source)
+        self.assertIn('python3 tools/installer_manifest.py "$ISO_NAME"', source)
+        self.assertIn('"iso_sha256": iso_checksum', generator)
+        self.assertIn('"source_commit": source_commit', generator)
+        self.assertIn('"source_image_digest": source_image_digest', generator)
+        self.assertIn('"installer_uefi_qemu_smoke": "passed"', generator)
+        self.assertIn("full installed LEOS session and physical hardware require separate validation", generator)
         self.assertIn('${{ steps.image.outputs.filename }}.manifest.json', source)
         self.assertLess(
             source.index("Boot installer ISO with UEFI firmware in QEMU"),
