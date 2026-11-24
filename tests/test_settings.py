@@ -25,6 +25,7 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(settings.get("transition_app_policy"), "ask")
             self.assertFalse(settings.get("onboarding_complete"))
             self.assertEqual(settings.get("desktop_appearance_setup"), "pending")
+            self.assertEqual(settings.get("appearance_mode"), "dark")
             self.assertFalse(path.exists())
 
     def test_onboarding_completion_persists_between_instances(self) -> None:
@@ -34,6 +35,16 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertFalse(settings.get("onboarding_complete"))
             settings.set("onboarding_complete", True)
             self.assertTrue(SettingsStore(path).get("onboarding_complete"))
+
+    def test_light_dark_and_automatic_appearance_preferences_persist(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            settings = SettingsStore(path)
+            for mode in ("light", "dark", "auto"):
+                settings.set("appearance_mode", mode)
+                self.assertEqual(SettingsStore(path).get("appearance_mode"), mode)
+            with self.assertRaises(ValueError):
+                settings.set("appearance_mode", "sunset")
 
     def test_desktop_appearance_choice_persists_between_instances(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
