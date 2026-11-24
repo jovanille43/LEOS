@@ -114,6 +114,20 @@ class GamingAccessibilityTests(unittest.TestCase):
             "BOUTON DU BAS · VALIDER   BOUTON DROIT · RETOUR",
         )
 
+    def test_gamepad_status_uses_compact_accessible_surface(self):
+        self.assertIn('Accessible.name: "État des manettes"', self.qml)
+        self.assertIn("Accessible.description: leos.gamepadStatus", self.qml)
+        self.assertIn("Layout.preferredWidth: window.width < 1360 ? 190 : 250", self.qml)
+        self.assertIn("elide: Text.ElideRight", self.qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", self.qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", self.qml)
+
+    def test_gaming_main_frame_and_search_width_are_responsive(self):
+        self.assertIn("anchors.margins: window.width < 1280 || window.height < 760 ? 20 : 34", self.qml)
+        self.assertIn("spacing: window.height < 760 ? 15 : 22", self.qml)
+        self.assertIn("Math.max(170, Math.min(270, window.width * 0.19))", self.qml)
+
+
 
 if __name__ == "__main__":
     unittest.main()
