@@ -22,11 +22,12 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 ### 3. Gaming plug-and-play
 
-- [x] Bibliothèque unifiée et navigation clavier/manette.
-- [x] Détection des émulateurs et gestion des profils de contrôleurs.
-- [ ] Compléter les imports, la détection des jeux et les parcours de lancement par plateforme.
-- [ ] Terminer l'intégration Eden pour Switch avec transparence sur les prérequis, les sources et la compatibilité.
-- [ ] Tester les scénarios de manette, veille/reprise, écrans multiples et GPU hybrides sur matériel réel.
+- [x] Bibliothèque unifiée et navigation clavier/manette : Steam, Heroic, Lutris, playlists RetroArch et ajout manuel.
+- [x] Détection en lecture seule des sept émulateurs, profils de manettes et assistant de configuration Eden (clés/firmware locaux, prérequis et ouverture de l'émulateur installé).
+- [x] Imports et commandes de lancement depuis les dossiers choisis par l'utilisateur pour Dolphin, PCSX2, PPSSPP, melonDS, Eden et RPCS3 ; aucune recherche globale de ROM.
+- [x] Import des playlists RetroArch avec le cœur indiqué par l'entrée ou le cœur par défaut de la playlist lorsqu'il est disponible.
+- [ ] Ajouter des assistants de configuration BIOS/firmware guidés pour les autres émulateurs et clarifier les cœurs RetroArch manquants sans les installer implicitement.
+- [ ] Valider installations et lancements réels sur Bazzite, notamment Eden et RPCS3, ainsi que stockage externe, veille/reprise, écrans multiples et GPU hybrides.
 
 ### 4. Centre de contrôle intelligent
 
@@ -45,9 +46,10 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 ### 6. Sécurité, sauvegarde et récupération
 
 - [x] Appui sur les déploiements OSTree/Bazzite et documentation du rollback.
+- [x] Inventaire en lecture seule du déploiement démarré, des autres entrées, des préparations et des entrées épinglées ; aucune suppression ni transaction automatique.
 - [x] Sauvegarde avant modification du profil Plasma.
-- [ ] Ajouter un état de récupération compréhensible depuis le Centre de contrôle.
-- [ ] Tester réellement mise à jour, ancien déploiement, rollback et conservation des données.
+- [ ] Transformer l'inventaire en parcours de récupération guidé : expliquer les options sûres, les prérequis et les conséquences avant de demander une confirmation.
+- [ ] Tester réellement mise à jour, ancien déploiement, rollback et conservation des données dans une VM.
 
 ### 7. Expérience Desktop complète
 
