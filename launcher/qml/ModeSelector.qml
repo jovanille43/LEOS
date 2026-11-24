@@ -264,50 +264,50 @@ ApplicationWindow {
             color: window.colorB; opacity: 0.12
         }
 
-        // A restrained PS5-inspired particle field: slow, layered drift using
-        // the user's own A/B accents. It stays behind the cards and can be
-        // disabled through the existing animation preference.
+        // Cinematic hybrid atmosphere: fine suspended dust, quiet filaments
+        // and a few luminous nodes. The user's A/B colors remain the only
+        // chromatic accents; disabling motion leaves a calm static scene.
         Repeater {
-            model: 44
+            model: 84
             delegate: Item {
                 required property int index
                 property real originX: (index * 173 + 41) % Math.max(1, modeSelectorContent.width)
                 property real originY: (index * 97 + 23) % Math.max(1, modeSelectorContent.height)
+                property real drift: 16 + (index % 6) * 8
                 x: originX
                 y: originY
-                width: 8
-                height: 8
-                opacity: 0.18 + (index % 4) * 0.035
-                visible: modeSelectorController.animationsEnabled
+                width: index % 11 === 0 ? 12 : 6
+                height: width
+                opacity: 0.12 + (index % 5) * 0.025
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: index % 7 === 0 ? 7 : 4
+                    width: parent.width
                     height: width
                     radius: width / 2
                     color: index % 2 === 0 ? window.colorA : window.colorB
-                    opacity: 0.16
+                    opacity: index % 11 === 0 ? 0.13 : 0.075
                 }
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 2
-                    height: 2
-                    radius: 1
+                    width: index % 11 === 0 ? 3 : 1.5
+                    height: width
+                    radius: width / 2
                     color: window.themeColors.text
-                    opacity: 0.7
+                    opacity: 0.72
                 }
 
                 SequentialAnimation on x {
                     running: modeSelectorController.animationsEnabled
                     loops: Animation.Infinite
                     NumberAnimation {
-                        to: originX + (index % 2 === 0 ? 34 : -34)
-                        duration: 8500 + (index % 9) * 1150
+                        to: originX + (index % 2 === 0 ? drift : -drift)
+                        duration: 10500 + (index % 9) * 1450
                         easing.type: Easing.InOutSine
                     }
                     NumberAnimation {
                         to: originX
-                        duration: 8500 + (index % 9) * 1150
+                        duration: 10500 + (index % 9) * 1450
                         easing.type: Easing.InOutSine
                     }
                 }
@@ -315,21 +315,77 @@ ApplicationWindow {
                     running: modeSelectorController.animationsEnabled
                     loops: Animation.Infinite
                     NumberAnimation {
-                        to: originY + (index % 3 === 0 ? -42 : 42)
-                        duration: 11000 + (index % 7) * 1300
+                        to: originY + (index % 3 === 0 ? -drift * 1.35 : drift * 1.35)
+                        duration: 13000 + (index % 7) * 1700
                         easing.type: Easing.InOutSine
                     }
                     NumberAnimation {
                         to: originY
-                        duration: 11000 + (index % 7) * 1300
+                        duration: 13000 + (index % 7) * 1700
                         easing.type: Easing.InOutSine
                     }
                 }
                 SequentialAnimation on opacity {
+                    running: modeSelectorController.animationsEnabled && index % 4 === 0
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.34; duration: 3400 + (index % 5) * 420; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.10; duration: 4200 + (index % 6) * 380; easing.type: Easing.InOutSine }
+                }
+            }
+        }
+
+        // Fine, low-contrast filaments suggest depth without becoming a grid.
+        Repeater {
+            model: 16
+            delegate: Rectangle {
+                required property int index
+                width: 54 + (index % 4) * 24
+                height: 1
+                x: (index * 229 + 90) % Math.max(1, modeSelectorContent.width)
+                y: (index * 137 + 120) % Math.max(1, modeSelectorContent.height)
+                rotation: (index * 37) % 150 - 75
+                opacity: 0.055 + (index % 3) * 0.018
+                gradient: Gradient {
+                    GradientStop { position: 0; color: index % 2 === 0 ? window.colorA : window.colorB }
+                    GradientStop { position: 0.52; color: window.themeColors.text }
+                    GradientStop { position: 1; color: index % 2 === 0 ? window.colorB : window.colorA }
+                }
+            }
+        }
+
+        // A small constellation layer provides the third depth plane.
+        Repeater {
+            model: 12
+            delegate: Item {
+                required property int index
+                property real originX: (index * 307 + 190) % Math.max(1, modeSelectorContent.width)
+                property real originY: (index * 181 + 80) % Math.max(1, modeSelectorContent.height)
+                x: originX
+                y: originY
+                width: 24
+                height: 24
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 18
+                    height: 18
+                    radius: 9
+                    color: index % 2 === 0 ? window.colorA : window.colorB
+                    opacity: 0.045
+                }
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 5
+                    height: 5
+                    radius: 2.5
+                    color: window.themeColors.text
+                    opacity: 0.56
+                }
+                SequentialAnimation on opacity {
                     running: modeSelectorController.animationsEnabled
                     loops: Animation.Infinite
-                    NumberAnimation { to: 0.42; duration: 2600 + (index % 5) * 350; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 0.12; duration: 3100 + (index % 6) * 300; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.52; duration: 4200 + (index % 4) * 700; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.16; duration: 4800 + (index % 5) * 650; easing.type: Easing.InOutSine }
                 }
             }
         }
