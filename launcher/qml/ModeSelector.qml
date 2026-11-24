@@ -28,7 +28,8 @@ ApplicationWindow {
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
-    property int appearanceDialogFocusIndex: 0
+    // The recommended LEOS profile action is focused first for keyboard and gamepad users.
+    property int appearanceDialogFocusIndex: 2
     property int identityDialogFocusIndex: 0
 
     Component.onCompleted: {
@@ -47,9 +48,9 @@ ApplicationWindow {
             return
         }
         if (modeSelectorController.desktopAppearanceStatus === "pending") {
-            appearanceDialogFocusIndex = 0
+            appearanceDialogFocusIndex = 2
             appearanceDialog.open()
-            appearanceColorAButton.forceActiveFocus()
+            applyAppearanceButton.forceActiveFocus()
             return
         }
         requestModeWithIntro("desktop")
@@ -1196,6 +1197,13 @@ ApplicationWindow {
                 }
             }
             Label {
+                text: "Conseillé : active le profil LEOS pour retrouver dès cette session le fond graphite, le style et le dock de la distribution. Le choix alternatif conserve volontairement ton bureau KDE actuel."
+                color: window.colorAText
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
                 text: "Si les deux couleurs sont peu contrastées, LEOS adapte le texte sans modifier A ni B."
                 color: window.muted
                 wrapMode: Text.WordWrap
@@ -1222,7 +1230,8 @@ ApplicationWindow {
                 id: applyAppearanceButton
                 text: modeSelectorController.appearanceSetupRunning
                       ? "APPLICATION EN COURS…"
-                      : "ACTIVER L'APPARENCE LEOS"
+                      : "ACTIVER LE PROFIL LEOS · RECOMMANDÉ"
+                Accessible.description: "Appliquer l'apparence graphite LEOS, le schéma A/B, le style Plasma, les icônes et le dock après sauvegarde du bureau actuel."
                 enabled: !modeSelectorController.appearanceSetupRunning && window.draftColorAChosen && window.draftColorBChosen
                 Layout.fillWidth: true
                 onClicked: window.activateDesktopAppearance()
