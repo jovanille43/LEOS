@@ -117,7 +117,7 @@ class GamingAccessibilityTests(unittest.TestCase):
     def test_gamepad_status_uses_compact_accessible_surface(self):
         self.assertIn('Accessible.name: "État des manettes"', self.qml)
         self.assertIn("Accessible.description: leos.gamepadStatus", self.qml)
-        self.assertIn("Layout.preferredWidth: window.width < 1360 ? 190 : 250", self.qml)
+        self.assertIn("Layout.preferredWidth: window.width < 1180 ? 150 : window.width < 1360 ? 190 : 250", self.qml)
         self.assertIn("elide: Text.ElideRight", self.qml)
         self.assertIn("GradientStop { position: 0; color: window.accentA }", self.qml)
         self.assertIn("GradientStop { position: 1; color: window.accentB }", self.qml)
