@@ -85,6 +85,10 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn('text: "TOUT EST CALME"', qml)
         self.assertIn('text: "Aucune notification LEOS pour le moment."', qml)
         self.assertIn("visible: list.count === 0", qml)
+        self.assertIn("opacity: 0.05", qml)
+        self.assertIn("opacity: 0.04", qml)
+        self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("window.themeColors.accent_secondary", qml)
 
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
