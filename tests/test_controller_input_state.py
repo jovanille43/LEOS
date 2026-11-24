@@ -115,6 +115,9 @@ class ControllerInputStateTests(unittest.TestCase):
             self.assertAlmostEqual(controller.rightStickY, 0.0, places=4)
             self.assertTrue(controller.hasLeftStick)
             self.assertTrue(controller.hasRightStick)
+            controller._axis_centers = {"ABS_X": -16000, "ABS_Y": 0}
+            self.assertAlmostEqual(controller.leftStickX, 0.0, places=4)
+            self.assertAlmostEqual(controller.leftStickY, 0.0, places=4)
         finally:
             controller.shutdown()
 
