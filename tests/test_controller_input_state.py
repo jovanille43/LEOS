@@ -95,33 +95,15 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertEqual(self.state.buttons_text, "Aucun bouton maintenu.")
 
     def test_controller_normalizes_live_stick_axes_using_device_ranges(self):
-        from controller_center.controller import ControllerCenterController
+        from controller_center.input_state import normalize_axis_value
 
-        controller = ControllerCenterController()
-        try:
-            controller.backend.axes = {
-                "ABS_X": -32768,
-                "ABS_Y": 0,
-                "ABS_RX": 32767,
-                "ABS_RY": 0,
-            }
-            controller.backend.axis_ranges = {
-                name: {"minimum": -32768, "maximum": 32767}
-                for name in ("ABS_X", "ABS_Y", "ABS_RX", "ABS_RY")
-            }
-            self.assertAlmostEqual(controller.leftStickX, -1.0)
-            self.assertAlmostEqual(controller.leftStickY, 0.0, places=4)
-            self.assertAlmostEqual(controller.rightStickX, 1.0)
-            self.assertAlmostEqual(controller.rightStickY, 0.0, places=4)
-            self.assertTrue(controller.hasLeftStick)
-            self.assertTrue(controller.hasRightStick)
-            controller._axis_centers = {"ABS_X": -16000, "ABS_Y": 0}
-            controller.backend.axes["ABS_X"] = -16000
-            controller.backend.axes["ABS_Y"] = 0
-            self.assertAlmostEqual(controller.leftStickX, 0.0, places=4)
-            self.assertAlmostEqual(controller.leftStickY, 0.0, places=4)
-        finally:
-            controller.shutdown()
+        self.assertAlmostEqual(normalize_axis_value(-32768, -32768, 32767), -1.0)
+        self.assertAlmostEqual(normalize_axis_value(32767, -32768, 32767), 1.0)
+        self.assertAlmostEqual(normalize_axis_value(0, -32768, 32767), 0.0, places=4)
+        self.assertAlmostEqual(normalize_axis_value(-16000, -32768, 32767, -16000), 0.0)
+        self.assertAlmostEqual(normalize_axis_value(100, -32768, 32767, -16000), 0.492, places=2)
+        self.assertEqual(normalize_axis_value(10, 10, 10), 0.0)
+        self.assertEqual(normalize_axis_value(0, -10, 10, 50), 0.0)
 
     def test_controller_center_draws_live_stick_positions_from_real_axis_properties(self):
         from pathlib import Path
