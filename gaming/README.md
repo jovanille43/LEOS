@@ -71,3 +71,10 @@ Les manifestes Steam ne peuvent fournir un chemin d'installation que si le nom d
 ## Fonds d'écran de référence
 
 Le dépôt fournit un fond Gaming 4K dans `branding/wallpapers/gaming-leos.svg`. Il réutilise directement `branding/gaming-logo.jpeg` par référence relative, sans créer une version altérée de l'emblème. Le fichier est empaqueté avec les autres ressources LEOS ; il reste une ressource sélectionnable via les paramètres natifs KDE et n'est pas appliqué automatiquement à l'arrière-plan de l'application Gaming. Le rendu SVG lié attend encore une validation sur Bazzite.
+
+
+## Navigation et fond animé
+
+Le bouton **RETOUR DESKTOP** reste visible dans l'en-tête Gaming et ouvre la confirmation de retour vers KDE ; le panneau rapide conserve aussi cette action pour les utilisateurs à la manette. Le sélecteur et Gaming partagent un fond de particules animé discret, piloté par les couleurs A/B de l'utilisateur et désactivé lorsque les animations LEOS le sont. Le profil de fond d'écran du bureau KDE reste une ressource distincte, appliquée uniquement après le choix explicite de l'utilisateur.
+
+Le bootstrap des huit applications Gaming exige désormais au moins **20 Gio libres** sur le système de fichiers du profil utilisateur avant de commencer une transaction Flatpak. Si l'espace est insuffisant, aucune nouvelle application n'est installée et la préparation sera réessayée après agrandissement du disque ou libération d'espace.
