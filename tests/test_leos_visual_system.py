@@ -25,6 +25,16 @@ class LeosVisualSystemTests(unittest.TestCase):
         self.assertIn('property: "opacity"', atmosphere)
         self.assertIn("baseOpacity", atmosphere)
 
+    def test_gaming_particles_drift_inside_their_screen_positions(self):
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        atmosphere = gaming.split("id: gamingContent", 1)[1].split("ColumnLayout {", 1)[0]
+        self.assertIn("property real baseX:", atmosphere)
+        self.assertIn("property real baseY:", atmosphere)
+        self.assertIn("property real driftX:", atmosphere)
+        self.assertIn("property real driftY:", atmosphere)
+        self.assertIn('property: "x"', atmosphere)
+        self.assertIn('property: "y"', atmosphere)
+
     def test_operational_screens_use_the_same_subtle_ab_highlight(self):
         screens = [
             "control_center/qml/Main.qml",
