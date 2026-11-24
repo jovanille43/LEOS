@@ -89,6 +89,45 @@ class ControllerCenterController(QObject):
     def axesText(self) -> str:
         return self.axes_text
 
+    def _normalized_axis(self, name: str) -> float:
+        """Return a calibrated -1..1 stick position using evdev's real axis range."""
+        value = self.backend.axes.get(name)
+        limits = self.backend.axis_ranges.get(name)
+        if value is None or not limits:
+            return 0.0
+        minimum = int(limits.get("minimum", -32768))
+        maximum = int(limits.get("maximum", 32767))
+        span = maximum - minimum
+        if span <= 0:
+            return 0.0
+        center = (minimum + maximum) / 2.0
+        normalized = (float(value) - center) / (span / 2.0)
+        return max(-1.0, min(1.0, normalized))
+
+    @Property(bool, notify=changed)
+    def hasLeftStick(self) -> bool:
+        return all(name in self.backend.axis_ranges for name in ("ABS_X", "ABS_Y"))
+
+    @Property(bool, notify=changed)
+    def hasRightStick(self) -> bool:
+        return all(name in self.backend.axis_ranges for name in ("ABS_RX", "ABS_RY"))
+
+    @Property(float, notify=changed)
+    def leftStickX(self) -> float:
+        return self._normalized_axis("ABS_X")
+
+    @Property(float, notify=changed)
+    def leftStickY(self) -> float:
+        return self._normalized_axis("ABS_Y")
+
+    @Property(float, notify=changed)
+    def rightStickX(self) -> float:
+        return self._normalized_axis("ABS_RX")
+
+    @Property(float, notify=changed)
+    def rightStickY(self) -> float:
+        return self._normalized_axis("ABS_RY")
+
     @Property(str, notify=changed)
     def profileName(self) -> str:
         return PROFILE_LABELS[self._profile]
