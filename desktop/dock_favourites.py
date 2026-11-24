@@ -20,6 +20,7 @@ from leos_core.json_utils import json_nesting_within_limit
 
 
 DEFAULT_PINNED_APPS = (
+    "leos-mode-selector.desktop",
     "leos-menu.desktop",
     "org.kde.dolphin.desktop",
     "firefox.desktop",
