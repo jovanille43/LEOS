@@ -181,18 +181,60 @@ ApplicationWindow {
             }
         }
 
-        TextField {
-            id: search
+        RowLayout {
             Layout.fillWidth: true
-            placeholderText: "Rechercher une application…"
-            font.pixelSize: 16
-            color: window.themeColors.text
-            onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle {
-                radius: 12
-                color: window.themeColors.surface
-                border.width: search.activeFocus ? 2 : 1
-                border.color: search.activeFocus ? window.cyan : window.themeColors.border
+            spacing: 8
+            TextField {
+                id: search
+                Layout.fillWidth: true
+                placeholderText: "Rechercher une application…"
+                font.pixelSize: 16
+                color: window.themeColors.text
+                Accessible.name: "Rechercher une application"
+                Accessible.description: "Filtrer les applications par nom, catégorie ou identifiant."
+                onTextChanged: applicationCatalog.setSearch(text)
+                background: Rectangle {
+                    radius: 12
+                    color: window.themeColors.surface
+                    border.width: search.activeFocus ? 2 : 1
+                    border.color: search.activeFocus ? window.cyan : window.themeColors.border
+                    Behavior on border.color { ColorAnimation { duration: 130 } }
+                    Label {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 13
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "⌕"
+                        color: window.muted
+                        font.pixelSize: 20
+                    }
+                }
+                leftPadding: 38
+            }
+            ToolButton {
+                id: clearSearchButton
+                visible: search.text.length > 0
+                Accessible.name: "Effacer la recherche"
+                Accessible.description: "Afficher de nouveau toutes les applications de la catégorie."
+                text: "×"
+                onClicked: {
+                    search.clear()
+                    search.forceActiveFocus()
+                }
+                background: Rectangle {
+                    radius: 9
+                    color: clearSearchButton.hovered || clearSearchButton.activeFocus
+                        ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: clearSearchButton.activeFocus ? 2 : 1
+                    border.color: clearSearchButton.activeFocus ? window.themeColors.text
+                        : clearSearchButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: clearSearchButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 20
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
         }
 
@@ -241,14 +283,27 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                            contentItem: Label {
-                                text: categoryMenuButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
-                                leftPadding: 10
-                                verticalAlignment: Text.AlignVCenter
-                                elide: Text.ElideRight
+                            Accessible.name: modelData
+                            Accessible.description: "Afficher les applications de la catégorie " + modelData + "."
+                            Accessible.selected: categoryMenuButton.categorySelected
+                            contentItem: RowLayout {
+                                spacing: 6
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: categoryMenuButton.text
+                                    color: window.themeColors.text
+                                    font.pixelSize: 12
+                                    font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
+                                    leftPadding: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: categoryMenuButton.categorySelected ? "›" : ""
+                                    color: window.cyan
+                                    font.pixelSize: 16
+                                    rightPadding: 8
+                                }
                             }
                         }
                     }
@@ -299,6 +354,10 @@ ApplicationWindow {
                             required property string category
                             required property string description
                             required property bool isPinned
+                            Accessible.role: Accessible.Button
+                            Accessible.name: name
+                            Accessible.description: category + ". " + description + ". Activer pour lancer l'application."
+                            Accessible.focusable: true
                             property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem
                             width: appGrid.cellWidth - 8
                             height: appGrid.cellHeight - 8
@@ -363,6 +422,8 @@ ApplicationWindow {
                                         ToolButton {
                                             id: favouriteMoveUpButton
                                             text: "↑"
+                                            Accessible.name: "Monter " + name + " dans les favoris"
+                                            Accessible.description: "Déplacer cette application avant la précédente."
                                             enabled: visible && search.text.length === 0 && index > 0
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
@@ -374,6 +435,8 @@ ApplicationWindow {
                                         ToolButton {
                                             id: favouriteMoveDownButton
                                             text: "↓"
+                                            Accessible.name: "Descendre " + name + " dans les favoris"
+                                            Accessible.description: "Déplacer cette application après la suivante."
                                             enabled: visible && search.text.length === 0 && index < appGrid.count - 1
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
@@ -386,6 +449,8 @@ ApplicationWindow {
                                     ToolButton {
                                         id: favouritePinButton
                                         text: isPinned ? "★" : "☆"
+                                        Accessible.name: isPinned ? "Retirer " + name + " des favoris" : "Ajouter " + name + " aux favoris"
+                                        Accessible.description: "Synchroniser cette application avec les favoris du dock LEOS."
                                         onClicked: {
                                             const wasPinned = isPinned
                                             if (!applicationCatalog.toggleFavourite(desktopId))
@@ -394,7 +459,13 @@ ApplicationWindow {
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
                                         contentItem: Label { text: favouritePinButton.text; color: window.magenta; font.pixelSize: 18 }
-                                        background: Rectangle { color: "transparent" }
+                                        background: Rectangle {
+                                            radius: 7
+                                            color: favouritePinButton.hovered || favouritePinButton.activeFocus
+                                                ? window.themeColors.surface_elevated : "transparent"
+                                            border.width: favouritePinButton.activeFocus ? 1 : 0
+                                            border.color: window.accentB
+                                        }
                                     }
                                 }
                                 Label { text: name; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
