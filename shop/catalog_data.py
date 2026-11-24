@@ -25,6 +25,14 @@ _REQUIRED_FIELDS = frozenset({
 _ALLOWED_FIELDS = _REQUIRED_FIELDS | {"bundled"}
 
 
+def catalog_categories(items: list[dict[str, Any]]) -> list[str]:
+    """Return unique category names in stable case-insensitive display order."""
+    return sorted(
+        {str(item["category"]) for item in items if isinstance(item.get("category"), str)},
+        key=str.casefold,
+    )
+
+
 def load_catalog(path: Path) -> list[dict[str, Any]]:
     """Load a small trusted catalogue while rejecting unsafe or malformed files."""
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
