@@ -165,7 +165,7 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn('.normalize("NFKD")', qml)
         self.assertIn('.replace(/[\\u0300-\\u036f]/g, "")', qml)
         self.assertIn(".replace(/\\s+/g, \" \")", qml)
-        self.assertIn("[name, appId, category, description, source].join", qml)
+        self.assertIn("[name, appId, category, description, source, compatibility, operationNote].join", qml)
         self.assertIn("window.matchesSearch(name, appId, category, description, source)", qml)
 
 
