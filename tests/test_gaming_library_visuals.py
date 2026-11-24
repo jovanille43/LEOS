@@ -51,6 +51,13 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
         self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
 
+    def test_library_category_rail_and_game_details_adapt_to_compact_widths(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("Layout.preferredWidth: window.width < 1180 ? 150 : 190", qml)
+        self.assertIn("Layout.preferredWidth: window.width < 1180 ? 230 : 280", qml)
+        self.assertIn("Layout.minimumWidth: 140", qml)
+        self.assertIn("Layout.minimumWidth: 210", qml)
+
     def test_category_buttons_keep_selection_when_hovering_other_categories(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("modelData === window.selectedCategory || categoryButton.hovered", qml)
