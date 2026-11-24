@@ -97,7 +97,7 @@ ApplicationWindow {
             x: parent.width - width * 0.52
             y: -height * 0.5
             color: window.themeColors.accent_primary
-            opacity: 0.032
+            opacity: 0.05
         }
         Rectangle {
             width: 520
