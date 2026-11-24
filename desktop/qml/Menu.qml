@@ -430,7 +430,13 @@ ApplicationWindow {
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
                                             contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
-                                            background: Rectangle { color: "transparent" }
+                                            background: Rectangle {
+                                                radius: 6
+                                                color: favouriteMoveUpButton.hovered || favouriteMoveUpButton.activeFocus
+                                                    ? window.themeColors.surface_elevated : "transparent"
+                                                border.width: favouriteMoveUpButton.activeFocus ? 1 : 0
+                                                border.color: window.accentA
+                                            }
                                         }
                                         ToolButton {
                                             id: favouriteMoveDownButton
@@ -443,7 +449,13 @@ ApplicationWindow {
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
                                             contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
-                                            background: Rectangle { color: "transparent" }
+                                            background: Rectangle {
+                                                radius: 6
+                                                color: favouriteMoveDownButton.hovered || favouriteMoveDownButton.activeFocus
+                                                    ? window.themeColors.surface_elevated : "transparent"
+                                                border.width: favouriteMoveDownButton.activeFocus ? 1 : 0
+                                                border.color: window.accentB
+                                            }
                                         }
                                     }
                                     ToolButton {
