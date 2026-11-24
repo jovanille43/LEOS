@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 from leos_core.settings import SettingsStore
-from desktop.themes import (DEFAULT_COLOR_A, DEFAULT_COLOR_B, normalize_color, palette_for_colors, resolve_appearance_mode, validate_palette)
+from desktop.themes import (DEFAULT_COLOR_A, DEFAULT_COLOR_B, SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color, palette_for_colors, resolve_appearance_mode, validate_palette)
 
 
 class DynamicThemeTests(unittest.TestCase):
