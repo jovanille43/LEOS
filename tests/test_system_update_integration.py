@@ -72,6 +72,19 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertNotIn('"rollback"', module)
         self.assertNotIn('"pin"', module)
 
+    def test_control_center_offers_a_manual_non_destructive_ostree_recovery_guide(self):
+        qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        start = qml.index("id: recoveryGuideDialog")
+        end = qml.index("anchors.fill: parent", start)
+        recovery = qml[start:end]
+        self.assertIn("OUVRIR LE GUIDE DE RÉCUPÉRATION", qml)
+        self.assertIn("recoveryGuideDialog.open()", qml)
+        self.assertIn("rpm-ostree status", recovery)
+        self.assertIn("sudo rpm-ostree rollback", recovery)
+        self.assertIn("LEOS n’exécute aucune commande", recovery)
+        self.assertIn("Cette action reste entièrement manuelle", recovery)
+        self.assertNotIn("controlCenter.runRollback", qml)
+
     def test_update_installation_remains_user_controlled(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("OUVRIR BAZZITE UPDATER", qml)
