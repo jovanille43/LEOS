@@ -190,7 +190,7 @@ ApplicationWindow {
                 RowLayout {
                     spacing: 7
                     Label {
-                        text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "COULEURS A/B"
+                        text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "PERSONNALISER A/B"
                         color: window.muted
                         font.pixelSize: 9
                         font.letterSpacing: 1.4
@@ -200,6 +200,7 @@ ApplicationWindow {
                         height: 12
                         radius: 6
                         color: Qt.color(controlCenter.themeColorA)
+                        visible: controlCenter.themeColorsConfigured
                         border.color: window.themeColors.border
                         border.width: 1
                     }
@@ -208,6 +209,7 @@ ApplicationWindow {
                         height: 12
                         radius: 6
                         color: Qt.color(controlCenter.themeColorB)
+                        visible: controlCenter.themeColorsConfigured
                         border.color: window.themeColors.border
                         border.width: 1
                     }
