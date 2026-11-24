@@ -17,6 +17,14 @@ class LeosVisualSystemTests(unittest.TestCase):
             self.assertIn("GradientStop { position: 0; color: window.accentA }", source)
             self.assertIn("GradientStop { position: 1; color: window.accentB }", source)
 
+    def test_gaming_particle_twinkle_respects_reduced_motion(self):
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        atmosphere = gaming.split("id: gamingContent", 1)[1].split("ColumnLayout {", 1)[0]
+        self.assertIn("SequentialAnimation {", atmosphere)
+        self.assertIn("running: leos.animationsEnabled", atmosphere)
+        self.assertIn('property: "opacity"', atmosphere)
+        self.assertIn("baseOpacity", atmosphere)
+
     def test_operational_screens_use_the_same_subtle_ab_highlight(self):
         screens = [
             "control_center/qml/Main.qml",
