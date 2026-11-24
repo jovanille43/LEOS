@@ -405,6 +405,24 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("packages: read", source)
         self.assertIn("retention-days: 14", source)
 
+    def test_iso_artifact_includes_a_verified_provenance_manifest(self):
+        source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
+        self.assertIn("Write installer provenance manifest", source)
+        self.assertIn('"iso_sha256": checksum', source)
+        self.assertIn('"source_commit": source_sha', source)
+        self.assertIn('"source_image_digest": image_digest', source)
+        self.assertIn('"installer_uefi_qemu_smoke": "passed"', source)
+        self.assertIn("full installed LEOS session and physical hardware require separate validation", source)
+        self.assertIn('${{ steps.image.outputs.filename }}.manifest.json', source)
+        self.assertLess(
+            source.index("Boot installer ISO with UEFI firmware in QEMU"),
+            source.index("Write installer provenance manifest"),
+        )
+        self.assertLess(
+            source.index("Write installer provenance manifest"),
+            source.index("Upload installer ISO and checksum"),
+        )
+
     def test_iso_workflow_validates_image_tag_before_building(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]', source)
