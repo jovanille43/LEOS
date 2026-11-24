@@ -271,13 +271,18 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 spacing: 18
 
-                ColumnLayout {
+                ScrollView {
                     Layout.preferredWidth: window.width < 980 ? 190 : 220
                     Layout.minimumWidth: 168
                     Layout.fillHeight: true
-                    spacing: 9
+                    clip: true
+                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-                    Repeater {
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 9
+
+                        Repeater {
                         model: [
                             { label: "Vue d'ensemble", page: 0 },
                             { label: "Apparence", page: 1 },
@@ -364,12 +369,13 @@ ApplicationWindow {
                     }
 
                     Item { Layout.fillHeight: true }
-                    Label {
-                        text: "LEOS • BUILD EN DÉVELOPPEMENT"
-                        color: window.themeColors.muted_text
-                        font.pixelSize: 9
-                        wrapMode: Text.WordWrap
-                        Layout.fillWidth: true
+                        Label {
+                            text: "LEOS • BUILD EN DÉVELOPPEMENT"
+                            color: window.themeColors.muted_text
+                            font.pixelSize: 9
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
                     }
                 }
 
