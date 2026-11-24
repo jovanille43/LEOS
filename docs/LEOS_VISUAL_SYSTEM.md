@@ -12,6 +12,16 @@ LEOS doit évoquer un environnement matériel haut de gamme : calme et précis s
 - Les halos d'ambiance doivent rester faibles : ils donnent de la profondeur sans concurrencer le contenu.
 - Les couleurs sémantiques (erreur, avertissement, succès) conservent leur sens et ne sont pas remplacées par les accents de marque.
 
+## Modes d’apparence
+
+- **Sombre** : fond graphite profond, surfaces métalliques distinctes et texte clair.
+- **Clair** : fond gris très clair, panneaux blancs, surfaces secondaires nuancées et texte anthracite.
+- **Automatique** : mode clair de 07:00 à 18:59 et mode sombre de 19:00 à 06:59, selon l’heure locale.
+- Les couleurs A et B sont indépendantes de l’apparence et restent inchangées lors du basculement.
+- Les interfaces LEOS Desktop, Gaming et Centre de contrôle actualisent leurs palettes sans redémarrage.
+- Le schéma de couleurs KDE et les variantes natives du Plasma Style/Aurorae sont produits pour la même apparence. Leur application au bureau KDE reste explicitement déclenchée depuis le Centre de contrôle.
+- SDDM et le splash initial restent neutres : le profil utilisateur et son choix d’apparence ne sont pas encore disponibles avant connexion.
+
 ## Formes, espacement et profondeur
 
 - Les conteneurs principaux utilisent des rayons de 15 à 18 px ; les éléments internes, de 7 à 12 px.
