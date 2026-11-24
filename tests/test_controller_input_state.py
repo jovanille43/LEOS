@@ -117,6 +117,10 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertIn("controllerCenter.hasLeftStick", qml)
         self.assertIn("controllerCenter.hasRightStick", qml)
         self.assertIn("STICKS ANALOGIQUES", qml)
+        self.assertIn("opacity: 0.05", qml)
+        self.assertIn("opacity: 0.04", qml)
+        self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("window.themeColors.accent_secondary", qml)
 
 
 if __name__ == "__main__":
