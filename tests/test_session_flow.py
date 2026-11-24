@@ -185,6 +185,17 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("restore_backup", setup)
         self.assertIn("desktop_appearance_setup", setup)
 
+    def test_first_desktop_activation_focuses_the_recommended_leos_profile(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        request = qml.split("function requestDesktopMode()", 1)[1].split(
+            "function colorToHex", 1
+        )[0]
+        self.assertIn("appearanceDialogFocusIndex = 2", request)
+        self.assertIn("applyAppearanceButton.forceActiveFocus()", request)
+        self.assertIn("ACTIVER LE PROFIL LEOS · RECOMMANDÉ", qml)
+        self.assertIn("GARDER MON BUREAU ACTUEL", qml)
+        self.assertIn("conserve volontairement ton bureau KDE actuel", qml)
+
     def test_kde_autostart_opens_the_mode_selector(self):
         entry = (ROOT / "desktop" / "autostart" / "leos-session.desktop").read_text(
             encoding="utf-8"
