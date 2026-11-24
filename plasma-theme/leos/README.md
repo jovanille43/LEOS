@@ -46,3 +46,13 @@ Aurorae window controls all use the same source A/B endpoints
 (`#00D9FF` and `#E33BFF`) plus a neutral midpoint. LEOS transforms those
 endpoints to the user's chosen pair in the per-user theme copy, without
 modifying the packaged source assets.
+
+
+## Light and dark variants
+
+The user-scoped resource generator accepts either `dark` or `light`
+appearance. It creates distinct Plasma Style and Aurorae variants for the
+selected appearance while keeping the icon artwork and exact A/B accent
+endpoints intact. The light variant replaces only the known graphite surface
+tones with white, cool-light-gray and restrained silver-gray surfaces. It
+never edits the packaged assets under `/usr/share`.
