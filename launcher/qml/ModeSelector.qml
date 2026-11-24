@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtMultimedia
+import "../../branding/qml" as Branding
 
 ApplicationWindow {
     id: window
@@ -252,6 +253,15 @@ ApplicationWindow {
         anchors.fill: parent
         color: window.color
         focus: true
+
+        Branding.ParticleBackdrop {
+            anchors.fill: parent
+            z: 0
+            colorA: window.colorA
+            colorB: window.colorB
+            particleOpacity: 0.70
+            motionEnabled: modeSelectorController.animationsEnabled
+        }
 
         Rectangle {
             width: 650; height: 650; radius: 325
