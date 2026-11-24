@@ -44,6 +44,7 @@ class ControllerCenterController(QObject):
         self.axes_text = "Aucun axe détecté pour le moment."
         self._profile = "auto"
         self._deadzone = 8
+        self._axis_centers: dict[str, int] = {}
 
         self.poll_timer = QTimer(self)
         self.poll_timer.setInterval(35)
@@ -100,8 +101,16 @@ class ControllerCenterController(QObject):
         span = maximum - minimum
         if span <= 0:
             return 0.0
-        center = (minimum + maximum) / 2.0
-        normalized = (float(value) - center) / (span / 2.0)
+        default_center = (minimum + maximum) / 2.0
+        stored_center = self._axis_centers.get(name, default_center)
+        center = float(stored_center)
+        if not minimum <= center <= maximum:
+            center = default_center
+        delta = float(value) - center
+        available_range = maximum - center if delta >= 0 else center - minimum
+        if available_range <= 0:
+            return 0.0
+        normalized = delta / available_range
         return max(-1.0, min(1.0, normalized))
 
     @Property(bool, notify=changed)
@@ -201,6 +210,7 @@ class ControllerCenterController(QObject):
         record = self.store.get(self.selected_id)
         self._profile = record["profile"]
         self._deadzone = record["deadzone"]
+        self._axis_centers = dict(record["axis_centers"])
         self.axes_text = ", ".join(item["axes"]) or "Aucun axe analogique"
         if open_device:
             try:
@@ -253,10 +263,11 @@ class ControllerCenterController(QObject):
             self.status = "Déplace les sticks ou sélectionne une manette avant le calibrage."
             self.changed.emit()
             return
-        self.store.update(
+        saved = self.store.update(
             self.selected_id,
             axis_centers={name: int(value) for name, value in self.backend.axes.items()},
         )
+        self._axis_centers = dict(saved["axis_centers"])
         self.status = "Position neutre enregistrée dans ton profil LEOS."
         self.changed.emit()
 
