@@ -28,7 +28,7 @@ ApplicationWindow {
             x: parent.width - width * 0.54
             y: -height * 0.48
             color: window.themeColors.accent_primary
-            opacity: 0.05
+            opacity: 0.035
         }
         Rectangle {
             width: 420
@@ -37,7 +37,7 @@ ApplicationWindow {
             x: -width * 0.5
             y: parent.height - height * 0.5
             color: window.themeColors.accent_secondary
-            opacity: 0.04
+            opacity: 0.025
         }
     }
 
@@ -55,16 +55,32 @@ ApplicationWindow {
             }
             Item { Layout.fillWidth: true }
             Rectangle {
-                radius: 12
+                radius: 10
                 color: window.themeColors.surface_elevated
                 border.color: window.themeColors.border
-                implicitWidth: 90
-                implicitHeight: 34
-                Label {
-                    anchors.centerIn: parent
-                    text: notificationModel.unreadCount + " non lues"
-                    color: window.cyan
-                    font.pixelSize: 11
+                implicitWidth: 126
+                implicitHeight: 36
+                Accessible.role: Accessible.Grouping
+                Accessible.name: notificationModel.unreadCount + " notifications non lues"
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    spacing: 7
+                    Rectangle {
+                        Layout.preferredWidth: 6
+                        Layout.preferredHeight: 6
+                        radius: 3
+                        color: notificationModel.unreadCount > 0 ? window.accentA : window.muted
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: notificationModel.unreadCount + " NON LUES"
+                        color: window.themeColors.text
+                        font.pixelSize: 9
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.65
+                    }
                 }
             }
         }
@@ -160,10 +176,20 @@ ApplicationWindow {
                     required property bool isRead
                     width: list.width
                     height: content.implicitHeight + 22
-                    radius: 11
+                    radius: 13
+                    clip: true
                     color: isRead ? window.themeColors.surface : window.themeColors.surface_elevated
-                    border.width: isRead ? 1 : 2
+                    border.width: isRead ? 1 : 1.5
                     border.color: isRead ? window.themeColors.border : window.accentA
+                    Rectangle {
+                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                        height: 2
+                        visible: !isRead
+                        gradient: Gradient {
+                            GradientStop { position: 0; color: window.accentA }
+                            GradientStop { position: 1; color: window.accentB }
+                        }
+                    }
                     RowLayout {
                         id: content
                         anchors.fill: parent
@@ -178,7 +204,34 @@ ApplicationWindow {
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 4
-                            Label { text: title; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+                                Label {
+                                    text: title
+                                    color: window.themeColors.text
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.Wrap
+                                }
+                                Rectangle {
+                                    visible: !isRead
+                                    implicitWidth: 64
+                                    implicitHeight: 20
+                                    radius: 10
+                                    color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.13)
+                                    border.color: window.accentA
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: "NON LUE"
+                                        color: window.themeColors.text
+                                        font.pixelSize: 8
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 0.6
+                                    }
+                                }
+                            }
                             Label { text: body; color: window.muted; font.pixelSize: 11; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
                             Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
                         }

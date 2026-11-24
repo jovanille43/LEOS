@@ -17,7 +17,7 @@ class GamingLibraryVisualTests(unittest.TestCase):
     def test_card_artwork_fades_in_and_selection_transitions(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("Behavior on opacity { NumberAnimation { duration: 180 } }", source)
-        self.assertIn("Behavior on border.color { ColorAnimation { duration: 150 } }", source)
+        self.assertIn("Behavior on border.color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }", source)
 
     def test_missing_or_broken_artwork_has_a_fallback(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
@@ -64,6 +64,18 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("visible: modelData === window.selectedCategory", qml)
 
 
+
+
+    def test_game_cards_use_framed_cover_art_and_editorial_metadata_pills(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: favoriteChipLabel", qml)
+        self.assertIn('text: "FAVORI"', qml)
+        self.assertIn("id: platformChipLabel", qml)
+        self.assertIn("text: gameCard.source", qml)
+        self.assertIn("anchors.margins: 1", qml)
+        self.assertIn("opacity: window.selectedIndex === gameCard.index ? 1 : gameCard.hovered ? 0.72 : 0", qml)
+        self.assertIn('text: "TA COLLECTION"', qml)
+        self.assertIn("implicitWidth: 92", qml)
 
 if __name__ == "__main__":
     unittest.main()

@@ -392,5 +392,15 @@ class DesktopMenuTests(unittest.TestCase):
 
 
 
+
+    def test_application_menu_uses_a_refined_catalogue_hierarchy_and_icon_tiles(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('text: applicationCatalog.applicationCount() + " APPLICATIONS"', qml)
+        self.assertIn('text: appGrid.count + (appGrid.count > 1 ? " applications disponibles" : " application disponible")', qml)
+        self.assertIn("Layout.preferredWidth: 38", qml)
+        self.assertIn("Layout.preferredHeight: 38", qml)
+        self.assertIn("keyboardFocused ? 1 : appMouse.containsMouse ? 0.72 : 0", qml)
+        self.assertIn("easing.type: Easing.OutCubic", qml)
+
 if __name__ == "__main__":
     unittest.main()

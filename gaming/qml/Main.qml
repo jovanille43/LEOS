@@ -594,12 +594,12 @@ ApplicationWindow {
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
-            color: window.accentA; opacity: 0.14
+            color: window.accentA; opacity: 0.085
         }
         Rectangle {
             width: 520; height: 520; radius: 260
             x: -width * 0.5; y: parent.height - height * 0.45
-            color: window.accentB; opacity: 0.12
+            color: window.accentB; opacity: 0.07
         }
 
         ColumnLayout {
@@ -995,11 +995,32 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     spacing: 10
 
-                    Label {
-                        text: "BIBLIOTHÈQUE"
-                        color: window.muted
-                        font.pixelSize: window.fontCaption
-                        font.letterSpacing: 2
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 5
+                        Label {
+                            text: "BIBLIOTHÈQUE"
+                            color: window.themeColors.text
+                            font.pixelSize: window.fontCaption
+                            font.weight: Font.Bold
+                            font.letterSpacing: 2
+                        }
+                        Label {
+                            text: "TA COLLECTION"
+                            color: window.muted
+                            font.pixelSize: window.fontMicro
+                            font.letterSpacing: 1.5
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 2
+                            radius: 1
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.accentA }
+                                GradientStop { position: 1; color: window.accentB }
+                            }
+                            opacity: 0.62
+                        }
                     }
 
                     Repeater {
@@ -1008,6 +1029,7 @@ ApplicationWindow {
                             id: categoryButton
                             required property string modelData
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 43
                             text: modelData
                             Accessible.role: Accessible.Button
                             Accessible.name: categoryButton.text
@@ -1075,11 +1097,31 @@ ApplicationWindow {
                             font.pixelSize: window.fontTitle
                             font.weight: Font.Bold
                         }
-                        Label {
-                            text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")
-                            color: window.muted
-                            font.pixelSize: window.fontCaption
-                            font.letterSpacing: 1
+                        Rectangle {
+                            Layout.preferredHeight: 30
+                            implicitWidth: 92
+                            radius: 9
+                            color: window.themeColors.surface
+                            border.color: window.themeColors.border
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                spacing: 6
+                                Rectangle {
+                                    Layout.preferredWidth: 5
+                                    Layout.preferredHeight: 5
+                                    radius: 3
+                                    color: window.accentA
+                                }
+                                Label {
+                                    text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")
+                                    color: window.themeColors.text
+                                    font.pixelSize: window.fontMicro
+                                    font.weight: Font.DemiBold
+                                    font.letterSpacing: 0.55
+                                }
+                            }
                         }
                         Item { Layout.fillWidth: true }
                         TextField {
@@ -1263,7 +1305,8 @@ ApplicationWindow {
                                     + ". Activer pour afficher la fiche du jeu."
                                 onClicked: window.selectGameAt(index)
                                 background: Rectangle {
-                                    radius: 13
+                                    radius: 15
+                                    clip: true
                                     color: window.selectedIndex === gameCard.index || gameCard.hovered
                                            ? window.themeColors.surface_elevated : window.themeColors.surface
                                     border.width: gameCard.activeFocus ? 2 : 1
@@ -1283,8 +1326,17 @@ ApplicationWindow {
                                             GradientStop { position: 1; color: window.accentB }
                                         }
                                     }
-                                    Behavior on color { ColorAnimation { duration: 150 } }
-                                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                                    Rectangle {
+                                        anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                        width: 3
+                                        opacity: window.selectedIndex === gameCard.index ? 1 : gameCard.hovered ? 0.72 : 0
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                    }
+                                    Behavior on color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                                    Behavior on border.color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
                                 }
                                 contentItem: ColumnLayout {
                                     spacing: 7
@@ -1292,58 +1344,66 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
                                         spacing: 10
-                                        Rectangle {
+                                        Item {
                                             Layout.preferredWidth: 88
                                             Layout.preferredHeight: 126
                                             Layout.alignment: Qt.AlignVCenter
-                                            radius: 8
-                                            visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
-                                            clip: true
-                                            color: window.themeColors.surface
-                                            border.color: window.themeColors.border
                                             Rectangle {
-                                                width: parent.width * 1.5
-                                                height: parent.width * 1.5
-                                                radius: width / 2
-                                                x: -parent.width * 0.55
-                                                y: parent.height * 0.25
-                                                color: window.accentA
-                                                opacity: 0.18
-                                            }
-                                            Column {
-                                                anchors.centerIn: parent
-                                                spacing: 4
-                                                Label {
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    text: window.gameMonogram(gameCard.title)
-                                                    color: window.themeColors.text
-                                                    font.pixelSize: window.fontTitle
-                                                    font.weight: Font.Black
-                                                    font.letterSpacing: 1
+                                                anchors.fill: parent
+                                                radius: 9
+                                                clip: true
+                                                color: window.themeColors.background
+                                                border.color: window.themeColors.border
+                                                visible: gameCard.artwork.length === 0 || gameArtwork.status !== Image.Ready
+                                                Rectangle {
+                                                    width: parent.width * 1.5
+                                                    height: parent.width * 1.5
+                                                    radius: width / 2
+                                                    x: -parent.width * 0.55
+                                                    y: parent.height * 0.25
+                                                    color: window.accentA
+                                                    opacity: 0.18
                                                 }
-                                                Label {
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    text: "LEOS"
-                                                    color: window.cyan
-                                                    font.pixelSize: window.fontMicro
-                                                    font.letterSpacing: 2
+                                                Column {
+                                                    anchors.centerIn: parent
+                                                    spacing: 4
+                                                    Label {
+                                                        anchors.horizontalCenter: parent.horizontalCenter
+                                                        text: window.gameMonogram(gameCard.title)
+                                                        color: window.themeColors.text
+                                                        font.pixelSize: window.fontTitle
+                                                        font.weight: Font.Black
+                                                        font.letterSpacing: 1
+                                                    }
+                                                    Label {
+                                                        anchors.horizontalCenter: parent.horizontalCenter
+                                                        text: "LEOS"
+                                                        color: window.cyan
+                                                        font.pixelSize: window.fontMicro
+                                                        font.letterSpacing: 2
+                                                    }
                                                 }
                                             }
-                                        }
-                                        Image {
-                                            id: gameArtwork
-                                            Layout.preferredWidth: 88
-                                            Layout.preferredHeight: 126
-                                            Layout.alignment: Qt.AlignVCenter
-                                            source: gameCard.artwork
-                                            visible: gameCard.artwork.length > 0
-                                            fillMode: Image.PreserveAspectCrop
-                                            asynchronous: true
-                                            cache: true
-                                            sourceSize.width: 176
-                                            sourceSize.height: 252
-                                            opacity: status === Image.Ready ? 1 : 0
-                                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                                            Image {
+                                                id: gameArtwork
+                                                anchors.fill: parent
+                                                anchors.margins: 1
+                                                source: gameCard.artwork
+                                                visible: gameCard.artwork.length > 0
+                                                fillMode: Image.PreserveAspectCrop
+                                                asynchronous: true
+                                                cache: true
+                                                sourceSize.width: 176
+                                                sourceSize.height: 252
+                                                opacity: status === Image.Ready ? 1 : 0
+                                                Behavior on opacity { NumberAnimation { duration: 180 } }
+                                            }
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: 9
+                                                color: "transparent"
+                                                border.color: window.themeColors.border
+                                            }
                                         }
                                         ColumnLayout {
                                             Layout.fillWidth: true
@@ -1357,20 +1417,60 @@ ApplicationWindow {
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                             }
-                                            Label {
-                                                text: gameCard.favorite ? "★ FAVORI" : ""
-                                                color: window.magenta
-                                                font.pixelSize: window.fontMicro
-                                                font.weight: Font.Bold
+                                            Rectangle {
+                                                visible: gameCard.favorite
+                                                implicitWidth: favoriteChipLabel.implicitWidth + 16
+                                                implicitHeight: 22
+                                                radius: 11
+                                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.14)
+                                                border.color: window.accentB
+                                                RowLayout {
+                                                    anchors.fill: parent
+                                                    anchors.leftMargin: 8
+                                                    anchors.rightMargin: 8
+                                                    spacing: 4
+                                                    Label {
+                                                        text: "★"
+                                                        color: window.accentB
+                                                        font.pixelSize: 9
+                                                    }
+                                                    Label {
+                                                        id: favoriteChipLabel
+                                                        text: "FAVORI"
+                                                        color: window.themeColors.text
+                                                        font.pixelSize: 9
+                                                        font.weight: Font.Bold
+                                                        font.letterSpacing: 0.6
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                    Label {
-                                        text: gameCard.platform + "  •  " + gameCard.source
-                                        color: window.muted
-                                        font.pixelSize: window.fontCaption
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        elide: Text.ElideRight
+                                        spacing: 7
+                                        Rectangle {
+                                            implicitWidth: platformChipLabel.implicitWidth + 14
+                                            implicitHeight: 22
+                                            radius: 7
+                                            color: window.themeColors.surface_elevated
+                                            border.color: window.themeColors.border
+                                            Label {
+                                                id: platformChipLabel
+                                                anchors.centerIn: parent
+                                                text: gameCard.platform
+                                                color: window.themeColors.text
+                                                font.pixelSize: 9
+                                                font.weight: Font.DemiBold
+                                            }
+                                        }
+                                        Label {
+                                            text: gameCard.source
+                                            color: window.muted
+                                            font.pixelSize: window.fontMicro
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
                                     }
                                 }
                             }
@@ -1460,11 +1560,21 @@ ApplicationWindow {
                             Layout.preferredWidth: window.width < 1180 ? 230 : 280
                             Layout.minimumWidth: 210
                             Layout.fillHeight: true
-                            radius: 16
+                            radius: 17
+                            clip: true
                             color: window.themeColors.surface
                             border.color: window.themeColors.border
                             Accessible.role: Accessible.Grouping
                             Accessible.name: "Détails du jeu sélectionné"
+                            Rectangle {
+                                anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                width: 3
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: window.accentA }
+                                    GradientStop { position: 1; color: window.accentB }
+                                }
+                                opacity: 0.75
+                            }
 
                             ColumnLayout {
                                 anchors.fill: parent

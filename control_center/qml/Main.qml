@@ -416,6 +416,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -467,6 +477,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14
@@ -518,6 +538,16 @@ ApplicationWindow {
                                     radius: 13
                                     color: window.themeColors.surface
                                     border.color: window.themeColors.border
+                                    clip: true
+                                    Rectangle {
+                                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                                        height: 2
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.accentA }
+                                            GradientStop { position: 1; color: window.accentB }
+                                        }
+                                        opacity: 0.58
+                                    }
                                     ColumnLayout {
                                         anchors.fill: parent
                                         anchors.margins: 14

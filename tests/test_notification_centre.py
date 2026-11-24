@@ -85,8 +85,8 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn('text: "TOUT EST CALME"', qml)
         self.assertIn('text: "Aucune notification LEOS pour le moment."', qml)
         self.assertIn("visible: list.count === 0", qml)
-        self.assertIn("opacity: 0.05", qml)
-        self.assertIn("opacity: 0.04", qml)
+        self.assertIn("opacity: 0.035", qml)
+        self.assertIn("opacity: 0.025", qml)
         self.assertIn("window.themeColors.accent_primary", qml)
         self.assertIn("window.themeColors.accent_secondary", qml)
 
@@ -101,6 +101,16 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("refreshSharedSettings", controller)
         self.assertIn("_read_shared_settings_snapshot", controller)
         self.assertIn("self.settingsChanged.emit()", controller)
+
+
+    def test_unread_notifications_have_a_compact_status_chip_and_quiet_accent_edge(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn('text: notificationModel.unreadCount + " NON LUES"', qml)
+        self.assertIn('text: "NON LUE"', qml)
+        self.assertIn("border.width: isRead ? 1 : 1.5", qml)
+        self.assertIn("visible: !isRead", qml)
+        self.assertIn("opacity: 0.035", qml)
+        self.assertIn("opacity: 0.025", qml)
 
 if __name__ == "__main__":
     unittest.main()

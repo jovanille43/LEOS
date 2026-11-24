@@ -37,8 +37,8 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.13 }
-        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.themeColors.accent_secondary); opacity: 0.12 }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.065 }
+        Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.themeColors.accent_secondary); opacity: 0.04 }
     }
 
     ColumnLayout {
@@ -79,11 +79,36 @@ ApplicationWindow {
                 }
             }
             Item { Layout.fillWidth: true }
-            Label {
-                text: applicationCatalog.applicationCount() + " applications détectées"
-                color: window.muted
-                font.pixelSize: 11
+            Rectangle {
+                Layout.preferredHeight: 34
+                Layout.preferredWidth: 164
+                radius: 10
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
                 visible: window.width >= 980
+                Accessible.role: Accessible.Grouping
+                Accessible.name: applicationCatalog.applicationCount() + " applications détectées"
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    spacing: 8
+                    Rectangle {
+                        Layout.preferredWidth: 6
+                        Layout.preferredHeight: 6
+                        radius: 3
+                        color: window.accentA
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        text: applicationCatalog.applicationCount() + " APPLICATIONS"
+                        color: window.themeColors.text
+                        font.pixelSize: 9
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.7
+                        elide: Text.ElideRight
+                    }
+                }
             }
             Button {
                 id: modesButton
@@ -246,9 +271,19 @@ ApplicationWindow {
             Rectangle {
                 Layout.preferredWidth: window.width < 900 ? 160 : 205
                 Layout.fillHeight: true
-                radius: 15
+                radius: 16
+                clip: true
                 color: window.themeColors.surface
                 border.color: window.themeColors.border
+                Rectangle {
+                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                    height: 2
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: window.accentA }
+                        GradientStop { position: 1; color: window.accentB }
+                    }
+                    opacity: 0.72
+                }
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
@@ -315,15 +350,34 @@ ApplicationWindow {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                radius: 15
+                radius: 17
+                clip: true
                 color: window.themeColors.surface
                 border.color: window.themeColors.border
+                Rectangle {
+                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                    height: 2
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: window.accentA }
+                        GradientStop { position: 1; color: window.accentB }
+                    }
+                    opacity: 0.52
+                }
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 14
+                    anchors.margins: 16
                     RowLayout {
                         Layout.fillWidth: true
-                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: window.themeColors.text; font.pixelSize: 18; font.weight: Font.DemiBold }
+                        ColumnLayout {
+                            spacing: 3
+                            Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: window.themeColors.text; font.pixelSize: 18; font.weight: Font.DemiBold }
+                            Label {
+                                text: appGrid.count + (appGrid.count > 1 ? " applications disponibles" : " application disponible")
+                                color: window.muted
+                                font.pixelSize: 10
+                                font.letterSpacing: 0.25
+                            }
+                        }
                         Item { Layout.fillWidth: true }
                         Button {
                             visible: applicationCatalog.currentCategory === "Récemment utilisées"
@@ -375,13 +429,16 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 anchors.fill: parent
-                                radius: 13
+                                radius: 14
+                                clip: true
                                 color: appMouse.containsMouse || keyboardFocused
                                        ? window.themeColors.surface_elevated : window.themeColors.surface
                                 border.width: keyboardFocused ? 2 : 1
                                 border.color: keyboardFocused ? window.cyan
                                               : appMouse.containsMouse ? window.accentB
                                               : window.themeColors.border
+                                Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                Behavior on border.color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
                                 Rectangle {
                                     anchors { left: parent.left; right: parent.right; top: parent.top }
@@ -390,6 +447,15 @@ ApplicationWindow {
                                     height: 2
                                     radius: 1
                                     visible: keyboardFocused || appMouse.containsMouse
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                    width: 3
+                                    opacity: keyboardFocused ? 1 : appMouse.containsMouse ? 0.72 : 0
                                     gradient: Gradient {
                                         GradientStop { position: 0; color: window.accentA }
                                         GradientStop { position: 1; color: window.accentB }
@@ -408,12 +474,31 @@ ApplicationWindow {
                                 spacing: 5
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    Image {
-                                        source: "image://desktop-icons/" + encodeURIComponent(icon)
-                                        sourceSize: Qt.size(64, 64)
-                                        Layout.preferredWidth: 28
-                                        Layout.preferredHeight: 28
-                                        fillMode: Image.PreserveAspectFit
+                                    Rectangle {
+                                        Layout.preferredWidth: 38
+                                        Layout.preferredHeight: 38
+                                        radius: 11
+                                        color: window.themeColors.surface_elevated
+                                        border.color: window.themeColors.border
+                                        Rectangle {
+                                            anchors { left: parent.left; right: parent.right; top: parent.top }
+                                            height: 1
+                                            radius: 1
+                                            gradient: Gradient {
+                                                GradientStop { position: 0; color: window.accentA }
+                                                GradientStop { position: 1; color: window.accentB }
+                                            }
+                                            opacity: 0.72
+                                        }
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "image://desktop-icons/" + encodeURIComponent(icon)
+                                            sourceSize: Qt.size(64, 64)
+                                            width: 26
+                                            height: 26
+                                            fillMode: Image.PreserveAspectFit
+                                            smooth: true
+                                        }
                                     }
                                     Item { Layout.fillWidth: true }
                                     ColumnLayout {
