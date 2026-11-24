@@ -55,3 +55,14 @@ Le sélecteur, l'horloge, le rappel du dernier mode, la navigation souris/clavie
 - **Desktop Mode :** halo correspondant à la couleur A, emblème officiel du lion seul, ambiance sobre et élégante.
 - **Gaming Mode :** halo en dégradé A/B, emblème officiel du lion avec manette, ambiance plus énergique.
 - Aucun des deux modes ne doit sembler secondaire.
+
+
+## Finition visuelle — passe du 24 novembre 2026
+
+Le sélecteur adopte une composition éditoriale en deux colonnes à l'intérieur de chaque carte : promesse et fonctions à gauche, emblème officiel à droite. Les informations restent lisibles même lorsque l'emblème n'a pas encore été généré lors du premier démarrage ; un repère numéroté neutre prend alors le relais.
+
+- **Desktop :** surface métallique sobre, halo et ligne de repère limités à la couleur A, emphase sur KDE, le multitâche et la création.
+- **Gaming :** halo plus énergique, double anneau A/B et dégradé A→B, emphase sur la bibliothèque, l'émulation et la navigation à la manette.
+- Les deux cartes conservent la même place dans la grille, la même hiérarchie de contenu et une action pleine largeur.
+- Les transitions d'opacité et de couleur respectent toujours la préférence d'animations ; le focus clavier/manette reste visible.
+- Aucun accent fixe n'est imposé : les couleurs A/B choisies par l'utilisateur restent la source de l'identité.

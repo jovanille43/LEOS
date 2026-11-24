@@ -389,6 +389,7 @@ ApplicationWindow {
                     Accessible.description: "Bureau, création et quotidien dans un environnement KDE personnalisé."
                     onClicked: window.requestDesktopMode()
                     background: Rectangle {
+                        clip: true
                         radius: 22
                         color: desktopCard.down || desktopCard.activeFocus || desktopCard.hovered
                                ? window.themeColors.surface_elevated : window.themeColors.surface
@@ -429,88 +430,222 @@ ApplicationWindow {
                             visible: desktopCard.activeFocus || desktopCard.hovered
                             gradient: Gradient {
                                 GradientStop { position: 0; color: window.colorA }
-                                GradientStop { position: 1; color: window.colorB }
+                                GradientStop { position: 1; color: window.colorA }
                             }
-                        }
-                    }
-                    contentItem: ColumnLayout {
-                        spacing: 13
-                        Item { Layout.fillHeight: true }
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter
-                            spacing: 8
-                            Rectangle {
-                                Layout.preferredWidth: 22
-                                Layout.preferredHeight: 2
-                                radius: 1
-                                color: window.colorA
-                            }
-                            Label {
-                                text: "MODE 01 · QUOTIDIEN"
-                                color: window.colorAText
-                                font.pixelSize: 10
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 1.4
-                            }
-                        }
-                        Image {
-                            source: leosTheme.desktopLogoUrl
-                            asynchronous: true
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 185
-                            Layout.preferredHeight: 175
-                            visible: status === Image.Ready
-                        }
-                        Label {
-                            text: "LEOS DESKTOP"
-                            color: window.themeColors.text
-                            font.pixelSize: 23
-                            font.weight: Font.Bold
-                            font.letterSpacing: 2
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Label {
-                            text: "Bureau, création et quotidien"
-                            color: window.muted
-                            font.pixelSize: 13
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Label {
-                            text: "Une expérience KDE personnalisée"
-                            color: window.themeColors.muted_text
-                            font.pixelSize: 10
-                            Layout.alignment: Qt.AlignHCenter
                         }
                         Rectangle {
-                            Layout.preferredWidth: 220
-                            Layout.preferredHeight: 38
-                            Layout.alignment: Qt.AlignHCenter
-                            radius: 9
-                            color: window.themeColors.surface
-                            border.width: desktopCard.activeFocus ? 1.5 : 1
-                            border.color: desktopCard.activeFocus || desktopCard.hovered ? window.colorA : window.themeColors.border
+                            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                            width: 3
+                            radius: 2
+                            opacity: desktopCard.activeFocus ? 0.92 : 0.45
+                            color: window.colorA
+                        }
+
+                    }
+                    contentItem: Item {
+                        implicitWidth: window.width < 980 ? 280 : 520
+                        implicitHeight: window.height < 760 ? 300 : 340
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: window.width < 980 ? 18 : 27
+                            spacing: 12
                             RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 13
-                                anchors.rightMargin: 13
-                                Label {
-                                    text: "OUVRIR DESKTOP"
-                                    color: window.colorAText
-                                    font.pixelSize: 10
-                                    font.weight: Font.Bold
-                                    font.letterSpacing: 1
+                                Layout.fillWidth: true
+                                spacing: 9
+                                Rectangle {
+                                    Layout.preferredWidth: 31
+                                    Layout.preferredHeight: 27
+                                    radius: 8
+                                    color: Qt.rgba(window.colorA.r, window.colorA.g, window.colorA.b, 0.13)
+                                    border.color: window.colorA
+                                    border.width: 1
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: "01"
+                                        color: window.colorAText
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 0.8
+                                    }
+                                }
+                                ColumnLayout {
+                                    spacing: 1
+                                    Label {
+                                        text: "MODE 01 · QUOTIDIEN"
+                                        color: window.colorAText
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 1.35
+                                    }
+                                    Label {
+                                        text: "ESPACE DE TRAVAIL"
+                                        color: window.muted
+                                        font.pixelSize: 8
+                                        font.letterSpacing: 1.5
+                                    }
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label {
-                                    text: "→"
-                                    color: window.colorAText
-                                    font.pixelSize: 16
+                                    text: "DESKTOP"
+                                    color: window.muted
+                                    font.pixelSize: 9
+                                    font.weight: Font.DemiBold
+                                    font.letterSpacing: 1.2
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                color: window.themeColors.border
+                                opacity: 0.8
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                spacing: 8
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    spacing: 7
+                                    Label {
+                                        text: "LEOS DESKTOP"
+                                        color: window.themeColors.text
+                                        font.pixelSize: window.width < 980 ? 21 : 29
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 1.0
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        text: "Un bureau KDE personnalisé, fluide et élégant."
+                                        color: window.muted
+                                        font.pixelSize: window.width < 980 ? 11 : 13
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 1
+                                        color: window.colorA
+                                        opacity: 0.28
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle { Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3; color: window.colorA }
+                                        Label {
+                                            text: "PERSONNALISATION KDE"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle { Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3; color: window.colorA }
+                                        Label {
+                                            text: "MULTITÂCHE & FENÊTRES"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle { Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3; color: window.colorA }
+                                        Label {
+                                            text: "CRÉATION & QUOTIDIEN"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    Item { Layout.fillHeight: true }
+                                }
+                                Item {
+                                    Layout.preferredWidth: window.width < 980 ? 116 : 196
+                                    Layout.minimumWidth: 104
+                                    Layout.fillHeight: true
+                                    Rectangle {
+                                        width: Math.min(parent.width * 0.94, parent.height * 0.90)
+                                        height: width
+                                        radius: width / 2
+                                        anchors.centerIn: parent
+                                        color: window.colorA
+                                        opacity: desktopCard.activeFocus ? 0.13 : 0.055
+                                        Behavior on opacity {
+                                            enabled: modeSelectorController.animationsEnabled
+                                            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                                        }
+                                    }
+                                    Rectangle {
+                                        width: Math.min(parent.width * 0.94, parent.height * 0.90)
+                                        height: width
+                                        radius: width / 2
+                                        anchors.centerIn: parent
+                                        color: "transparent"
+                                        border.width: 1
+                                        border.color: window.colorA
+                                        opacity: desktopCard.activeFocus || desktopCard.hovered ? 0.36 : 0.18
+                                    }
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: "01"
+                                        color: window.colorA
+                                        opacity: desktopCardLogo.status === Image.Ready ? 0 : 0.22
+                                        font.pixelSize: window.width < 980 ? 56 : 78
+                                        font.weight: Font.Light
+                                        font.letterSpacing: -3
+                                    }
+                                    Image {
+                                        id: desktopCardLogo
+                                        anchors.centerIn: parent
+                                        source: leosTheme.desktopLogoUrl
+                                        asynchronous: true
+                                        smooth: true
+                                        fillMode: Image.PreserveAspectFit
+                                        width: parent.width * 1.02
+                                        height: parent.height * 0.92
+                                        visible: status === Image.Ready
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 46
+                                radius: 11
+                                color: desktopCard.activeFocus || desktopCard.hovered ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: desktopCard.activeFocus ? 1.5 : 1
+                                border.color: desktopCard.activeFocus || desktopCard.hovered ? window.colorA : window.themeColors.border
+                                Behavior on color {
+                                    enabled: modeSelectorController.animationsEnabled
+                                    ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+                                }
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 15
+                                    anchors.rightMargin: 13
+                                    Label {
+                                        text: "OUVRIR DESKTOP"
+                                        color: window.colorAText
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 1.1
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                    Label { text: "ACCÉDER"; color: window.muted; font.pixelSize: 8; font.weight: Font.DemiBold; font.letterSpacing: 1 }
+                                    Label { text: "→"; color: window.colorAText; font.pixelSize: 18; font.weight: Font.DemiBold }
                                 }
                             }
                         }
-                        Item { Layout.fillHeight: true }
                     }
                 }
 
@@ -523,6 +658,7 @@ ApplicationWindow {
                     Accessible.description: "Bibliothèque de jeux, émulation et navigation à la manette."
                     onClicked: window.requestGamingMode()
                     background: Rectangle {
+                        clip: true
                         radius: 22
                         color: gamingCard.down || gamingCard.activeFocus || gamingCard.hovered
                                ? window.themeColors.surface_elevated : window.themeColors.surface
@@ -566,85 +702,244 @@ ApplicationWindow {
                                 GradientStop { position: 1; color: window.colorB }
                             }
                         }
-                    }
-                    contentItem: ColumnLayout {
-                        spacing: 13
-                        Item { Layout.fillHeight: true }
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter
-                            spacing: 8
-                            Rectangle {
-                                Layout.preferredWidth: 22
-                                Layout.preferredHeight: 2
-                                radius: 1
-                                color: window.colorB
-                            }
-                            Label {
-                                text: "MODE 02 · JEUX"
-                                color: window.colorBText
-                                font.pixelSize: 10
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 1.4
-                            }
-                        }
-                        Image {
-                            source: leosTheme.gamingLogoUrl
-                            asynchronous: true
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 185
-                            Layout.preferredHeight: 175
-                            visible: status === Image.Ready
-                        }
-                        Label {
-                            text: "LEOS GAMING"
-                            color: window.themeColors.text
-                            font.pixelSize: 23
-                            font.weight: Font.Bold
-                            font.letterSpacing: 2
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Label {
-                            text: "Bibliothèque et expérience manette"
-                            color: window.muted
-                            font.pixelSize: 13
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Label {
-                            text: "Tes jeux et lanceurs réunis au même endroit"
-                            color: window.themeColors.muted_text
-                            font.pixelSize: 10
-                            Layout.alignment: Qt.AlignHCenter
-                        }
                         Rectangle {
-                            Layout.preferredWidth: 220
-                            Layout.preferredHeight: 38
-                            Layout.alignment: Qt.AlignHCenter
-                            radius: 9
-                            color: window.themeColors.surface
-                            border.width: gamingCard.activeFocus ? 1.5 : 1
-                            border.color: gamingCard.activeFocus || gamingCard.hovered ? window.colorB : window.themeColors.border
+                            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                            width: 3
+                            radius: 2
+                            opacity: gamingCard.activeFocus ? 1 : 0.65
+                            gradient: Gradient { GradientStop { position: 0; color: window.colorA } GradientStop { position: 1; color: window.colorB } }
+                        }
+
+                    }
+                    contentItem: Item {
+                        implicitWidth: window.width < 980 ? 280 : 520
+                        implicitHeight: window.height < 760 ? 300 : 340
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: window.width < 980 ? 18 : 27
+                            spacing: 12
                             RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 13
-                                anchors.rightMargin: 13
-                                Label {
-                                    text: "OUVRIR GAMING"
-                                    color: window.colorBText
-                                    font.pixelSize: 10
-                                    font.weight: Font.Bold
-                                    font.letterSpacing: 1
+                                Layout.fillWidth: true
+                                spacing: 9
+                                Rectangle {
+                                    Layout.preferredWidth: 31
+                                    Layout.preferredHeight: 27
+                                    radius: 8
+                                    color: Qt.rgba(window.colorB.r, window.colorB.g, window.colorB.b, 0.13)
+                                    border.color: window.colorB
+                                    border.width: 1
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: "02"
+                                        color: window.colorBText
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 0.8
+                                    }
+                                }
+                                ColumnLayout {
+                                    spacing: 1
+                                    Label {
+                                        text: "MODE 02 · JEUX"
+                                        color: window.colorBText
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 1.35
+                                    }
+                                    Label {
+                                        text: "EXPÉRIENCE IMMERSIVE"
+                                        color: window.muted
+                                        font.pixelSize: 8
+                                        font.letterSpacing: 1.5
+                                    }
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label {
-                                    text: "→"
-                                    color: window.colorBText
-                                    font.pixelSize: 16
+                                    text: "GAMING"
+                                    color: window.muted
+                                    font.pixelSize: 9
+                                    font.weight: Font.DemiBold
+                                    font.letterSpacing: 1.2
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: window.colorA }
+                                    GradientStop { position: 1; color: window.colorB }
+                                }
+                                opacity: 0.65
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                spacing: 8
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    spacing: 7
+                                    Label {
+                                        text: "LEOS GAMING"
+                                        color: window.themeColors.text
+                                        font.pixelSize: window.width < 980 ? 21 : 29
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 1.0
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        text: "Tes jeux au même endroit, prêts à être lancés."
+                                        color: window.muted
+                                        font.pixelSize: window.width < 980 ? 11 : 13
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 1
+                                        gradient: Gradient {
+                                            GradientStop { position: 0; color: window.colorA }
+                                            GradientStop { position: 1; color: window.colorB }
+                                        }
+                                        opacity: 0.45
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle {
+                                            Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3
+                                            gradient: Gradient { GradientStop { position: 0; color: window.colorA } GradientStop { position: 1; color: window.colorB } }
+                                        }
+                                        Label {
+                                            text: "JEUX PC & LANCEURS"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle {
+                                            Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3
+                                            gradient: Gradient { GradientStop { position: 0; color: window.colorA } GradientStop { position: 1; color: window.colorB } }
+                                        }
+                                        Label {
+                                            text: "ÉMULATION CENTRALISÉE"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    RowLayout {
+                                        spacing: 8
+                                        Rectangle {
+                                            Layout.preferredWidth: 5; Layout.preferredHeight: 5; radius: 3
+                                            gradient: Gradient { GradientStop { position: 0; color: window.colorA } GradientStop { position: 1; color: window.colorB } }
+                                        }
+                                        Label {
+                                            text: "NAVIGATION À LA MANETTE"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 9
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.6
+                                            Layout.fillWidth: true
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                    Item { Layout.fillHeight: true }
+                                }
+                                Item {
+                                    Layout.preferredWidth: window.width < 980 ? 116 : 196
+                                    Layout.minimumWidth: 104
+                                    Layout.fillHeight: true
+                                    Rectangle {
+                                        width: Math.min(parent.width * 0.94, parent.height * 0.90)
+                                        height: width
+                                        radius: width / 2
+                                        anchors.centerIn: parent
+                                        color: window.colorB
+                                        opacity: gamingCard.activeFocus ? 0.14 : 0.07
+                                        Behavior on opacity {
+                                            enabled: modeSelectorController.animationsEnabled
+                                            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                                        }
+                                    }
+                                    Rectangle {
+                                        width: Math.min(parent.width * 0.94, parent.height * 0.90)
+                                        height: width
+                                        radius: width / 2
+                                        anchors.centerIn: parent
+                                        color: "transparent"
+                                        border.width: 1
+                                        border.color: window.colorB
+                                        opacity: gamingCard.activeFocus || gamingCard.hovered ? 0.42 : 0.22
+                                    }
+                                    Rectangle {
+                                        width: Math.min(parent.width * 0.79, parent.height * 0.76)
+                                        height: width
+                                        radius: width / 2
+                                        anchors.centerIn: parent
+                                        color: "transparent"
+                                        border.width: 1
+                                        border.color: window.colorA
+                                        opacity: 0.17
+                                    }
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: "02"
+                                        color: window.colorB
+                                        opacity: gamingCardLogo.status === Image.Ready ? 0 : 0.22
+                                        font.pixelSize: window.width < 980 ? 56 : 78
+                                        font.weight: Font.Light
+                                        font.letterSpacing: -3
+                                    }
+                                    Image {
+                                        id: gamingCardLogo
+                                        anchors.centerIn: parent
+                                        source: leosTheme.gamingLogoUrl
+                                        asynchronous: true
+                                        smooth: true
+                                        fillMode: Image.PreserveAspectFit
+                                        width: parent.width * 1.02
+                                        height: parent.height * 0.92
+                                        visible: status === Image.Ready
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 46
+                                radius: 11
+                                color: gamingCard.activeFocus || gamingCard.hovered ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: gamingCard.activeFocus ? 1.5 : 1
+                                border.color: gamingCard.activeFocus || gamingCard.hovered ? window.colorB : window.themeColors.border
+                                Behavior on color {
+                                    enabled: modeSelectorController.animationsEnabled
+                                    ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+                                }
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 15
+                                    anchors.rightMargin: 13
+                                    Label {
+                                        text: "OUVRIR GAMING"
+                                        color: window.colorBText
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 1.1
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                    Label { text: "JOUER"; color: window.muted; font.pixelSize: 8; font.weight: Font.DemiBold; font.letterSpacing: 1 }
+                                    Label { text: "→"; color: window.colorBText; font.pixelSize: 18; font.weight: Font.DemiBold }
                                 }
                             }
                         }
-                        Item { Layout.fillHeight: true }
                     }
                 }
             }
