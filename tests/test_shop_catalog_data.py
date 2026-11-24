@@ -176,6 +176,10 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn('text: appList.count + " APPLICATIONS"', qml)
         self.assertIn('text: "IDENTIFIANT"', qml)
         self.assertIn('text: detailsPane.appId || "—"', qml)
+        self.assertIn("opacity: 0.05", qml)
+        self.assertIn("opacity: 0.04", qml)
+        self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("window.themeColors.accent_secondary", qml)
 
     def test_v2_emulator_catalogue_has_curated_automatic_flathub_apps(self):
         items = load_catalog(ROOT / "shop" / "catalog.json")
