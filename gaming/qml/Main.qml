@@ -604,12 +604,12 @@ ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 34
-            spacing: 22
+            anchors.margins: window.width < 1280 || window.height < 760 ? 20 : 34
+            spacing: window.height < 760 ? 15 : 22
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 18
+                spacing: window.width < 1360 ? 10 : 18
 
                 ColumnLayout {
                     spacing: 1
@@ -641,11 +641,40 @@ ApplicationWindow {
 
                 Item { Layout.fillWidth: true }
 
-                Label {
-                    text: leos.gamepadStatus
-                    color: window.muted
-                    font.pixelSize: window.fontCaption
-                    elide: Text.ElideRight
+                Rectangle {
+                    Layout.preferredWidth: window.width < 1360 ? 190 : 250
+                    Layout.minimumWidth: 130
+                    Layout.maximumWidth: 250
+                    Layout.preferredHeight: 40
+                    radius: 10
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    Accessible.role: Accessible.Grouping
+                    Accessible.name: "État des manettes"
+                    Accessible.description: leos.gamepadStatus
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 8
+                        Rectangle {
+                            Layout.preferredWidth: 3
+                            Layout.preferredHeight: 18
+                            radius: 2
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.accentA }
+                                GradientStop { position: 1; color: window.accentB }
+                            }
+                        }
+                        Label {
+                            text: leos.gamepadStatus
+                            color: window.muted
+                            font.pixelSize: window.fontCaption
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+                    }
                 }
 
                 Button {
@@ -991,7 +1020,7 @@ ApplicationWindow {
                         Item { Layout.fillWidth: true }
                         TextField {
                             id: searchField
-                            Layout.preferredWidth: 270
+                            Layout.preferredWidth: Math.max(170, Math.min(270, window.width * 0.19))
                             placeholderText: "Rechercher un jeu…"
                             color: window.themeColors.text
                             font.pixelSize: window.fontBody
