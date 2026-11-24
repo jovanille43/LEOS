@@ -54,6 +54,6 @@ gradient midpoint so per-user recolouring remains deterministic.
 
 ## Connexion et démarrage
 
-- **SDDM :** carte de connexion graphite, champs explicitement libellés, focus A/B distinct et action principale signée du dégradé A/B.
-- **Splash KDE :** fond neutre, halos A/B très faibles et progression dans le même langage que les actions principales.
+- **SDDM :** carte de connexion graphite, champs explicitement libellés et contrôles argent neutre. La greeter ne force pas la paire A/B avant que le profil utilisateur soit disponible.
+- **Splash KDE :** fond graphite neutre, halos métalliques très faibles et progression argent ; les accents A/B restent réservés aux surfaces utilisateur configurées.
 - Les contrôles de veille, redémarrage, extinction et choix de session restent séparés et fonctionnels.
