@@ -74,11 +74,9 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
 
     def test_control_center_offers_a_manual_non_destructive_ostree_recovery_guide(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        recovery = qml.split("id: recoveryGuideDialog", 1)[1].split(
-            "id: plasmaDockConfirmation", 1
-        )[0] if "id: plasmaDockConfirmation" in qml[qml.index("id: recoveryGuideDialog"):] else qml.split(
-            "id: recoveryGuideDialog", 1
-        )[1].split("Rectangle {", 1)[0]
+        start = qml.index('    Dialog {\\n        id: recoveryGuideDialog')
+        end = qml.index('\\n    Rectangle {\\n        anchors.fill: parent', start)
+        recovery = qml[start:end]
         self.assertIn("OUVRIR LE GUIDE DE RÉCUPÉRATION", qml)
         self.assertIn("recoveryGuideDialog.open()", qml)
         self.assertIn("rpm-ostree status", recovery)
