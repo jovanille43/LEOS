@@ -12,9 +12,9 @@ Rectangle {
     property var clockNow: new Date()
 
     gradient: Gradient {
-        GradientStop { position: 0.0; color: "#090909" }
-        GradientStop { position: 0.48; color: "#141414" }
-        GradientStop { position: 1.0; color: "#080808" }
+        GradientStop { position: 0.0; color: "#090B10" }
+        GradientStop { position: 0.52; color: "#10151D" }
+        GradientStop { position: 1.0; color: "#080A0E" }
     }
 
     function attemptLogin() {
@@ -90,8 +90,8 @@ Rectangle {
         radius: width / 2
         x: root.width * 0.58
         y: -height * 0.56
-        color: "#00D9FF"
-        opacity: 0.045
+        color: "#222A34"
+        opacity: 0.12
     }
 
     Rectangle {
@@ -100,8 +100,8 @@ Rectangle {
         radius: width / 2
         x: -width * 0.42
         y: root.height * 0.55
-        color: "#E33BFF"
-        opacity: 0.035
+        color: "#424A55"
+        opacity: 0.07
     }
 
     Rectangle {
@@ -122,10 +122,10 @@ Rectangle {
             anchors { left: parent.left; right: parent.right; top: parent.top }
             height: 2
             gradient: Gradient {
-                GradientStop { position: 0; color: "#00D9FF" }
-                GradientStop { position: 1; color: "#E33BFF" }
+                GradientStop { position: 0; color: "#B9C2CE" }
+                GradientStop { position: 1; color: "#717C8A" }
             }
-            opacity: 0.62
+            opacity: 0.48
         }
 
         RowLayout {
@@ -256,8 +256,8 @@ Rectangle {
             anchors { left: parent.left; right: parent.right; top: parent.top }
             height: 2
             gradient: Gradient {
-                GradientStop { position: 0; color: "#00D9FF" }
-                GradientStop { position: 1; color: "#E33BFF" }
+                GradientStop { position: 0; color: "#B9C2CE" }
+                GradientStop { position: 1; color: "#717C8A" }
             }
             opacity: 0.78
         }
@@ -265,8 +265,8 @@ Rectangle {
             anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
             width: 3
             gradient: Gradient {
-                GradientStop { position: 0; color: "#00D9FF" }
-                GradientStop { position: 1; color: "#E33BFF" }
+                GradientStop { position: 0; color: "#B9C2CE" }
+                GradientStop { position: 1; color: "#717C8A" }
             }
             opacity: 0.28
         }
@@ -310,7 +310,7 @@ Rectangle {
         Label {
             Layout.alignment: Qt.AlignHCenter
             text: "ACCÈS À VOTRE ENVIRONNEMENT"
-            color: "#00D9FF"
+            color: "#B9C2CE"
             font.family: "Noto Sans"
             font.pixelSize: 10
             font.weight: Font.DemiBold
@@ -342,7 +342,7 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 color: "#171D26"
-                border.color: userField.activeFocus ? "#00D9FF" : "#373737"
+                border.color: userField.activeFocus ? "#C6CDD6" : "#343D49"
                 border.width: userField.activeFocus ? 2 : 1
             }
             onAccepted: passwordField.forceActiveFocus()
@@ -373,7 +373,7 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 color: "#171D26"
-                border.color: passwordField.activeFocus ? "#E33BFF" : "#373737"
+                border.color: passwordField.activeFocus ? "#C6CDD6" : "#343D49"
                 border.width: passwordField.activeFocus ? 2 : 1
             }
             onAccepted: root.attemptLogin()
@@ -401,7 +401,7 @@ Rectangle {
                 radius: 11
                 color: "#171717"
                 border.width: sessionSelector.activeFocus ? 2 : 1
-                border.color: sessionSelector.activeFocus ? "#00D9FF" : "#373737"
+                border.color: sessionSelector.activeFocus ? "#C6CDD6" : "#343D49"
             }
         }
 
@@ -418,8 +418,8 @@ Rectangle {
             background: Rectangle {
                 radius: 12
                 gradient: Gradient {
-                    GradientStop { position: 0; color: loginButton.down ? "#00B7D8" : "#00D9FF" }
-                    GradientStop { position: 1; color: loginButton.down ? "#C62DDC" : "#E33BFF" }
+                    GradientStop { position: 0; color: loginButton.down ? "#ADB7C3" : "#D8DDE3" }
+                    GradientStop { position: 1; color: loginButton.down ? "#737F8C" : "#AAB4C0" }
                 }
                 border.color: "#F1F1F1"
                 border.width: 1
@@ -438,7 +438,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.minimumHeight: 24
             text: root.statusMessage
-            color: root.authenticating ? "#00D9FF" : "#E33BFF"
+            color: "#D0D5DC"
             font.family: "Noto Sans"
             font.pixelSize: 12
             horizontalAlignment: Text.AlignHCenter
