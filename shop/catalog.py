@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, QByteArray
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, QByteArray, Property
 
-from shop.catalog_data import load_catalog
+from shop.catalog_data import catalog_categories, load_catalog
 
 
 class CatalogModel(QAbstractListModel):
@@ -45,6 +45,11 @@ class CatalogModel(QAbstractListModel):
             self.load_error = "Le catalogue LEOS est indisponible ou invalide. Aucune installation ne peut être lancée."
         self._installed_user: set[str] = set()
         self._installed_system: set[str] = set()
+
+    @Property("QStringList")
+    def availableCategories(self) -> list[str]:
+        """Expose categories from the validated catalogue, never from a stale UI list."""
+        return catalog_categories(self._items)
 
     def roleNames(self):
         return self.ROLE_NAMES

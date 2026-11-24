@@ -19,6 +19,10 @@ ApplicationWindow {
     property color accentA: themeColors.accent_primary
     property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
+    // Semantic states stay independent from the user-selected A/B brand accents.
+    property color semanticCritical: controlCenter.effectiveAppearance === "light" ? "#A8323E" : "#F08C95"
+    property color semanticWarning: controlCenter.effectiveAppearance === "light" ? "#8A5B0A" : "#E6BD68"
+    property color semanticHealthy: controlCenter.effectiveAppearance === "light" ? "#246B45" : "#83C89E"
     property int selectedPage: 0
     property string launchNotice: ""
     property string kdeThemeNotice: ""
@@ -522,6 +526,65 @@ ApplicationWindow {
                                 color: window.muted
                                 font.pixelSize: 12
                                 Layout.fillWidth: true
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 92
+                                radius: 13
+                                color: window.themeColors.surface
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical
+                                             : controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning
+                                             : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy
+                                             : window.themeColors.border
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 16
+                                    spacing: 14
+                                    Rectangle {
+                                        Layout.preferredWidth: 7
+                                        Layout.fillHeight: true
+                                        radius: 4
+                                        color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical
+                                             : controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning
+                                             : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy
+                                             : window.themeColors.border
+                                    }
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 3
+                                        Label {
+                                            text: "SANTÉ DU SYSTÈME · " + (controlCenter.diagnosticsSnapshot.severity || "INCONNU").toUpperCase()
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical
+                                                 : controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning
+                                                 : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy
+                                                 : window.muted
+                                            font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 1
+                                        }
+                                        Label {
+                                            text: controlCenter.diagnosticsSnapshot.summary || "Analyse en cours…"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 11
+                                            wrapMode: Text.WordWrap
+                                            maximumLineCount: 2
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                        }
+                                        Label {
+                                            text: (controlCenter.diagnosticsSnapshot.findings || []).length
+                                                  + " point(s) à examiner"
+                                            color: window.muted
+                                            font.pixelSize: 9
+                                        }
+                                    }
+                                    Button {
+                                        text: "VOIR LE DIAGNOSTIC"
+                                        Accessible.name: "Ouvrir le diagnostic système"
+                                        onClicked: window.selectedPage = 7
+                                    }
+                                }
                             }
 
                             GridLayout {
@@ -2128,7 +2191,7 @@ ApplicationWindow {
                                 Layout.preferredHeight: 112
                                 radius: 14
                                 color: window.themeColors.surface
-                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.accentB : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.accentA : window.themeColors.border)
+                                border.color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy : window.themeColors.border)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
@@ -2136,7 +2199,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                         Label {
                                             text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
-                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.magenta : window.cyan
+                                            color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy : window.muted)
                                             font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                         }

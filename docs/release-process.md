@@ -44,7 +44,7 @@ Cette ISO candidate n'est pas une release et ne remplace pas le jalon de validat
 3. Vérifier chaque ISO avec son fichier SHA-256 et conserver le fichier `.source-digest`.
 4. Préparer les notes depuis [CHANGELOG.md](../CHANGELOG.md), en séparant fonctions validées, limites connues et variantes expérimentales.
 5. Créer un tag annoté `vX.Y.Z` sur le commit exact validé.
-6. Créer une GitHub Release liée à ce tag et joindre, pour chaque variante publiée, l'ISO, le fichier `.sha256` et le fichier `.source-digest`.
+6. Créer une GitHub Release liée à ce tag et joindre, pour chaque variante publiée, l'ISO, le fichier `.sha256`, le fichier `.source-digest` et le manifeste `.manifest.json` généré après le contrôle UEFI/QEMU.
 7. Mentionner les modèles/configurations réellement testés, les prérequis, les limites connues et le chemin de récupération.
 8. Vérifier depuis la page de la release que tous les fichiers sont téléchargeables et que leurs sommes correspondent.
 
@@ -56,7 +56,7 @@ Ne pas publier l'ISO uniquement comme artefact de workflow pour une distribution
 - date de publication ;
 - variantes matérielles incluses ;
 - liens vers les ISO et checksums ;
-- SHA-256 des ISO et digest(s) des images sources ;
+- SHA-256 des ISO, digest(s) des images sources et manifestes de provenance incluant commit, variante et périmètre de validation ;
 - matrice matérielle effectivement testée ;
 - fonctions connues comme validées ;
 - problèmes connus et procédures de récupération ;

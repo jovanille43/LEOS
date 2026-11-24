@@ -29,14 +29,36 @@ ApplicationWindow {
             .trim()
     }
 
-    function matchesSearch(name, appId, category, description, source) {
+    function matchesSearch(name, appId, category, description, source, compatibility, operationNote) {
         const query = normalizedSearchText(searchField.text)
         if (!query)
             return true
         const searchable = normalizedSearchText(
-            [name, appId, category, description, source].join(" ")
+            [name, appId, category, description, source, compatibility, operationNote].join(" ")
         )
         return searchable.includes(query)
+    }
+
+    function visibleApplicationCount() {
+        let visibleCount = 0
+        for (let row = 0; row < catalogModel.rowCount(); row++) {
+            const item = store.catalogItem(row)
+            if (!item)
+                continue
+            if (categoryFilter.currentText !== "Toutes" && item.category !== categoryFilter.currentText)
+                continue
+            if (matchesSearch(item.name, item.id, item.category, item.description,
+                              item.source, item.compatibility, item.operation_note))
+                visibleCount++
+        }
+        return visibleCount
+    }
+
+    function clearFilters() {
+        searchField.clear()
+        categoryFilter.currentIndex = 0
+        clearSelection()
+        searchField.forceActiveFocus()
     }
 
     function clearSelection() {
@@ -168,7 +190,7 @@ ApplicationWindow {
                 }
                 ComboBox {
                     id: categoryFilter
-                    model: ["Toutes", "Gaming", "Émulation", "Multimedia", "Internet", "Productivité", "Création"]
+                    model: ["Toutes"].concat(catalogModel.availableCategories)
                     enabled: !store.busy
                     Accessible.name: "Filtrer par catégorie"
                     onCurrentTextChanged: window.clearSelection()
@@ -186,6 +208,29 @@ ApplicationWindow {
                         font.pixelSize: 12
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
+                    }
+                }
+                Button {
+                    id: clearFiltersButton
+                    text: "EFFACER"
+                    visible: searchField.text.length > 0 || categoryFilter.currentText !== "Toutes"
+                    enabled: visible && !store.busy
+                    Accessible.name: "Effacer la recherche et le filtre de catégorie"
+                    onClicked: window.clearFilters()
+                    background: Rectangle {
+                        radius: 9
+                        color: clearFiltersButton.activeFocus || clearFiltersButton.hovered
+                               ? window.themeColors.surface_elevated : "transparent"
+                        border.color: clearFiltersButton.activeFocus
+                                       ? window.accentA : window.themeColors.border
+                    }
+                    contentItem: Label {
+                        text: clearFiltersButton.text
+                        color: window.themeColors.text
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
             }
@@ -217,7 +262,7 @@ ApplicationWindow {
                         }
                         Item { Layout.fillWidth: true }
                         Label {
-                            text: appList.count + " APPLICATIONS"
+                            text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"
                             color: window.muted
                             font.pixelSize: 9
                             font.letterSpacing: 0.8
@@ -251,7 +296,7 @@ ApplicationWindow {
                             width: ListView.view.width
                             height: visible ? 86 : 0
                             visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
-                                && window.matchesSearch(name, appId, category, description, source)
+                                && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
                             radius: 9
                             color: window.selectedRow === index || appRowButton.hovered || appRowButton.activeFocus
                                    ? window.themeColors.surface_elevated : window.themeColors.surface
@@ -310,6 +355,18 @@ ApplicationWindow {
                                                             installedScope, bundled)
                             }
                         }
+                    }
+                    Label {
+                        anchors.centerIn: parent
+                        width: parent.width - 44
+                        visible: window.visibleApplicationCount() === 0
+                        horizontalAlignment: Text.AlignHCenter
+                        text: catalogModel.rowCount() === 0
+                              ? "Le catalogue LEOS n'est pas disponible."
+                              : "Aucun résultat pour ces filtres. Efface la recherche ou choisis une autre catégorie."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 12
                     }
                 }
 

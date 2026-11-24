@@ -357,6 +357,17 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Write installer provenance manifest
+        env:
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          IMAGE_DIGEST: ${{ steps.verified.outputs.digest }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          python3 tools/installer_manifest.py "$ISO_NAME" "$VARIANT" "$IMAGE_TAG" "$SOURCE_SHA" "$IMAGE_DIGEST"
+
       - name: Upload installer ISO and checksum
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -366,6 +377,7 @@ jobs:
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
             ${{ steps.image.outputs.filename }}.source-digest
+            ${{ steps.image.outputs.filename }}.manifest.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 14

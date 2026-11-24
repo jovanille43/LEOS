@@ -17,6 +17,8 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 - [x] Unifier la direction graphite/métal et les accents A/B.
 - [x] Prévoir les modes sombre, clair et automatique.
+- [x] Séparer visuellement les états système (critique, attention, normal) des accents de marque A/B.
+- [x] Ajouter un contrat de cohérence A/B partagé entre les interfaces LEOS.
 - [ ] Contrôler chaque écran et chaque état (vide, chargement, erreur, sélection, focus) sur plusieurs résolutions.
 - [ ] Valider le thème réellement appliqué dans Plasma, et pas uniquement les composants QML.
 
@@ -33,15 +35,16 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 - [x] Inventaires matériel, réseau, stockage et télémétrie disponible.
 - [x] Diagnostic système et rapports de support expurgés.
-- [ ] Regrouper l'état matériel dans une vue de santé lisible, sans inventer de capteurs.
+- [x] Ajouter un résumé de santé système à la vue d'ensemble, avec accès direct au diagnostic détaillé.
 - [ ] Clarifier les actions recommandées, les risques et les redémarrages nécessaires avant confirmation.
 
 ### 5. Boutique LEOS
 
 - [x] Catalogue, filtres, sources et confirmation explicite.
 - [x] Contrôles de compatibilité et respect du modèle immuable de Bazzite.
-- [ ] Améliorer la découverte par catégories et recommandations réellement installables.
-- [ ] Tester les cas de mise à jour, dépendances, annulation, échec réseau et désinstallation.
+- [x] Alimenter les catégories directement depuis le catalogue validé, afficher le nombre de résultats filtrés et proposer un état vide récupérable.
+- [x] Étendre la recherche aux informations de compatibilité et aux notes d'opération.
+- [ ] Ajouter des recommandations réellement installables et tester mise à jour, dépendances, annulation, échec réseau et désinstallation.
 
 ### 6. Sécurité, sauvegarde et récupération
 
@@ -54,13 +57,15 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 ### 7. Expérience Desktop complète
 
 - [x] Menu, dock, notifications et accès aux paramètres KDE.
-- [ ] Finaliser les flux explorateur, recherche, espaces de travail et multi-écrans.
+- [x] Ajouter les accès directs depuis le menu Desktop au gestionnaire de fichiers et aux paramètres KDE, avec retour visible si l'application est absente.
+- [ ] Finaliser les flux de recherche universelle, espaces de travail et multi-écrans.
 - [ ] Vérifier les applications quotidiennes, le lancement automatique et la reprise de session.
 
 ### 8. Validation et livraison
 
 - [x] CI Python, lint QML, contrôles BlueBuild et vérification de signature.
 - [x] Génération ISO avec vérification de structure, checksum et démarrage UEFI/QEMU.
+- [x] Ajouter un manifeste de provenance par ISO : variante, commit source, tag et digest d'image, SHA-256 et périmètre exact du test UEFI/QEMU.
 - [ ] Répéter ces contrôles sur le commit exact de livraison et conserver les artefacts correspondants.
 - [ ] Installer cette ISO dans une VM et documenter les captures/résultats du parcours post-installation.
 - [ ] Tester les trois variantes graphiques sur du matériel adapté avant d'annoncer une compatibilité certifiée.

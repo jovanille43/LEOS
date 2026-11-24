@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shop.catalog_data import MAX_CATALOG_BYTES, MAX_CATALOG_ITEMS, load_catalog
+from shop.catalog_data import MAX_CATALOG_BYTES, MAX_CATALOG_ITEMS, catalog_categories, load_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -173,13 +173,33 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("Layout.preferredWidth: window.width < 1080 ? 300 : 360", qml)
         self.assertIn("Layout.minimumWidth: 280", qml)
         self.assertIn('text: "DÉCOUVRIR · INSTALLER · GÉRER"', qml)
-        self.assertIn('text: appList.count + " APPLICATIONS"', qml)
+        self.assertIn('text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"', qml)
         self.assertIn('text: "IDENTIFIANT"', qml)
         self.assertIn('text: detailsPane.appId || "—"', qml)
         self.assertIn("opacity: 0.05", qml)
         self.assertIn("opacity: 0.04", qml)
         self.assertIn("window.themeColors.accent_primary", qml)
         self.assertIn("window.themeColors.accent_secondary", qml)
+
+    def test_store_categories_are_derived_from_the_validated_catalogue(self):
+        items = load_catalog(ROOT / "shop" / "catalog.json")
+        expected = sorted({item["category"] for item in items}, key=str.casefold)
+        self.assertEqual(catalog_categories(items), expected)
+        model = (ROOT / "shop" / "catalog.py").read_text(encoding="utf-8")
+        self.assertIn('@Property("QStringList")', model)
+        self.assertIn("return catalog_categories(self._items)", model)
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('model: ["Toutes"].concat(catalogModel.availableCategories)', qml)
+        self.assertNotIn('["Toutes", "Gaming", "Émulation", "Multimedia"', qml)
+
+    def test_store_shows_visible_result_count_and_recoverable_empty_state(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function visibleApplicationCount()", qml)
+        self.assertIn("window.visibleApplicationCount() + \" / \" + catalogModel.rowCount()", qml)
+        self.assertIn("Aucun résultat pour ces filtres", qml)
+        self.assertIn("function clearFilters()", qml)
+        self.assertIn("Effacer la recherche et le filtre de catégorie", qml)
+        self.assertIn("item.compatibility, item.operation_note", qml)
 
     def test_v2_emulator_catalogue_has_curated_automatic_flathub_apps(self):
         items = load_catalog(ROOT / "shop" / "catalog.json")
