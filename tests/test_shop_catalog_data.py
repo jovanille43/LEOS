@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shop.catalog_data import MAX_CATALOG_BYTES, MAX_CATALOG_ITEMS, load_catalog
+from shop.catalog_data import MAX_CATALOG_BYTES, MAX_CATALOG_ITEMS, catalog_categories, load_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -182,11 +182,12 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("window.themeColors.accent_secondary", qml)
 
     def test_store_categories_are_derived_from_the_validated_catalogue(self):
-        from shop.catalog import CatalogModel
-
-        model = CatalogModel()
-        expected = sorted({item["category"] for item in load_catalog(ROOT / "shop" / "catalog.json")}, key=str.casefold)
-        self.assertEqual(model.availableCategories, expected)
+        items = load_catalog(ROOT / "shop" / "catalog.json")
+        expected = sorted({item["category"] for item in items}, key=str.casefold)
+        self.assertEqual(catalog_categories(items), expected)
+        model = (ROOT / "shop" / "catalog.py").read_text(encoding="utf-8")
+        self.assertIn('@Property("QStringList")', model)
+        self.assertIn("return catalog_categories(self._items)", model)
         qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
         self.assertIn('model: ["Toutes"].concat(catalogModel.availableCategories)', qml)
         self.assertNotIn('["Toutes", "Gaming", "Émulation", "Multimedia"', qml)
