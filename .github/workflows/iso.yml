@@ -357,6 +357,58 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Write installer provenance manifest
+        env:
+          ISO_NAME: ${{ steps.image.outputs.filename }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          IMAGE_DIGEST: ${{ steps.verified.outputs.digest }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          iso = Path(os.environ["ISO_NAME"])
+          source_sha = os.environ["SOURCE_SHA"]
+          image_digest = os.environ["IMAGE_DIGEST"]
+          variant = os.environ["VARIANT"]
+          image_tag = os.environ["IMAGE_TAG"]
+          if not re.fullmatch(r"[0-9a-f]{40}", source_sha):
+              raise SystemExit("Invalid LEOS source commit in installer provenance.")
+          if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_digest):
+              raise SystemExit("Invalid immutable image digest in installer provenance.")
+          if variant not in {"standard", "nvidia-legacy", "nvidia-modern"}:
+              raise SystemExit("Unknown LEOS installer variant.")
+          if not iso.is_file() or iso.stat().st_size <= 0:
+              raise SystemExit("Installer ISO is missing or empty.")
+          checksum = hashlib.sha256(iso.read_bytes()).hexdigest()
+          checksum_file = Path(str(iso) + ".sha256")
+          digest_file = Path(str(iso) + ".source-digest")
+          if not checksum_file.is_file() or checksum_file.read_text().split()[0] != checksum:
+              raise SystemExit("Installer checksum does not match the ISO.")
+          if not digest_file.is_file() or digest_file.read_text().strip() != image_digest:
+              raise SystemExit("Installer source digest does not match the verified image.")
+          manifest = {
+              "product": "LEOS",
+              "variant": variant,
+              "iso_file": iso.name,
+              "iso_sha256": checksum,
+              "image_tag": image_tag,
+              "source_commit": source_sha,
+              "source_image_digest": image_digest,
+              "installer_uefi_qemu_smoke": "passed",
+              "validation_scope": "Anaconda WebUI boot verified; full installed LEOS session and physical hardware require separate validation"
+          }
+          output = Path(str(iso) + ".manifest.json")
+          output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(f"Wrote {output}")
+          PY
+
       - name: Upload installer ISO and checksum
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -366,6 +418,7 @@ jobs:
             ${{ steps.image.outputs.filename }}
             ${{ steps.image.outputs.filename }}.sha256
             ${{ steps.image.outputs.filename }}.source-digest
+            ${{ steps.image.outputs.filename }}.manifest.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
