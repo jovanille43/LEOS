@@ -181,6 +181,25 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn("window.themeColors.accent_primary", qml)
         self.assertIn("window.themeColors.accent_secondary", qml)
 
+    def test_store_categories_are_derived_from_the_validated_catalogue(self):
+        from shop.catalog import CatalogModel
+
+        model = CatalogModel()
+        expected = sorted({item["category"] for item in load_catalog(ROOT / "shop" / "catalog.json")}, key=str.casefold)
+        self.assertEqual(model.availableCategories, expected)
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('model: ["Toutes"].concat(catalogModel.availableCategories)', qml)
+        self.assertNotIn('["Toutes", "Gaming", "Émulation", "Multimedia"', qml)
+
+    def test_store_shows_visible_result_count_and_recoverable_empty_state(self):
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("function visibleApplicationCount()", qml)
+        self.assertIn("window.visibleApplicationCount() + \" / \" + catalogModel.rowCount()", qml)
+        self.assertIn("Aucun résultat pour ces filtres", qml)
+        self.assertIn("function clearFilters()", qml)
+        self.assertIn("Effacer la recherche et le filtre de catégorie", qml)
+        self.assertIn("item.compatibility, item.operation_note", qml)
+
     def test_v2_emulator_catalogue_has_curated_automatic_flathub_apps(self):
         items = load_catalog(ROOT / "shop" / "catalog.json")
         emulators = {
