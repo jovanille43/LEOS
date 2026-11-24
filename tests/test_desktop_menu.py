@@ -393,6 +393,14 @@ class DesktopMenuTests(unittest.TestCase):
 
 
 
+    def test_menu_provides_direct_file_manager_and_system_settings_access(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('window.launchApplication("org.kde.dolphin.desktop"', qml)
+        self.assertIn('window.launchApplication("systemsettings.desktop"', qml)
+        self.assertIn('Accessible.name: "Ouvrir le gestionnaire de fichiers Dolphin"', qml)
+        self.assertIn('Accessible.name: "Ouvrir les paramètres système KDE"', qml)
+        self.assertIn("est introuvable ou ne peut pas être lancé", qml)
+
     def test_application_menu_uses_a_refined_catalogue_hierarchy_and_icon_tiles(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
         self.assertIn('text: applicationCatalog.applicationCount() + " APPLICATIONS"', qml)
