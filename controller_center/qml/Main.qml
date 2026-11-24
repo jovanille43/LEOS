@@ -25,10 +25,29 @@ ApplicationWindow {
         anchors.fill: parent
         color: window.color
 
+        Rectangle {
+            width: 500
+            height: 500
+            radius: 250
+            x: parent.width - width * 0.54
+            y: -height * 0.46
+            color: window.themeColors.accent_primary
+            opacity: 0.05
+        }
+        Rectangle {
+            width: 430
+            height: 430
+            radius: 215
+            x: -width * 0.5
+            y: parent.height - height * 0.48
+            color: window.themeColors.accent_secondary
+            opacity: 0.04
+        }
+
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 32
-            spacing: 20
+            anchors.margins: window.width < 920 || window.height < 680 ? 18 : 32
+            spacing: window.width < 920 ? 12 : 20
 
             RowLayout {
                 Layout.fillWidth: true
@@ -36,7 +55,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
+                        color: window.themeColors.text
                         font.pixelSize: 28
                         font.weight: Font.Black
                         font.letterSpacing: 5
@@ -49,11 +68,32 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillWidth: true }
-                Label {
-                    text: "CONFIGURATION LOCALE"
-                    color: window.muted
-                    font.pixelSize: 10
-                    font.letterSpacing: 2
+                Rectangle {
+                    radius: 9
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    Layout.preferredHeight: 34
+                    Layout.preferredWidth: 190
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 11
+                        anchors.rightMargin: 11
+                        spacing: 8
+                        Rectangle {
+                            Layout.preferredWidth: 7
+                            Layout.preferredHeight: 7
+                            radius: 4
+                            color: controllerCenter.selectedIndex >= 0 ? "#78C99B" : window.muted
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            text: controllerCenter.selectedIndex >= 0 ? "MANETTE CONNECTÉE" : "EN ATTENTE"
+                            color: window.muted
+                            font.pixelSize: 9
+                            font.letterSpacing: 1.1
+                            elide: Text.ElideRight
+                        }
+                    }
                 }
             }
 
@@ -74,11 +114,29 @@ ApplicationWindow {
                         radius: 14
                         color: window.themeColors.surface_elevated
                         border.color: window.cyan
-                        Label {
-                            anchors.centerIn: parent
-                            text: "⌘"
-                            color: window.cyan
-                            font.pixelSize: 28
+                        Rectangle {
+                            x: 8
+                            y: 15
+                            width: 38
+                            height: 24
+                            radius: 9
+                            color: "transparent"
+                            border.color: window.cyan
+                            border.width: 2
+                        }
+                        Rectangle { x: 14; y: 25; width: 10; height: 3; radius: 1; color: window.cyan }
+                        Rectangle { x: 17.5; y: 21.5; width: 3; height: 10; radius: 1; color: window.cyan }
+                        Repeater {
+                            model: 2
+                            delegate: Rectangle {
+                                required property int index
+                                width: 5
+                                height: 5
+                                radius: 3
+                                x: index === 0 ? 31 : 37
+                                y: index === 0 ? 21 : 27
+                                color: index === 0 ? window.accentA : window.accentB
+                            }
                         }
                     }
                     ColumnLayout {
@@ -86,7 +144,7 @@ ApplicationWindow {
                         spacing: 5
                         Label {
                             text: controllerCenter.selectedDeviceName
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 17
                             font.weight: Font.DemiBold
                         }
@@ -98,8 +156,22 @@ ApplicationWindow {
                         }
                     }
                     Button {
+                        id: refreshDevicesButton
                         text: "ACTUALISER"
+                        Accessible.name: "Actualiser la détection des manettes"
                         onClicked: controllerCenter.refreshDevices()
+                        background: Rectangle {
+                            radius: 8
+                            color: refreshDevicesButton.hovered || refreshDevicesButton.activeFocus ? window.themeColors.surface_elevated : window.themeColors.surface
+                            border.width: refreshDevicesButton.activeFocus ? 2 : 1
+                            border.color: refreshDevicesButton.activeFocus ? window.themeColors.text : refreshDevicesButton.hovered ? window.accentB : window.themeColors.border
+                        }
+                        contentItem: Label {
+                            text: refreshDevicesButton.text
+                            color: window.themeColors.text
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                        }
                     }
                 }
             }
@@ -110,7 +182,8 @@ ApplicationWindow {
                 spacing: 18
 
                 ColumnLayout {
-                    Layout.preferredWidth: 285
+                    Layout.preferredWidth: window.width < 920 ? 245 : 285
+                    Layout.minimumWidth: 220
                     Layout.fillHeight: true
                     spacing: 14
 
@@ -182,7 +255,7 @@ ApplicationWindow {
                             }
                             Label {
                                 text: "Zone morte des sticks"
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                             }
                             Slider {
@@ -250,9 +323,141 @@ ApplicationWindow {
                                     Label {
                                         Layout.fillWidth: true
                                         text: controllerCenter.lastEventText
-                                        color: "white"
+                                        color: window.themeColors.text
                                         font.pixelSize: 16
                                         wrapMode: Text.WordWrap
+                                    }
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+                                Label {
+                                    text: "STICKS ANALOGIQUES"
+                                    color: window.muted
+                                    font.pixelSize: 10
+                                    font.letterSpacing: 1.5
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: controllerCenter.hasLeftStick || controllerCenter.hasRightStick ? "EN DIRECT" : "NON DÉTECTÉS"
+                                    color: controllerCenter.hasLeftStick || controllerCenter.hasRightStick ? window.cyan : window.muted
+                                    font.pixelSize: 9
+                                    font.letterSpacing: 1
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+                                visible: controllerCenter.hasLeftStick || controllerCenter.hasRightStick
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 116
+                                    radius: 10
+                                    color: window.themeColors.background
+                                    border.color: window.themeColors.border
+                                    visible: controllerCenter.hasLeftStick
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 2
+                                        Label {
+                                            Layout.fillWidth: true
+                                            text: "GAUCHE"
+                                            color: window.cyan
+                                            font.pixelSize: 9
+                                            font.letterSpacing: 1.4
+                                            horizontalAlignment: Text.AlignHCenter
+                                        }
+                                        Item {
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
+                                            Rectangle {
+                                                width: 66
+                                                height: 66
+                                                radius: 33
+                                                anchors.centerIn: parent
+                                                color: window.themeColors.surface
+                                                border.color: window.themeColors.border
+                                                Rectangle {
+                                                    anchors.centerIn: parent
+                                                    width: 1
+                                                    height: 50
+                                                    color: window.themeColors.border
+                                                }
+                                                Rectangle {
+                                                    anchors.centerIn: parent
+                                                    width: 50
+                                                    height: 1
+                                                    color: window.themeColors.border
+                                                }
+                                                Rectangle {
+                                                    width: 13
+                                                    height: 13
+                                                    radius: 7
+                                                    x: (parent.width - width) / 2 + controllerCenter.leftStickX * 23
+                                                    y: (parent.height - height) / 2 + controllerCenter.leftStickY * 23
+                                                    color: window.accentA
+                                                    border.color: window.themeColors.text
+                                                    border.width: 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 116
+                                    radius: 10
+                                    color: window.themeColors.background
+                                    border.color: window.themeColors.border
+                                    visible: controllerCenter.hasRightStick
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 2
+                                        Label {
+                                            Layout.fillWidth: true
+                                            text: "DROIT"
+                                            color: window.accentB
+                                            font.pixelSize: 9
+                                            font.letterSpacing: 1.4
+                                            horizontalAlignment: Text.AlignHCenter
+                                        }
+                                        Item {
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
+                                            Rectangle {
+                                                width: 66
+                                                height: 66
+                                                radius: 33
+                                                anchors.centerIn: parent
+                                                color: window.themeColors.surface
+                                                border.color: window.themeColors.border
+                                                Rectangle {
+                                                    anchors.centerIn: parent
+                                                    width: 1
+                                                    height: 50
+                                                    color: window.themeColors.border
+                                                }
+                                                Rectangle {
+                                                    anchors.centerIn: parent
+                                                    width: 50
+                                                    height: 1
+                                                    color: window.themeColors.border
+                                                }
+                                                Rectangle {
+                                                    width: 13
+                                                    height: 13
+                                                    radius: 7
+                                                    x: (parent.width - width) / 2 + controllerCenter.rightStickX * 23
+                                                    y: (parent.height - height) / 2 + controllerCenter.rightStickY * 23
+                                                    color: window.accentB
+                                                    border.color: window.themeColors.text
+                                                    border.width: 1
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -265,7 +470,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.buttonsText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 13
                                 wrapMode: Text.WordWrap
                             }
@@ -283,7 +488,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.axesText
-                                color: "white"
+                                color: window.themeColors.text
                                 font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }

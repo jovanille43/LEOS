@@ -265,8 +265,8 @@ ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 48
-            spacing: 20
+            anchors.margins: window.width < 1120 ? 24 : 48
+            spacing: window.height < 760 ? 14 : 20
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
@@ -274,7 +274,7 @@ ApplicationWindow {
 
                 Label {
                     text: "LEOS"
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 39
                     font.weight: Font.Black
                     font.letterSpacing: 9
@@ -289,7 +289,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: window.currentDate.toLocaleTimeString(Qt.locale("fr_FR"), "HH:mm")
-                    color: "white"
+                    color: window.themeColors.text
                     font.pixelSize: 48
                     font.weight: Font.Light
                     font.letterSpacing: 2
@@ -305,7 +305,7 @@ ApplicationWindow {
                 Label {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
-                    color: window.colorAText
+                    color: modeManager.lastMode === "gaming" ? window.colorBText : window.colorAText
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
@@ -339,7 +339,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "Un seul système, deux expériences : Desktop pour le quotidien et Gaming pour jouer."
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 13
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -364,7 +364,7 @@ ApplicationWindow {
                         }
                         contentItem: Label {
                             text: "COMPRIS"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 10
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignHCenter
@@ -384,16 +384,75 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     focus: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "LEOS Desktop"
+                    Accessible.description: "Bureau, création et quotidien dans un environnement KDE personnalisé."
                     onClicked: window.requestDesktopMode()
                     background: Rectangle {
                         radius: 22
-                        color: desktopCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: desktopCard.activeFocus ? 2 : 1
-                        border.color: desktopCard.activeFocus ? window.colorA : window.themeColors.border
+                        color: desktopCard.down || desktopCard.activeFocus || desktopCard.hovered
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: desktopCard.activeFocus ? 2 : (desktopCard.hovered ? 1.5 : 1)
+                        border.color: desktopCard.activeFocus ? window.colorA
+                                      : desktopCard.hovered ? window.colorAText
+                                      : window.themeColors.border
+                        Behavior on color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.width {
+                            enabled: modeSelectorController.animationsEnabled
+                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            radius: parent.radius - 1
+                            color: window.colorA
+                            opacity: desktopCard.activeFocus ? 0.10 : (desktopCard.hovered ? 0.055 : 0)
+                            Behavior on opacity {
+                                enabled: modeSelectorController.animationsEnabled
+                                NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                            }
+                        }
+                        Rectangle {
+                            anchors { left: parent.left; right: parent.right; top: parent.top }
+                            anchors.leftMargin: 30
+                            anchors.rightMargin: 30
+                            height: 2
+                            radius: 1
+                            visible: desktopCard.activeFocus || desktopCard.hovered
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.colorA }
+                                GradientStop { position: 1; color: window.colorB }
+                            }
+                        }
                     }
                     contentItem: ColumnLayout {
-                        spacing: 15
+                        spacing: 13
                         Item { Layout.fillHeight: true }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 8
+                            Rectangle {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 2
+                                radius: 1
+                                color: window.colorA
+                            }
+                            Label {
+                                text: "MODE 01 · QUOTIDIEN"
+                                color: window.colorAText
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.4
+                            }
+                        }
                         Image {
                             source: leosTheme.desktopLogoUrl
                             asynchronous: true
@@ -406,7 +465,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS DESKTOP"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -424,6 +483,33 @@ ApplicationWindow {
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
                         }
+                        Rectangle {
+                            Layout.preferredWidth: 220
+                            Layout.preferredHeight: 38
+                            Layout.alignment: Qt.AlignHCenter
+                            radius: 9
+                            color: window.themeColors.surface
+                            border.width: desktopCard.activeFocus ? 1.5 : 1
+                            border.color: desktopCard.activeFocus || desktopCard.hovered ? window.colorA : window.themeColors.border
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 13
+                                anchors.rightMargin: 13
+                                Label {
+                                    text: "OUVRIR DESKTOP"
+                                    color: window.colorAText
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 1
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: "→"
+                                    color: window.colorAText
+                                    font.pixelSize: 16
+                                }
+                            }
+                        }
                         Item { Layout.fillHeight: true }
                     }
                 }
@@ -432,16 +518,75 @@ ApplicationWindow {
                     id: gamingCard
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "LEOS Gaming"
+                    Accessible.description: "Bibliothèque de jeux, émulation et navigation à la manette."
                     onClicked: window.requestGamingMode()
                     background: Rectangle {
                         radius: 22
-                        color: gamingCard.down ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: gamingCard.activeFocus ? 2 : 1
-                        border.color: gamingCard.activeFocus ? window.colorB : window.themeColors.border
+                        color: gamingCard.down || gamingCard.activeFocus || gamingCard.hovered
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: gamingCard.activeFocus ? 2 : (gamingCard.hovered ? 1.5 : 1)
+                        border.color: gamingCard.activeFocus ? window.colorB
+                                      : gamingCard.hovered ? window.colorBText
+                                      : window.themeColors.border
+                        Behavior on color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.color {
+                            enabled: modeSelectorController.animationsEnabled
+                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.width {
+                            enabled: modeSelectorController.animationsEnabled
+                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            radius: parent.radius - 1
+                            color: window.colorB
+                            opacity: gamingCard.activeFocus ? 0.10 : (gamingCard.hovered ? 0.055 : 0)
+                            Behavior on opacity {
+                                enabled: modeSelectorController.animationsEnabled
+                                NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                            }
+                        }
+                        Rectangle {
+                            anchors { left: parent.left; right: parent.right; top: parent.top }
+                            anchors.leftMargin: 30
+                            anchors.rightMargin: 30
+                            height: 2
+                            radius: 1
+                            visible: gamingCard.activeFocus || gamingCard.hovered
+                            gradient: Gradient {
+                                GradientStop { position: 0; color: window.colorA }
+                                GradientStop { position: 1; color: window.colorB }
+                            }
+                        }
                     }
                     contentItem: ColumnLayout {
-                        spacing: 15
+                        spacing: 13
                         Item { Layout.fillHeight: true }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 8
+                            Rectangle {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 2
+                                radius: 1
+                                color: window.colorB
+                            }
+                            Label {
+                                text: "MODE 02 · JEUX"
+                                color: window.colorBText
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.4
+                            }
+                        }
                         Image {
                             source: leosTheme.gamingLogoUrl
                             asynchronous: true
@@ -454,7 +599,7 @@ ApplicationWindow {
                         }
                         Label {
                             text: "LEOS GAMING"
-                            color: "white"
+                            color: window.themeColors.text
                             font.pixelSize: 23
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -467,10 +612,37 @@ ApplicationWindow {
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Label {
-                            text: "Vos jeux et lanceurs réunis au même endroit"
+                            text: "Tes jeux et lanceurs réunis au même endroit"
                             color: window.themeColors.muted_text
                             font.pixelSize: 10
                             Layout.alignment: Qt.AlignHCenter
+                        }
+                        Rectangle {
+                            Layout.preferredWidth: 220
+                            Layout.preferredHeight: 38
+                            Layout.alignment: Qt.AlignHCenter
+                            radius: 9
+                            color: window.themeColors.surface
+                            border.width: gamingCard.activeFocus ? 1.5 : 1
+                            border.color: gamingCard.activeFocus || gamingCard.hovered ? window.colorB : window.themeColors.border
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 13
+                                anchors.rightMargin: 13
+                                Label {
+                                    text: "OUVRIR GAMING"
+                                    color: window.colorBText
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 1
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: "→"
+                                    color: window.colorBText
+                                    font.pixelSize: 16
+                                }
+                            }
                         }
                         Item { Layout.fillHeight: true }
                     }
@@ -667,7 +839,7 @@ ApplicationWindow {
 
             Label {
                 text: "LEOS va appliquer ton dégradé personnalisé A/B aux ressources de marque compatibles, créer un schéma KDE correspondant et installer le fond, le style et le dock. Une sauvegarde KDE sera créée avant toute modification. Aucun accent ne sera imposé."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -766,7 +938,7 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: applyAppearanceButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -784,7 +956,7 @@ ApplicationWindow {
                 }
                 contentItem: Label {
                     text: keepAppearanceButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
@@ -804,7 +976,7 @@ ApplicationWindow {
             spacing: 14
             Label {
                 text: "Les applications actuellement ouvertes resteront en arrière-plan. Aucune application ne sera fermée automatiquement."
-                color: "white"
+                color: window.themeColors.text
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -819,7 +991,7 @@ ApplicationWindow {
                 background: Rectangle { radius: 9; color: window.themeColors.surface_elevated; border.color: window.colorA }
                 contentItem: Label {
                     text: continueGamingButton.text
-                    color: "white"
+                    color: window.themeColors.text
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
                 }

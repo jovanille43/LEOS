@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90">
+<defs>
+  <linearGradient id="leosAccent" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#00D9FF"/>
+    <stop offset="0.52" stop-color="#74869B"/>
+    <stop offset="1" stop-color="#E33BFF"/>
+  </linearGradient>
+  <linearGradient id="surface" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1A2633"/>
+    <stop offset="1" stop-color="#0D131D"/>
+  </linearGradient>
+</defs>
+  <g id="normal-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#121A24" stroke="none" stroke-width="1.1" /></g>
+  <g id="normal-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="normal-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#121A24" stroke="#344455" stroke-width="1.1" /></g>
+  <g id="focus-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="focus-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="focus-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="focus-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="focus-center" opacity="0.98"><rect x="18" y="18" width="54" height="54" fill="#1A2938" stroke="none" stroke-width="1.1" /></g>
+  <g id="focus-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="focus-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="focus-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="focus-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#1A2938" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-topleft" opacity="0.97"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-top" opacity="0.97"><rect x="18" y="0" width="54" height="18" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="hover-topright" opacity="0.97"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-left" opacity="0.97"><rect x="0" y="18" width="18" height="54" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-center" opacity="0.97"><rect x="18" y="18" width="54" height="54" fill="#172432" stroke="none" stroke-width="1.1" /></g>
+  <g id="hover-right" opacity="0.97"><rect x="72" y="18" width="18" height="54" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-bottomleft" opacity="0.97"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="hover-bottom" opacity="0.97"><rect x="18" y="72" width="54" height="18" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="hover-bottomright" opacity="0.97"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#172432" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-topleft" opacity="0.98"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-top" opacity="0.98"><rect x="18" y="0" width="54" height="18" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="attention-topright" opacity="0.98"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-left" opacity="0.98"><rect x="0" y="18" width="18" height="54" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-center" opacity="0.98"><rect x="18" y="18" width="54" height="54" fill="#211D2B" stroke="none" stroke-width="1.1" /></g>
+  <g id="attention-right" opacity="0.98"><rect x="72" y="18" width="18" height="54" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-bottomleft" opacity="0.98"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="attention-bottom" opacity="0.98"><rect x="18" y="72" width="54" height="18" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="attention-bottomright" opacity="0.98"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#211D2B" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="minimized-topleft" opacity="0.82"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-top" opacity="0.82"><rect x="18" y="0" width="54" height="18" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-topright" opacity="0.82"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-left" opacity="0.82"><rect x="0" y="18" width="18" height="54" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-center" opacity="0.82"><rect x="18" y="18" width="54" height="54" fill="#0B1119" stroke="none" stroke-width="1.1" /></g>
+  <g id="minimized-right" opacity="0.82"><rect x="72" y="18" width="18" height="54" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-bottomleft" opacity="0.82"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-bottom" opacity="0.82"><rect x="18" y="72" width="54" height="18" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <g id="minimized-bottomright" opacity="0.82"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#0B1119" stroke="#293746" stroke-width="1.1" /></g>
+  <rect id="hint-stretch-borders" x="0" y="0" width="1" height="1" fill="none"/>
+  <rect id="hint-compose-over-border" x="0" y="0" width="1" height="1" fill="none"/>
+</svg>

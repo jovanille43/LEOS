@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 
 from controller_center.backend import GamepadBackend, backend_available
-from controller_center.input_state import ControllerInputState
+from controller_center.input_state import ControllerInputState, normalize_axis_value
 from controller_center.profiles import (
     ControllerProfileStore,
     detect_controller_profile,
@@ -44,6 +44,7 @@ class ControllerCenterController(QObject):
         self.axes_text = "Aucun axe détecté pour le moment."
         self._profile = "auto"
         self._deadzone = 8
+        self._axis_centers: dict[str, int] = {}
 
         self.poll_timer = QTimer(self)
         self.poll_timer.setInterval(35)
@@ -88,6 +89,41 @@ class ControllerCenterController(QObject):
     @Property(str, notify=changed)
     def axesText(self) -> str:
         return self.axes_text
+
+    def _normalized_axis(self, name: str) -> float:
+        """Return a calibrated -1..1 stick position using evdev's real axis range."""
+        value = self.backend.axes.get(name)
+        limits = self.backend.axis_ranges.get(name)
+        if value is None or not limits:
+            return 0.0
+        minimum = int(limits.get("minimum", -32768))
+        maximum = int(limits.get("maximum", 32767))
+        center = self._axis_centers.get(name)
+        return normalize_axis_value(value, minimum, maximum, center)
+
+    @Property(bool, notify=changed)
+    def hasLeftStick(self) -> bool:
+        return all(name in self.backend.axis_ranges for name in ("ABS_X", "ABS_Y"))
+
+    @Property(bool, notify=changed)
+    def hasRightStick(self) -> bool:
+        return all(name in self.backend.axis_ranges for name in ("ABS_RX", "ABS_RY"))
+
+    @Property(float, notify=changed)
+    def leftStickX(self) -> float:
+        return self._normalized_axis("ABS_X")
+
+    @Property(float, notify=changed)
+    def leftStickY(self) -> float:
+        return self._normalized_axis("ABS_Y")
+
+    @Property(float, notify=changed)
+    def rightStickX(self) -> float:
+        return self._normalized_axis("ABS_RX")
+
+    @Property(float, notify=changed)
+    def rightStickY(self) -> float:
+        return self._normalized_axis("ABS_RY")
 
     @Property(str, notify=changed)
     def profileName(self) -> str:
@@ -162,6 +198,7 @@ class ControllerCenterController(QObject):
         record = self.store.get(self.selected_id)
         self._profile = record["profile"]
         self._deadzone = record["deadzone"]
+        self._axis_centers = dict(record["axis_centers"])
         self.axes_text = ", ".join(item["axes"]) or "Aucun axe analogique"
         if open_device:
             try:
@@ -214,10 +251,11 @@ class ControllerCenterController(QObject):
             self.status = "Déplace les sticks ou sélectionne une manette avant le calibrage."
             self.changed.emit()
             return
-        self.store.update(
+        saved = self.store.update(
             self.selected_id,
             axis_centers={name: int(value) for name, value in self.backend.axes.items()},
         )
+        self._axis_centers = dict(saved["axis_centers"])
         self.status = "Position neutre enregistrée dans ton profil LEOS."
         self.changed.emit()
 

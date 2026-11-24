@@ -163,10 +163,29 @@ ApplicationWindow {
         anchors.fill: parent
         color: window.color
 
+        Rectangle {
+            width: 620
+            height: 620
+            radius: 310
+            x: parent.width - width * 0.58
+            y: -height * 0.48
+            color: window.themeColors.accent_primary
+            opacity: 0.055
+        }
+        Rectangle {
+            width: 520
+            height: 520
+            radius: 260
+            x: -width * 0.52
+            y: parent.height - height * 0.48
+            color: window.themeColors.accent_secondary
+            opacity: 0.045
+        }
+
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 30
-            spacing: 20
+            anchors.margins: window.width < 980 ? 20 : 30
+            spacing: window.width < 980 ? 14 : 20
 
             RowLayout {
                 Layout.fillWidth: true
@@ -187,11 +206,63 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillWidth: true }
-                Label {
-                    text: "PRÉFÉRENCES UTILISATEUR"
-                    color: window.muted
-                    font.pixelSize: 10
-                    font.letterSpacing: 2
+                Rectangle {
+                    Layout.preferredHeight: 32
+                    Layout.preferredWidth: window.width < 980 ? 92 : 154
+                    radius: 9
+                    color: window.themeColors.surface
+                    border.color: window.themeColors.border
+                    Accessible.role: Accessible.Grouping
+                    Accessible.name: systemMonitor.available ? "Surveillance système active" : "Mesures système indisponibles"
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 7
+                        Rectangle {
+                            Layout.preferredWidth: 7
+                            Layout.preferredHeight: 7
+                            radius: 4
+                            color: systemMonitor.available ? "#78C99B" : window.muted
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            text: window.width < 980
+                                ? (systemMonitor.available ? "EN LIGNE" : "INACTIF")
+                                : (systemMonitor.available ? "SURVEILLANCE ACTIVE" : "MESURES INDISPONIBLES")
+                            color: systemMonitor.available ? window.themeColors.text : window.muted
+                            font.pixelSize: 8
+                            font.letterSpacing: 0.6
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+                RowLayout {
+                    spacing: 7
+                    Label {
+                        text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "PERSONNALISER A/B"
+                        color: window.muted
+                        font.pixelSize: 9
+                        font.letterSpacing: 1.4
+                    }
+                    Rectangle {
+                        width: 12
+                        height: 12
+                        radius: 6
+                        color: Qt.color(controlCenter.themeColorA)
+                        visible: controlCenter.themeColorsConfigured
+                        border.color: window.themeColors.border
+                        border.width: 1
+                    }
+                    Rectangle {
+                        width: 12
+                        height: 12
+                        radius: 6
+                        color: Qt.color(controlCenter.themeColorB)
+                        visible: controlCenter.themeColorsConfigured
+                        border.color: window.themeColors.border
+                        border.width: 1
+                    }
                 }
             }
 
@@ -200,13 +271,18 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 spacing: 18
 
-                ColumnLayout {
-                    Layout.preferredWidth: 220
-                    Layout.minimumWidth: 185
+                ScrollView {
+                    Layout.preferredWidth: window.width < 980 ? 190 : 220
+                    Layout.minimumWidth: 168
                     Layout.fillHeight: true
-                    spacing: 9
+                    clip: true
+                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-                    Repeater {
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 9
+
+                        Repeater {
                         model: [
                             { label: "Vue d'ensemble", page: 0 },
                             { label: "Apparence", page: 1 },
@@ -223,34 +299,83 @@ ApplicationWindow {
                             id: settingsNavigationButton
                             required property var modelData
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 48
+                            Layout.preferredHeight: 46
+                            activeFocusOnTab: true
                             text: modelData.label
+                            Accessible.name: modelData.label
+                            Accessible.description: "Ouvrir la section " + modelData.label + " du Centre de contrôle."
+                            Accessible.selected: window.selectedPage === modelData.page
                             onClicked: {
                                 window.selectedPage = modelData.page
                                 window.launchNotice = ""
                             }
                             background: Rectangle {
                                 radius: 10
-                                color: window.selectedPage === modelData.page ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: window.selectedPage === modelData.page ? window.accentA : window.themeColors.border
+                                color: window.selectedPage === modelData.page || settingsNavigationButton.hovered || settingsNavigationButton.activeFocus
+                                       ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: window.selectedPage === modelData.page || settingsNavigationButton.activeFocus ? 1 : 0
+                                border.color: settingsNavigationButton.activeFocus ? window.accentB : window.accentA
+                                Behavior on color { ColorAnimation { duration: controlCenter.animationsEnabled ? 150 : 0 } }
+                                Behavior on border.color { ColorAnimation { duration: controlCenter.animationsEnabled ? 150 : 0 } }
+
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                    anchors.leftMargin: 1
+                                    width: 3
+                                    radius: 2
+                                    visible: window.selectedPage === modelData.page
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
                             }
-                            contentItem: Label {
-                                text: settingsNavigationButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: 8
+                            contentItem: RowLayout {
+                                spacing: 10
+                                Rectangle {
+                                    Layout.preferredWidth: 28
+                                    Layout.preferredHeight: 25
+                                    radius: 6
+                                    color: window.selectedPage === modelData.page
+                                        ? window.themeColors.surface_elevated : window.themeColors.background
+                                    border.color: window.selectedPage === modelData.page
+                                        ? window.accentA : window.themeColors.border
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: ("0" + (modelData.page + 1)).slice(-2)
+                                        color: window.selectedPage === modelData.page ? window.cyan : window.muted
+                                        font.pixelSize: 9
+                                        font.weight: Font.Bold
+                                        font.letterSpacing: 0.5
+                                    }
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: settingsNavigationButton.text
+                                    color: window.themeColors.text
+                                    font.pixelSize: 12
+                                    font.weight: window.selectedPage === modelData.page ? Font.DemiBold : Font.Normal
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: window.selectedPage === modelData.page ? "›" : ""
+                                    color: window.cyan
+                                    font.pixelSize: 17
+                                    font.weight: Font.DemiBold
+                                }
                             }
                         }
                     }
 
                     Item { Layout.fillHeight: true }
-                    Label {
-                        text: "LEOS • BUILD EN DÉVELOPPEMENT"
-                        color: window.themeColors.muted_text
-                        font.pixelSize: 9
-                        wrapMode: Text.WordWrap
-                        Layout.fillWidth: true
+                        Label {
+                            text: "LEOS • BUILD EN DÉVELOPPEMENT"
+                            color: window.themeColors.muted_text
+                            font.pixelSize: 9
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
                     }
                 }
 
@@ -281,7 +406,7 @@ ApplicationWindow {
 
                             GridLayout {
                                 Layout.fillWidth: true
-                                columns: 3
+                                columns: pages.width < 680 ? 2 : 3
                                 columnSpacing: 10
                                 rowSpacing: 10
 
@@ -314,6 +439,26 @@ ApplicationWindow {
                                             color: window.muted
                                             font.pixelSize: 10
                                         }
+                                        Rectangle {
+                                            visible: systemMonitor.cpuUsage >= 0
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 4
+                                            radius: 2
+                                            color: window.themeColors.surface_elevated
+                                            Rectangle {
+                                                width: parent.width * Math.max(0, Math.min(100, systemMonitor.cpuUsage)) / 100
+                                                Behavior on width {
+                                                    enabled: controlCenter.animationsEnabled
+                                                    NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                                }
+                                                height: parent.height
+                                                radius: 2
+                                                gradient: Gradient {
+                                                    GradientStop { position: 0; color: window.accentA }
+                                                    GradientStop { position: 1; color: window.accentB }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 Rectangle {
@@ -344,6 +489,26 @@ ApplicationWindow {
                                             text: "RAM utilisée"
                                             color: window.muted
                                             font.pixelSize: 10
+                                        }
+                                        Rectangle {
+                                            visible: systemMonitor.memoryUsage >= 0
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 4
+                                            radius: 2
+                                            color: window.themeColors.surface_elevated
+                                            Rectangle {
+                                                width: parent.width * Math.max(0, Math.min(100, systemMonitor.memoryUsage)) / 100
+                                                Behavior on width {
+                                                    enabled: controlCenter.animationsEnabled
+                                                    NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                                }
+                                                height: parent.height
+                                                radius: 2
+                                                gradient: Gradient {
+                                                    GradientStop { position: 0; color: window.accentA }
+                                                    GradientStop { position: 1; color: window.accentB }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -410,6 +575,26 @@ ApplicationWindow {
                                         text: "Occupation de la racine /"
                                         color: window.muted
                                         font.pixelSize: 10
+                                    }
+                                    Rectangle {
+                                        visible: systemMonitor.diskUsage >= 0
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 4
+                                        radius: 2
+                                        color: window.themeColors.surface_elevated
+                                        Rectangle {
+                                            width: parent.width * Math.max(0, Math.min(100, systemMonitor.diskUsage)) / 100
+                                            Behavior on width {
+                                                enabled: controlCenter.animationsEnabled
+                                                NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
+                                            }
+                                            height: parent.height
+                                            radius: 2
+                                            gradient: Gradient {
+                                                GradientStop { position: 0; color: window.accentA }
+                                                GradientStop { position: 1; color: window.accentB }
+                                            }
+                                        }
                                     }
                                 }
                             }

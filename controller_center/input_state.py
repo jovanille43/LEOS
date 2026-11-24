@@ -5,6 +5,25 @@ from __future__ import annotations
 from typing import Any
 
 
+def normalize_axis_value(
+    value: int,
+    minimum: int,
+    maximum: int,
+    center: int | float | None = None,
+) -> float:
+    """Normalize an analog axis to -1..1, including a saved neutral center."""
+    if maximum <= minimum:
+        return 0.0
+    neutral = (minimum + maximum) / 2.0 if center is None else float(center)
+    if not minimum <= neutral <= maximum:
+        neutral = (minimum + maximum) / 2.0
+    delta = float(value) - neutral
+    available_range = maximum - neutral if delta >= 0 else neutral - minimum
+    if available_range <= 0:
+        return 0.0
+    return max(-1.0, min(1.0, delta / available_range))
+
+
 class ControllerInputState:
     """Track held buttons independently of the last event displayed by the UI."""
 

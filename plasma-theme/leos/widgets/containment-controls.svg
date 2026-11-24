@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90">
+<defs>
+  <linearGradient id="leosAccent" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#00D9FF"/>
+    <stop offset="0.52" stop-color="#74869B"/>
+    <stop offset="1" stop-color="#E33BFF"/>
+  </linearGradient>
+  <linearGradient id="surface" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1A2633"/>
+    <stop offset="1" stop-color="#0D131D"/>
+  </linearGradient>
+</defs>
+  <g id="north-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="north-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-minslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="north-minslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-minslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-minslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-maxslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="north-maxslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-maxslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-maxslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-offsetslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="north-offsetslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="north-offsetslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="east-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-minslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="east-minslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-minslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-minslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-maxslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="east-maxslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-maxslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-maxslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-offsetslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="east-offsetslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="east-offsetslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="south-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-minslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="south-minslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-minslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-minslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-maxslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="south-maxslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-maxslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-maxslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-offsetslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="south-offsetslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="south-offsetslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="west-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-minslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="west-minslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-minslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-minslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-maxslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="west-maxslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-maxslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-maxslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-topleft" opacity="0.94"><path d="M9 0H18V18H0V9Q0 0 9 0Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-top" opacity="0.94"><rect x="18" y="0" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 1H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-offsetslider-topright" opacity="0.94"><path d="M72 0H81Q90 0 90 9V18H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-left" opacity="0.94"><rect x="0" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-center" opacity="0.94"><rect x="18" y="18" width="54" height="54" fill="#131D29" stroke="none" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-right" opacity="0.94"><rect x="72" y="18" width="18" height="54" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-bottomleft" opacity="0.94"><path d="M0 72H18V90H9Q0 90 0 81Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="west-offsetslider-bottom" opacity="0.94"><rect x="18" y="72" width="54" height="18" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /><path d="M19 89H71" fill="none" stroke="url(#leosAccent)" stroke-width="2" /></g>
+  <g id="west-offsetslider-bottomright" opacity="0.94"><path d="M72 72H90V81Q90 90 81 90H72Z" fill="#131D29" stroke="url(#leosAccent)" stroke-width="1.1" /></g>
+  <g id="horizontal-centerindicator" fill="none" stroke="url(#leosAccent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M31 37L25 45L31 53M59 37L65 45L59 53"/>
+    <path d="M36 45H54" stroke="#74869B" stroke-width="1.4"/>
+  </g>
+  <g id="vertical-centerindicator" fill="none" stroke="url(#leosAccent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M37 31L45 25L53 31M37 59L45 65L53 59"/>
+    <path d="M45 36V54" stroke="#74869B" stroke-width="1.4"/>
+  </g>
+</svg>

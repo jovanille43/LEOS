@@ -303,5 +303,94 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn('return "-".join(relative.parts)', entries)
 
 
+    def test_category_menu_keeps_a_persistent_selected_state(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("property bool categorySelected: applicationCatalog.currentCategory === modelData", qml)
+        self.assertIn("categoryMenuButton.categorySelected", qml)
+        self.assertIn("categoryMenuButton.hovered", qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
+
+    def test_application_grid_has_a_visible_keyboard_focus_state(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem", qml)
+        self.assertIn("color: appMouse.containsMouse || keyboardFocused", qml)
+        self.assertIn("border.width: keyboardFocused ? 2 : 1", qml)
+        self.assertIn("border.color: keyboardFocused ? window.cyan", qml)
+        self.assertIn("appMouse.containsMouse ? window.accentB", qml)
+
+
+
+    def test_leos_qml_screens_use_appearance_aware_text_tokens(self):
+        files = (
+            "launcher/qml/ModeSelector.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "gaming/qml/Main.qml",
+            "controller_center/qml/Main.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative_path in files:
+            source = (ROOT / relative_path).read_text(encoding="utf-8")
+            with self.subTest(path=relative_path):
+                self.assertNotIn('"white"', source)
+                self.assertIn("themeColors.text", source)
+
+    def test_gaming_focus_outline_tracks_the_active_appearance(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("property color focusColor: themeColors.text", qml)
+        self.assertNotIn('property color focusColor: "#ffffff"', qml)
+
+
+    def test_header_actions_use_theme_surfaces_and_visible_hover_focus_states(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("modesButton.hovered", qml)
+        self.assertIn("controlCenterButton.activeFocus", qml)
+        self.assertIn("notificationsButton.hovered", qml)
+        self.assertIn("refreshButton.activeFocus", qml)
+        self.assertIn("window.accentB : window.themeColors.border", qml)
+
+    def test_desktop_menu_header_and_catalog_grid_adapt_to_compact_windows(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("anchors.margins: window.width < 900 ? 16 : 28", qml)
+        self.assertIn("visible: window.width >= 980", qml)
+        self.assertIn('text: window.width < 900 ? "CONTRÔLE" : "CENTRE DE CONTRÔLE"', qml)
+        self.assertIn('window.width < 900 ? "NOTIFS"', qml)
+        self.assertIn('text: window.width < 900 ? "↻" : "ACTUALISER"', qml)
+        self.assertIn("Layout.preferredWidth: window.width < 900 ? 160 : 205", qml)
+        self.assertIn("cellWidth: window.width < 900 ? 164 : 188", qml)
+        self.assertIn('Accessible.name: "Actualiser le catalogue d\'applications"', qml)
+
+    def test_desktop_search_can_be_cleared_with_an_accessible_action(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Rechercher une application"', qml)
+        self.assertIn("id: clearSearchButton", qml)
+        self.assertIn("visible: search.text.length > 0", qml)
+        self.assertIn('Accessible.name: "Effacer la recherche"', qml)
+        self.assertIn("search.clear()", qml)
+
+    def test_desktop_category_and_application_tiles_expose_accessible_selection(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("Accessible.selected: categoryMenuButton.categorySelected", qml)
+        self.assertIn("Accessible.role: Accessible.Button", qml)
+        self.assertIn("Accessible.name: name", qml)
+        self.assertIn("categoryMenuButton.categorySelected ? \"›\" : \"\"", qml)
+
+    def test_symbolic_favourite_actions_have_names_and_focus_surfaces(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("Accessible.name: \"Monter \" + name + \" dans les favoris\"", qml)
+        self.assertIn("Accessible.name: \"Descendre \" + name + \" dans les favoris\"", qml)
+        self.assertIn("Accessible.name: isPinned ? \"Retirer \" + name + \" des favoris\"", qml)
+        self.assertIn("favouritePinButton.activeFocus", qml)
+        self.assertIn("favouriteMoveUpButton.activeFocus", qml)
+        self.assertIn("favouriteMoveDownButton.activeFocus", qml)
+
+    def test_application_card_hover_uses_declared_a_b_theme_tokens(self):
+        qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn("appMouse.containsMouse ? window.accentB", qml)
+        self.assertNotIn("window.colorAText", qml)
+
+
+
 if __name__ == "__main__":
     unittest.main()

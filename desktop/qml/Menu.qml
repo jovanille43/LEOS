@@ -43,31 +43,31 @@ ApplicationWindow {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
-        spacing: 18
+        anchors.margins: window.width < 900 ? 16 : 28
+        spacing: window.width < 900 ? 12 : 18
 
         RowLayout {
             Layout.fillWidth: true
             RowLayout {
-                spacing: 10
+                spacing: window.width < 900 ? 7 : 10
                 Image {
                     id: desktopMenuLogo
                     source: leosTheme.desktopLogoUrl
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
-                    Layout.preferredWidth: 92
-                    Layout.preferredHeight: 52
+                    Layout.preferredWidth: window.width < 900 ? 70 : 92
+                    Layout.preferredHeight: window.width < 900 ? 42 : 52
                     visible: status === Image.Ready
                 }
                 ColumnLayout {
                     spacing: 2
                     Label {
                         text: "LEOS"
-                        color: "white"
-                        font.pixelSize: 27
+                        color: window.themeColors.text
+                        font.pixelSize: window.width < 900 ? 23 : 27
                         font.weight: Font.Black
-                        font.letterSpacing: 5
+                        font.letterSpacing: window.width < 900 ? 3 : 5
                         visible: desktopMenuLogo.status !== Image.Ready
                     }
                     Label {
@@ -79,50 +79,172 @@ ApplicationWindow {
                 }
             }
             Item { Layout.fillWidth: true }
-            Label { text: applicationCatalog.applicationCount() + " applications détectées"; color: window.muted; font.pixelSize: 11 }
+            Label {
+                text: applicationCatalog.applicationCount() + " applications détectées"
+                color: window.muted
+                font.pixelSize: 11
+                visible: window.width >= 980
+            }
             Button {
+                id: modesButton
                 text: "MODES"
                 onClicked: {
                     window.launchApplication("leos-mode-selector.desktop", "le sélecteur de modes")
                 }
+                background: Rectangle {
+                    radius: 9
+                    color: modesButton.down || modesButton.hovered || modesButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: modesButton.activeFocus ? 2 : 1
+                    border.color: modesButton.activeFocus ? window.cyan
+                                  : modesButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: modesButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
             Button {
-                text: "CENTRE DE CONTRÔLE"
+                id: controlCenterButton
+                text: window.width < 900 ? "CONTRÔLE" : "CENTRE DE CONTRÔLE"
                 onClicked: {
                     window.launchApplication("leos-control-center.desktop", "le Centre de contrôle")
                 }
-            }
-            Button {
-                text: applicationCatalog.unreadNotificationCount > 0
-                      ? "NOTIFICATIONS · " + applicationCatalog.unreadNotificationCount
-                      : "NOTIFICATIONS"
-                onClicked: {
-                    window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
+                background: Rectangle {
+                    radius: 9
+                    color: controlCenterButton.down || controlCenterButton.hovered || controlCenterButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: controlCenterButton.activeFocus ? 2 : 1
+                    border.color: controlCenterButton.activeFocus ? window.cyan
+                                  : controlCenterButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: controlCenterButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
             Button {
-                text: "ACTUALISER"
+                id: notificationsButton
+                text: applicationCatalog.unreadNotificationCount > 0
+                      ? (window.width < 900 ? "NOTIFS · " : "NOTIFICATIONS · ") + applicationCatalog.unreadNotificationCount
+                      : (window.width < 900 ? "NOTIFS" : "NOTIFICATIONS")
+                Accessible.name: "Ouvrir le centre de notifications LEOS"
+                onClicked: {
+                    window.launchApplication("leos-notifications.desktop", "le Centre de notifications")
+                }
+                background: Rectangle {
+                    radius: 9
+                    color: notificationsButton.down || notificationsButton.hovered || notificationsButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: notificationsButton.activeFocus ? 2 : 1
+                    border.color: notificationsButton.activeFocus ? window.cyan
+                                  : notificationsButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: notificationsButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Button {
+                id: refreshButton
+                text: window.width < 900 ? "↻" : "ACTUALISER"
+                Accessible.name: "Actualiser le catalogue d'applications"
                 onClicked: applicationCatalog.refresh()
+                background: Rectangle {
+                    radius: 9
+                    color: refreshButton.down || refreshButton.hovered || refreshButton.activeFocus
+                           ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: refreshButton.activeFocus ? 2 : 1
+                    border.color: refreshButton.activeFocus ? window.cyan
+                                  : refreshButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: refreshButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
         }
 
-        TextField {
-            id: search
+        RowLayout {
             Layout.fillWidth: true
-            placeholderText: "Rechercher une application…"
-            font.pixelSize: 16
-            color: "white"
-            onTextChanged: applicationCatalog.setSearch(text)
-            background: Rectangle { radius: 12; color: window.themeColors.surface; border.width: search.activeFocus ? 2 : 1; border.color: search.activeFocus ? window.cyan : window.themeColors.border }
+            spacing: 8
+            TextField {
+                id: search
+                Layout.fillWidth: true
+                placeholderText: "Rechercher une application…"
+                font.pixelSize: 16
+                color: window.themeColors.text
+                Accessible.name: "Rechercher une application"
+                Accessible.description: "Filtrer les applications par nom, catégorie ou identifiant."
+                onTextChanged: applicationCatalog.setSearch(text)
+                background: Rectangle {
+                    radius: 12
+                    color: window.themeColors.surface
+                    border.width: search.activeFocus ? 2 : 1
+                    border.color: search.activeFocus ? window.cyan : window.themeColors.border
+                    Behavior on border.color { ColorAnimation { duration: 130 } }
+                    Label {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 13
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "⌕"
+                        color: window.muted
+                        font.pixelSize: 20
+                    }
+                }
+                leftPadding: 38
+            }
+            ToolButton {
+                id: clearSearchButton
+                visible: search.text.length > 0
+                Accessible.name: "Effacer la recherche"
+                Accessible.description: "Afficher de nouveau toutes les applications de la catégorie."
+                text: "×"
+                onClicked: {
+                    search.clear()
+                    search.forceActiveFocus()
+                }
+                background: Rectangle {
+                    radius: 9
+                    color: clearSearchButton.hovered || clearSearchButton.activeFocus
+                        ? window.themeColors.surface_elevated : window.themeColors.surface
+                    border.width: clearSearchButton.activeFocus ? 2 : 1
+                    border.color: clearSearchButton.activeFocus ? window.themeColors.text
+                        : clearSearchButton.hovered ? window.accentB : window.themeColors.border
+                }
+                contentItem: Label {
+                    text: clearSearchButton.text
+                    color: window.themeColors.text
+                    font.pixelSize: 20
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
         }
 
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 18
+            spacing: window.width < 900 ? 12 : 18
 
             Rectangle {
-                Layout.preferredWidth: 205
+                Layout.preferredWidth: window.width < 900 ? 160 : 205
                 Layout.fillHeight: true
                 radius: 15
                 color: window.themeColors.surface
@@ -138,9 +260,51 @@ ApplicationWindow {
                             required property string modelData
                             Layout.fillWidth: true
                             text: modelData
+                            property bool categorySelected: applicationCatalog.currentCategory === modelData
                             onClicked: applicationCatalog.setCategory(modelData)
-                            background: Rectangle { radius: 8; color: categoryMenuButton.down ? window.themeColors.surface_elevated : "transparent"; border.color: categoryMenuButton.down ? window.cyan : "transparent" }
-                            contentItem: Label { text: categoryMenuButton.text; color: "white"; font.pixelSize: 12; leftPadding: 7; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                            background: Rectangle {
+                                radius: 9
+                                color: categoryMenuButton.categorySelected
+                                       ? window.themeColors.surface_elevated
+                                       : (categoryMenuButton.down || categoryMenuButton.hovered
+                                          ? window.themeColors.surface : "transparent")
+                                border.width: categoryMenuButton.categorySelected || categoryMenuButton.activeFocus ? 1 : 0
+                                border.color: categoryMenuButton.categorySelected ? window.accentA : window.themeColors.border
+
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                    anchors.leftMargin: 1
+                                    width: 3
+                                    radius: 2
+                                    visible: categoryMenuButton.categorySelected
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
+                            }
+                            Accessible.name: modelData
+                            Accessible.description: "Afficher les applications de la catégorie " + modelData + "."
+                            Accessible.selected: categoryMenuButton.categorySelected
+                            contentItem: RowLayout {
+                                spacing: 6
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: categoryMenuButton.text
+                                    color: window.themeColors.text
+                                    font.pixelSize: 12
+                                    font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
+                                    leftPadding: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: categoryMenuButton.categorySelected ? "›" : ""
+                                    color: window.cyan
+                                    font.pixelSize: 16
+                                    rightPadding: 8
+                                }
+                            }
                         }
                     }
                     Item { Layout.fillHeight: true }
@@ -159,7 +323,7 @@ ApplicationWindow {
                     anchors.margins: 14
                     RowLayout {
                         Layout.fillWidth: true
-                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: "white"; font.pixelSize: 18; font.weight: Font.DemiBold }
+                        Label { text: applicationCatalog.currentCategory === "Tout" ? "Toutes les applications" : applicationCatalog.currentCategory; color: window.themeColors.text; font.pixelSize: 18; font.weight: Font.DemiBold }
                         Item { Layout.fillWidth: true }
                         Button {
                             visible: applicationCatalog.currentCategory === "Récemment utilisées"
@@ -180,8 +344,8 @@ ApplicationWindow {
                         keyNavigationEnabled: true
                         keyNavigationWraps: false
                         activeFocusOnTab: true
-                        cellWidth: 180
-                        cellHeight: 112
+                        cellWidth: window.width < 900 ? 164 : 188
+                        cellHeight: window.width < 900 ? 116 : 124
                         model: applicationCatalog
                         delegate: Item {
                             required property string name
@@ -190,6 +354,11 @@ ApplicationWindow {
                             required property string category
                             required property string description
                             required property bool isPinned
+                            Accessible.role: Accessible.Button
+                            Accessible.name: name
+                            Accessible.description: category + ". " + description + ". Activer pour lancer l'application."
+                            Accessible.focusable: true
+                            property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem
                             width: appGrid.cellWidth - 8
                             height: appGrid.cellHeight - 8
                             activeFocusOnTab: true
@@ -206,9 +375,26 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 anchors.fill: parent
-                                radius: 11
-                                color: appMouse.containsMouse ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.color: appMouse.containsMouse ? window.cyan : window.themeColors.border
+                                radius: 13
+                                color: appMouse.containsMouse || keyboardFocused
+                                       ? window.themeColors.surface_elevated : window.themeColors.surface
+                                border.width: keyboardFocused ? 2 : 1
+                                border.color: keyboardFocused ? window.cyan
+                                              : appMouse.containsMouse ? window.accentB
+                                              : window.themeColors.border
+
+                                Rectangle {
+                                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                                    anchors.leftMargin: 16
+                                    anchors.rightMargin: 16
+                                    height: 2
+                                    radius: 1
+                                    visible: keyboardFocused || appMouse.containsMouse
+                                    gradient: Gradient {
+                                        GradientStop { position: 0; color: window.accentA }
+                                        GradientStop { position: 1; color: window.accentB }
+                                    }
+                                }
                             }
                             MouseArea {
                                 id: appMouse
@@ -236,29 +422,47 @@ ApplicationWindow {
                                         ToolButton {
                                             id: favouriteMoveUpButton
                                             text: "↑"
+                                            Accessible.name: "Monter " + name + " dans les favoris"
+                                            Accessible.description: "Déplacer cette application avant la précédente."
                                             enabled: visible && search.text.length === 0 && index > 0
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
                                             contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
-                                            background: Rectangle { color: "transparent" }
+                                            background: Rectangle {
+                                                radius: 6
+                                                color: favouriteMoveUpButton.hovered || favouriteMoveUpButton.activeFocus
+                                                    ? window.themeColors.surface_elevated : "transparent"
+                                                border.width: favouriteMoveUpButton.activeFocus ? 1 : 0
+                                                border.color: window.accentA
+                                            }
                                         }
                                         ToolButton {
                                             id: favouriteMoveDownButton
                                             text: "↓"
+                                            Accessible.name: "Descendre " + name + " dans les favoris"
+                                            Accessible.description: "Déplacer cette application après la suivante."
                                             enabled: visible && search.text.length === 0 && index < appGrid.count - 1
                                             onClicked: {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
                                             contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
-                                            background: Rectangle { color: "transparent" }
+                                            background: Rectangle {
+                                                radius: 6
+                                                color: favouriteMoveDownButton.hovered || favouriteMoveDownButton.activeFocus
+                                                    ? window.themeColors.surface_elevated : "transparent"
+                                                border.width: favouriteMoveDownButton.activeFocus ? 1 : 0
+                                                border.color: window.accentB
+                                            }
                                         }
                                     }
                                     ToolButton {
                                         id: favouritePinButton
                                         text: isPinned ? "★" : "☆"
+                                        Accessible.name: isPinned ? "Retirer " + name + " des favoris" : "Ajouter " + name + " aux favoris"
+                                        Accessible.description: "Synchroniser cette application avec les favoris du dock LEOS."
                                         onClicked: {
                                             const wasPinned = isPinned
                                             if (!applicationCatalog.toggleFavourite(desktopId))
@@ -267,11 +471,17 @@ ApplicationWindow {
                                                 status.text = wasPinned ? "Application retirée des favoris." : "Application ajoutée aux favoris."
                                         }
                                         contentItem: Label { text: favouritePinButton.text; color: window.magenta; font.pixelSize: 18 }
-                                        background: Rectangle { color: "transparent" }
+                                        background: Rectangle {
+                                            radius: 7
+                                            color: favouritePinButton.hovered || favouritePinButton.activeFocus
+                                                ? window.themeColors.surface_elevated : "transparent"
+                                            border.width: favouritePinButton.activeFocus ? 1 : 0
+                                            border.color: window.accentB
+                                        }
                                     }
                                 }
-                                Label { text: name; color: "white"; font.pixelSize: 12; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { text: category; color: window.muted; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: name; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: category; color: window.muted; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
                         }
                         Label {

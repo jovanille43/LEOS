@@ -183,13 +183,17 @@ Références : [documentation KDE sur les schémas de couleurs](https://docs.kde
 et [format des couleurs Plasma](https://develop.kde.org/docs/plasma/theme/theme-details/).
 
 
-## Plasma Style LEOS — première version
+## Plasma Style LEOS — habillage étendu
 
 Le paquet source `plasma-theme/leos/` fournit un Plasma Style natif pour Plasma 6,
-installé par BlueBuild dans `/usr/share/plasma/desktoptheme/leos/`. Il comprend
-les métadonnées Plasma 6, un réglage discret du contraste/flou et trois fonds
-SVG : panneau, fenêtre contextuelle et widget de bureau. Les autres éléments
-utilisent le repli Breeze de Plasma afin de préserver la compatibilité.
+installé par BlueBuild dans `/usr/share/plasma/desktoptheme/leos/`. Il habille
+désormais les surfaces de panneaux, fenêtres contextuelles et widgets, les
+boutons, champs de saisie, sélections, infobulles, en-têtes/pieds de widgets,
+états du gestionnaire de tâches et commandes d'édition/redimensionnement des
+panneaux. Les accents SVG de ces ressources sont transformés à partir des deux
+couleurs A/B choisies ; les surfaces métalliques neutres restent préservées.
+Les composants Plasma moins fréquents conservent le repli Breeze pour maintenir
+la compatibilité.
 
 Le Centre de contrôle vérifie la présence du paquet et de
 `plasma-apply-desktoptheme`. L'application du style et sa restauration sont
@@ -198,11 +202,16 @@ dans `$XDG_STATE_HOME/leos/plasma-style.json` avec des permissions privées.
 La commande native de KDE est appelée sans shell ; aucun fichier système ou
 `plasmarc` n'est modifié directement par LEOS.
 
-**Limites alpha :** les trois SVG sont des premières formes originales et ne
-constituent pas encore un habillage exhaustif. Les icônes, boutons et contrôles
-Qt continuent d'utiliser leurs styles existants. L'emblème officiel du lion
-n'est pas encore intégré, car les ressources graphiques originales ne sont
-pas présentes dans le dépôt. Le style est installé et peut être activé lors du premier choix de Desktop après consentement. Son rendu doit encore être contrôlé sur une vraie session Bazzite KDE, notamment les marges SVG, le flou et le comportement des panneaux.
+**Limites restantes :** cet habillage ne remplace pas encore tous les éléments
+Qt/GTK et ne constitue pas un thème applicatif exhaustif. Les applications LEOS
+conservent leurs composants Qt, qui utilisent maintenant les couleurs de texte
+du thème actif plutôt que du blanc imposé. L'emblème officiel du lion reste
+fourni séparément par les ressources de marque ; il n'est pas injecté dans les
+éléments génériques des widgets Plasma. La présence des fichiers et les
+identifiants SVG sont testés automatiquement, mais le rendu doit encore être
+contrôlé sur une vraie session Bazzite KDE, notamment les marges SVG, le flou,
+le gestionnaire de tâches, le mode édition des panneaux et le comportement des
+fenêtres maximisées.
 
 Références KDE : [création d'un Plasma Style](https://develop.kde.org/docs/plasma/theme/quickstart/),
 [structure et emplacements](https://develop.kde.org/docs/plasma/theme/theme-details/)

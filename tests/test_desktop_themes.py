@@ -1,6 +1,7 @@
 """Tests for LEOS interface theme palettes."""
 
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from desktop.themes import (
@@ -110,6 +111,52 @@ class DesktopThemeTests(unittest.TestCase):
         ):
             with self.subTest(expression=expression):
                 self.assertIn(expression, qml)
+
+
+    def test_plasma_style_covers_widget_headers_task_states_and_panel_controls(self):
+        root = Path(__file__).resolve().parents[1] / "plasma-theme" / "leos" / "widgets"
+        positions = {
+            "topleft", "top", "topright", "left", "center",
+            "right", "bottomleft", "bottom", "bottomright",
+        }
+        expected = {
+            "plasmoidheading.svg": {
+                f"{prefix}-{position}"
+                for prefix in ("header", "footer")
+                for position in positions
+            } | {
+                "hint-top-margin", "hint-right-margin",
+                "hint-bottom-margin", "hint-left-margin",
+                "hint-stretch-borders",
+            },
+            "tasks.svg": {
+                f"{state}-{position}"
+                for state in ("normal", "focus", "hover", "attention", "minimized")
+                for position in positions
+            } | {"hint-stretch-borders", "hint-compose-over-border"},
+            "containment-controls.svg": {
+                f"{direction}-{kind}{position}"
+                for direction in ("north", "east", "south", "west")
+                for kind in ("", "minslider-", "maxslider-", "offsetslider-")
+                for position in positions
+            } | {"horizontal-centerindicator", "vertical-centerindicator"},
+        }
+        for filename, required_ids in expected.items():
+            with self.subTest(filename=filename):
+                path = root / filename
+                self.assertTrue(path.is_file(), f"Missing Plasma Style asset: {filename}")
+                document = ET.parse(path)
+                elements = list(document.getroot().iter())
+                identifiers = [element.attrib["id"] for element in elements if "id" in element.attrib]
+                self.assertEqual(len(identifiers), len(set(identifiers)), "SVG element IDs must be unique")
+                self.assertTrue(required_ids.issubset(set(identifiers)))
+                accent = next((element for element in elements if element.attrib.get("id") == "leosAccent"), None)
+                self.assertIsNotNone(accent, "The A/B recoloring gradient must be present")
+                stops = [element.attrib.get("stop-color") for element in accent.iter()
+                         if element.tag.endswith("stop")]
+                self.assertEqual(stops[0], "#00D9FF")
+                self.assertEqual(stops[-1], "#E33BFF")
+
 
 
 if __name__ == "__main__":

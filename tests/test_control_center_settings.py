@@ -139,5 +139,57 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn("time.monotonic()", monitor)
 
 
+    def test_navigation_has_persistent_a_b_selection_and_visible_keyboard_focus(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("activeFocusOnTab: true", qml)
+        self.assertIn("settingsNavigationButton.hovered", qml)
+        self.assertIn("settingsNavigationButton.activeFocus", qml)
+        self.assertIn("visible: window.selectedPage === modelData.page", qml)
+        self.assertIn("GradientStop { position: 0; color: window.accentA }", qml)
+        self.assertIn("GradientStop { position: 1; color: window.accentB }", qml)
+
+    def test_control_center_sidebar_scrolls_when_window_height_is_compact(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        sidebar_start = qml.index("ScrollView {", qml.index("Layout.fillHeight: true", qml.index("RowLayout {", qml.index("CENTRE DE CONTRÔLE"))))
+        sidebar_end = qml.index("StackLayout {", sidebar_start)
+        sidebar = qml[sidebar_start:sidebar_end]
+        self.assertIn("ScrollBar.vertical.policy: ScrollBar.AsNeeded", sidebar)
+        self.assertIn("model: [", sidebar)
+        self.assertIn('label: "Réseau", page: 9', sidebar)
+
+    def test_control_center_navigation_has_numbered_accessible_selection(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('text: ("0" + (modelData.page + 1)).slice(-2)', qml)
+        self.assertIn("Accessible.selected: window.selectedPage === modelData.page", qml)
+        self.assertIn('text: window.selectedPage === modelData.page ? "›" : ""', qml)
+        self.assertIn("settingsNavigationButton.activeFocus", qml)
+
+    def test_control_center_header_exposes_live_monitor_status(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: systemMonitor.available ? "Surveillance système active" : "Mesures système indisponibles"', qml)
+        self.assertIn('systemMonitor.available ? "SURVEILLANCE ACTIVE" : "MESURES INDISPONIBLES"', qml)
+        self.assertIn('systemMonitor.available ? "EN LIGNE" : "INACTIF"', qml)
+
+    def test_control_center_uses_subtle_theme_ambient_background_and_responsive_meter_motion(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("opacity: 0.055", qml)
+        self.assertIn("opacity: 0.045", qml)
+        self.assertGreaterEqual(qml.count("Behavior on width"), 3)
+        self.assertIn("enabled: controlCenter.animationsEnabled", qml)
+        self.assertIn("Easing.OutCubic", qml)
+
+    def test_overview_has_responsive_a_b_usage_meters(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("columns: pages.width < 680 ? 2 : 3", qml)
+        self.assertIn("Math.min(100, systemMonitor.cpuUsage)", qml)
+        self.assertIn("Math.min(100, systemMonitor.memoryUsage)", qml)
+        self.assertIn("Math.min(100, systemMonitor.diskUsage)", qml)
+        self.assertGreaterEqual(qml.count("color: window.accentA"), 3)
+        self.assertIn("Qt.color(controlCenter.themeColorA)", qml)
+        self.assertIn("Qt.color(controlCenter.themeColorB)", qml)
+        self.assertIn('text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "PERSONNALISER A/B"', qml)
+        self.assertEqual(qml.count("visible: controlCenter.themeColorsConfigured"), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

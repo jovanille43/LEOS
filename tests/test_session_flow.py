@@ -308,6 +308,29 @@ class SessionFlowTests(unittest.TestCase):
         self.assertNotIn("device = devices[0]", controller)
         self.assertIn("except (OSError, ValueError, RuntimeError)", gamepad)
 
+    def test_mode_cards_expose_accessible_names_and_distinct_action_hints(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "LEOS Desktop"', qml)
+        self.assertIn('Accessible.name: "LEOS Gaming"', qml)
+        self.assertIn('text: "MODE 01 · QUOTIDIEN"', qml)
+        self.assertIn('text: "MODE 02 · JEUX"', qml)
+        self.assertIn('text: "OUVRIR DESKTOP"', qml)
+        self.assertIn('text: "OUVRIR GAMING"', qml)
+
+    def test_mode_cards_use_preference_aware_hover_and_focus_transitions(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertGreaterEqual(qml.count("Behavior on color"), 2)
+        self.assertGreaterEqual(qml.count("Behavior on border.color"), 2)
+        self.assertGreaterEqual(qml.count("Behavior on opacity"), 2)
+        self.assertIn("enabled: modeSelectorController.animationsEnabled", qml)
+        self.assertIn("Easing.OutCubic", qml)
+
+    def test_mode_selector_adapts_outer_spacing_and_last_mode_accent(self):
+        qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
+        self.assertIn("anchors.margins: window.width < 1120 ? 24 : 48", qml)
+        self.assertIn('modeManager.lastMode === "gaming" ? window.colorBText : window.colorAText', qml)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -59,6 +59,37 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("except (OSError, ValueError, TypeError):", silent)
         self.assertIn("Impossible d'enregistrer le réglage des notifications.", silent)
 
+    def test_notification_cards_use_the_configured_primary_and_secondary_accents(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn("border.color: isRead ? window.themeColors.border : window.accentA", qml)
+        self.assertIn('level === "success" ? window.accentA', qml)
+        self.assertIn(' : window.accentB', qml)
+
+    def test_notification_actions_are_accessible_and_have_theme_aware_focus_states(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Marquer cette notification comme lue"', qml)
+        self.assertIn('Accessible.name: "Supprimer cette notification"', qml)
+        self.assertIn("markAllReadButton.activeFocus", qml)
+        self.assertIn("clearAllButton.activeFocus", qml)
+        self.assertIn("refreshNotificationsButton.activeFocus", qml)
+        self.assertIn("markNotificationReadButton.hovered", qml)
+        self.assertIn("dismissNotificationButton.hovered", qml)
+
+    def test_notification_centre_uses_compact_margins_on_smaller_windows(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn("anchors.margins: window.width < 640 ? 16 : 26", qml)
+
+    def test_empty_notification_inbox_has_a_clear_visual_and_accessible_state(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Aucune notification LEOS"', qml)
+        self.assertIn('text: "TOUT EST CALME"', qml)
+        self.assertIn('text: "Aucune notification LEOS pour le moment."', qml)
+        self.assertIn("visible: list.count === 0", qml)
+        self.assertIn("opacity: 0.05", qml)
+        self.assertIn("opacity: 0.04", qml)
+        self.assertIn("window.themeColors.accent_primary", qml)
+        self.assertIn("window.themeColors.accent_secondary", qml)
+
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)
