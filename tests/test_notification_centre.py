@@ -79,6 +79,13 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("anchors.margins: window.width < 640 ? 16 : 26", qml)
 
+    def test_empty_notification_inbox_has_a_clear_visual_and_accessible_state(self):
+        qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
+        self.assertIn('Accessible.name: "Aucune notification LEOS"', qml)
+        self.assertIn('text: "TOUT EST CALME"', qml)
+        self.assertIn('text: "Aucune notification LEOS pour le moment."', qml)
+        self.assertIn("visible: list.count === 0", qml)
+
     def test_system_notifications_are_not_claimed_as_captured(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("Les notifications système KDE restent gérées par Plasma", qml)
