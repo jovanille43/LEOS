@@ -17,6 +17,11 @@ class DockFavouritesTests(unittest.TestCase):
             self.assertIn("leos-mode-selector.desktop", store.items())
             self.assertFalse(path.exists())
 
+    def test_default_dock_keeps_a_direct_path_back_to_the_mode_selector(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = DockFavourites(Path(directory) / "dock.json")
+            self.assertIn("leos-mode-selector.desktop", store.items())
+
     def test_pin_unpin_and_reorder_persist(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "dock.json"
