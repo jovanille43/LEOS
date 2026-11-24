@@ -160,6 +160,125 @@ ApplicationWindow {
         onAccepted: window.plasmaDockNotice = controlCenter.applyPlasmaLayout(true)
     }
 
+    Dialog {
+        id: recoveryGuideDialog
+        modal: true
+        title: "Guide de récupération LEOS"
+        width: Math.min(window.width - 48, 680)
+        height: Math.min(window.height - 48, 640)
+        standardButtons: Dialog.Close
+
+        contentItem: ScrollView {
+            clip: true
+            implicitWidth: 620
+            implicitHeight: 520
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            ColumnLayout {
+                width: parent.width
+                spacing: 12
+
+                Label {
+                    text: "Ce guide est informatif : LEOS n’exécute aucune commande de rollback, de pinning ou de nettoyage. Lis l’état réel du système avant toute intervention et sauvegarde d’abord tes fichiers importants sur un autre support."
+                    color: window.themeColors.text
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "1 · Contrôler les déploiements disponibles"
+                    color: window.cyan
+                    font.weight: Font.Bold
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "Depuis une session qui démarre, commence par vérifier l’image active et les autres déploiements conservés. Une ancienne entrée n’est pas une sauvegarde complète ni une garantie de démarrage."
+                    color: window.muted
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+                TextArea {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 92
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: TextEdit.NoWrap
+                    text: "rpm-ostree status\\nsystemctl --failed\\nsystemctl --user --failed"
+                    color: window.themeColors.text
+                    background: Rectangle {
+                        radius: 8
+                        color: window.themeColors.surface_elevated
+                        border.color: window.themeColors.border
+                    }
+                }
+                Label {
+                    text: "2 · Si la nouvelle version ne démarre pas"
+                    color: window.cyan
+                    font.weight: Font.Bold
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "Redémarre et, dans le menu de démarrage, sélectionne le déploiement Bazzite/OSTree précédent s’il est proposé. Une fois cette session démarrée, contrôle à nouveau rpm-ostree status. Ne lance pas de rollback si la liste n’identifie pas clairement le déploiement actif et celui à restaurer."
+                    color: window.muted
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "3 · Demander le retour arrière natif"
+                    color: window.cyan
+                    font.weight: Font.Bold
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "Uniquement depuis une session fonctionnelle, après avoir confirmé l’état des déploiements, la commande native ci-dessous prépare le retour arrière. Le redémarrage applique ensuite le déploiement choisi. Cette action reste entièrement manuelle."
+                    color: window.muted
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+                TextArea {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 70
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: TextEdit.NoWrap
+                    text: "sudo rpm-ostree rollback\\nsystemctl reboot"
+                    color: window.themeColors.text
+                    background: Rectangle {
+                        radius: 8
+                        color: window.themeColors.surface_elevated
+                        border.color: window.themeColors.border
+                    }
+                }
+                Label {
+                    text: "4 · Vérifier après le redémarrage"
+                    color: window.cyan
+                    font.weight: Font.Bold
+                    Layout.fillWidth: true
+                }
+                TextArea {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 92
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: TextEdit.NoWrap
+                    text: "rpm-ostree status\\nsystemctl --failed\\nsystemctl --user --failed"
+                    color: window.themeColors.text
+                    background: Rectangle {
+                        radius: 8
+                        color: window.themeColors.surface_elevated
+                        border.color: window.themeColors.border
+                    }
+                }
+                Label {
+                    text: "Attention : le retour arrière ne répare pas un disque endommagé, un chargeur absent ou une panne matérielle. Les données personnelles, applications Flatpak et fichiers de configuration doivent être sauvegardés séparément. En cas de doute, arrête-toi et demande un diagnostic avant de poursuivre."
+                    color: window.themeColors.text
+                    font.weight: Font.DemiBold
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+            }
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: window.color
@@ -1805,7 +1924,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 210
+                                Layout.preferredHeight: 258
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -1846,6 +1965,12 @@ ApplicationWindow {
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "OUVRIR LE GUIDE DE RÉCUPÉRATION"
+                                        Accessible.description: "Afficher les étapes manuelles de consultation et de retour arrière OSTree. Aucune commande ne sera exécutée."
+                                        Layout.fillWidth: true
+                                        onClicked: recoveryGuideDialog.open()
                                     }
                                 }
                             }
