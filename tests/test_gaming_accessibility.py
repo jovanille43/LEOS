@@ -122,6 +122,20 @@ class GamingAccessibilityTests(unittest.TestCase):
         self.assertIn("GradientStop { position: 0; color: window.accentA }", self.qml)
         self.assertIn("GradientStop { position: 1; color: window.accentB }", self.qml)
 
+    def test_quick_panel_telemetry_uses_bounded_live_usage_bars(self):
+        self.assertIn('text: "PERFORMANCES"', self.qml)
+        for metric in ("cpuUsage", "memoryUsage", "gpuUsage"):
+            self.assertIn(f"systemMonitor.{metric} >= 0", self.qml)
+            self.assertIn(f"Math.min(100, systemMonitor.{metric})", self.qml)
+        self.assertGreaterEqual(self.qml.count("color: window.accentA"), 3)
+        self.assertGreaterEqual(self.qml.count("color: window.accentB"), 3)
+
+    def test_gaming_navigation_columns_adapt_to_compact_windows(self):
+        self.assertIn("window.width < 1180 ? 12 : 26", self.qml)
+        self.assertIn("window.width < 1180 ? 150 : 190", self.qml)
+        self.assertIn("window.width < 1180 ? 230 : 280", self.qml)
+        self.assertIn("Layout.minimumWidth: 210", self.qml)
+
     def test_gaming_main_frame_and_search_width_are_responsive(self):
         self.assertIn("anchors.margins: window.width < 1280 || window.height < 760 ? 20 : 34", self.qml)
         self.assertIn("spacing: window.height < 760 ? 15 : 22", self.qml)
