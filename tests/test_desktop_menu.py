@@ -316,7 +316,8 @@ class DesktopMenuTests(unittest.TestCase):
         self.assertIn("property bool keyboardFocused: appGrid.activeFocus && GridView.isCurrentItem", qml)
         self.assertIn("color: appMouse.containsMouse || keyboardFocused", qml)
         self.assertIn("border.width: keyboardFocused ? 2 : 1", qml)
-        self.assertIn("border.color: keyboardFocused ? window.accentA", qml)
+        self.assertIn("border.color: keyboardFocused ? window.cyan", qml)
+        self.assertIn("appMouse.containsMouse ? window.accentB", qml)
 
 
 
