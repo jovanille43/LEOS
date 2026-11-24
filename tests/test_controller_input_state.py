@@ -94,6 +94,43 @@ class ControllerInputStateTests(unittest.TestCase):
         self.assertEqual(self.state.pressed_buttons, ())
         self.assertEqual(self.state.buttons_text, "Aucun bouton maintenu.")
 
+    def test_controller_normalizes_live_stick_axes_using_device_ranges(self):
+        from controller_center.controller import ControllerCenterController
+
+        controller = ControllerCenterController()
+        try:
+            controller.backend.axes = {
+                "ABS_X": -32768,
+                "ABS_Y": 0,
+                "ABS_RX": 32767,
+                "ABS_RY": 0,
+            }
+            controller.backend.axis_ranges = {
+                name: {"minimum": -32768, "maximum": 32767}
+                for name in ("ABS_X", "ABS_Y", "ABS_RX", "ABS_RY")
+            }
+            self.assertAlmostEqual(controller.leftStickX, -1.0)
+            self.assertAlmostEqual(controller.leftStickY, 0.0, places=4)
+            self.assertAlmostEqual(controller.rightStickX, 1.0)
+            self.assertAlmostEqual(controller.rightStickY, 0.0, places=4)
+            self.assertTrue(controller.hasLeftStick)
+            self.assertTrue(controller.hasRightStick)
+        finally:
+            controller.shutdown()
+
+    def test_controller_center_draws_live_stick_positions_from_real_axis_properties(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        qml = (root / "controller_center/qml/Main.qml").read_text(encoding="utf-8")
+        controller = (root / "controller_center/controller.py").read_text(encoding="utf-8")
+        for property_name in ("leftStickX", "leftStickY", "rightStickX", "rightStickY"):
+            self.assertIn(property_name, qml)
+            self.assertIn(f"def {property_name}(self)", controller)
+        self.assertIn("controllerCenter.hasLeftStick", qml)
+        self.assertIn("controllerCenter.hasRightStick", qml)
+        self.assertIn("STICKS ANALOGIQUES", qml)
+
 
 if __name__ == "__main__":
     unittest.main()
