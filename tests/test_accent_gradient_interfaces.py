@@ -31,7 +31,7 @@ class AccentGradientInterfaceTests(unittest.TestCase):
         source = self._read("control_center/qml/Main.qml")
         self._assert_horizontal_ab_gradient(source, "Control Center")
         self.assertIn("color: window.themeColors.surface", source)
-        self.assertIn("color: window.themeColors.background", source)
+        self.assertIn("color: window.color", source)
 
     def test_theme_editor_preview_tracks_unsaved_a_and_b_choices(self):
         source = self._read("control_center/qml/Main.qml")
