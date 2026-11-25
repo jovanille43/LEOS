@@ -39,7 +39,18 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.065 }
+        // A restrained horizontal blend ties both chosen accents together
+        // across the launcher backdrop while its graphite surfaces stay neutral.
+        Rectangle {
+            anchors.fill: parent
+            opacity: 0.055
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: window.accentA }
+                GradientStop { position: 1.0; color: window.accentB }
+            }
+        }
+        Rectangle { width: 460; height: 460; radius: 230; x: parent.width - 260; y: -250; color: Qt.color(window.themeColors.accent_primary); opacity: 0.055 }
         Rectangle { width: 360; height: 360; radius: 180; x: -210; y: parent.height - 190; color: Qt.color(window.themeColors.accent_secondary); opacity: 0.04 }
     }
 

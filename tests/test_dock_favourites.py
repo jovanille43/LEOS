@@ -181,5 +181,66 @@ class DockFavouritesTests(unittest.TestCase):
                 store.move_by("steam.desktop", 0)
 
 
+    def test_migration_adds_mode_selector_to_legacy_favourites_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            original = ["org.example.Custom.desktop", "steam.desktop"]
+            path.write_text(
+                json.dumps({"schema_version": 1, "items": original}),
+                encoding="utf-8",
+            )
+            store = DockFavourites(path)
+
+            self.assertTrue(store.migrate_mode_selector_favourite())
+            self.assertEqual(
+                store.items(),
+                original + ["leos-mode-selector.desktop"],
+            )
+            self.assertFalse(store.migrate_mode_selector_favourite())
+            self.assertEqual(
+                DockFavourites(path).items(),
+                original + ["leos-mode-selector.desktop"],
+            )
+
+    def test_migration_does_not_restore_a_selector_removed_by_the_user(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            path.write_text(
+                json.dumps({"schema_version": 1, "items": ["steam.desktop"]}),
+                encoding="utf-8",
+            )
+            store = DockFavourites(path)
+            self.assertTrue(store.migrate_mode_selector_favourite())
+            store.unpin("leos-mode-selector.desktop")
+
+            restored = DockFavourites(path)
+            self.assertFalse(restored.migrate_mode_selector_favourite())
+            self.assertNotIn("leos-mode-selector.desktop", restored.items())
+
+    def test_migration_waits_for_space_in_a_full_dock(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "dock.json"
+            original = [f"org.example.App{index}.desktop" for index in range(32)]
+            path.write_text(
+                json.dumps({"schema_version": 1, "items": original}),
+                encoding="utf-8",
+            )
+            store = DockFavourites(path)
+
+            self.assertFalse(store.migrate_mode_selector_favourite())
+            self.assertEqual(store.items(), original)
+            store.unpin(original[-1])
+
+            self.assertTrue(DockFavourites(path).migrate_mode_selector_favourite())
+            self.assertEqual(len(DockFavourites(path).items()), 32)
+            self.assertIn("leos-mode-selector.desktop", DockFavourites(path).items())
+
+    def test_desktop_menu_runs_the_one_time_favourite_migration(self):
+        controller = (
+            Path(__file__).resolve().parents[1] / "desktop/menu_controller.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("self.favourites.migrate_mode_selector_favourite()", controller)
+
+
 if __name__ == "__main__":
     unittest.main()

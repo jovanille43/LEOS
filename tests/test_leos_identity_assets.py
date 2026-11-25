@@ -25,7 +25,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("sddm.suspend()", qml)
         self.assertIn("sddm.reboot()", qml)
         self.assertIn("sddm.powerOff()", qml)
-        self.assertIn("file:///usr/share/leos/branding/desktop-logo.jpeg", qml)
+        self.assertIn("file:///usr/share/leos/branding/desktop-logo.png", qml)
         self.assertIn("sddm.login(", qml)
         self.assertIn("sessionModel", qml)
         self.assertNotIn("#00D9FF", qml)
@@ -33,13 +33,15 @@ class LeosIdentityAssetTests(unittest.TestCase):
 
     def test_plymouth_theme_is_neutral_and_references_official_emblem_generator(self):
         theme = (ROOT / "branding/plymouth/leos/leos.plymouth").read_text(encoding="utf-8")
-        script = (ROOT / "files/scripts/prepare-leos-plymouth.sh").read_text(encoding="utf-8")
+        script_path = ROOT / "files/scripts/prepare-leos-plymouth.sh"
+        script = script_path.read_text(encoding="utf-8")
+        self.assertTrue(script_path.stat().st_mode & 0o111, "Plymouth preparation script must remain executable")
         self.assertIn("ModuleName=two-step", theme)
         self.assertIn("BackgroundStartColor=0x090B10", theme)
         self.assertIn("ImageDir=/usr/share/plymouth/themes/leos", theme)
         self.assertIn("WatermarkHorizontalAlignment=.5", theme)
         self.assertIn("watermark.png", script)
-        self.assertIn("desktop-logo.jpeg", script)
+        self.assertIn("desktop-logo.png", script)
         self.assertIn("QImage", script)
 
     def test_plasma_splash_package_is_valid_and_neutral_before_user_colors(self):
@@ -48,7 +50,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         qml = (package / "contents/splash/Splash.qml").read_text(encoding="utf-8")
         self.assertEqual(manifest["KPackageStructure"], "Plasma/LookAndFeel")
         self.assertEqual(manifest["KPlugin"]["Id"], "org.leos.desktop")
-        self.assertIn("desktop-logo.jpeg", qml)
+        self.assertIn("desktop-logo.png", qml)
         self.assertIn("#090B10", qml)
         self.assertNotIn("#00D9FF", qml)
         self.assertNotIn("#E33BFF", qml)

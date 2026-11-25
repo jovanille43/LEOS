@@ -43,7 +43,7 @@ jobs:
           bash tools/verify-cosign-key-pair.sh "$workdir/test.key" "$workdir/test.pub"
 
       - name: Compile Python sources
-        run: python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
+        run: python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests tools
 
       - name: Run shared-core and controller-profile tests
         run: python -m unittest discover -s tests -v

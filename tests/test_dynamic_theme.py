@@ -1,6 +1,7 @@
 """Regression tests for freely selected LEOS accent colors."""
 
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -27,6 +28,22 @@ class DynamicThemeTests(unittest.TestCase):
             self.assertNotIn(legacy, qml)
         self.assertIn("window.themeColors.surface_elevated", qml)
         self.assertIn("window.themeColors.border", qml)
+
+    def test_cinematic_wallpapers_keep_materials_neutral_for_a_b_recoloring(self):
+        root = Path(__file__).resolve().parents[1]
+        for filename in ("desktop-leos.svg", "gaming-leos.svg"):
+            wallpaper = (root / "branding" / "wallpapers" / filename).read_text(encoding="utf-8")
+            colors = {color.upper() for color in re.findall(r"#[0-9A-Fa-f]{6}(?=[^0-9A-Fa-f]|$)", wallpaper)}
+            self.assertTrue({"#00D9FF", "#E33BFF"}.isdisjoint(colors))
+            for color in colors:
+                self.assertEqual(
+                    color[1:3], color[3:5],
+                    f"{filename} contains a non-neutral material color: {color}",
+                )
+                self.assertEqual(
+                    color[3:5], color[5:7],
+                    f"{filename} contains a non-neutral material color: {color}",
+                )
 
     def test_light_and_dark_palettes_keep_user_accents_unchanged(self):
         dark = palette_for_colors("#FF8800", "#0055CC", appearance="dark")

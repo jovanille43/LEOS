@@ -32,6 +32,31 @@ ApplicationWindow {
     // The recommended LEOS profile action is focused first for keyboard and gamepad users.
     property int appearanceDialogFocusIndex: 2
     property int identityDialogFocusIndex: 0
+    property var firstRunSteps: [
+        {
+            name: "IDENTITÉ A/B",
+            detail: leosTheme.themeColorsConfigured ? "DÉFINIE" : "À CONFIGURER",
+            complete: leosTheme.themeColorsConfigured
+        },
+        {
+            name: "GUIDE DE BIENVENUE",
+            detail: modeSelectorController.onboardingComplete ? "TERMINÉ" : "À DÉCOUVRIR",
+            complete: modeSelectorController.onboardingComplete
+        },
+        {
+            name: "PROFIL DESKTOP",
+            detail: modeSelectorController.desktopAppearanceStatus === "applied"
+                ? "ACTIVÉ"
+                : modeSelectorController.desktopAppearanceStatus === "skipped"
+                    ? "IGNORÉE À TA DEMANDE" : "À CHOISIR",
+            complete: modeSelectorController.desktopAppearanceStatus === "applied"
+                || modeSelectorController.desktopAppearanceStatus === "skipped"
+        }
+    ]
+    property int firstRunCompletedCount: firstRunSteps.filter(function(step) {
+        return step.complete
+    }).length
+
 
     Component.onCompleted: {
         if (!leosTheme.themeColorsConfigured) {
@@ -115,6 +140,7 @@ ApplicationWindow {
     function requestModeWithIntro(mode) {
         if (transitionInProgress)
             return
+        modeSelectorController.completeOnboarding()
         pendingMode = mode
         if (!modeSelectorController.animationsEnabled) {
             finishModeTransition()
@@ -380,6 +406,88 @@ ApplicationWindow {
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 82
+                radius: 14
+                color: window.themeColors.surface
+                border.color: window.themeColors.border
+                Accessible.role: Accessible.Grouping
+                Accessible.name: "État du premier démarrage : "
+                    + window.firstRunCompletedCount + " étapes sur 3 terminées."
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 7
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: "ÉTAT DU PREMIER DÉMARRAGE"
+                            color: window.themeColors.text
+                            font.pixelSize: 10
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.1
+                        }
+                        Item { Layout.fillWidth: true }
+                        Label {
+                            text: window.firstRunCompletedCount + "/3 ÉTAPES"
+                            color: window.colorAText
+                            font.pixelSize: 9
+                            font.weight: Font.Bold
+                            font.letterSpacing: 0.8
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 8
+                        Repeater {
+                            model: window.firstRunSteps
+                            delegate: Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                radius: 8
+                                color: window.themeColors.surface_elevated
+                                border.width: 1
+                                border.color: modelData.complete
+                                    ? window.colorA : window.themeColors.border
+                                Accessible.role: Accessible.Grouping
+                                Accessible.name: modelData.name + " : " + modelData.detail
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 10
+                                    anchors.rightMargin: 8
+                                    spacing: 1
+                                    Label {
+                                        text: modelData.name
+                                        color: window.muted
+                                        font.pixelSize: 8
+                                        font.weight: Font.DemiBold
+                                        font.letterSpacing: 0.4
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
+                                    Label {
+                                        text: modelData.detail
+                                        color: modelData.complete
+                                            ? window.colorAText : window.muted
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                            }
                         }
                     }
                 }

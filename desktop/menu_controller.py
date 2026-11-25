@@ -76,6 +76,7 @@ class ApplicationCatalog(QAbstractListModel):
         self._refresh_pending = False
         self._loading = False
         self.favourites = DockFavourites()
+        self.favourites.migrate_mode_selector_favourite()
         self.notifications = NotificationStore()
         self.recentApplications = RecentApplications()
         self._favourites_snapshot = self.favourites.items()
