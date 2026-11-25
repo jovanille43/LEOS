@@ -29,5 +29,14 @@ class GamingControllerCenterTests(unittest.TestCase):
         self.assertIn("quickPanelFocusIndex === profileCount + 1", qml)
 
 
+    def test_gaming_header_exposes_a_confirmed_return_to_desktop_action(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: desktopReturnHeaderButton", qml)
+        self.assertIn("Accessible.name: \"Retourner à Desktop Mode\"", qml)
+        self.assertIn('text: window.width < 1180 ? "← DESKTOP" : "← RETOUR DESKTOP"', qml)
+        self.assertIn("onClicked: returnDialog.open()", qml)
+        self.assertIn('text: "RETOUR DESKTOP"', qml)
+
+
 if __name__ == "__main__":
     unittest.main()
