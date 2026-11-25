@@ -597,19 +597,168 @@ ApplicationWindow {
             z: 0
             colorA: window.accentA
             colorB: window.accentB
-            particleOpacity: 0.78
+            particleOpacity: 0.36
             motionEnabled: leos.animationsEnabled
         }
 
         Rectangle {
-            width: 620; height: 620; radius: 310
-            x: parent.width - width * 0.55; y: -height * 0.48
+            anchors.fill: parent
+            z: 0.1
+            opacity: 0.045
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: window.accentA }
+                GradientStop { position: 1.0; color: window.accentB }
+            }
+        }
+
+        // Cinematic graphite atmosphere: restrained light pools and
+        // metallic orbit lines frame the library without competing with art.
+        Rectangle {
+            width: 720; height: 720; radius: 360
+            x: parent.width - width * 0.55; y: -height * 0.52
             color: window.accentA; opacity: 0.085
         }
         Rectangle {
             width: 520; height: 520; radius: 260
-            x: -width * 0.5; y: parent.height - height * 0.45
+            x: parent.width - width * 0.62; y: -height * 0.34
+            color: window.themeColors.text; opacity: 0.018
+        }
+        Rectangle {
+            width: 640; height: 640; radius: 320
+            x: -width * 0.48; y: parent.height - height * 0.48
             color: window.accentB; opacity: 0.07
+        }
+        Rectangle {
+            width: 570; height: 570; radius: 285
+            x: -width * 0.40; y: parent.height - height * 0.56
+            color: window.themeColors.text; opacity: 0.014
+        }
+        Rectangle {
+            width: Math.max(parent.width * 0.72, 980)
+            height: Math.max(parent.height * 0.88, 720)
+            radius: height / 2
+            x: parent.width * 0.18
+            y: parent.height * 0.08
+            rotation: -17
+            color: "transparent"
+            border.width: 1
+            border.color: window.themeColors.text
+            opacity: 0.035
+        }
+        Rectangle {
+            width: Math.max(parent.width * 0.78, 1040)
+            height: Math.max(parent.height * 0.94, 780)
+            radius: height / 2
+            x: parent.width * 0.14
+            y: parent.height * 0.02
+            rotation: -17
+            color: "transparent"
+            border.width: 1
+            border.color: window.accentA
+            opacity: 0.045
+        }
+        Repeater {
+            model: 28
+            delegate: Rectangle {
+                id: particle
+                required property int index
+                width: index % 7 === 0 ? 3 : 1.5
+                height: width
+                radius: width / 2
+                property real baseX: (index * 211 + 83) % Math.max(1, gamingContent.width - width)
+                property real baseY: (index * 127 + 51) % Math.max(1, gamingContent.height - height)
+                property real driftX: Math.max(0, Math.min(6 + (index % 4) * 2,
+                    Math.min(baseX, gamingContent.width - width - baseX)))
+                property real driftY: Math.max(0, Math.min(5 + (index % 3) * 2,
+                    Math.min(baseY, gamingContent.height - height - baseY)))
+                property real baseOpacity: index % 7 === 0 ? 0.22 : 0.10
+                x: baseX
+                y: baseY
+                color: index % 2 === 0 ? window.accentA : window.themeColors.text
+                opacity: baseOpacity
+
+                ParallelAnimation {
+                    running: leos.animationsEnabled
+                    loops: Animation.Infinite
+                    onRunningChanged: {
+                        if (!running) {
+                            particle.x = particle.baseX
+                            particle.y = particle.baseY
+                            particle.opacity = particle.baseOpacity
+                        }
+                    }
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX + particle.driftX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX - particle.driftX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "x"
+                            to: particle.baseX
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                    }
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY - particle.driftY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY + particle.driftY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "y"
+                            to: particle.baseY
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                    }
+                    SequentialAnimation {
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity * 0.52
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity * 0.78
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                        NumberAnimation {
+                            target: particle
+                            property: "opacity"
+                            to: particle.baseOpacity
+                            duration: 5200 + particle.index * 80
+                            easing.type: Easing.InOutSine
+                        }
+                    }
+                }
+            }
         }
 
         ColumnLayout {
@@ -641,41 +790,11 @@ ApplicationWindow {
                         font.letterSpacing: 5
                         visible: gamingHeaderLogo.status !== Image.Ready
                     }
-                    RowLayout {
-                        spacing: 12
-                        Label {
-                            text: "GAMING MODE"
-                            color: window.cyan
-                            font.pixelSize: window.fontCaption
-                            font.letterSpacing: 3
-                        }
-                        Button {
-                            id: returnDesktopHeaderButton
-                            text: "RETOUR DESKTOP"
-                            Accessible.name: "Retourner à LEOS Desktop"
-                            Accessible.description: "Quitter Gaming et revenir au bureau KDE."
-                            Layout.preferredWidth: 148
-                            Layout.preferredHeight: 32
-                            onClicked: returnDialog.open()
-                            background: Rectangle {
-                                radius: 8
-                                color: returnDesktopHeaderButton.down || returnDesktopHeaderButton.hovered
-                                       || returnDesktopHeaderButton.activeFocus
-                                       ? window.themeColors.surface_elevated : window.themeColors.surface
-                                border.width: returnDesktopHeaderButton.activeFocus ? 2 : 1
-                                border.color: returnDesktopHeaderButton.activeFocus ? window.focusColor
-                                              : returnDesktopHeaderButton.hovered ? window.accentA
-                                              : window.themeColors.border
-                            }
-                            contentItem: Label {
-                                text: returnDesktopHeaderButton.text
-                                color: window.themeColors.text
-                                font.pixelSize: 12
-                                font.weight: Font.Bold
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                        }
+                    Label {
+                        text: "GAMING MODE"
+                        color: window.cyan
+                        font.pixelSize: window.fontCaption
+                        font.letterSpacing: 3
                     }
                 }
 
@@ -792,6 +911,33 @@ ApplicationWindow {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
+                Button {
+                    id: desktopReturnHeaderButton
+                    Layout.preferredWidth: window.width < 1180 ? 104 : 168
+                    Layout.minimumWidth: window.width < 1180 ? 96 : 152
+                    Layout.preferredHeight: 40
+                    text: window.width < 1180 ? "← DESKTOP" : "← RETOUR DESKTOP"
+                    Accessible.name: "Retourner à Desktop Mode"
+                    Accessible.description: "Ouvrir la confirmation pour quitter Gaming et revenir au bureau."
+                    onClicked: returnDialog.open()
+                    background: Rectangle {
+                        radius: 10
+                        color: desktopReturnHeaderButton.down || desktopReturnHeaderButton.hovered || desktopReturnHeaderButton.activeFocus
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: desktopReturnHeaderButton.activeFocus ? 2 : 1
+                        border.color: desktopReturnHeaderButton.activeFocus ? window.focusColor
+                                      : desktopReturnHeaderButton.hovered ? window.accentA : window.themeColors.border
+                    }
+                    contentItem: Label {
+                        text: desktopReturnHeaderButton.text
+                        color: window.themeColors.text
+                        font.pixelSize: window.fontCaption
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
             }
 
             Rectangle {

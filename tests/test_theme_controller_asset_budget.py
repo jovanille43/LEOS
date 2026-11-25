@@ -16,7 +16,8 @@ class ThemeControllerAssetBudgetTests(unittest.TestCase):
             (root / "wallpapers").mkdir(parents=True)
             (root / "animations").mkdir()
             for relative in (
-                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "desktop-logo.png", "gaming-logo.png",
+                "desktop-wallpaper-logo.png", "gaming-wallpaper-logo.png",
                 "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
                 "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
             ):

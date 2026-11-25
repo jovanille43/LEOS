@@ -3,7 +3,7 @@
 Official files under /usr/share/leos/branding are never modified. A linear RGB
 matrix maps the original cyan/magenta endpoints to the user's A/B pair while
 preserving the neutral axis, so metallic greys and white highlights remain
-neutral. JPEGs, SVG color stops and intro videos use the same transform.
+neutral. PNG logos, SVG color stops and intro videos use the same transform.
 """
 
 from __future__ import annotations
@@ -22,12 +22,12 @@ from desktop.themes import SOURCE_COLOR_A, SOURCE_COLOR_B, normalize_color
 
 _HEX_COLOR_RE = re.compile(r"#[0-9A-Fa-f]{6}\b")
 _IMAGE_NAMES = {
-    "desktop_logo": "desktop-logo.jpeg",
-    "gaming_logo": "gaming-logo.jpeg",
+    "desktop_logo": "desktop-logo.png",
+    "gaming_logo": "gaming-logo.png",
 }
 _WALLPAPER_NAMES = {
-    "desktop_wallpaper": ("desktop-leos.svg", "desktop-logo.jpeg"),
-    "gaming_wallpaper": ("gaming-leos.svg", "gaming-logo.jpeg"),
+    "desktop_wallpaper": ("desktop-leos.svg", "desktop-wallpaper-logo.png"),
+    "gaming_wallpaper": ("gaming-leos.svg", "gaming-wallpaper-logo.png"),
 }
 _VIDEO_NAMES = {
     "desktop_intro": "desktop-intro.mov",
@@ -130,7 +130,7 @@ def _safe_cache_directory(path: Path) -> None:
 
 
 def _image_transform(source: Path, destination: Path, matrix) -> bool:
-    """Recolour a logo into a PNG variant without editing the JPEG source."""
+    """Recolour a transparent logo PNG without editing the official source."""
     from PySide6.QtGui import QColor, QImage
 
     if source.is_symlink() or not source.is_file():
@@ -177,7 +177,11 @@ def _transform_svg(
     content = source.read_text(encoding="utf-8")
     if emblem is not None:
         # Keep the SVG linked to a generated user-scoped emblem variant.
-        old_name = "desktop-logo.jpeg" if "desktop" in source.name else "gaming-logo.jpeg"
+        old_name = (
+            "desktop-wallpaper-logo.png"
+            if "desktop" in source.name
+            else "gaming-wallpaper-logo.png"
+        )
         content = content.replace(f"../{old_name}", emblem.resolve().as_uri())
 
     def recolor(match: re.Match[str]) -> str:
@@ -273,11 +277,11 @@ def _transform_video(source: Path, destination: Path, matrix) -> bool:
 
 
 def source_asset_urls(branding_root: Path | None = None) -> dict[str, str]:
-    """Return original source file URLs for graceful fallback."""
+    """Return transparent official logo URLs and original media fallbacks."""
     root = branding_root or _branding_root()
     return {
-        "desktopLogoUrl": (root / "desktop-logo.jpeg").as_uri(),
-        "gamingLogoUrl": (root / "gaming-logo.jpeg").as_uri(),
+        "desktopLogoUrl": (root / "desktop-logo.png").as_uri(),
+        "gamingLogoUrl": (root / "gaming-logo.png").as_uri(),
         "desktopWallpaperUrl": (root / "wallpapers" / "desktop-leos.svg").as_uri(),
         "gamingWallpaperUrl": (root / "wallpapers" / "gaming-leos.svg").as_uri(),
         "desktopIntroUrl": (root / "animations" / "desktop-intro.mov").as_uri(),
@@ -297,7 +301,8 @@ def only_recolored_asset_urls(assets: dict[str, str], branding_root: Path | None
 def _cache_directory(color_a: str, color_b: str, branding_root: Path) -> Path:
     fingerprints = []
     for relative in (
-        "desktop-logo.jpeg", "gaming-logo.jpeg",
+        "desktop-logo.png", "gaming-logo.png",
+        "desktop-wallpaper-logo.png", "gaming-wallpaper-logo.png",
         "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
         "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
     ):
@@ -366,30 +371,35 @@ def build_themed_branding_assets(
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         try:
             assets: dict[str, str] = {}
-            logo_paths: dict[str, Path] = {}
             for key, filename in _IMAGE_NAMES.items():
-                output = cache / (Path(filename).stem + ".png")
+                output = cache / filename
                 source = root / filename
                 if output.is_symlink():
                     raise OSError("LEOS theme logo cache cannot contain symbolic links")
                 if not output.is_file() or output.stat().st_size == 0:
                     _image_transform(source, output, matrix)
                 asset_key = "desktopLogoUrl" if key == "desktop_logo" else "gamingLogoUrl"
-                if output.is_file() and not output.is_symlink() and output.stat().st_size > 0:
-                    logo_paths[key] = output
-                    assets[asset_key] = output.as_uri()
-                else:
-                    logo_paths[key] = source
-                    assets[asset_key] = original_urls[asset_key]
+                assets[asset_key] = (
+                    output.as_uri() if output.is_file() and not output.is_symlink() and output.stat().st_size > 0
+                    else original_urls[asset_key]
+                )
 
             for key, (filename, emblem_name) in _WALLPAPER_NAMES.items():
                 output = cache / filename
                 source = root / "wallpapers" / filename
-                if output.is_symlink():
+                emblem_source = root / emblem_name
+                emblem_output = cache / emblem_name
+                if output.is_symlink() or emblem_output.is_symlink():
                     raise OSError("LEOS theme wallpaper cache cannot contain symbolic links")
-                emblem_key = "desktop_logo" if key == "desktop_wallpaper" else "gaming_logo"
+                if not emblem_output.is_file() or emblem_output.stat().st_size == 0:
+                    _image_transform(emblem_source, emblem_output, matrix)
+                emblem = (
+                    emblem_output
+                    if emblem_output.is_file() and not emblem_output.is_symlink() and emblem_output.stat().st_size > 0
+                    else emblem_source
+                )
                 if not output.is_file() or output.stat().st_size == 0:
-                    _transform_svg(source, output, matrix, logo_paths[emblem_key])
+                    _transform_svg(source, output, matrix, emblem)
                 assets["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"] = (
                     output.as_uri() if output.is_file() and not output.is_symlink() and output.stat().st_size > 0
                     else original_urls["desktopWallpaperUrl" if key == "desktop_wallpaper" else "gamingWallpaperUrl"]

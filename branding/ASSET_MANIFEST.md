@@ -6,11 +6,14 @@ Ce document décrit les ressources officielles, leurs chemins de déploiement et
 
 | Chemin | Usage |
 | --- | --- |
-| `branding/desktop-logo.jpeg` | Lion seul, Desktop Mode |
-| `branding/gaming-logo.jpeg` | Lion avec manette, Gaming Mode |
+| `branding/desktop-logo.png` | Lion seul, transparent et cadré pour les interfaces Desktop |
+| `branding/gaming-logo.png` | Lion avec manette, transparent et cadré pour les interfaces Gaming |
+| `branding/desktop-wallpaper-logo.png` | Lion seul sur canevas transparent 1376 × 768 pour le fond Desktop |
+| `branding/gaming-wallpaper-logo.png` | Lion avec manette sur canevas transparent 1376 × 768 pour le fond Gaming |
+| `branding/desktop-logo.jpeg`, `branding/gaming-logo.jpeg` | Sources officielles préservées et non affichées directement |
 | `branding/reference-comparison.jpeg` | Référence interne uniquement |
 
-Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
+Le sélecteur QML charge les deux PNG transparents avec chargement asynchrone. Les libellés textuels restent visibles si une image est absente ou illisible.
 
 ## Fond d'écran Desktop
 
@@ -19,7 +22,7 @@ Le sélecteur QML charge les deux emblèmes avec chargement asynchrone. Les libe
 | `branding/wallpapers/desktop-leos.svg` | Fond source LEOS Desktop 4K (3840 × 2160), lion seul ; accents d'origine utilisés uniquement comme points de transformation A/B |
 | `branding/wallpapers/gaming-leos.svg` | Fond source LEOS Gaming 4K (3840 × 2160), lion avec manette ; accents d'origine utilisés uniquement comme points de transformation A/B |
 
-Chaque SVG référence le JPEG officiel correspondant par un lien relatif (`../desktop-logo.jpeg` ou `../gaming-logo.jpeg`) : l'emblème fourni reste la source unique, sans duplication ni déformation. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
+Chaque SVG référence la variante PNG transparente correspondante par un lien relatif (`../desktop-wallpaper-logo.png` ou `../gaming-wallpaper-logo.png`). Le canevas 16:9 conserve le cadrage du fond sans rectangle JPEG ; les PNG cadrés séparés servent aux interfaces. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
 
 ## Animations intégrées
 
@@ -39,16 +42,20 @@ La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/
 
 ## Intégrité des fichiers déployés
 
-Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des huit ressources effectivement présentes dans le dépôt. Les trois JPEG ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des douze ressources effectivement présentes dans le dépôt. Les trois JPEG sources ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les quatre PNG sont des variantes dérivées et leurs canaux alpha ainsi que leurs proportions sont vérifiés par les tests. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
 
 ## État des fichiers présents sur GitHub
 
-Les trois images sont présentes sous leurs noms canoniques. Les trois vidéos ont été déplacées dans `branding/animations/` et renommées sans réencodage effectué par cette opération Git.
+Les sources JPEG sont préservées et quatre PNG transparents sont déployés en plus. Les JPEG ne sont plus utilisés directement dans les interfaces. Les trois vidéos ont été déplacées dans `branding/animations/` et renommées sans réencodage effectué par cette opération Git.
 
 | Ressource | Taille GitHub |
 | --- | ---: |
 | `desktop-logo.jpeg` | 67 277 octets |
 | `gaming-logo.jpeg` | 73 084 octets |
+| `desktop-logo.png` (597 × 685, alpha) | 409 516 octets |
+| `gaming-logo.png` (677 × 686, alpha) | 462 238 octets |
+| `desktop-wallpaper-logo.png` (1376 × 768, alpha) | 451 407 octets |
+| `gaming-wallpaper-logo.png` (1376 × 768, alpha) | 497 896 octets |
 | `reference-comparison.jpeg` | 105 202 octets |
 | `animations/desktop-intro.mov` | 2 934 309 octets |
 | `animations/gaming-intro.mp4` | 2 115 657 octets |

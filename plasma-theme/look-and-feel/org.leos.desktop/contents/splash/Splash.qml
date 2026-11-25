@@ -36,7 +36,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Math.min(root.width * 0.22, 236)
             height: width
-            source: "file:///usr/share/leos/branding/desktop-logo.jpeg"
+            source: "file:///usr/share/leos/branding/desktop-logo.png"
             fillMode: Image.PreserveAspectFit
             asynchronous: true
             smooth: true

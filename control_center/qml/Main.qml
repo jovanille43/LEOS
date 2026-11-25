@@ -287,6 +287,18 @@ ApplicationWindow {
         anchors.fill: parent
         color: window.color
 
+        // A single low-intensity A→B wash visually connects the two accents
+        // instead of leaving them as isolated corner glows.
+        Rectangle {
+            anchors.fill: parent
+            opacity: 0.065
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: window.accentA }
+                GradientStop { position: 1.0; color: window.accentB }
+            }
+        }
+
         Rectangle {
             width: 620
             height: 620
@@ -1003,7 +1015,7 @@ ApplicationWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 318
+                                Layout.preferredHeight: 330
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -1045,12 +1057,24 @@ ApplicationWindow {
                                     }
                                     Rectangle {
                                         Layout.fillWidth: true
-                                        Layout.preferredHeight: 9
-                                        radius: 5
+                                        Layout.preferredHeight: 20
+                                        radius: 10
+                                        border.width: 1
+                                        border.color: "#40FFFFFF"
                                         gradient: Gradient {
                                             orientation: Gradient.Horizontal
-                                            GradientStop { position: 0.0; color: window.themeColors.accent_primary }
-                                            GradientStop { position: 1.0; color: window.themeColors.accent_secondary }
+                                            GradientStop { position: 0.0; color: Qt.color(window.draftColorA) }
+                                            GradientStop { position: 1.0; color: Qt.color(window.draftColorB) }
+                                        }
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: parent.radius
+                                            gradient: Gradient {
+                                                orientation: Gradient.Vertical
+                                                GradientStop { position: 0.0; color: "#24FFFFFF" }
+                                                GradientStop { position: 0.52; color: "#00FFFFFF" }
+                                                GradientStop { position: 1.0; color: "#18000000" }
+                                            }
                                         }
                                     }
                                     Button {

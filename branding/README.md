@@ -18,14 +18,16 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 ## Organisation
 
-- `desktop-logo.jpeg` — emblème Desktop.
-- `gaming-logo.jpeg` — emblème Gaming.
+- `desktop-logo.jpeg` et `gaming-logo.jpeg` — sources officielles préservées.
+- `desktop-logo.png` et `gaming-logo.png` — variantes transparentes cadrées pour les interfaces.
+- `desktop-wallpaper-logo.png` et `gaming-wallpaper-logo.png` — variantes transparentes sur le canevas source 1376 × 768 pour les fonds d’écran.
+- Les quatre PNG sont régénérés depuis les JPEG conservés avec `python3 tools/prepare-transparent-branding.py` (Pillow requis).
 - `reference-comparison.jpeg` — référence interne uniquement.
 - `animations/desktop-intro.mov` — entrée Desktop et retour depuis Gaming.
 - `animations/gaming-intro.mp4` — animation principale d'entrée Gaming.
 - `animations/gaming-roar-reference.mp4` — variante secondaire de référence.
-- `wallpapers/desktop-leos.svg` — fond Desktop 4K (3840 × 2160), avec l'emblème officiel référencé depuis `desktop-logo.jpeg` sans modification.
-- `wallpapers/gaming-leos.svg` — fond Gaming 4K (3840 × 2160), avec l'emblème officiel référencé depuis `gaming-logo.jpeg` sans modification.
+- `wallpapers/desktop-leos.svg` — fond Desktop 4K (3840 × 2160), avec `desktop-wallpaper-logo.png` transparent sur le canevas source.
+- `wallpapers/gaming-leos.svg` — fond Gaming 4K (3840 × 2160), avec `gaming-wallpaper-logo.png` transparent sur le canevas source.
 - Le fond Desktop personnalisé est appliqué après consentement explicite et sauvegarde Plasma ; le fond Gaming reste une ressource officielle disponible pour l'interface correspondante.
 - `icons/` — icônes et éléments graphiques.
 

@@ -21,7 +21,6 @@ on:
       - "plasma-theme/**"
       - "packaging/**"
       - "tools/smoke-test-leos-session-selector.sh"
-      - "tools/smoke-test-leos-session-selector.sh"
       - "cosign.pub"
   pull_request:
     types: [opened, synchronize, reopened]
@@ -41,6 +40,7 @@ on:
       - "aurorae/**"
       - "plasma-theme/**"
       - "packaging/**"
+      - "tools/smoke-test-leos-session-selector.sh"
       - "cosign.pub"
 
 permissions:
@@ -74,7 +74,7 @@ jobs:
       - name: Run LEOS Python test suite
         run: |
           set -euo pipefail
-          python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests
+          python -m compileall -q gaming launcher control_center controller_center shop leos_core desktop tests tools
           python -m unittest discover -s tests -v
 
       - name: Verify official LEOS branding assets
@@ -83,6 +83,10 @@ jobs:
           required_assets=(
             branding/desktop-logo.jpeg
             branding/gaming-logo.jpeg
+            branding/desktop-logo.png
+            branding/gaming-logo.png
+            branding/desktop-wallpaper-logo.png
+            branding/gaming-wallpaper-logo.png
             branding/reference-comparison.jpeg
             branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
@@ -128,8 +132,8 @@ jobs:
           namespace = "{http://www.w3.org/2000/svg}"
           xlink_href = "{http://www.w3.org/1999/xlink}href"
           expected = {
-              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-logo.jpeg",
-              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-logo.jpeg",
+              Path("branding/wallpapers/desktop-leos.svg"): "../desktop-wallpaper-logo.png",
+              Path("branding/wallpapers/gaming-leos.svg"): "../gaming-wallpaper-logo.png",
           }
           for wallpaper, emblem in expected.items():
               root = ET.parse(wallpaper).getroot()

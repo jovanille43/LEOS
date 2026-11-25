@@ -13,8 +13,8 @@ class SessionFlowTests(unittest.TestCase):
         assets = (ROOT / "desktop/branding_assets.py").read_text(encoding="utf-8")
         self.assertIn("leosTheme.desktopLogoUrl", source)
         self.assertIn("leosTheme.gamingLogoUrl", source)
-        self.assertIn('"desktop-logo.jpeg"', assets)
-        self.assertIn('"gaming-logo.jpeg"', assets)
+        self.assertIn('"desktop-logo.png"', assets)
+        self.assertIn('"gaming-logo.png"', assets)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
@@ -94,12 +94,12 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
-        self.assertEqual(image.attrib.get("href"), "../desktop-logo.jpeg")
+        self.assertEqual(image.attrib.get("href"), "../desktop-wallpaper-logo.png")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
-            "../desktop-logo.jpeg",
+            "../desktop-wallpaper-logo.png",
         )
-        self.assertTrue((wallpaper.parent.parent / "desktop-logo.jpeg").is_file())
+        self.assertTrue((wallpaper.parent.parent / "desktop-wallpaper-logo.png").is_file())
 
     def test_gaming_wallpaper_is_valid_4k_svg_and_reuses_the_official_emblem(self):
         import xml.etree.ElementTree as ET
@@ -110,16 +110,18 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(root.attrib.get("viewBox"), "0 0 3840 2160")
         image = root.find("{http://www.w3.org/2000/svg}image")
         self.assertIsNotNone(image)
-        self.assertEqual(image.attrib.get("href"), "../gaming-logo.jpeg")
+        self.assertEqual(image.attrib.get("href"), "../gaming-wallpaper-logo.png")
         self.assertEqual(
             image.attrib.get("{http://www.w3.org/1999/xlink}href"),
-            "../gaming-logo.jpeg",
+            "../gaming-wallpaper-logo.png",
         )
-        self.assertTrue((wallpaper.parent.parent / "gaming-logo.jpeg").is_file())
+        self.assertTrue((wallpaper.parent.parent / "gaming-wallpaper-logo.png").is_file())
     def test_branding_animation_files_exist_at_runtime_paths(self):
         branding = ROOT / "branding"
         self.assertTrue((branding / "desktop-logo.jpeg").is_file())
+        self.assertTrue((branding / "desktop-logo.png").is_file())
         self.assertTrue((branding / "gaming-logo.jpeg").is_file())
+        self.assertTrue((branding / "gaming-logo.png").is_file())
         self.assertTrue((branding / "animations" / "desktop-intro.mov").is_file())
         self.assertTrue((branding / "animations" / "gaming-intro.mp4").is_file())
         self.assertTrue((branding / "animations" / "gaming-roar-reference.mp4").is_file())
