@@ -75,5 +75,5 @@
 
   <ellipse cx="1920" cy="1110" rx="760" ry="790" fill="#020202" fill-opacity=".26" filter="url(#emblem-shadow)"/>
   <image x="1070" y="180" width="1700" height="1800" preserveAspectRatio="xMidYMid meet"
-         href="../desktop-logo.jpeg" xlink:href="../desktop-logo.jpeg"/>
+         href="../desktop-wallpaper-logo.png" xlink:href="../desktop-wallpaper-logo.png"/>
 </svg>

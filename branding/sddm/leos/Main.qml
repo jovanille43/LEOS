@@ -283,7 +283,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: Math.min(178, root.height * 0.17)
             Layout.preferredHeight: Layout.preferredWidth
-            source: "file:///usr/share/leos/branding/desktop-logo.jpeg"
+            source: "file:///usr/share/leos/branding/desktop-logo.png"
             fillMode: Image.PreserveAspectFit
             smooth: true
             asynchronous: true

@@ -30,13 +30,13 @@ class WorkflowConcurrencyTests(unittest.TestCase):
         self.assertIn("could not generate ${recipe} after", source)
         self.assertIn('test -s "$output"', source)
 
-    def test_iso_workflow_covers_all_hardware_variants_and_verifies_signatures(self):
+    def test_iso_workflow_only_builds_standard_and_verifies_signatures(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        for variant in ("standard", "nvidia-legacy", "nvidia-modern"):
-            self.assertIn(f"- {variant}", source)
-        self.assertIn('standard) image_name="leos"', source)
-        self.assertIn('nvidia-legacy) image_name="leos-nvidia"', source)
-        self.assertIn('nvidia-modern) image_name="leos-nvidia-open"', source)
+        self.assertIn("VARIANT: standard", source)
+        self.assertIn('image_name="leos"', source)
+        self.assertNotIn("nvidia-legacy", source)
+        self.assertNotIn("nvidia-modern", source)
+        self.assertNotIn("matrix.variant", source)
         self.assertIn('cosign_bin="$(command -v cosign)"', source)
         verify = source.index('sudo env DOCKER_CONFIG=/root/.docker "$cosign_bin" verify --insecure-ignore-tlog --check-claims --key cosign.pub')
         generate = source.index("generate-iso --variant server --web-ui --iso-name")

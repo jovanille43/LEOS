@@ -60,13 +60,13 @@ class BrandingAssetTests(unittest.TestCase):
             root = Path(directory)
             source = root / "desktop-leos.svg"
             output = root / "desktop-themed.svg"
-            emblem = root / "desktop-logo.png"
+            emblem = root / "desktop-wallpaper-logo.png"
             emblem.write_bytes(b"derived image placeholder")
             source.write_text(
                 '<svg><stop stop-color="#00D9FF"/>'
                 '<stop stop-color="#E33BFF"/>'
-                '<image href="../desktop-logo.jpeg" '
-                'xlink:href="../desktop-logo.jpeg"/></svg>',
+                '<image href="../desktop-wallpaper-logo.png" '
+                'xlink:href="../desktop-wallpaper-logo.png"/></svg>',
                 encoding="utf-8",
             )
             matrix = build_color_matrix("#00FF00", "#FF0000")
@@ -75,7 +75,7 @@ class BrandingAssetTests(unittest.TestCase):
             self.assertIn("#00FF00", result)
             self.assertIn("#FF0000", result)
             self.assertIn(emblem.resolve().as_uri(), result)
-            self.assertNotIn("../desktop-logo.jpeg", result)
+            self.assertNotIn("../desktop-wallpaper-logo.png", result)
             self.assertIn("#00D9FF", source.read_text(encoding="utf-8"))
 
     def test_cached_variants_are_discovered_without_regenerating_them(self):
@@ -84,7 +84,8 @@ class BrandingAssetTests(unittest.TestCase):
             (root / "wallpapers").mkdir(parents=True)
             (root / "animations").mkdir()
             for relative in (
-                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "desktop-logo.png", "gaming-logo.png",
+                "desktop-wallpaper-logo.png", "gaming-wallpaper-logo.png",
                 "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
                 "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
             ):
@@ -97,7 +98,7 @@ class BrandingAssetTests(unittest.TestCase):
                 generated.write_bytes(b"generated variant")
                 urls = cached_themed_branding_asset_urls("#FF8800", "#0055CC", root)
                 self.assertEqual(urls["desktopLogoUrl"], generated.as_uri())
-                self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.jpeg"))
+                self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.png"))
                 self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))
 
     def test_cache_fingerprint_changes_when_an_official_source_changes(self):
@@ -106,14 +107,15 @@ class BrandingAssetTests(unittest.TestCase):
             (root / "wallpapers").mkdir(parents=True)
             (root / "animations").mkdir()
             paths = [
-                "desktop-logo.jpeg", "gaming-logo.jpeg",
+                "desktop-logo.png", "gaming-logo.png",
+                "desktop-wallpaper-logo.png", "gaming-wallpaper-logo.png",
                 "wallpapers/desktop-leos.svg", "wallpapers/gaming-leos.svg",
                 "animations/desktop-intro.mov", "animations/gaming-intro.mp4",
             ]
             for relative in paths:
                 (root / relative).write_bytes(b"source-v1")
             before = _cache_directory("#FF8800", "#0055CC", root)
-            (root / "gaming-logo.jpeg").write_bytes(b"source-v2-with-different-size")
+            (root / "gaming-logo.png").write_bytes(b"source-v2-with-different-size")
             after = _cache_directory("#FF8800", "#0055CC", root)
             self.assertNotEqual(before, after)
 
@@ -140,8 +142,8 @@ class BrandingAssetTests(unittest.TestCase):
     def test_fallback_asset_urls_point_to_official_source_files(self):
         root = Path("/usr/share/leos/branding")
         urls = source_asset_urls(root)
-        self.assertTrue(urls["desktopLogoUrl"].endswith("/desktop-logo.jpeg"))
-        self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.jpeg"))
+        self.assertTrue(urls["desktopLogoUrl"].endswith("/desktop-logo.png"))
+        self.assertTrue(urls["gamingLogoUrl"].endswith("/gaming-logo.png"))
         self.assertTrue(urls["desktopWallpaperUrl"].endswith("/wallpapers/desktop-leos.svg"))
         self.assertTrue(urls["gamingWallpaperUrl"].endswith("/wallpapers/gaming-leos.svg"))
         self.assertTrue(urls["desktopIntroUrl"].endswith("/animations/desktop-intro.mov"))

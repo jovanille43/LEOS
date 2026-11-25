@@ -25,7 +25,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("sddm.suspend()", qml)
         self.assertIn("sddm.reboot()", qml)
         self.assertIn("sddm.powerOff()", qml)
-        self.assertIn("file:///usr/share/leos/branding/desktop-logo.jpeg", qml)
+        self.assertIn("file:///usr/share/leos/branding/desktop-logo.png", qml)
         self.assertIn("sddm.login(", qml)
         self.assertIn("sessionModel", qml)
         self.assertNotIn("#00D9FF", qml)
@@ -39,7 +39,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         self.assertIn("ImageDir=/usr/share/plymouth/themes/leos", theme)
         self.assertIn("WatermarkHorizontalAlignment=.5", theme)
         self.assertIn("watermark.png", script)
-        self.assertIn("desktop-logo.jpeg", script)
+        self.assertIn("desktop-logo.png", script)
         self.assertIn("QImage", script)
 
     def test_plasma_splash_package_is_valid_and_neutral_before_user_colors(self):
@@ -48,7 +48,7 @@ class LeosIdentityAssetTests(unittest.TestCase):
         qml = (package / "contents/splash/Splash.qml").read_text(encoding="utf-8")
         self.assertEqual(manifest["KPackageStructure"], "Plasma/LookAndFeel")
         self.assertEqual(manifest["KPlugin"]["Id"], "org.leos.desktop")
-        self.assertIn("desktop-logo.jpeg", qml)
+        self.assertIn("desktop-logo.png", qml)
         self.assertIn("#090B10", qml)
         self.assertNotIn("#00D9FF", qml)
         self.assertNotIn("#E33BFF", qml)
