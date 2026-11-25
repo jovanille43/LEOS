@@ -75,10 +75,17 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
 
     def test_image_smoke_gate_changes_trigger_build_and_iso_workflows(self):
         build = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
-        self.assertEqual(
-            build.count('- "tools/smoke-test-leos-session-selector.sh"'),
-            2,
-        )
+        push_trigger = build.split("  push:", 1)[1].split("  pull_request:", 1)[0]
+        pull_request_trigger = build.split("  pull_request:", 1)[1].split("permissions:", 1)[0]
+        for event_name, trigger in (
+            ("push", push_trigger),
+            ("pull_request", pull_request_trigger),
+        ):
+            with self.subTest(event=event_name):
+                self.assertEqual(
+                    trigger.count('- "tools/smoke-test-leos-session-selector.sh"'),
+                    1,
+                )
         iso = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         self.assertIn('workflows: ["Build LEOS"]', iso)
         self.assertIn("types: [completed]", iso)

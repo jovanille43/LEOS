@@ -21,7 +21,6 @@ on:
       - "plasma-theme/**"
       - "packaging/**"
       - "tools/smoke-test-leos-session-selector.sh"
-      - "tools/smoke-test-leos-session-selector.sh"
       - "cosign.pub"
   pull_request:
     types: [opened, synchronize, reopened]
@@ -41,6 +40,7 @@ on:
       - "aurorae/**"
       - "plasma-theme/**"
       - "packaging/**"
+      - "tools/smoke-test-leos-session-selector.sh"
       - "cosign.pub"
 
 permissions:
