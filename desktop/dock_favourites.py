@@ -138,6 +138,43 @@ class DockFavourites:
         if not self.load():
             raise ValueError("Dock favourites file is invalid or inaccessible; it was left untouched")
 
+    def migrate_mode_selector_favourite(self) -> bool:
+        """Add the mode switch once to existing dock profiles without overriding choices.
+
+        A separate marker keeps the user free to remove the shortcut later. A full
+        dock is left untouched and can retry the migration after space is freed.
+        """
+        marker = self.path.with_name(self.path.name + ".mode-selector-migrated-v1")
+        try:
+            with self._exclusive_lock():
+                if self.path.is_symlink() or self.path.parent.is_symlink() or marker.is_symlink():
+                    return False
+                if marker.exists():
+                    return False
+                self._reload_for_update()
+                added = False
+                if "leos-mode-selector.desktop" not in self._items:
+                    if len(self._items) >= MAX_PINNED_APPS:
+                        return False
+                    self._items.append("leos-mode-selector.desktop")
+                    self._write_unlocked()
+                    added = True
+                flags = (
+                    os.O_WRONLY | os.O_CREAT | os.O_EXCL
+                    | getattr(os, "O_NOFOLLOW", 0)
+                )
+                descriptor = os.open(marker, flags, 0o600)
+                try:
+                    os.fchmod(descriptor, 0o600)
+                    os.fsync(descriptor)
+                finally:
+                    os.close(descriptor)
+                return added
+        except (OSError, ValueError):
+            # A migration must never prevent the menu from opening or replace
+            # an invalid favourites file; the user can repair it and retry.
+            return False
+
     def pin(self, desktop_id: str) -> None:
         if not _valid_id(desktop_id):
             raise ValueError("Expected a valid application .desktop ID")
