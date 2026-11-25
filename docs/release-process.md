@@ -31,16 +31,18 @@ Les premières versions de validation restent en `0.x.y`. Le tag et le titre de 
 
 ## Images candidates de pull request
 
-Pour éviter de remplacer l'image stable `latest` pendant le développement, le workflow **Build LEOS** construit, pour une pull request issue du dépôt lui-même, uniquement la variante standard en image candidate signée `pr-<numéro>`. Les variantes NVIDIA ne sont pas reconstruites à chaque PR. Les pull requests provenant d'un fork ne reçoivent pas de secrets de signature et ne déclenchent pas de publication d'image.
+Pour éviter de remplacer l'image stable `latest` pendant le développement, le workflow **Build LEOS** construit, pour une pull request issue du dépôt lui-même, uniquement la variante standard en image candidate signée. Les pull requests provenant d'un fork ne reçoivent pas de secrets de signature et ne déclenchent pas de publication d'image.
 
-Après le succès du job **Build LEOS (AMD / Intel)**, l'ISO candidate peut être produite manuellement sans toucher à `latest` : ouvrir le workflow **Generate LEOS installer ISO**, sélectionner la branche de la pull request, choisir la variante `standard` et saisir dans `image_tag` le tag exact indiqué par BlueBuild. Avec la version BlueBuild CLI `v0.9.42` utilisée par le dépôt, le format d'une image issue d'une PR est `pr-<numéro>-<os_version>` (par exemple `pr-46-<os_version>` : remplacer ce dernier champ par la version réellement inscrite dans les journaux du build). Un tag secondaire `<short_sha>-<os_version>` est également produit. Le nom court `pr-46` seul n'est pas un tag valide. La chaîne vérifie toujours la signature, fige le digest, contrôle la structure ISO et démarre l'installateur en UEFI/QEMU avant de publier l'artefact.
+Après le succès du job **Build LEOS (AMD / Intel)**, une ISO candidate peut être produite manuellement depuis la branche de la pull request. Saisir le SHA complet (40 caractères) du commit source dans `source_commit`. Le workflow cherche alors dans le dépôt standard `leos` l'unique image signée dont le tag commence par les sept premiers caractères de ce SHA et un tiret. Il s'arrête si aucun tag ou plusieurs tags correspondent. BlueBuild publie un tag secondaire `<short_sha>-<os_version>` pour cette résolution. Aucun tag arbitraire comme `latest` n'est accepté.
+
+La génération d'ISO ne propose que la variante standard. Le workflow vérifie la signature, fixe le digest, contrôle la structure de l'ISO et démarre l'installateur en UEFI/QEMU avant de publier l'artefact. Cette vérification automatique atteint l'interface Web Anaconda ; elle ne valide pas à elle seule une installation complète ni le premier démarrage de LEOS.
 
 Cette ISO candidate n'est pas une release et ne remplace pas le jalon de validation complète en VM puis sur matériel réel.
 
 ## Procédure de publication
 
 1. Geler un commit candidat sur `main` et vérifier que les contrôles automatiques sont verts.
-2. Générer les ISO des seules variantes qualifiées à partir des images publiées et signées.
+2. Générer uniquement l’ISO standard à partir de l’image publiée et signée correspondant au commit candidat.
 3. Vérifier chaque ISO avec son fichier SHA-256 et conserver le fichier `.source-digest`.
 4. Préparer les notes depuis [CHANGELOG.md](../CHANGELOG.md), en séparant fonctions validées, limites connues et variantes expérimentales.
 5. Créer un tag annoté `vX.Y.Z` sur le commit exact validé.
@@ -68,7 +70,9 @@ Ne pas publier l'ISO uniquement comme artefact de workflow pour une distribution
 - Les améliorations Gaming (typographie lisible, propriétés d'accessibilité Qt, états vides guidés, aide clavier/manette et protection contre l'application concurrente du dock) ont été fusionnées après validation complète de leurs contrôles Python et BlueBuild/QML.
 - L'ISO standard du run [#44729268412](https://github.com/jovanille43/LEOS/actions/runs/44729268412) a été installée avec succès dans une VM QEMU/KVM : compte Anaconda créé, installation terminée, redémarrage et bureau KDE atteints.
 - Cette ISO a été construite depuis le commit `3c97827f5c658ed246a7b96ed4a5e8e1fbb2f317` ; elle ne contient donc pas encore les nouvelles fonctions fusionnées ensuite.
-- Après une modification du code ou des recettes qui affecte l'image et fusionnée dans `main`, le workflow **Build LEOS** démarre automatiquement et publie les trois variantes signées. Après le succès complet du workflow, **Generate LEOS installer ISO** génère automatiquement l'ISO standard `latest`. Le lancement manuel reste disponible pour produire une variante NVIDIA ou un tag spécifique.
+- Après une modification du code ou des recettes qui affecte l'image et fusionnée dans `main`, le workflow **Build LEOS** démarre automatiquement et publie les images signées. Après son succès, **Generate LEOS installer ISO** ne génère que l'ISO standard du même commit.
+- Un lancement manuel exige le SHA complet du commit source ; le tag de l'image est résolu automatiquement et doit correspondre à ce SHA. Les variantes ISO NVIDIA et la sélection de tags arbitraires sont désactivées pour être reprises plus tard.
 - Restent à vérifier dans la VM : sélecteur et transitions Desktop/Gaming, guide de premier démarrage, réseau, audio, services et redémarrages répétés. Les périphériques physiques et performances réelles restent à tester.
 - Les ISO NVIDIA ne sont pas encore générées. Aucune release versionnée, aucun tag stable et aucune certification matérielle universelle ne sont publiés.
+
 

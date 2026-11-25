@@ -33,7 +33,9 @@ class LeosIdentityAssetTests(unittest.TestCase):
 
     def test_plymouth_theme_is_neutral_and_references_official_emblem_generator(self):
         theme = (ROOT / "branding/plymouth/leos/leos.plymouth").read_text(encoding="utf-8")
-        script = (ROOT / "files/scripts/prepare-leos-plymouth.sh").read_text(encoding="utf-8")
+        script_path = ROOT / "files/scripts/prepare-leos-plymouth.sh"
+        script = script_path.read_text(encoding="utf-8")
+        self.assertTrue(script_path.stat().st_mode & 0o111, "Plymouth preparation script must remain executable")
         self.assertIn("ModuleName=two-step", theme)
         self.assertIn("BackgroundStartColor=0x090B10", theme)
         self.assertIn("ImageDir=/usr/share/plymouth/themes/leos", theme)

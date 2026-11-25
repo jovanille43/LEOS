@@ -363,12 +363,15 @@ class BuildWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bluebuild validate recipes/{recipe}", source)
                 self.assertIn(recipe, source[source.index("for recipe in"):source.index("output=")])
 
-    def test_iso_dispatch_explains_exact_pull_request_preview_tag(self):
+    def test_iso_dispatch_requires_source_commit_and_documents_standard_only(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         release = (ROOT / "docs/release-process.md").read_text(encoding="utf-8")
-        self.assertIn("PR previews use pr-<number>-<os_version>", source)
-        self.assertIn("pr-<numéro>-<os_version>", release)
-        self.assertIn("Le nom court `pr-46` seul n'est pas un tag valide.", release)
+        manual_inputs = source.split("  workflow_run:", 1)[0]
+        self.assertIn("source_commit:", manual_inputs)
+        self.assertIn("required: true", manual_inputs)
+        self.assertNotIn("image_tag:", manual_inputs)
+        self.assertIn("SHA complet du commit source", release)
+        self.assertIn("ne propose que la variante standard", release)
     def test_iso_workflow_verifies_and_digest_pins_bluebuild_installer(self):
         source = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
         public_key = (ROOT / "tools/trust/blue-build-cli.pub").read_text(encoding="utf-8")
@@ -398,7 +401,9 @@ class BuildWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             source,
         )
-        self.assertIn("inputs.image_tag || 'latest'", source)
+        self.assertIn("inputs.source_commit", source)
+        self.assertIn("SOURCE_SHA: ${{ steps.image.outputs.source_sha }}", source)
+        self.assertNotIn("inputs.image_tag", source)
         self.assertIn("VARIANT: standard", source)
         self.assertIn('image_name="leos"', source)
         self.assertNotIn("inputs.variant", source)
@@ -590,3 +595,4 @@ class BuildWorkflowTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
