@@ -115,14 +115,22 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertIn("/usr/bin/python3 - <<PY\nfrom desktop.icon_theme", smoke)
         self.assertIn("\nPY\n\n        expected_exec=", smoke)
 
-    def test_iso_uses_the_exact_image_tag_from_its_triggering_main_commit(self):
+    def test_iso_uses_the_exact_image_tag_from_its_selected_source_commit(self):
         workflow = (ROOT / ".github/workflows/iso.yml").read_text(encoding="utf-8")
-        self.assertIn("SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}", workflow)
+        self.assertIn("source_commit:", workflow)
+        self.assertIn("SOURCE_SHA: ${{ github.event.workflow_run.head_sha || inputs.source_commit }}", workflow)
         self.assertIn('source_prefix="${SOURCE_SHA:0:7}-"', workflow)
         self.assertIn('skopeo list-tags --authfile /root/.docker/config.json', workflow)
-        self.assertIn("Expected exactly one published image tag", workflow)
+        self.assertIn("Expected exactly one published standard image tag", workflow)
         self.assertIn('echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"', workflow)
-        self.assertIn("steps.image.outputs.tag", workflow)
+        self.assertIn('echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"', workflow)
+        self.assertIn("SOURCE_SHA: ${{ steps.image.outputs.source_sha }}", workflow)
+        self.assertNotIn("INPUT_IMAGE_TAG", workflow)
+        self.assertNotIn("github.event.workflow_run.head_sha || github.sha", workflow)
+        manual_inputs = workflow.split("  workflow_run:", 1)[0]
+        self.assertIn("source_commit:", manual_inputs)
+        self.assertIn("required: true", manual_inputs)
+        self.assertNotIn("image_tag:", manual_inputs)
         self.assertLess(
             workflow.index("Authenticate to GitHub Container Registry"),
             workflow.index("Select published image"),
@@ -147,7 +155,8 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
         self.assertNotIn("inputs.variant", workflow)
         self.assertNotIn("nvidia-legacy", workflow)
         self.assertNotIn("nvidia-modern", workflow)
-        self.assertIn("inputs.image_tag || 'latest'", workflow)
+        self.assertIn("inputs.source_commit", workflow)
+        self.assertNotIn("inputs.image_tag", workflow)
 
     def test_validator_checks_digest_checksum_uefi_and_installer_payload(self):
         validator = (ROOT / "tools/validate-installer-iso.sh").read_text(encoding="utf-8")

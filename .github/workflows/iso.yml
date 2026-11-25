@@ -3,10 +3,9 @@ name: Generate LEOS installer ISO
 on:
   workflow_dispatch:
     inputs:
-      image_tag:
-        description: Published image tag; PR previews use pr-<number>-<os_version> (see Build LEOS logs)
+      source_commit:
+        description: Full commit SHA whose signed standard image should be packaged
         required: true
-        default: latest
         type: string
   workflow_run:
     workflows: ["Build LEOS"]
@@ -82,9 +81,7 @@ jobs:
         id: image
         env:
           VARIANT: standard
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
-          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || inputs.source_commit }}
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
@@ -92,25 +89,21 @@ jobs:
           owner="${OWNER,,}"
           image_repository="ghcr.io/$owner/$image_name"
 
-          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
-            if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]; then
-              echo "::error::The triggering Build LEOS commit SHA is invalid."
-              exit 1
-            fi
-            source_prefix="${SOURCE_SHA:0:7}-"
-            mapfile -t source_tags < <(
-              sudo skopeo list-tags --authfile /root/.docker/config.json "docker://$image_repository" |
-                jq -r --arg prefix "$source_prefix" '.Tags[]? | select(startswith($prefix))'
-            )
-            if [[ "${#source_tags[@]}" -ne 1 ]]; then
-              echo "::error::Expected exactly one published image tag for Build LEOS commit $SOURCE_SHA; found ${#source_tags[@]}."
-              printf 'Matching tags: %s\n' "${source_tags[*]:-none}"
-              exit 1
-            fi
-            IMAGE_TAG="${source_tags[0]}"
-          else
-            IMAGE_TAG="$INPUT_IMAGE_TAG"
+          if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::The source image commit SHA must be a full 40-character commit."
+            exit 1
           fi
+          source_prefix="${SOURCE_SHA:0:7}-"
+          mapfile -t source_tags < <(
+            sudo skopeo list-tags --authfile /root/.docker/config.json "docker://$image_repository" |
+              jq -r --arg prefix "$source_prefix" '.Tags[]? | select(startswith($prefix))'
+          )
+          if [[ "${#source_tags[@]}" -ne 1 ]]; then
+            echo "::error::Expected exactly one published standard image tag for source commit $SOURCE_SHA; found ${#source_tags[@]}."
+            printf 'Matching tags: %s\n' "${source_tags[*]:-none}"
+            exit 1
+          fi
+          IMAGE_TAG="${source_tags[0]}"
 
           if [[ ! "$IMAGE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
             echo "::error::Invalid or unresolved image tag."
@@ -118,6 +111,7 @@ jobs:
           fi
           echo "Using image built from $SOURCE_SHA: $image_repository:$IMAGE_TAG"
           echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
           echo "ref=$image_repository:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "filename=LEOS-$VARIANT-$IMAGE_TAG.iso" >> "$GITHUB_OUTPUT"
 
@@ -343,7 +337,7 @@ jobs:
           ISO_NAME: ${{ steps.image.outputs.filename }}
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
           IMAGE_DIGEST: ${{ steps.verified.outputs.digest }}
-          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SOURCE_SHA: ${{ steps.image.outputs.source_sha }}
           VARIANT: standard
         run: |
           set -euo pipefail

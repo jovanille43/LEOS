@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 
-VARIANTS = frozenset({"standard", "nvidia-legacy", "nvidia-modern"})
+VARIANTS = frozenset({"standard"})
 TAG_PATTERN = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$")
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -45,6 +45,8 @@ def write_installer_manifest(
         raise ValueError("Invalid LEOS image tag.")
     if not COMMIT_PATTERN.fullmatch(source_commit):
         raise ValueError("Invalid LEOS source commit.")
+    if not image_tag.startswith(source_commit[:7] + "-"):
+        raise ValueError("Image tag does not identify source commit.")
     if not DIGEST_PATTERN.fullmatch(source_image_digest):
         raise ValueError("Invalid immutable image digest.")
     if not iso.is_file() or iso.stat().st_size <= 0:
@@ -109,3 +111,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

@@ -35,7 +35,7 @@ class InstallerManifestTests(unittest.TestCase):
 
     def test_writes_manifest_only_after_checksum_and_source_digest_match(self):
         output = write_installer_manifest(
-            self.iso, "standard", "abc123-latest", self.commit, self.digest
+            self.iso, "standard", "bbbbbbb-latest", self.commit, self.digest
         )
         manifest = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual(output, Path(str(self.iso) + ".manifest.json"))
@@ -56,17 +56,24 @@ class InstallerManifestTests(unittest.TestCase):
     def test_rejects_a_mismatched_iso_checksum(self):
         Path(str(self.iso) + ".sha256").write_text("0" * 64 + "  wrong.iso\n", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "checksum"):
-            write_installer_manifest(self.iso, "standard", "tag", self.commit, self.digest)
+            write_installer_manifest(self.iso, "standard", "bbbbbbb-test", self.commit, self.digest)
+
+    def test_rejects_an_image_tag_that_does_not_identify_the_source_commit(self):
+        with self.assertRaisesRegex(ValueError, "does not identify source commit"):
+            write_installer_manifest(
+                self.iso, "standard", "abc1234-latest", self.commit, self.digest
+            )
 
     def test_rejects_a_mismatched_source_image_digest(self):
         with self.assertRaisesRegex(ValueError, "source digest"):
             write_installer_manifest(
-                self.iso, "standard", "tag", self.commit, "sha256:" + "c" * 64
+                self.iso, "standard", "bbbbbbb-test", self.commit, "sha256:" + "c" * 64
             )
 
     def test_rejects_invalid_commit_digest_variant_and_image_tag(self):
         cases = [
             ("unknown", "tag", self.commit, self.digest),
+            ("nvidia-legacy", "bbbbbbb-latest", self.commit, self.digest),
             ("standard", "bad tag", self.commit, self.digest),
             ("standard", "tag", "not-a-commit", self.digest),
             ("standard", "tag", self.commit, "not-a-digest"),
@@ -80,12 +87,13 @@ class InstallerManifestTests(unittest.TestCase):
         empty_iso = self.root / "empty.iso"
         empty_iso.touch()
         with self.assertRaisesRegex(ValueError, "missing or empty"):
-            write_installer_manifest(empty_iso, "standard", "tag", self.commit, self.digest)
+            write_installer_manifest(empty_iso, "standard", "bbbbbbb-test", self.commit, self.digest)
         missing = self.root / "missing.iso"
         missing.write_bytes(b"iso")
         with self.assertRaisesRegex(ValueError, "checksum sidecar"):
-            write_installer_manifest(missing, "standard", "tag", self.commit, self.digest)
+            write_installer_manifest(missing, "standard", "bbbbbbb-test", self.commit, self.digest)
 
 
 if __name__ == "__main__":
     unittest.main()
+
