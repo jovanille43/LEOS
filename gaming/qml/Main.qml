@@ -890,6 +890,33 @@ ApplicationWindow {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
+                Button {
+                    id: desktopReturnHeaderButton
+                    Layout.preferredWidth: window.width < 1180 ? 104 : 168
+                    Layout.minimumWidth: window.width < 1180 ? 96 : 152
+                    Layout.preferredHeight: 40
+                    text: window.width < 1180 ? "← DESKTOP" : "← RETOUR DESKTOP"
+                    Accessible.name: "Retourner à Desktop Mode"
+                    Accessible.description: "Ouvrir la confirmation pour quitter Gaming et revenir au bureau."
+                    onClicked: returnDialog.open()
+                    background: Rectangle {
+                        radius: 10
+                        color: desktopReturnHeaderButton.down || desktopReturnHeaderButton.hovered || desktopReturnHeaderButton.activeFocus
+                               ? window.themeColors.surface_elevated : window.themeColors.surface
+                        border.width: desktopReturnHeaderButton.activeFocus ? 2 : 1
+                        border.color: desktopReturnHeaderButton.activeFocus ? window.focusColor
+                                      : desktopReturnHeaderButton.hovered ? window.accentA : window.themeColors.border
+                    }
+                    contentItem: Label {
+                        text: desktopReturnHeaderButton.text
+                        color: window.themeColors.text
+                        font.pixelSize: window.fontCaption
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
             }
 
             Rectangle {
