@@ -65,7 +65,9 @@ class InstallerIsoWorkflowTests(unittest.TestCase):
             "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
             workflow,
         )
-        self.assertIn("(github.event_name == 'workflow_run')", workflow)
+        self.assertIn("VARIANT: standard", workflow)
+        self.assertIn("LEOS-installer-standard-${{ steps.image.outputs.tag }}", workflow)
+        self.assertNotIn("inputs.variant", workflow)
         smoke = workflow.index("Smoke-test the packaged LEOS first-session selector")
         generate = workflow.index("Generate bootable installer ISO")
         self.assertLess(smoke, generate)
