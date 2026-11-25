@@ -1,4 +1,5 @@
 """Tests for LEOS dock favourites storage."""
+import json
 import os
 import tempfile
 import unittest
