@@ -75,6 +75,15 @@ exit 0
         )
         flatpak.chmod(0o755)
 
+        df = self.bin_dir / "df"
+        df.write_text(
+            "#!/usr/bin/bash\n"
+            "printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\\n'\n"
+            "printf '/dev/test 100000000 1 %s 1%% /home\\n' \"$AVAILABLE_KIB\"\n",
+            encoding="utf-8",
+        )
+        df.chmod(0o755)
+
         # A stub proves the bootstrap does not ask for a second consent dialog.
         kdialog = self.bin_dir / "kdialog"
         kdialog.write_text(
@@ -94,7 +103,7 @@ exit 0
     def marker(self):
         return self.state_dir / "gaming-apps-seeded-v2"
 
-    def run_setup(self, *, fail_app="", fail_remote=False, remote_url="https://dl.flathub.org/repo/"):
+    def run_setup(self, *, fail_app="", fail_remote=False, remote_url="https://dl.flathub.org/repo/", available_kib=25 * 1024 * 1024):
         env = os.environ.copy()
         env.update({
             "HOME": str(self.home),
@@ -106,6 +115,7 @@ exit 0
             "FAIL_APP": fail_app,
             "FAIL_REMOTE": "1" if fail_remote else "0",
             "REMOTE_URL": remote_url,
+            "AVAILABLE_KIB": str(available_kib),
             "DBUS_SESSION_BUS_ADDRESS": "",
         })
         return subprocess.run(
@@ -153,6 +163,15 @@ exit 0
         declared = set(re.findall(r"(?m)^    ([A-Za-z0-9_.-]+)$", block.group(1)))
         self.assertEqual(declared, EXPECTED_APPS)
         self.assertEqual(bundled, EXPECTED_APPS)
+
+    def test_skips_flatpak_transactions_when_less_than_20_gib_is_free(self):
+        result = self.run_setup(available_kib=8 * 1024)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.marker.exists())
+        self.assertFalse(any("remote-add " in line for line in self.command_lines()))
+        self.assertEqual(self.install_ids(), [])
+        log_file = self.state_dir / "gaming-apps-setup.log"
+        self.assertIn("20 GiB required", log_file.read_text(encoding="utf-8"))
 
     def test_installs_the_eight_starter_apps_without_an_extra_prompt(self):
         result = self.run_setup()

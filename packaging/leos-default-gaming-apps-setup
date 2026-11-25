@@ -103,6 +103,28 @@ for app_id in "${apps[@]}"; do
     missing_apps+=("$app_id")
 done
 
+# Eight large gaming applications (including several emulators) must never
+# consume the last free space on a small VM. Check the user's actual home
+# filesystem before adding Flathub or starting any installation transaction.
+if (( ${#missing_apps[@]} > 0 )); then
+    minimum_free_gib=20
+    available_kib="$(df -Pk "$HOME" | awk 'NR == 2 { print $4 }')"
+    if [[ ! "$available_kib" =~ ^[0-9]+$ ]]; then
+        echo "Could not determine available storage; Gaming setup will be retried."
+        exit 1
+    fi
+    minimum_free_kib=$((minimum_free_gib * 1024 * 1024))
+    if (( available_kib < minimum_free_kib )); then
+        available_gib=$((available_kib / 1024 / 1024))
+        echo "Insufficient free disk space: ${available_gib} GiB available; ${minimum_free_gib} GiB required. No new Gaming apps were installed."
+        if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && command -v notify-send >/dev/null 2>&1; then
+            notify-send --app-name="LEOS" "Espace disque insuffisant" \
+                "LEOS a besoin d'au moins ${minimum_free_gib} Gio libres pour installer les applications Gaming. Agrandis le disque puis reconnecte-toi ; aucune nouvelle application n'a été installée." || true
+        fi
+        exit 1
+    fi
+fi
+
 if (( ${#missing_apps[@]} > 0 )); then
     if ! remote_output="$("$flatpak_bin" remotes --user --columns=name,url)"; then
         echo "Could not inspect the user's Flatpak remotes; no apps were installed."

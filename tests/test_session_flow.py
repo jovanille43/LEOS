@@ -19,6 +19,28 @@ class SessionFlowTests(unittest.TestCase):
         self.assertEqual(source.count("asynchronous: true"), 2)
         self.assertEqual(source.count("smooth: true"), 2)
 
+    def test_particle_backdrop_is_shared_by_selector_and_gaming_and_respects_motion_preference(self):
+        component = ROOT / "branding" / "qml" / "ParticleBackdrop.qml"
+        self.assertTrue(component.is_file())
+        source = component.read_text(encoding="utf-8")
+        self.assertIn("Canvas {", source)
+        self.assertIn("Timer {", source)
+        self.assertIn("root.motionEnabled", source)
+        self.assertIn("root.colorA", source)
+        self.assertIn("root.colorB", source)
+
+        for path in ("launcher/qml/ModeSelector.qml", "gaming/qml/Main.qml"):
+            qml = (ROOT / path).read_text(encoding="utf-8")
+            self.assertIn('import "../../branding/qml" as Branding', qml)
+            self.assertIn("Branding.ParticleBackdrop", qml)
+            self.assertIn("motionEnabled:", qml)
+
+    def test_gaming_always_exposes_a_desktop_return_action_in_the_header(self):
+        qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('text: "RETOUR DESKTOP"', qml)
+        self.assertIn("onClicked: returnDialog.open()", qml)
+        self.assertIn("id: returnDialog", qml)
+
     def test_eden_setup_discloses_community_package_and_memory_requirements(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("paquet Flathub d'Eden est communautaire", qml)

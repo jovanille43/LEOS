@@ -16,6 +16,9 @@ class DockFavouritesTests(unittest.TestCase):
             self.assertEqual(store.items(), list(DEFAULT_PINNED_APPS))
             self.assertFalse(path.exists())
 
+    def test_mode_selector_is_part_of_the_default_dock_for_return_navigation(self):
+        self.assertIn("leos-mode-selector.desktop", DEFAULT_PINNED_APPS)
+
     def test_pin_unpin_and_reorder_persist(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "dock.json"
