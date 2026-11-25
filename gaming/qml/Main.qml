@@ -591,6 +591,18 @@ ApplicationWindow {
         color: window.color
         focus: true
 
+        // The accent wash spans the full canvas; the corner glows below add
+        // depth without making A and B feel like unrelated color islands.
+        Rectangle {
+            anchors.fill: parent
+            opacity: 0.045
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: window.accentA }
+                GradientStop { position: 1.0; color: window.accentB }
+            }
+        }
+
         Rectangle {
             width: 620; height: 620; radius: 310
             x: parent.width - width * 0.55; y: -height * 0.48
