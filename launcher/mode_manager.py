@@ -11,6 +11,7 @@ class ModeManager(QObject):
     modeRequested = Signal(str)
     statusChanged = Signal(str)
     lastModeChanged = Signal()
+    modeLaunchFailed = Signal(str)
 
     def __init__(self, settings: SettingsStore | None = None) -> None:
         super().__init__()
@@ -33,6 +34,7 @@ class ModeManager(QObject):
             return
         self.modeRequested.emit(mode)
 
+    @Slot(str)
     def setStatus(self, message: str) -> None:
         self._status = message
         self.statusChanged.emit(self._status)

@@ -29,6 +29,7 @@ ApplicationWindow {
     property date currentDate: new Date()
     property string pendingMode: ""
     property bool transitionInProgress: false
+    property bool gamingHandoffPending: false
     // The recommended LEOS profile action is focused first for keyboard and gamepad users.
     property int appearanceDialogFocusIndex: 2
     property int identityDialogFocusIndex: 0
@@ -156,7 +157,14 @@ ApplicationWindow {
             return
         }
         transitionInProgress = true
+        gamingHandoffPending = false
+        introHandoffCrossfade.stop()
+        introHandoffScreen.visible = false
+        introHandoffScreen.opacity = 0
+        introVideoOutput.visible = true
+        introVideoOutput.opacity = 1
         introOverlay.visible = true
+        introOverlay.opacity = 1
         introPlayer.source = introUrl
         introAudioOutput.muted = !modeSelectorController.soundsEnabled
         introTimeout.start()
@@ -168,9 +176,36 @@ ApplicationWindow {
             return
         const mode = pendingMode
         pendingMode = ""
-        transitionInProgress = false
         introTimeout.stop()
         introPlayer.stop()
+        if (mode === "gaming") {
+            // Keep a branded cover over Plasma until Gaming confirms that its
+            // fullscreen QML surface has rendered a frame.
+            const canCrossfade = introOverlay.visible && introVideoOutput.visible
+            transitionInProgress = true
+            gamingHandoffPending = true
+            introOverlay.visible = true
+            introOverlay.opacity = 1
+            introHandoffScreen.visible = true
+            introHandoffScreen.opacity = canCrossfade ? 0 : 1
+            if (canCrossfade) {
+                introVideoOutput.opacity = 1
+                introHandoffCrossfade.start()
+            } else {
+                introVideoOutput.visible = false
+                introVideoOutput.opacity = 1
+            }
+            modeManager.requestMode(mode)
+            return
+        }
+        transitionInProgress = false
+        gamingHandoffPending = false
+        introHandoffCrossfade.stop()
+        introHandoffScreen.visible = false
+        introHandoffScreen.opacity = 0
+        introVideoOutput.visible = true
+        introVideoOutput.opacity = 1
+        introOverlay.opacity = 1
         introOverlay.visible = false
         modeManager.requestMode(mode)
     }
@@ -1146,10 +1181,113 @@ ApplicationWindow {
             id: introVideoOutput
             anchors.fill: parent
             fillMode: VideoOutput.PreserveAspectFit
+            opacity: 1
+        }
+        ParallelAnimation {
+            id: introHandoffCrossfade
+            NumberAnimation {
+                target: introVideoOutput
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 260
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: introHandoffScreen
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 260
+                easing.type: Easing.InOutCubic
+            }
+            onFinished: introVideoOutput.visible = false
+        }
+        Rectangle {
+            id: introHandoffScreen
+            opacity: 0
+            anchors.fill: parent
+            visible: false
+            color: "#080808"
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#1A1A1A" }
+                GradientStop { position: 0.52; color: "#080808" }
+                GradientStop { position: 1.0; color: "#202020" }
+            }
+            Rectangle {
+                width: 620
+                height: width
+                radius: width / 2
+                x: parent.width * 0.62
+                y: -height * 0.48
+                color: window.colorA
+                opacity: 0.055
+            }
+            Rectangle {
+                width: 520
+                height: width
+                radius: width / 2
+                x: -width * 0.46
+                y: parent.height * 0.55
+                color: window.colorB
+                opacity: 0.05
+            }
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 18
+                Image {
+                    source: leosTheme.gamingLogoUrl
+                    asynchronous: false
+                    smooth: true
+                    fillMode: Image.PreserveAspectFit
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 320
+                    Layout.preferredHeight: 270
+                    visible: status === Image.Ready
+                }
+                Label {
+                    text: "LEOS GAMING"
+                    color: window.themeColors.text
+                    font.pixelSize: 30
+                    font.weight: Font.Black
+                    font.letterSpacing: 5
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: "PRÉPARATION DE VOTRE ESPACE DE JEU"
+                    color: window.muted
+                    font.pixelSize: 12
+                    font.letterSpacing: 2
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                BusyIndicator {
+                    running: modeSelectorController.animationsEnabled && introHandoffScreen.visible
+                    visible: modeSelectorController.animationsEnabled
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
         }
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
+        }
+    }
+
+    Connections {
+        target: modeManager
+        function onModeLaunchFailed(message) {
+            window.transitionInProgress = false
+            window.gamingHandoffPending = false
+            window.pendingMode = ""
+            introTimeout.stop()
+            introPlayer.stop()
+            introHandoffCrossfade.stop()
+            introHandoffScreen.visible = false
+            introHandoffScreen.opacity = 0
+            introVideoOutput.visible = true
+            introVideoOutput.opacity = 1
+            introOverlay.opacity = 1
+            introOverlay.visible = false
         }
     }
 
