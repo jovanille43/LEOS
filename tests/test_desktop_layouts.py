@@ -166,6 +166,31 @@ class DesktopLayoutTests(unittest.TestCase):
         self.assertIn("Préférences enregistrées localement", qml)
         self.assertIn("KDE Plasma ne sera pas modifié", qml)
 
+    def test_validate_current_file_distinguishes_first_run_and_corruption(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            self.assertIsNone(store.validate_current_file())
+            path.write_text("{broken", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                store.validate_current_file()
+            self.assertEqual(path.read_text(encoding="utf-8"), "{broken")
+
+    def test_replace_all_requires_confirmation_and_preserves_memory_on_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "desktop-layout.json"
+            store = DesktopLayoutStore(path)
+            requested = {
+                "schema_version": 1,
+                "profile": "minimal",
+                "dock": dict(PROFILES["minimal"]["dock"]),
+                "widgets_enabled": False,
+            }
+            with self.assertRaises(PermissionError):
+                store.replace_all(requested)
+            store.replace_all(requested, confirmed=True)
+            self.assertEqual(store.get("profile"), "minimal")
+            self.assertEqual(DesktopLayoutStore(path).get("profile"), "minimal")
 
 if __name__ == "__main__":
     unittest.main()

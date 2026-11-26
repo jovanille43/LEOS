@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
+from pathlib import Path
+
+from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
@@ -17,6 +19,7 @@ from desktop.plasma_adapter import build_panel_management_script
 from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
+from desktop.layout_backup import DesktopLayoutBackupManager
 from desktop.plasma_backup import PlasmaBackupManager
 from leos_core.settings_backup import SettingsBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
@@ -162,6 +165,7 @@ class ControlCenterController(QObject):
         self._settings_sync_timer.timeout.connect(self.refreshSharedSettings)
         self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
+        self.desktopLayoutBackups = DesktopLayoutBackupManager(self.desktopLayout)
         self.plasmaBackups = PlasmaBackupManager()
         self.settingsBackups = SettingsBackupManager(self.settings)
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
@@ -714,6 +718,22 @@ class ControlCenterController(QObject):
     def desktopWidgetsEnabled(self) -> bool:
         return bool(self.desktopLayout.get("widgets_enabled"))
 
+    @Property("QVariantList", notify=settingsChanged)
+    def desktopLayoutBackupEntries(self) -> list[dict[str, str]]:
+        entries = self.desktopLayoutBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "label": str(entry["created_utc"]).replace("T", " ")[:19]
+                + f" · {int(entry['size']) // 1024} Ko",
+            }
+            for entry in entries
+        ]
+
+    @Property(bool, notify=settingsChanged)
+    def hasDesktopLayoutBackup(self) -> bool:
+        return bool(self.desktopLayoutBackups.list_backups())
+
     @Property(bool, notify=settingsChanged)
     def plasmaConfigAvailable(self) -> bool:
         path = self.plasmaBackups.config_path
@@ -970,6 +990,75 @@ class ControlCenterController(QObject):
     def setDesktopWidgetsEnabled(self, enabled: bool) -> None:
         self.desktopLayout.set_widgets_enabled(enabled)
         self.settingsChanged.emit()
+
+    @Slot(result=str)
+    def createDesktopLayoutBackup(self) -> str:
+        try:
+            backup_id = self.desktopLayoutBackups.create_backup()
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "La sauvegarde du profil de dock LEOS n'a pas pu être créée. Le fichier d'origine a été conservé."
+            post_notification("Sauvegarde du dock impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Point de restauration du dock créé ({backup_id[:8]})."
+        post_notification("Profil de dock LEOS sauvegardé", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def importDesktopLayoutBackup(self, manifest_url: str) -> str:
+        try:
+            url = QUrl(manifest_url)
+            if url.scheme() and not url.isLocalFile():
+                raise ValueError("Only local LEOS backup files can be imported")
+            manifest_path = url.toLocalFile() if url.isLocalFile() else manifest_url
+            if not Path(manifest_path).is_absolute():
+                raise ValueError("Select an absolute local backup manifest")
+            backup_id = self.desktopLayoutBackups.import_backup(manifest_path)
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Cette sauvegarde de dock n'a pas pu être importée : fichier, schéma ou empreinte invalide."
+            post_notification("Import du dock impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Point de restauration du dock importé ({backup_id[:8]})."
+        post_notification("Profil de dock importé", message, "success")
+        return message
+
+    @Slot(str, str, result=str)
+    def exportDesktopLayoutBackup(self, backup_id: str, directory_url: str) -> str:
+        try:
+            url = QUrl(directory_url)
+            if url.scheme() and not url.isLocalFile():
+                raise ValueError("Only local LEOS export folders are accepted")
+            directory = url.toLocalFile() if url.isLocalFile() else directory_url
+            if not Path(directory).is_absolute():
+                raise ValueError("Select an absolute local export folder")
+            backup_path, manifest_path = self.desktopLayoutBackups.export_backup(
+                backup_id, directory
+            )
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Le profil de dock n'a pas pu être exporté. Aucun fichier existant n'a été remplacé."
+            post_notification("Export du dock impossible", message, "error")
+            return message
+        message = f"Sauvegarde du dock exportée : {manifest_path.name} et {backup_path.name}."
+        post_notification("Profil de dock exporté", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def restoreDesktopLayoutBackup(self, backup_id: str) -> str:
+        try:
+            recovery_id = self.desktopLayoutBackups.restore_backup(
+                backup_id, confirmed=True
+            )
+        except PermissionError:
+            return "Confirme explicitement la restauration du profil de dock."
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Ce point de restauration du dock est invalide ou n'a pas pu être appliqué. Le profil courant n'a pas été remplacé."
+            post_notification("Restauration du dock impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Profil de dock restauré. L'état précédent a été conservé ({recovery_id[:8]})."
+        post_notification("Profil de dock LEOS restauré", message, "success")
+        return message
 
     @Slot(result=str)
     def createPlasmaBackup(self) -> str:
