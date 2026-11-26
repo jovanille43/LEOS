@@ -34,7 +34,7 @@ def flatpak_update_args(app_id: str, scope: str) -> list[str]:
     if scope not in {"user", "system"}:
         raise ValueError("Unsupported Flatpak installation scope")
     scope_flag = "--user" if scope == "user" else "--system"
-    return ["update", scope_flag, "--assumeyes", "--app", app_id]
+    return ["update", scope_flag, "--noninteractive", "--no-deps", "--no-related", "--app", app_id]
 
 
 def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
