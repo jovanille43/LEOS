@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -162,7 +163,7 @@ class DesktopLayoutStore:
             return None
         try:
             before = os.fstat(descriptor)
-            if not __import__("stat").S_ISREG(before.st_mode):
+            if not stat.S_ISREG(before.st_mode):
                 raise OSError("LEOS desktop layout must be a regular file")
             if before.st_size <= 0 or before.st_size > MAX_LAYOUT_FILE_BYTES:
                 raise ValueError("LEOS desktop layout has an unsupported size")

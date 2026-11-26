@@ -201,3 +201,15 @@ class DesktopLayoutBackupTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_control_center_exposes_separate_dock_layout_recovery(self):
+        root = Path(__file__).resolve().parents[1]
+        controller = (root / "control_center" / "controller.py").read_text(encoding="utf-8")
+        qml = (root / "control_center" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("DesktopLayoutBackupManager(self.desktopLayout)", controller)
+        self.assertIn("def createDesktopLayoutBackup(self)", controller)
+        self.assertIn("def restoreDesktopLayoutBackup(self, backup_id: str)", controller)
+        self.assertIn("controlCenter.desktopLayoutBackupEntries", qml)
+        self.assertIn("SAUVEGARDE DU PROFIL DE DOCK LEOS", qml)
+        self.assertIn("desktopLayoutBackupRestoreDialog", qml)
