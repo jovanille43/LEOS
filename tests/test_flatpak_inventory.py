@@ -4,6 +4,8 @@ import unittest
 
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
+    flatpak_update_args,
+    flatpak_info_origin_is_flathub,
     is_trusted_flathub_remote,
     trusted_flathub_remote_url,
     parse_flatpak_inventory,
@@ -81,6 +83,29 @@ class FlatpakInventoryTests(unittest.TestCase):
                 self.assertFalse(is_trusted_flathub_remote(f"flathub {url}"))
         self.assertFalse(is_trusted_flathub_remote(""))
         self.assertEqual(trusted_flathub_remote_url("flathub https://example.com/repo/"), "")
+
+    def test_flatpak_info_origin_accepts_only_one_exact_flathub_name(self):
+        self.assertTrue(flatpak_info_origin_is_flathub("flathub\\n"))
+        self.assertTrue(flatpak_info_origin_is_flathub("  FlAtHuB  \\n"))
+        for output in ("", "other-remote\\n", "flathub\\nextra\\n", "flathub https://example.com"):
+            with self.subTest(output=output):
+                self.assertFalse(flatpak_info_origin_is_flathub(output))
+
+    def test_targeted_update_arguments_are_scoped_to_one_application(self):
+        self.assertEqual(
+            flatpak_update_args("org.example.App", "user"),
+            ["update", "--user", "--assumeyes", "--app", "org.example.App"],
+        )
+        self.assertEqual(
+            flatpak_update_args("org.example.App", "system"),
+            ["update", "--system", "--assumeyes", "--app", "org.example.App"],
+        )
+
+    def test_targeted_update_arguments_reject_invalid_ids_and_scopes(self):
+        with self.assertRaises(ValueError):
+            flatpak_update_args("not-an-app-id", "user")
+        with self.assertRaises(ValueError):
+            flatpak_update_args("org.example.App", "external")
 
     def test_named_system_installations_are_system_scope(self):
         user, system = parse_flatpak_inventory(
