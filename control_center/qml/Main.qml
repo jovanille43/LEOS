@@ -223,6 +223,26 @@ ApplicationWindow {
         onAccepted: window.desktopLayoutBackupNotice = controlCenter.restoreDesktopLayoutBackup(backupId)
     }
 
+    FileDialog {
+        id: desktopLayoutImportDialog
+        title: "Importer un point de restauration du dock LEOS"
+        nameFilters: ["Sauvegarde du dock LEOS (*.json)"]
+        fileMode: FileDialog.OpenFile
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.importDesktopLayoutBackup(selectedFile.toString())
+        }
+    }
+
+    FolderDialog {
+        id: desktopLayoutExportDialog
+        title: "Choisir le dossier d’export du profil de dock"
+        onAccepted: {
+            window.desktopLayoutBackupNotice = controlCenter.exportDesktopLayoutBackup(
+                window.selectedDesktopLayoutBackupId, selectedFolder.toString()
+            )
+        }
+    }
+
     Dialog {
         id: recoveryGuideDialog
         modal: true
@@ -1654,7 +1674,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 270
+                                Layout.preferredHeight: 350
                                 radius: 15
                                 color: window.themeColors.surface
                                 border.color: window.themeColors.border
@@ -1694,6 +1714,27 @@ ApplicationWindow {
                                             desktopLayoutBackupRestoreDialog.backupId = window.selectedDesktopLayoutBackupId
                                             desktopLayoutBackupRestoreDialog.open()
                                         }
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Button {
+                                            text: "Importer…"
+                                            Layout.fillWidth: true
+                                            onClicked: desktopLayoutImportDialog.open()
+                                        }
+                                        Button {
+                                            text: "Exporter…"
+                                            Layout.fillWidth: true
+                                            enabled: window.selectedDesktopLayoutBackupId.length > 0
+                                            onClicked: desktopLayoutExportDialog.open()
+                                        }
+                                    }
+                                    Label {
+                                        text: "L’import ajoute un point vérifié sans l’appliquer. L’export copie le manifeste et son fichier de données."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
                                     }
                                     Label {
                                         text: window.desktopLayoutBackupNotice.length > 0
