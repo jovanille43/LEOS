@@ -330,6 +330,7 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
+            self._clear_update_verification()
             self._set_status("La sortie Flatpak dépasse la limite ; le résultat n'est pas vérifiable. Vérifie l'état de l'application avant de réessayer.")
             self.operationFinished.emit(False, self._status)
             post_notification("Sortie Flatpak trop volumineuse", self._status, "warning")
@@ -551,6 +552,8 @@ class StoreController(QObject):
             self._release_flatpak_lock()
             lines = stderr.strip().splitlines()
             reason = lines[-1] if lines else "Flatpak a signalé une erreur."
+            self._verified_source_url = ""
+            self._clear_update_verification()
             self._set_status(f"Opération non terminée : {reason}")
             post_notification("Échec d’une opération Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
@@ -566,8 +569,8 @@ class StoreController(QObject):
         self._target = ""
         self._verified_source_url = ""
         self._process.kill()
-        if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
-            self._set_verification_details("Le délai de vérification Flatpak est dépassé. La source n'est pas considérée comme vérifiée.")
+        if failed_action in VERIFICATION_ACTIONS:
+            self._set_verification_details("Le délai de vérification Flatpak est dépassé. L'origine de l'application n'est pas considérée comme vérifiée.")
         if failed_action in {"install", "uninstall", "update"}:
             self._clear_update_verification()
             self._set_status(
@@ -594,8 +597,8 @@ class StoreController(QObject):
                 self._release_flatpak_lock()
             else:
                 self._process.kill()
-            if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
-                self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
+            if failed_action in VERIFICATION_ACTIONS:
+                self._set_verification_details("Erreur pendant la vérification de l'origine ou du dépôt Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
