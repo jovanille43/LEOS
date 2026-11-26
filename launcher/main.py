@@ -12,15 +12,15 @@ import sys
 import time
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from launcher.handoff import (
     create_gaming_handoff_marker,
     gaming_handoff_is_ready,
     remove_gaming_handoff_marker,
 )
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 from leos_core.settings import SettingsStore  # noqa: E402
 from launcher.mode_manager import ModeManager  # noqa: E402
