@@ -151,7 +151,7 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
 
     def test_targeted_update_requires_a_second_confirmation_and_rechecks_origin(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
-        confirm = source[source.index("def confirmUpdate"):source.index("@Slot()\\n    def refreshCatalogue")]
+        confirm = source[source.index("def confirmUpdate"):source.index("def refreshCatalogue", source.index("def confirmUpdate"))]
         self.assertIn('self._action != "update-verified"', confirm)
         self.assertIn('"recheck-update-origin"', confirm)
         self.assertIn('if action == "recheck-update-origin":', source)
@@ -183,8 +183,9 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
 
     def test_recheck_startup_errors_update_source_verification_details(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
-        self.assertIn('"verify-remote", "verify-install", "recheck-remote"', source)
-        self.assertIn("failed_action in", source)
+        self.assertIn("if failed_action in VERIFICATION_ACTIONS", source)
+        self.assertIn('"verify-update-origin"', source)
+        self.assertIn('"recheck-update-remote"', source)
 
     def test_qprocess_streams_stdout_and_stderr_while_flatpak_runs(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
