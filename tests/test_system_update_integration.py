@@ -85,6 +85,26 @@ class SystemUpdateIntegrationTests(unittest.TestCase):
         self.assertIn("Cette action reste entièrement manuelle", recovery)
         self.assertNotIn("controlCenter.runRollback", qml)
 
+    def test_native_updater_requires_preflight_acknowledgement(self):
+        qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: systemUpdateLaunchDialog", qml)
+        self.assertIn("systemUpdateLaunchDialog.open()", qml)
+        self.assertIn("OUVRIR BAZZITE UPDATER", qml)
+        self.assertIn("ferme les applications importantes", qml)
+        self.assertIn("nécessiter un redémarrage", qml)
+        dialog = qml[qml.index("id: systemUpdateLaunchDialog"):qml.index("id: recoveryGuideDialog")]
+        self.assertIn("controlCenter.openSystemUpdater()", dialog)
+        self.assertIn("aucune installation n'est lancée depuis cette fenêtre", dialog)
+
+    def test_recovery_guide_recommends_actions_from_the_live_ostree_inventory(self):
+        qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("onOpened: controlCenter.refreshPendingSystemUpdate()", qml)
+        self.assertIn("controlCenter.deploymentSnapshot.pendingCount > 0", qml)
+        self.assertIn("controlCenter.deploymentSnapshot.otherCount > 0", qml)
+        self.assertIn("l'état OSTree n'est pas vérifiable", qml)
+        self.assertIn("Aucun autre déploiement n'est actuellement confirmé", qml)
+        self.assertIn("leur présence ne garantit pas qu'ils soient démarrables", qml)
+
     def test_update_installation_remains_user_controlled(self):
         qml = (ROOT / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("OUVRIR BAZZITE UPDATER", qml)
