@@ -1261,7 +1261,8 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                 }
                 BusyIndicator {
-                    running: introHandoffScreen.visible
+                    running: modeSelectorController.animationsEnabled && introHandoffScreen.visible
+                    visible: modeSelectorController.animationsEnabled
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
