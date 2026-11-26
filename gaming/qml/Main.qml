@@ -393,11 +393,11 @@ ApplicationWindow {
                 emulatorPrerequisitesDialog.close()
             } else if (action === "left" || action === "up") {
                 emulatorPrerequisitesDialog.controllerFocusIndex =
-                        (emulatorPrerequisitesDialog.controllerFocusIndex + 3) % 4
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 6) % 7
                 focusEmulatorPrerequisiteAction()
             } else if (action === "right" || action === "down") {
                 emulatorPrerequisitesDialog.controllerFocusIndex =
-                        (emulatorPrerequisitesDialog.controllerFocusIndex + 1) % 4
+                        (emulatorPrerequisitesDialog.controllerFocusIndex + 1) % 7
                 focusEmulatorPrerequisiteAction()
             } else if (action === "confirm") {
                 activateEmulatorPrerequisiteAction()
@@ -2197,6 +2197,38 @@ ApplicationWindow {
                     }
 
                     Label {
+                        text: "CONFIGURATION DES AUTRES ÉMULATEURS"
+                        color: window.accentA
+                        font.pixelSize: window.fontCaption
+                        font.letterSpacing: 2
+                        Layout.topMargin: 8
+                    }
+                    Label {
+                        text: "PCSX2 · PlayStation 2 : ouvre PCSX2, utilise l'option d'ouverture du dossier BIOS, puis ajoute uniquement un dump BIOS provenant de ta propre console. LEOS repère un fichier .bin non vide ; il ne vérifie pas son authenticité ni son fonctionnement."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "melonDS · Nintendo DS : dans Emu Settings > DS-mode, renseigne les chemins des fichiers BIOS9, BIOS7 et firmware extraits de ta propre console. LEOS attend respectivement 4 Kio, 16 Kio et 128/256/512 Kio ; un contrôle de taille ne prouve pas qu'ils sont valides."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "RPCS3 · PlayStation 3 : ouvre RPCS3 et utilise son assistant d'installation du logiciel système officiel PS3 obtenu par tes propres moyens. L'assistant LEOS détecte ensuite une structure dev_flash attendue ; seul un lancement de test dans RPCS3 confirme la configuration."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        text: "Ces applications doivent déjà être installées pour que leur bouton fonctionne. LEOS n'installe ni ne fournit de BIOS, firmware, clés ou jeux."
+                        color: window.muted
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+
+                    Label {
                         text: "CONFIGURATION NINTENDO SWITCH — EDEN"
                         color: window.accentA
                         font.pixelSize: window.fontCaption
@@ -2287,15 +2319,11 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 10
-
                 Button {
                     id: edenOpenSetupButton
                     text: "OUVRIR EDEN"
                     Layout.fillWidth: true
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 0
-                    }
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 0
                     onClicked: leos.openEdenSetup()
                     background: Rectangle {
                         radius: 9
@@ -2310,15 +2338,78 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
+                Button {
+                    id: pcsx2OpenSetupButton
+                    text: "OUVRIR PCSX2"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 1
+                    onClicked: leos.openEmulatorSetup("net.pcsx2.PCSX2")
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface_elevated
+                        border.color: pcsx2OpenSetupButton.activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: pcsx2OpenSetupButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: pcsx2OpenSetupButton.text
+                        color: window.themeColors.text
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+            }
 
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Button {
+                    id: melonDSOpenSetupButton
+                    text: "OUVRIR MELONDS"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 2
+                    onClicked: leos.openEmulatorSetup("net.kuribo64.melonDS")
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface_elevated
+                        border.color: melonDSOpenSetupButton.activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: melonDSOpenSetupButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: melonDSOpenSetupButton.text
+                        color: window.themeColors.text
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+                Button {
+                    id: rpcs3OpenSetupButton
+                    text: "OUVRIR RPCS3"
+                    Layout.fillWidth: true
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 3
+                    onClicked: leos.openEmulatorSetup("net.rpcs3.RPCS3")
+                    background: Rectangle {
+                        radius: 9
+                        color: window.themeColors.surface_elevated
+                        border.color: rpcs3OpenSetupButton.activeFocus ? window.focusColor : window.themeColors.border
+                        border.width: rpcs3OpenSetupButton.activeFocus ? 2 : 1
+                    }
+                    contentItem: Label {
+                        text: rpcs3OpenSetupButton.text
+                        color: window.themeColors.text
+                        font.weight: Font.Bold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
                 Button {
                     id: retroArchOpenCoreUpdaterButton
                     text: "OUVRIR RETROARCH"
                     Layout.fillWidth: true
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 1
-                    }
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 4
                     onClicked: leos.openRetroArchCoreUpdater()
                     background: Rectangle {
                         radius: 9
@@ -2333,20 +2424,11 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 10
-
                 Button {
                     id: retroArchRefreshCoreStatusButton
                     text: "ACTUALISER"
                     Layout.fillWidth: true
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 2
-                    }
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 5
                     onClicked: leos.refreshRetroArchCoreStatuses()
                     background: Rectangle {
                         radius: 9
@@ -2361,15 +2443,11 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
-
                 Button {
                     id: retroArchCloseDialogButton
                     text: "FERMER"
                     Layout.fillWidth: true
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            emulatorPrerequisitesDialog.controllerFocusIndex = 3
-                    }
+                    onActiveFocusChanged: if (activeFocus) emulatorPrerequisitesDialog.controllerFocusIndex = 6
                     onClicked: emulatorPrerequisitesDialog.close()
                     background: Rectangle {
                         radius: 9
@@ -2385,7 +2463,6 @@ ApplicationWindow {
                     }
                 }
             }
-
         }
     }
 
