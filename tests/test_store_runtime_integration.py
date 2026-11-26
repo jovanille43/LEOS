@@ -141,6 +141,40 @@ class StoreRuntimeIntegrationTests(unittest.TestCase):
         self.assertIn('self._target = ""', error)
         self.assertIn('self._verified_source_url = ""', error)
 
+    def test_targeted_update_checks_installed_origin_and_scoped_flathub_remote(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn('def requestUpdate(self, row: int) -> None:', source)
+        self.assertIn('["info", scope_flag, "--show-origin", item["id"]]', source)
+        self.assertIn("flatpak_info_origin_is_flathub(stdout)", source)
+        self.assertIn('["remotes", scope_flag, "--columns=name,url"]', source)
+        self.assertIn('self._verified_update_scope = self._pending_update_scope', source)
+
+    def test_targeted_update_requires_a_second_confirmation_and_rechecks_origin(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        confirm = source[source.index("def confirmUpdate"):source.index("@Slot()\\n    def refreshCatalogue")]
+        self.assertIn('self._action != "update-verified"', confirm)
+        self.assertIn('"recheck-update-origin"', confirm)
+        self.assertIn('if action == "recheck-update-origin":', source)
+        self.assertIn('if action == "recheck-update-remote":', source)
+        self.assertIn('remote_url == self._verified_source_url', source)
+        self.assertIn("flatpak_update_args(target, scope)", source)
+
+    def test_targeted_update_has_its_own_timeout_and_safe_completion_message(self):
+        source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
+        self.assertIn('"update": 30 * 60 * 1000', source)
+        self.assertIn('{"install", "uninstall", "update"}', source)
+        self.assertIn("Flatpak peut n'avoir trouvé aucune nouvelle version", source)
+        self.assertIn("self.refreshInstalled()", source)
+
+    def test_store_exposes_a_verified_targeted_update_action_for_installed_apps(self):
+        qml = (ROOT / "shop/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn('visible: detailsPane.isInstalled && !detailsPane.bundled', qml)
+        self.assertIn('store.requestUpdate(window.selectedRow)', qml)
+        self.assertIn('store.confirmUpdate(window.selectedRow)', qml)
+        self.assertIn('updateVerifyDialog.open()', qml)
+        self.assertIn('VÉRIFIER LES MISES À JOUR', qml)
+        self.assertIn('METTRE À JOUR CETTE APPLICATION', qml)
+
     def test_flatpak_process_start_does_not_block_the_gui_thread(self):
         source = (ROOT / "shop/controller.py").read_text(encoding="utf-8")
         self.assertIn("self._set_busy(True)", source)
