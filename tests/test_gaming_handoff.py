@@ -93,6 +93,10 @@ class GamingHandoffIntegrationTests(unittest.TestCase):
         self.assertIn("function onModeLaunchFailed(message)", source)
         self.assertIn("gamingHandoffPending = true", source)
         self.assertIn("introHandoffCrossfade.start()", source)
+        self.assertIn(
+            "running: modeSelectorController.animationsEnabled && introHandoffScreen.visible",
+            source,
+        )
 
 
 if __name__ == "__main__":
