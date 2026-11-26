@@ -270,7 +270,7 @@ class EmulatorPrerequisiteTests(unittest.TestCase):
         self.assertIn('leos.openEmulatorSetup("net.rpcs3.RPCS3")', qml)
         self.assertIn('CONFIGURATION DES AUTRES ÉMULATEURS', qml)
         self.assertIn('Emu Settings > DS-mode', qml)
-        self.assertIn('firmware PS3 obtenu par tes propres moyens', qml)
+        self.assertIn('logiciel système officiel PS3 obtenu par tes propres moyens', qml)
         self.assertIn('leos.openEdenSetup()', qml)
         self.assertIn('Tools > Install Decryption Keys', qml)
         self.assertIn('Tools > Install Firmware', qml)
