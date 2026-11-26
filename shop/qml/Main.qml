@@ -935,7 +935,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Label {
-                text: "Seule cette application sera ciblée. Flatpak peut également actualiser les dépendances nécessaires. Une installation système peut demander une autorisation administrateur."
+                text: "Seule cette application sera ciblée. Les dépendances et extensions ne seront pas mises à jour implicitement ; elles pourront nécessiter une opération séparée. Une installation système peut demander une autorisation administrateur."
                 color: window.muted
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
