@@ -34,12 +34,14 @@ class SettingsBackupTests(unittest.TestCase):
         settings.set_many({
             "theme_color_a": color,
             "theme_color_b": str(settings.get("theme_color_b", "#D0D0D0")),
+            "theme_colors_configured": True,
         })
 
     def test_create_backup_is_private_and_contains_complete_settings(self) -> None:
         self.settings.set_many({
             "theme_color_a": "#112233",
             "theme_color_b": "#AABBCC",
+            "theme_colors_configured": True,
             "sounds_enabled": False,
         })
         backup_id = self.manager.create_backup()
@@ -63,12 +65,14 @@ class SettingsBackupTests(unittest.TestCase):
         self.settings.set_many({
             "theme_color_a": "#112233",
             "theme_color_b": "#AABBCC",
+            "theme_colors_configured": True,
             "sounds_enabled": False,
         })
         backup_id = self.manager.create_backup()
         self.settings.set_many({
             "theme_color_a": "#445566",
             "theme_color_b": "#778899",
+            "theme_colors_configured": True,
             "sounds_enabled": True,
         })
 
@@ -336,6 +340,7 @@ class SettingsBackupTests(unittest.TestCase):
         self.settings.set_many({
             "theme_color_a": "#123456",
             "theme_color_b": "#ABCDEF",
+            "theme_colors_configured": True,
             "sounds_enabled": False,
         })
         backup_id = self.manager.create_backup()
