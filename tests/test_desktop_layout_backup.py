@@ -205,9 +205,15 @@ class DesktopLayoutBackupTests(unittest.TestCase):
         self.assertIn("DesktopLayoutBackupManager(self.desktopLayout)", controller)
         self.assertIn("def createDesktopLayoutBackup(self)", controller)
         self.assertIn("def restoreDesktopLayoutBackup(self, backup_id: str)", controller)
+        self.assertIn("def importDesktopLayoutBackup(self, manifest_url: str)", controller)
+        self.assertIn("def exportDesktopLayoutBackup(self, backup_id: str, directory_url: str)", controller)
         self.assertIn("controlCenter.desktopLayoutBackupEntries", qml)
         self.assertIn("SAUVEGARDE DU PROFIL DE DOCK LEOS", qml)
         self.assertIn("desktopLayoutBackupRestoreDialog", qml)
+        self.assertIn("FileDialog {", qml)
+        self.assertIn("FolderDialog {", qml)
+        self.assertIn("importDesktopLayoutBackup(selectedFile.toString())", qml)
+        self.assertIn("exportDesktopLayoutBackup(", qml)
 
 if __name__ == "__main__":
     unittest.main()
