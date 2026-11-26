@@ -81,16 +81,12 @@ jobs:
         run: |
           set -euo pipefail
           required_assets=(
-            branding/desktop-logo.jpeg
-            branding/gaming-logo.jpeg
             branding/desktop-logo.png
             branding/gaming-logo.png
             branding/desktop-wallpaper-logo.png
             branding/gaming-wallpaper-logo.png
-            branding/reference-comparison.jpeg
             branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
-            branding/animations/gaming-roar-reference.mp4
             branding/wallpapers/desktop-leos.svg
             branding/wallpapers/gaming-leos.svg
           )

@@ -22,7 +22,7 @@ Le sélecteur QML charge les deux PNG transparents avec chargement asynchrone. L
 | `branding/wallpapers/desktop-leos.svg` | Fond source LEOS Desktop 4K (3840 × 2160), lion seul ; accents d'origine utilisés uniquement comme points de transformation A/B |
 | `branding/wallpapers/gaming-leos.svg` | Fond source LEOS Gaming 4K (3840 × 2160), lion avec manette ; accents d'origine utilisés uniquement comme points de transformation A/B |
 
-Chaque SVG référence la variante PNG transparente correspondante par un lien relatif (`../desktop-wallpaper-logo.png` ou `../gaming-wallpaper-logo.png`). Le canevas 16:9 conserve le cadrage du fond sans rectangle JPEG ; les PNG cadrés séparés servent aux interfaces. La recette copie l'ensemble de `branding/` vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
+Chaque SVG référence la variante PNG transparente correspondante par un lien relatif (`../desktop-wallpaper-logo.png` ou `../gaming-wallpaper-logo.png`). Le canevas 16:9 conserve le cadrage du fond sans rectangle JPEG ; les PNG cadrés séparés servent aux interfaces. La recette copie explicitement les ressources nécessaires vers `/usr/share/leos/branding/`, ce qui conserve ces chemins relatifs, sans embarquer les fichiers sources et références. Au premier démarrage, LEOS génère des variantes privées recolorées à partir des couleurs A/B choisies ; seule la variante personnalisée Desktop est appliquée après confirmation et sauvegarde Plasma. Les accents des SVG d'origine sont des entrées techniques de recoloration, jamais une palette utilisateur imposée. Le rendu SVG avec image liée doit encore être validé dans une session KDE réelle.
 
 ## Animations intégrées
 
@@ -38,11 +38,11 @@ Le sélecteur et Gaming utilisent Qt Multimedia. Les pistes audio des vidéos so
 
 ## Packaging
 
-La recette `recipes/recipe.yml` copie l'intégralité de `branding/` vers `/usr/share/leos/branding/`. Depuis les QML installés sous `/usr/share/leos/launcher/qml/` et `/usr/share/leos/gaming/qml/`, les chemins relatifs `../../branding/` résolvent vers ce dossier.
+La recette `recipes/common-modules.yml` copie uniquement les ressources nécessaires à l'exécution vers `/usr/share/leos/branding/`. Depuis les QML installés sous `/usr/share/leos/launcher/qml/` et `/usr/share/leos/gaming/qml/`, les chemins relatifs `../../branding/` résolvent vers ce dossier.
 
 ## Intégrité des fichiers déployés
 
-Le fichier `branding/DEPLOYED_SHA256SUMS` contient les SHA-256 des douze ressources effectivement présentes dans le dépôt. Les trois JPEG sources ont été comparés aux originaux reçus : leurs empreintes correspondent exactement. Les quatre PNG sont des variantes dérivées et leurs canaux alpha ainsi que leurs proportions sont vérifiés par les tests. Les trois vidéos hébergées ont des empreintes différentes de celles des vidéos originales fournies dans la conversation ; elles sont donc identifiées comme versions déployées distinctes, sans prétendre qu'elles sont binaires-identiques aux sources. Les deux SVG sont également suivis dans ce manifeste. Les workflows de validation et de publication vérifient désormais ces empreintes avant de poursuivre.
+Le fichier `branding/DEPLOYED_SHA256SUMS` suit uniquement les huit ressources graphiques et vidéos nécessaires à l'exécution. Les JPEG sources officiels restent dans le dépôt pour régénérer les PNG transparents ; `reference-comparison.jpeg` et `gaming-roar-reference.mp4` sont des références internes non embarquées. Les empreintes des fichiers déployés sont contrôlées avant la construction et la publication.
 
 ## État des fichiers présents sur GitHub
 

@@ -124,7 +124,6 @@ jobs:
           videos=(
             branding/animations/desktop-intro.mov
             branding/animations/gaming-intro.mp4
-            branding/animations/gaming-roar-reference.mp4
           )
           for video in "${videos[@]}"; do
             test -s "${video}"
@@ -156,7 +155,6 @@ jobs:
             branding/reference-comparison.jpeg \
             branding/animations/desktop-intro.mov \
             branding/animations/gaming-intro.mp4 \
-            branding/animations/gaming-roar-reference.mp4 \
             branding/wallpapers/desktop-leos.svg \
             branding/wallpapers/gaming-leos.svg
 

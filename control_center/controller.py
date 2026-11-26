@@ -18,6 +18,7 @@ from desktop.dock_favourites import DockFavourites
 from desktop.plasma_runner import execute_plasma_script
 from desktop.layouts import DesktopLayoutStore
 from desktop.plasma_backup import PlasmaBackupManager
+from leos_core.settings_backup import SettingsBackupManager
 from desktop.plasma_inspector import inspect_plasma_config, build_layout_plan, format_layout_report
 from gaming.backend.system_monitor import SystemMonitor
 from leos_core.settings import SettingsStore
@@ -162,6 +163,7 @@ class ControlCenterController(QObject):
         self._settings_sync_timer.start()
         self.desktopLayout = DesktopLayoutStore()
         self.plasmaBackups = PlasmaBackupManager()
+        self.settingsBackups = SettingsBackupManager(self.settings)
         self._plasma_layout_tasks: dict[str, _PlasmaScriptTask] = {}
         self.kdeColorSchemes = KdeColorSchemeManager()
         self.plasmaStyle = PlasmaStyleManager()
@@ -984,6 +986,59 @@ class ControlCenterController(QObject):
         self.settingsChanged.emit()
         message = f"Sauvegarde Plasma créée ({backup_id[:8]})."
         post_notification("Sauvegarde Plasma créée", message, "success")
+        return message
+
+    @Property("QVariantList", notify=settingsChanged)
+    def settingsBackupEntries(self) -> list[dict[str, str]]:
+        """Return only integrity-checked LEOS preference restore points."""
+        entries = self.settingsBackups.list_backups()
+        return [
+            {
+                "backupId": str(entry["backup_id"]),
+                "label": (
+                    str(entry["created_utc"]).replace("T", " ")[:19]
+                    + f" · {int(entry['size']) // 1024} Ko"
+                ),
+            }
+            for entry in entries
+        ]
+
+    @Property(bool, notify=settingsChanged)
+    def hasSettingsBackup(self) -> bool:
+        return bool(self.settingsBackups.list_backups())
+
+    @Slot(result=str)
+    def createSettingsBackup(self) -> str:
+        """Create a private, checksum-verified snapshot of LEOS preferences."""
+        try:
+            backup_id = self.settingsBackups.create_backup()
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "La sauvegarde des préférences LEOS n'a pas pu être créée. Vérifie l'espace disponible et l'intégrité des paramètres."
+            post_notification("Sauvegarde LEOS impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Point de restauration LEOS créé ({backup_id[:8]})."
+        post_notification("Préférences LEOS sauvegardées", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def restoreSettingsBackup(self, backup_id: str) -> str:
+        """Restore a verified snapshot only after the QML confirmation dialog."""
+        try:
+            recovery_id = self.settingsBackups.restore_backup(
+                backup_id, confirmed=True
+            )
+            self._shared_settings_snapshot = self._read_shared_settings_snapshot()
+            self._effective_appearance = resolve_appearance_mode(
+                str(self.settings.get("appearance_mode", "dark"))
+            )
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Ce point de restauration est invalide ou n'a pas pu être appliqué. Les préférences actives n'ont pas été remplacées."
+            post_notification("Restauration LEOS impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Préférences LEOS restaurées. L'état précédent a été conservé ({recovery_id[:8]})."
+        post_notification("Préférences LEOS restaurées", message, "success")
         return message
 
     @Slot(result=str)
