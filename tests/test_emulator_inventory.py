@@ -144,6 +144,24 @@ class EmulatorInventoryTests(unittest.TestCase):
                 )
                 self.assertEqual(command, ["/usr/bin/flatpak", "run", app_id])
 
+    def test_frontend_command_opens_only_deployed_pcsx2_melonds_and_rpcs3(self):
+        self.which_map["flatpak"] = "/usr/bin/flatpak"
+        app_ids = (
+            "net.pcsx2.PCSX2",
+            "net.kuribo64.melonDS",
+            "net.rpcs3.RPCS3",
+        )
+        for app_id in app_ids:
+            with self.subTest(app_id=app_id):
+                self.deploy(self.data_home / "flatpak/app", app_id)
+                command = build_emulator_frontend_command(
+                    app_id,
+                    which=self.lookup,
+                    data_home=self.data_home,
+                    system_flatpak_root=self.system_root,
+                )
+                self.assertEqual(command, ["/usr/bin/flatpak", "run", app_id])
+
     def test_frontend_command_never_guesses_or_runs_uninstalled_emulator(self):
         self.which_map["flatpak"] = "/usr/bin/flatpak"
         command = build_emulator_frontend_command(
