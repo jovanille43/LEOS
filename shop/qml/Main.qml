@@ -699,6 +699,36 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
 
                         Button {
+                            id: updateButton
+                            visible: detailsPane.isInstalled && !detailsPane.bundled
+                            Layout.fillWidth: true
+                            implicitHeight: 42
+                            enabled: detailsPane.appId.length > 0 && !store.busy
+                            text: "VÉRIFIER LES MISES À JOUR"
+                            Accessible.name: "Vérifier les mises à jour de " + detailsPane.appName
+                            Accessible.description: "Vérifie l'origine de cette installation. Une seconde confirmation sera demandée avant la mise à jour ciblée."
+                            onClicked: store.requestUpdate(window.selectedRow)
+                            background: Rectangle {
+                                radius: 11
+                                color: updateButton.down
+                                    ? window.themeColors.surface_elevated
+                                    : window.themeColors.surface
+                                border.width: updateButton.activeFocus ? 2 : 1
+                                border.color: updateButton.activeFocus
+                                    ? window.themeColors.text : window.themeColors.border
+                            }
+                            contentItem: Label {
+                                text: updateButton.text
+                                color: updateButton.enabled ? window.themeColors.text : window.muted
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                letterSpacing: 0.8
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+
+                        Button {
                             id: installRemoveButton
                             Layout.fillWidth: true
                             implicitHeight: 48
@@ -818,9 +848,14 @@ ApplicationWindow {
     Connections {
         target: store
         function onOperationFinished(success, message) {
-            if (!success || !message.includes("disponible sur Flathub"))
+            if (!success)
                 return
-            verifyDialog.open()
+            if (message.includes("mise à jour ciblée est possible")) {
+                updateVerifyDialog.open()
+                return
+            }
+            if (message.includes("disponible sur Flathub"))
+                verifyDialog.open()
         }
         function onCatalogUpdated() {
             if (window.selectedRow < 0)
@@ -866,6 +901,53 @@ ApplicationWindow {
                 onClicked: {
                     verifyDialog.close()
                     store.confirmInstall(window.selectedRow)
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: updateVerifyDialog
+        title: "Mise à jour vérifiée"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 480
+        background: Rectangle {
+            radius: 16
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
+        }
+        ColumnLayout {
+            width: parent.width
+            spacing: 12
+            Label {
+                text: "LEOS a confirmé que " + detailsPane.appName
+                    + " provient du dépôt Flathub configuré pour son installation."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: store.verificationDetails
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: "Seule cette application sera ciblée. Flatpak peut également actualiser les dépendances nécessaires. Une installation système peut demander une autorisation administrateur."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                text: "METTRE À JOUR CETTE APPLICATION"
+                Layout.fillWidth: true
+                implicitHeight: 44
+                enabled: !store.busy
+                onClicked: {
+                    updateVerifyDialog.close()
+                    store.confirmUpdate(window.selectedRow)
                 }
             }
         }
