@@ -305,8 +305,6 @@ ApplicationWindow {
                         font.pixelSize: 16
                     }
                 }
-            }
-
                 Button {
                     id: clearFiltersButton
                     text: "EFFACER"
@@ -403,8 +401,7 @@ ApplicationWindow {
                                 width: ListView.view.width
                                 height: visible ? 84 : 0
                                 visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
-                                    && window.matchesSearch(name, appId, category, description, source,
-                                                               compatibility, operationNote)
+                                    && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
                                 radius: 12
                                 gradient: Gradient {
                                     GradientStop {
