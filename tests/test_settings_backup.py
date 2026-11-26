@@ -28,6 +28,14 @@ class SettingsBackupTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    @staticmethod
+    def _set_theme_color_a(settings: SettingsStore, color: str) -> None:
+        # LEOS validates the two accent values as one atomic preference pair.
+        settings.set_many({
+            "theme_color_a": color,
+            "theme_color_b": str(settings.get("theme_color_b", "#D0D0D0")),
+        })
+
     def test_create_backup_is_private_and_contains_complete_settings(self) -> None:
         self.settings.set_many({
             "theme_color_a": "#112233",
@@ -75,7 +83,7 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertTrue(recovery["settings"]["sounds_enabled"])
 
     def test_verified_backup_can_recover_a_corrupt_settings_file(self) -> None:
-        self.settings.set("theme_color_a", "#123456")
+        self._set_theme_color_a(self.settings, "#123456")
         backup_id = self.manager.create_backup()
         corrupt_bytes = b"{broken json"
         self.settings_path.write_bytes(corrupt_bytes)
@@ -106,7 +114,7 @@ class SettingsBackupTests(unittest.TestCase):
         self.assertFalse(self.backup_dir.exists())
 
     def test_restore_quarantines_empty_corrupt_settings_before_replacement(self) -> None:
-        self.settings.set("theme_color_a", "#112233")
+        self._set_theme_color_a(self.settings, "#112233")
         backup_id = self.manager.create_backup()
         self.settings_path.write_bytes(b"")
 
@@ -137,7 +145,7 @@ class SettingsBackupTests(unittest.TestCase):
     def test_restore_refuses_to_replace_oversized_corrupt_settings(self) -> None:
         from leos_core.settings import MAX_SETTINGS_BYTES
 
-        self.settings.set("theme_color_a", "#123456")
+        self._set_theme_color_a(self.settings, "#123456")
         backup_id = self.manager.create_backup()
         oversized = b"x" * (MAX_SETTINGS_BYTES + 1)
         self.settings_path.write_bytes(oversized)
@@ -213,9 +221,9 @@ class SettingsBackupTests(unittest.TestCase):
             self.manager.restore_backup(backup_id, confirmed=True)
 
     def test_older_verified_backup_can_be_restored_without_losing_current_state(self) -> None:
-        self.settings.set("theme_color_a", "#112233")
+        self._set_theme_color_a(self.settings, "#112233")
         older_backup = self.manager.create_backup()
-        self.settings.set("theme_color_a", "#445566")
+        self._set_theme_color_a(self.settings, "#445566")
         newer_backup = self.manager.create_backup()
 
         recovery_backup = self.manager.restore_backup(older_backup, confirmed=True)
@@ -232,7 +240,7 @@ class SettingsBackupTests(unittest.TestCase):
 
         backup_ids = []
         for index in range(MAX_RETAINED_BACKUPS):
-            self.settings.set("theme_color_a", f"#{index + 1:06X}")
+            self._set_theme_color_a(self.settings, f"#{index + 1:06X}")
             backup_ids.append(self.manager.create_backup())
         selected_backup = backup_ids[0]
         newest_colour = f"#{MAX_RETAINED_BACKUPS:06X}"
@@ -392,7 +400,7 @@ class SettingsBackupTests(unittest.TestCase):
             local_path,
         )
         for index in range(MAX_RETAINED_BACKUPS):
-            local_manager.settings.set("theme_color_a", f"#{index + 100:06X}")
+            self._set_theme_color_a(local_manager.settings, f"#{index + 100:06X}")
             local_manager.create_backup()
 
         imported = local_manager.import_backup(external_dir / f"{external_id}.json")
