@@ -65,6 +65,12 @@ class GamingHandoffMarkerTests(unittest.TestCase):
 
 
 class GamingHandoffIntegrationTests(unittest.TestCase):
+    def test_launcher_adds_project_root_before_importing_handoff_package(self):
+        source = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
+        root_bootstrap = source.index("if str(PROJECT_ROOT) not in sys.path")
+        handoff_import = source.index("from launcher.handoff import")
+        self.assertLess(root_bootstrap, handoff_import)
+
     def test_launcher_waits_for_a_frame_and_has_a_bounded_failure_path(self) -> None:
         source = (ROOT / "launcher/main.py").read_text(encoding="utf-8")
         self.assertIn("create_gaming_handoff_marker()", source)
