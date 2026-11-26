@@ -45,7 +45,10 @@ ApplicationWindow {
             const item = store.catalogItem(row)
             if (!item)
                 continue
-            if (categoryFilter.currentText !== "Toutes" && item.category !== categoryFilter.currentText)
+            if (categoryFilter.currentText === "Sélection LEOS" && item.recommended !== true)
+                continue
+            if (categoryFilter.currentText !== "Toutes" && categoryFilter.currentText !== "Sélection LEOS"
+                && item.category !== categoryFilter.currentText)
                 continue
             if (matchesSearch(item.name, item.id, item.category, item.description,
                               item.source, item.compatibility, item.operation_note))
@@ -73,9 +76,11 @@ ApplicationWindow {
         detailsPane.isInstalled = false
         detailsPane.installedScope = ""
         detailsPane.bundled = false
+        detailsPane.recommended = false
+        detailsPane.recommendationReason = ""
     }
 
-    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled) {
+    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled, recommended, recommendationReason) {
         selectedRow = row
         detailsPane.appId = id
         detailsPane.appName = name
@@ -87,6 +92,8 @@ ApplicationWindow {
         detailsPane.isInstalled = installed
         detailsPane.installedScope = scope
         detailsPane.bundled = bundled
+        detailsPane.recommended = recommended
+        detailsPane.recommendationReason = recommendationReason
     }
 
     Rectangle {
@@ -278,7 +285,7 @@ ApplicationWindow {
                     id: categoryFilter
                     Layout.preferredWidth: 190
                     Layout.preferredHeight: 48
-                    model: ["Toutes"].concat(catalogModel.availableCategories)
+                    model: ["Toutes", "Sélection LEOS"].concat(catalogModel.availableCategories)
                     enabled: !store.busy
                     Accessible.name: "Filtrer par catégorie"
                     onCurrentTextChanged: window.clearSelection()
@@ -396,11 +403,15 @@ ApplicationWindow {
                                 required property bool installed
                                 required property string installedScope
                                 required property bool bundled
+                                required property bool recommended
+                                required property string recommendationReason
                                 required property int index
 
                                 width: ListView.view.width
                                 height: visible ? 84 : 0
-                                visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
+                                visible: (categoryFilter.currentText === "Toutes"
+                                    || (categoryFilter.currentText === "Sélection LEOS" && recommended)
+                                    || category === categoryFilter.currentText)
                                     && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
                                 radius: 12
                                 gradient: Gradient {
@@ -516,7 +527,7 @@ ApplicationWindow {
                                     contentItem: Item { }
                                     onClicked: window.selectApp(index, appId, name, category, description, source,
                                                                 compatibility, operationNote, installed,
-                                                                installedScope, bundled)
+                                                                installedScope, bundled, recommended, recommendationReason)
                                 }
                             }
 
@@ -548,6 +559,8 @@ ApplicationWindow {
                     property bool isInstalled: false
                     property string installedScope: ""
                     property bool bundled: false
+                    property bool recommended: false
+                    property string recommendationReason: ""
                     Layout.preferredWidth: window.width < 1080 ? 300 : 360
                     Layout.minimumWidth: 280
                     Layout.fillHeight: true
@@ -619,6 +632,15 @@ ApplicationWindow {
                             font.pixelSize: 10
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
+                        }
+                        Label {
+                            visible: detailsPane.recommended
+                            text: "SÉLECTION LEOS · " + detailsPane.recommendationReason
+                            color: window.accentB
+                            font.pixelSize: 10
+                            font.weight: Font.DemiBold
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
                         }
                         Label {
                             text: detailsPane.appDescription
