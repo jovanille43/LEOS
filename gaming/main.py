@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from backend.controller import GamingController  # noqa: E402
 from backend.instance_lock import acquire_instance_lock  # noqa: E402
 from desktop.notifications import post_notification  # noqa: E402
 from desktop.theme_controller import ThemeController  # noqa: E402
+from launcher.handoff import mark_gaming_handoff_ready  # noqa: E402
 
 
 def main() -> int:
@@ -67,6 +69,26 @@ def _run_locked_session(app: QGuiApplication, _instance_lock) -> int:
         controller.shutdown()
         theme.shutdown()
         return 1
+
+    # Loading QML is not enough: keep the selector cover until the compositor
+    # has actually swapped a frame from the fullscreen Gaming window.
+    ready_path = os.environ.pop("LEOS_HANDOFF_READY_FILE", "")
+    if ready_path:
+        root_window = engine.rootObjects()[0]
+        announced = False
+
+        def announce_gaming_ready() -> None:
+            nonlocal announced
+            if announced:
+                return
+            announced = True
+            try:
+                root_window.frameSwapped.disconnect(announce_gaming_ready)
+            except (RuntimeError, TypeError):
+                pass
+            mark_gaming_handoff_ready(ready_path)
+
+        root_window.frameSwapped.connect(announce_gaming_ready)
 
     print("LEOS Gaming QML loaded successfully", flush=True)
 

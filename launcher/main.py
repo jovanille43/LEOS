@@ -6,9 +6,17 @@ KDE autostart uses --select to show the mode picker after login. Without
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+from launcher.handoff import (
+    create_gaming_handoff_marker,
+    gaming_handoff_is_ready,
+    remove_gaming_handoff_marker,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -21,13 +29,18 @@ from desktop.notifications import post_notification  # noqa: E402
 from desktop.theme_controller import ThemeController  # noqa: E402
 
 
-def start_gaming() -> subprocess.Popen[bytes] | None:
+def start_gaming(ready_file: Path | None = None) -> subprocess.Popen[bytes] | None:
+    """Launch Gaming and optionally wait for its first rendered frame."""
     gaming_entry = PROJECT_ROOT / "gaming" / "main.py"
     if not gaming_entry.is_file():
         return None
+    environment = os.environ.copy()
+    if ready_file is not None:
+        environment["LEOS_HANDOFF_READY_FILE"] = str(ready_file)
     return subprocess.Popen(
         [sys.executable, str(gaming_entry)],
         cwd=str(gaming_entry.parent),
+        env=environment,
         start_new_session=True,
         close_fds=True,
     )
@@ -66,7 +79,7 @@ def main() -> int:
                 return 1
         return 0
 
-    from PySide6.QtCore import QUrl
+    from PySide6.QtCore import QUrl, QTimer
     from PySide6.QtGui import QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine
 
@@ -80,15 +93,58 @@ def main() -> int:
 
     def handle_mode(mode: str) -> None:
         if mode == "gaming":
+            ready_file: Path | None = None
             try:
-                process = start_gaming()
+                ready_file = create_gaming_handoff_marker()
+                process = start_gaming(ready_file)
                 if process is None:
+                    remove_gaming_handoff_marker(ready_file)
                     manager.setStatus("L'application Gaming n'est pas encore installée.")
+                    manager.modeLaunchFailed.emit(manager.status)
                     return
             except OSError as error:
-                manager.setStatus(f"Impossible de lancer Gaming Mode : {error}")
+                if ready_file is not None:
+                    remove_gaming_handoff_marker(ready_file)
+                message = f"Impossible de lancer Gaming Mode : {error}"
+                manager.setStatus(message)
+                manager.modeLaunchFailed.emit(message)
                 return
+
+            # Keep the selector's branded cover over Plasma until the Gaming
+            # window confirms that Qt Quick has swapped its first real frame.
             selected_mode["value"] = "gaming"
+            deadline = time.monotonic() + 18.0
+            handoff_timer = QTimer(app)
+            handoff_timer.setInterval(100)
+
+            def check_gaming_ready() -> None:
+                if gaming_handoff_is_ready(ready_file):
+                    handoff_timer.stop()
+                    remove_gaming_handoff_marker(ready_file)
+                    app.quit()
+                    return
+                if process.poll() is not None or time.monotonic() >= deadline:
+                    handoff_timer.stop()
+                    remove_gaming_handoff_marker(ready_file)
+                    if process.poll() is None:
+                        process.terminate()
+                        QTimer.singleShot(
+                            2000,
+                            lambda: process.kill() if process.poll() is None else None,
+                        )
+                    selected_mode["value"] = ""
+                    message = (
+                        "LEOS Gaming n'a pas confirmé l'affichage de son interface. "
+                        "Le bureau reste accessible ; réessaie depuis le sélecteur."
+                    )
+                    manager.setStatus(message)
+                    manager.modeLaunchFailed.emit(message)
+
+            handoff_timer.timeout.connect(check_gaming_ready)
+            handoff_timer.start()
+            check_gaming_ready()
+            return
+
         if mode == "desktop":
             selected_mode["value"] = "desktop"
             remembered = manager.rememberMode("desktop")
