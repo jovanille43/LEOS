@@ -22,7 +22,7 @@ _REQUIRED_FIELDS = frozenset({
     "id", "name", "category", "description", "source",
     "compatibility", "operation_note",
 })
-_ALLOWED_FIELDS = _REQUIRED_FIELDS | {"bundled"}
+_ALLOWED_FIELDS = _REQUIRED_FIELDS | {"bundled", "recommended", "recommendation_reason"}
 
 
 def catalog_categories(items: list[dict[str, Any]]) -> list[str]:
@@ -104,6 +104,19 @@ def load_catalog(path: Path) -> list[dict[str, Any]]:
             raise ValueError("Identifiant d'application invalide ou dupliqué")
         if "bundled" in item and type(item["bundled"]) is not bool:
             raise ValueError("Le champ bundled doit être booléen")
+        if "recommended" in item and type(item["recommended"]) is not bool:
+            raise ValueError("Le champ recommended doit être booléen")
+        if item.get("recommended") is True:
+            reason = item.get("recommendation_reason")
+            if (
+                not isinstance(reason, str)
+                or not reason.strip()
+                or len(reason) > 280
+                or any(ord(character) < 32 and character not in "\\t\\n" for character in reason)
+            ):
+                raise ValueError("Le motif de recommandation est invalide")
+        elif "recommendation_reason" in item:
+            raise ValueError("Un motif de recommandation exige recommended=true")
         seen_ids.add(app_id)
         items.append(dict(item))
     return items
