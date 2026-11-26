@@ -65,6 +65,7 @@ ApplicationWindow {
         selectedRow = -1
         detailsPane.appId = ""
         detailsPane.appName = "Choisis une application"
+        detailsPane.appCategory = ""
         detailsPane.appDescription = "Sélectionne une application pour consulter sa fiche et ses options."
         detailsPane.appSource = ""
         detailsPane.appCompatibility = ""
@@ -74,10 +75,11 @@ ApplicationWindow {
         detailsPane.bundled = false
     }
 
-    function selectApp(row, id, name, description, source, compatibility, note, installed, scope, bundled) {
+    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled) {
         selectedRow = row
         detailsPane.appId = id
         detailsPane.appName = name
+        detailsPane.appCategory = category
         detailsPane.appDescription = description
         detailsPane.appSource = source
         detailsPane.appCompatibility = compatibility
@@ -90,144 +92,217 @@ ApplicationWindow {
     Rectangle {
         anchors.fill: parent
         color: window.color
+        clip: true
+
         Rectangle {
-            width: 500
-            height: 500
-            radius: 250
-            x: parent.width - width * 0.52
-            y: -height * 0.5
+            width: 520
+            height: width
+            radius: width / 2
+            x: parent.width - width * 0.58
+            y: -height * 0.68
             color: window.themeColors.accent_primary
             opacity: 0.05
         }
         Rectangle {
-            width: 520
-            height: 520
-            radius: 260
-            x: parent.width - width * 0.58
-            y: -height * 0.42
-            color: window.themeColors.text
-            opacity: 0.018
-        }
-        Rectangle {
-            width: 460
-            height: 460
-            radius: 230
-            x: -width * 0.48
-            y: parent.height - height * 0.52
+            width: 410
+            height: width
+            radius: width / 2
+            x: -width * 0.55
+            y: parent.height * 0.68
             color: window.themeColors.accent_secondary
             opacity: 0.04
         }
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: window.width < 1080 ? 18 : 30
-            spacing: window.width < 1080 ? 12 : 18
+            spacing: 15
 
             RowLayout {
                 Layout.fillWidth: true
+                Layout.preferredHeight: 58
+                spacing: 14
+
+                Image {
+                    id: storeLogo
+                    source: leosTheme.desktopLogoUrl
+                    asynchronous: true
+                    smooth: true
+                    fillMode: Image.PreserveAspectFit
+                    Layout.preferredWidth: 78
+                    Layout.preferredHeight: 50
+                    visible: status === Image.Ready
+                }
+
                 ColumnLayout {
-                    spacing: 3
+                    spacing: 2
                     Label {
                         text: "LEOS"
                         color: window.themeColors.text
-                        font.pixelSize: 30
+                        font.pixelSize: 26
                         font.weight: Font.Black
                         font.letterSpacing: 5
+                        visible: storeLogo.status !== Image.Ready
                     }
                     Label {
-                        text: "BOUTIQUE"
+                        text: "BOUTIQUE D’APPLICATIONS"
                         color: window.cyan
                         font.pixelSize: 10
-                        font.letterSpacing: 4
+                        font.weight: Font.Bold
+                        font.letterSpacing: 2.4
                     }
-                }
-                Item { Layout.fillWidth: true }
-                ColumnLayout {
-                    spacing: 2
                     Label {
                         text: "DÉCOUVRIR · INSTALLER · GÉRER"
                         color: window.muted
                         font.pixelSize: 9
-                        font.letterSpacing: 1.1
-                    }
-                    Label {
-                        text: "Un catalogue clair, des actions toujours confirmées."
-                        color: window.themeColors.text
-                        font.pixelSize: 11
+                        font.letterSpacing: 0.8
                     }
                 }
+
+                Item { Layout.fillWidth: true }
+
+                Rectangle {
+                    radius: 11
+                    color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.075)
+                    border.color: window.themeColors.border
+                    implicitWidth: storeBusyLabel.implicitWidth + 24
+                    implicitHeight: 36
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        Rectangle {
+                            width: 7
+                            height: 7
+                            radius: 4
+                            color: store.busy ? window.accentA : "#79B99A"
+                        }
+                        Label {
+                            id: storeBusyLabel
+                            text: store.busy ? "ACTUALISATION EN COURS" : "CATALOGUE PRÊT"
+                            color: store.busy ? window.cyan : window.muted
+                            font.pixelSize: 9
+                            font.weight: Font.DemiBold
+                            font.letterSpacing: 1
+                        }
+                    }
+                }
+
                 Button {
-                    id: refreshStoreButton
+                    id: refreshButton
                     text: "ACTUALISER"
                     enabled: !store.busy
-                    Accessible.name: "Actualiser les applications installées"
+                    implicitHeight: 38
                     onClicked: store.refreshInstalled()
                     background: Rectangle {
-                        radius: 8
-                        color: refreshStoreButton.hovered || refreshStoreButton.activeFocus ? window.themeColors.surface_elevated : window.themeColors.surface
-                        border.width: refreshStoreButton.activeFocus ? 2 : 1
-                        border.color: refreshStoreButton.activeFocus ? window.themeColors.text : refreshStoreButton.hovered ? window.accentB : window.themeColors.border
+                        radius: 10
+                        color: refreshButton.down
+                               ? window.themeColors.surface_elevated
+                               : Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.10)
+                        border.color: refreshButton.hovered ? window.accentA : window.themeColors.border
+                        Behavior on border.color { ColorAnimation { duration: 140 } }
                     }
                     contentItem: Label {
-                        text: refreshStoreButton.text
-                        color: window.themeColors.text
-                        font.pixelSize: 12
+                        text: refreshButton.text
+                        color: refreshButton.enabled ? window.themeColors.text : window.muted
+                        font.pixelSize: 10
                         font.weight: Font.DemiBold
+                        letterSpacing: 0.8
                         horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: 12
+                        rightPadding: 12
                     }
                 }
             }
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 1
+                Layout.preferredHeight: 2
+                radius: 1
+                opacity: 0.72
                 gradient: Gradient {
-                    GradientStop { position: 0; color: window.accentA }
-                    GradientStop { position: 0.52; color: window.themeColors.border }
-                    GradientStop { position: 1; color: window.accentB }
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: window.accentA }
+                    GradientStop { position: 0.48; color: window.themeColors.border }
+                    GradientStop { position: 1.0; color: window.accentB }
                 }
-                opacity: 0.38
             }
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 16
-                TextField {
-                    id: searchField
+                spacing: 12
+
+                Rectangle {
                     Layout.fillWidth: true
-                    placeholderText: "Rechercher une application, un éditeur ou un identifiant…"
-                    color: window.themeColors.text
-                    font.pixelSize: 13
-                    enabled: !store.busy
-                    Accessible.name: "Rechercher dans la Boutique LEOS"
-                    Accessible.description: "Recherche dans les noms, descriptions, catégories et identifiants des applications."
-                    onTextChanged: window.clearSelection()
-                    background: Rectangle {
-                        radius: 9
-                        color: window.themeColors.surface
-                        border.width: searchField.activeFocus ? 2 : 1
-                        border.color: searchField.activeFocus ? window.themeColors.text : window.themeColors.border
+                    Layout.preferredHeight: 48
+                    radius: 12
+                    color: window.themeColors.surface
+                    border.width: searchField.activeFocus ? 2 : 1
+                    border.color: searchField.activeFocus ? window.accentA : window.themeColors.border
+                    Behavior on border.color { ColorAnimation { duration: 140 } }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        spacing: 10
+                        Label {
+                            text: "⌕"
+                            color: window.cyan
+                            font.pixelSize: 23
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                        TextField {
+                            id: searchField
+                            Layout.fillWidth: true
+                            placeholderText: "Rechercher une application, un outil ou un émulateur…"
+                            color: window.themeColors.text
+                            placeholderTextColor: window.muted
+                            selectByMouse: true
+                            enabled: !store.busy
+                            Accessible.name: "Rechercher dans la Boutique LEOS"
+                            Accessible.description: "Recherche dans les noms, descriptions, catégories, identifiants et métadonnées des applications."
+                            onTextChanged: window.clearSelection()
+                            background: Rectangle { color: "transparent" }
+                        }
+                        Label {
+                            text: "RECHERCHE"
+                            color: window.muted
+                            font.pixelSize: 8
+                            font.letterSpacing: 1
+                        }
                     }
                 }
+
                 ComboBox {
                     id: categoryFilter
+                    Layout.preferredWidth: 190
+                    Layout.preferredHeight: 48
                     model: ["Toutes"].concat(catalogModel.availableCategories)
                     enabled: !store.busy
                     Accessible.name: "Filtrer par catégorie"
                     onCurrentTextChanged: window.clearSelection()
                     background: Rectangle {
-                        radius: 9
+                        radius: 12
                         color: window.themeColors.surface
-                        border.width: categoryFilter.activeFocus ? 2 : 1
-                        border.color: categoryFilter.activeFocus ? window.themeColors.text : window.themeColors.border
+                        border.color: categoryFilter.activeFocus || categoryFilter.hovered
+                                      ? window.accentA : window.themeColors.border
                     }
                     contentItem: Label {
-                        leftPadding: 10
-                        rightPadding: 24
+                        leftPadding: 14
+                        rightPadding: 30
                         text: categoryFilter.displayText
                         color: window.themeColors.text
                         font.pixelSize: 12
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
+                    }
+                    indicator: Label {
+                        x: categoryFilter.width - width - 13
+                        y: (categoryFilter.height - height) / 2
+                        text: "⌄"
+                        color: window.cyan
+                        font.pixelSize: 16
                     }
                 }
                 Button {
@@ -238,19 +313,22 @@ ApplicationWindow {
                     Accessible.name: "Effacer la recherche et le filtre de catégorie"
                     onClicked: window.clearFilters()
                     background: Rectangle {
-                        radius: 9
+                        radius: 10
                         color: clearFiltersButton.activeFocus || clearFiltersButton.hovered
                                ? window.themeColors.surface_elevated : "transparent"
-                        border.color: clearFiltersButton.activeFocus
-                                       ? window.accentA : window.themeColors.border
+                        border.width: clearFiltersButton.activeFocus ? 2 : 1
+                        border.color: clearFiltersButton.activeFocus ? window.themeColors.text
+                                       : clearFiltersButton.hovered ? window.accentA : window.themeColors.border
                     }
                     contentItem: Label {
                         text: clearFiltersButton.text
-                        color: window.themeColors.text
+                        color: clearFiltersButton.enabled ? window.themeColors.text : window.muted
                         font.pixelSize: 10
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 10
+                        rightPadding: 10
                     }
                 }
             }
@@ -258,135 +336,203 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 18
+                spacing: 16
 
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    radius: 16
+                    Layout.minimumWidth: 0
+                    radius: 17
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
-                    RowLayout {
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.topMargin: 12
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 14
-                        height: 20
-                        Label {
-                            text: "CATALOGUE"
-                            color: window.cyan
-                            font.pixelSize: 10
-                            font.letterSpacing: 1.8
-                        }
-                        Item { Layout.fillWidth: true }
-                        Label {
-                            text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"
-                            color: window.muted
-                            font.pixelSize: 9
-                            font.letterSpacing: 0.8
-                        }
-                    }
-                    ListView {
-                        id: appList
+
+                    ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 8
-                        anchors.topMargin: 40
-                        clip: true
-                        spacing: 6
-                        model: catalogModel
-                        currentIndex: window.selectedRow
-                        enabled: !store.busy
-                        Accessible.role: Accessible.List
-                        Accessible.name: "Catalogue d'applications LEOS"
-                        Accessible.description: "Sélectionne une application pour afficher sa fiche et l'action disponible."
-                        delegate: Rectangle {
-                            required property string appId
-                            required property string name
-                            required property string category
-                            required property string description
-                            required property string source
-                            required property string compatibility
-                            required property string operationNote
-                            required property bool installed
-                            required property string installedScope
-                            required property bool bundled
-                            required property int index
-                            width: ListView.view.width
-                            height: visible ? 86 : 0
-                            visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
-                                && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
-                            radius: 12
-                            color: window.selectedRow === index || appRowButton.hovered || appRowButton.activeFocus
-                                   ? window.themeColors.surface_elevated : window.themeColors.surface
-                            border.width: window.selectedRow === index || appRowButton.activeFocus ? 1 : 0
-                            border.color: appRowButton.activeFocus ? window.themeColors.text : window.selectedRow === index ? window.accentA : window.themeColors.border
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 12
-                                Rectangle {
-                                    Layout.preferredWidth: 42
-                                    Layout.preferredHeight: 42
-                                    radius: 10
-                                    color: window.themeColors.surface_elevated
-                                    Label {
-                                        anchors.centerIn: parent
-                                        text: name.length ? name.substring(0, 1).toUpperCase() : "L"
-                                        color: window.cyan
-                                        font.pixelSize: 20
-                                        font.weight: Font.Bold
-                                    }
-                                }
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 3
-                                    Label { text: name; color: window.themeColors.text; font.pixelSize: 14; font.weight: Font.DemiBold }
-                                    Label { text: category + "  •  " + source; color: window.muted; font.pixelSize: 10 }
-                                }
-                                Rectangle {
-                                    radius: 6
-                                    Layout.preferredHeight: 24
-                                    Layout.preferredWidth: 86
-                                    color: installed ? window.themeColors.surface_elevated : window.themeColors.background
-                                    border.color: installed ? window.accentA : window.themeColors.border
-                                    Label {
-                                        anchors.centerIn: parent
-                                        text: installedScope === "system" ? "SYSTÈME" : installed ? "INSTALLÉE" : "DISPONIBLE"
-                                        color: installed ? window.cyan : window.muted
-                                        font.pixelSize: 9
-                                        font.weight: Font.DemiBold
-                                    }
-                                }
+                        anchors.margins: 12
+                        spacing: 9
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                text: "EXPLORER LE CATALOGUE"
+                                color: window.muted
+                                font.pixelSize: 9
+                                font.weight: Font.Bold
+                                font.letterSpacing: 1.8
                             }
-                            Button {
-                                id: appRowButton
-                                anchors.fill: parent
-                                activeFocusOnTab: true
-                                Accessible.role: Accessible.Button
-                                Accessible.name: name + (installed ? ", installée" : ", disponible")
-                                Accessible.description: category + ". Source " + source + ". Activer pour ouvrir la fiche."
-                                Accessible.selected: window.selectedRow === index
-                                background: Item { }
-                                contentItem: Item { }
-                                onClicked: window.selectApp(index, appId, name, description, source,
-                                                            compatibility, operationNote, installed,
-                                                            installedScope, bundled)
+                            Item { Layout.fillWidth: true }
+                            Label {
+                                text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"
+                                color: window.themeColors.muted_text
+                                font.pixelSize: 8
+                                font.letterSpacing: 0.8
                             }
                         }
-                    }
-                    Label {
-                        anchors.centerIn: parent
-                        width: parent.width - 44
-                        visible: window.visibleApplicationCount() === 0
-                        horizontalAlignment: Text.AlignHCenter
-                        text: catalogModel.rowCount() === 0
-                              ? "Le catalogue LEOS n'est pas disponible."
-                              : "Aucun résultat pour ces filtres. Efface la recherche ou choisis une autre catégorie."
-                        color: window.muted
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 12
+
+                        ListView {
+                            id: appList
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            clip: true
+                            spacing: 7
+                            model: catalogModel
+                            enabled: !store.busy
+                            currentIndex: window.selectedRow
+                            Accessible.role: Accessible.List
+                            Accessible.name: "Catalogue d'applications LEOS"
+                            Accessible.description: "Sélectionne une application pour afficher sa fiche et l'action disponible."
+                            keyNavigationEnabled: true
+                            boundsBehavior: Flickable.StopAtBounds
+                            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                            delegate: Rectangle {
+                                required property string appId
+                                required property string name
+                                required property string category
+                                required property string description
+                                required property string source
+                                required property string compatibility
+                                required property string operationNote
+                                required property bool installed
+                                required property string installedScope
+                                required property bool bundled
+                                required property int index
+
+                                width: ListView.view.width
+                                height: visible ? 84 : 0
+                                visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
+                                    && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
+                                radius: 12
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: window.selectedRow === index
+                                            ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.13)
+                                            : appRowButton.hovered || appRowButton.activeFocus
+                                                ? window.themeColors.surface_elevated
+                                                : window.themeColors.surface
+                                    }
+                                    GradientStop { position: 1.0; color: window.themeColors.surface }
+                                }
+                                border.width: window.selectedRow === index ? 1.5 : 1
+                                border.color: window.selectedRow === index ? window.accentA
+                                              : appRowButton.activeFocus ? window.themeColors.text
+                                              : appRowButton.hovered ? window.themeColors.muted_text
+                                              : window.themeColors.border
+                                Behavior on border.color { ColorAnimation { duration: 130 } }
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    width: window.selectedRow === index ? 3 : 0
+                                    radius: 2
+                                    color: window.accentA
+                                }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 12
+                                    spacing: 12
+
+                                    Rectangle {
+                                        Layout.preferredWidth: 42
+                                        Layout.preferredHeight: 42
+                                        radius: 12
+                                        gradient: Gradient {
+                                            GradientStop {
+                                                position: 0.0
+                                                color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.17)
+                                            }
+                                            GradientStop {
+                                                position: 1.0
+                                                color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.10)
+                                            }
+                                        }
+                                        border.color: window.themeColors.border
+                                        Label {
+                                            anchors.centerIn: parent
+                                            text: name.length ? name.substring(0, 1).toUpperCase() : "L"
+                                            color: window.themeColors.text
+                                            font.pixelSize: 19
+                                            font.weight: Font.Bold
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 4
+                                        Label {
+                                            text: name
+                                            color: window.themeColors.text
+                                            font.pixelSize: 13
+                                            font.weight: Font.DemiBold
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                        Label {
+                                            text: category + "  ·  " + source
+                                            color: window.muted
+                                            font.pixelSize: 10
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        radius: 8
+                                        implicitWidth: stateLabel.implicitWidth + 18
+                                        implicitHeight: 27
+                                        color: installed
+                                            ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.10)
+                                            : Qt.rgba(window.themeColors.muted_text.r,
+                                                      window.themeColors.muted_text.g,
+                                                      window.themeColors.muted_text.b, 0.07)
+                                        border.color: installed ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.32)
+                                                                : window.themeColors.border
+                                        Label {
+                                            id: stateLabel
+                                            anchors.centerIn: parent
+                                            text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME")
+                                                  : installed ? "INSTALLÉE" : "DISPONIBLE"
+                                            color: installed ? window.cyan : window.muted
+                                            font.pixelSize: 8
+                                            font.weight: Font.DemiBold
+                                            font.letterSpacing: 0.5
+                                        }
+                                    }
+                                }
+
+                                Button {
+                                    id: appRowButton
+                                    anchors.fill: parent
+                                    activeFocusOnTab: true
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: name + (installed ? ", installée" : ", disponible")
+                                    Accessible.description: category + ". Source " + source + ". Activer pour ouvrir la fiche."
+                                    Accessible.selected: window.selectedRow === index
+                                    background: Item { }
+                                    contentItem: Item { }
+                                    onClicked: window.selectApp(index, appId, name, category, description, source,
+                                                                compatibility, operationNote, installed,
+                                                                installedScope, bundled)
+                                }
+                            }
+
+                            Label {
+                                anchors.centerIn: parent
+                                visible: window.visibleApplicationCount() === 0
+                                width: parent.width - 44
+                                horizontalAlignment: Text.AlignHCenter
+                                text: store.busy ? "Chargement du catalogue…"
+                                      : catalogModel.rowCount() === 0
+                                          ? "Le catalogue LEOS n'est pas disponible."
+                                          : "Aucun résultat pour ces filtres. Efface la recherche ou choisis une autre catégorie."
+                                color: window.muted
+                                font.pixelSize: 12
+                            }
+                        }
                     }
                 }
 
@@ -394,6 +540,7 @@ ApplicationWindow {
                     id: detailsPane
                     property string appId: ""
                     property string appName: "Choisis une application"
+                    property string appCategory: ""
                     property string appDescription: "Les détails et les opérations apparaîtront ici."
                     property string appSource: ""
                     property string appCompatibility: ""
@@ -404,65 +551,102 @@ ApplicationWindow {
                     Layout.preferredWidth: window.width < 1080 ? 300 : 360
                     Layout.minimumWidth: 280
                     Layout.fillHeight: true
-                    radius: 14
+                    radius: 17
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
-
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-                        height: 2
-                        radius: 1
-                        gradient: Gradient {
-                            GradientStop { position: 0; color: window.accentA }
-                            GradientStop { position: 1; color: window.accentB }
-                        }
-                    }
 
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 20
-                        spacing: 12
+                        spacing: 11
+
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { text: "FICHE APPLICATION"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                            Label {
+                                text: "FICHE APPLICATION"
+                                color: window.cyan
+                                font.pixelSize: 9
+                                font.weight: Font.Bold
+                                font.letterSpacing: 1.7
+                            }
                             Item { Layout.fillWidth: true }
-                            Rectangle {
-                                radius: 6
-                                color: detailsPane.isInstalled ? window.themeColors.surface_elevated : window.themeColors.background
-                                border.color: detailsPane.isInstalled ? window.accentA : window.themeColors.border
-                                Layout.preferredHeight: 22
-                                Layout.preferredWidth: detailsPane.appId.length === 0 ? 92 : detailsPane.isInstalled ? 86 : 96
-                                Label {
-                                    anchors.centerIn: parent
-                                    text: detailsPane.appId.length === 0 ? "EN ATTENTE" : detailsPane.isInstalled ? "INSTALLÉE" : "À DÉCOUVRIR"
-                                    color: detailsPane.isInstalled ? window.cyan : window.muted
-                                    font.pixelSize: 9
-                                    font.weight: Font.DemiBold
-                                }
+                            Label {
+                                text: detailsPane.appId.length > 0 ? "DÉTAILS" : "EN ATTENTE"
+                                color: window.muted
+                                font.pixelSize: 8
+                                font.letterSpacing: 1
                             }
                         }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 104
+                            radius: 14
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0.0
+                                    color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.11)
+                                }
+                                GradientStop {
+                                    position: 1.0
+                                    color: Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, 0.045)
+                                }
+                            }
+                            border.color: window.themeColors.border
+                            Label {
+                                anchors.centerIn: parent
+                                text: detailsPane.appName.length > 0
+                                      ? detailsPane.appName.substring(0, 1).toUpperCase() : "L"
+                                color: window.themeColors.text
+                                font.pixelSize: 42
+                                font.weight: Font.Light
+                            }
+                        }
+
                         Label {
                             text: detailsPane.appName
                             color: window.themeColors.text
-                            font.pixelSize: 22
+                            font.pixelSize: 21
                             font.weight: Font.Bold
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
                         Label {
-                            text: detailsPane.appDescription
+                            text: detailsPane.appCategory.length > 0
+                                  ? detailsPane.appCategory + "  ·  " + detailsPane.appSource
+                                  : "Sélectionne une application dans le catalogue"
                             color: window.muted
+                            font.pixelSize: 10
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                        }
+                        Label {
+                            text: detailsPane.appDescription
+                            color: window.themeColors.text
+                            opacity: 0.86
+                            font.pixelSize: 12
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: window.themeColors.border }
-                        Label { text: "SOURCE"; color: window.cyan; font.pixelSize: 9 }
-                        Label { text: detailsPane.appSource; color: window.themeColors.text; font.pixelSize: 12 }
-                        Label { text: "IDENTIFIANT"; color: window.cyan; font.pixelSize: 9 }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: window.themeColors.border
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: window.themeColors.border
+                        }
+                        Label {
+                            text: "IDENTIFIANT"
+                            color: window.cyan
+                            font.pixelSize: 8
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.3
+                        }
                         Label {
                             text: detailsPane.appId || "—"
                             color: window.themeColors.muted_text
@@ -470,52 +654,87 @@ ApplicationWindow {
                             wrapMode: Text.WrapAnywhere
                             Layout.fillWidth: true
                         }
-                        Label { text: "COMPATIBILITÉ"; color: window.cyan; font.pixelSize: 9 }
                         Label {
-                            text: detailsPane.appCompatibility
+                            text: "COMPATIBILITÉ"
+                            color: window.cyan
+                            font.pixelSize: 8
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.3
+                        }
+                        Label {
+                            text: detailsPane.appCompatibility.length > 0
+                                  ? detailsPane.appCompatibility : "Les informations de compatibilité s’afficheront avec la sélection."
                             color: window.muted
+                            font.pixelSize: 10
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
                         Label {
                             text: detailsPane.operationNote
                             color: window.muted
-                            font.pixelSize: 10
+                            font.pixelSize: 9
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
+                            visible: detailsPane.operationNote.length > 0
                         }
-                        Label {
-                            Layout.fillWidth: true
+
+                        Rectangle {
                             visible: detailsPane.installedScope === "system"
-                            text: "Cette application est installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
-                            color: window.cyan
-                            font.pixelSize: 10
-                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: visible ? 58 : 0
+                            radius: 10
+                            color: Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.07)
+                            border.color: window.themeColors.border
+                            Label {
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                text: "Installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
+                                color: window.cyan
+                                font.pixelSize: 9
+                                wrapMode: Text.WordWrap
+                                verticalAlignment: Text.AlignVCenter
+                            }
                         }
+
                         Item { Layout.fillHeight: true }
+
                         Button {
                             id: installRemoveButton
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 46
+                            implicitHeight: 48
                             enabled: detailsPane.appId.length > 0 && !store.busy
                             text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
-                            Accessible.name: text + " " + detailsPane.appName
+                            Accessible.name: detailsPane.isInstalled ? "Désinstaller " + detailsPane.appName : "Installer " + detailsPane.appName
                             Accessible.description: "Une confirmation sera demandée avant toute modification."
                             onClicked: operationDialog.open()
                             background: Rectangle {
-                                radius: 9
-                                color: installRemoveButton.down || installRemoveButton.hovered || installRemoveButton.activeFocus
-                                       ? window.themeColors.surface_elevated : window.themeColors.surface
+                                radius: 12
+                                gradient: Gradient {
+                                    GradientStop {
+                                        position: 0.0
+                                        color: installRemoveButton.enabled && !detailsPane.isInstalled
+                                            ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, installRemoveButton.down ? 0.20 : 0.30)
+                                            : window.themeColors.surface_elevated
+                                    }
+                                    GradientStop {
+                                        position: 1.0
+                                        color: installRemoveButton.enabled && !detailsPane.isInstalled
+                                            ? Qt.rgba(window.accentB.r, window.accentB.g, window.accentB.b, installRemoveButton.down ? 0.14 : 0.22)
+                                            : window.themeColors.surface
+                                    }
+                                }
                                 border.width: installRemoveButton.activeFocus ? 2 : 1
                                 border.color: installRemoveButton.activeFocus ? window.themeColors.text
-                                              : detailsPane.installedScope === "system" ? window.accentA
-                                              : detailsPane.isInstalled ? window.accentB : window.accentA
+                                              : detailsPane.isInstalled ? window.themeColors.border : window.accentA
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
-                                color: window.themeColors.text
+                                color: installRemoveButton.enabled ? window.themeColors.text : window.muted
+                                font.pixelSize: 11
                                 font.weight: Font.Bold
+                                letterSpacing: 1
                                 horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
                             }
                         }
                     }
@@ -524,14 +743,22 @@ ApplicationWindow {
 
             RowLayout {
                 Layout.fillWidth: true
+                spacing: 10
                 Label {
                     text: store.status
                     color: window.muted
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
                 }
-                BusyIndicator { running: store.busy; visible: store.busy; implicitWidth: 28; implicitHeight: 28 }
+                BusyIndicator {
+                    running: store.busy
+                    visible: store.busy
+                    implicitWidth: 26
+                    implicitHeight: 26
+                }
             }
         }
     }
@@ -543,6 +770,11 @@ ApplicationWindow {
         anchors.centerIn: parent
         standardButtons: Dialog.Cancel
         width: 480
+        background: Rectangle {
+            radius: 16
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
+        }
 
         ColumnLayout {
             width: parent.width
@@ -571,6 +803,7 @@ ApplicationWindow {
             Button {
                 text: "CONFIRMER"
                 Layout.fillWidth: true
+                implicitHeight: 42
                 onClicked: {
                     operationDialog.close()
                     if (detailsPane.isInstalled)
@@ -607,6 +840,11 @@ ApplicationWindow {
         anchors.centerIn: parent
         standardButtons: Dialog.Cancel
         width: 440
+        background: Rectangle {
+            radius: 16
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
+        }
         ColumnLayout {
             width: parent.width
             Label {
@@ -624,6 +862,7 @@ ApplicationWindow {
             Button {
                 text: "INSTALLER MAINTENANT"
                 Layout.fillWidth: true
+                implicitHeight: 42
                 onClicked: {
                     verifyDialog.close()
                     store.confirmInstall(window.selectedRow)
