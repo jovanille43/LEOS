@@ -116,3 +116,10 @@ La procédure suit le guide officiel [Bazzite — Rollbacks](https://docs.bazzit
 Le Centre de contrôle peut créer des points de restauration privés pour le fichier de préférences LEOS. Chaque point contient une copie versionnée des paramètres, un manifeste avec sa taille et son empreinte SHA-256. Les fichiers sont stockés dans l'espace d'état de l'utilisateur avec des permissions restrictives ; les sauvegardes ne sont pas chiffrées et ne remplacent pas une sauvegarde externe des données personnelles.
 
 Avant une restauration, LEOS vérifie l'intégrité et le schéma du point choisi, exige une confirmation explicite, puis conserve automatiquement l'état courant sous forme d'un point de récupération. La restauration ne porte que sur les préférences LEOS : elle ne restaure ni les fichiers personnels, ni les jeux, ni les paramètres de KDE Plasma. Le nombre de points valides est limité afin d'éviter une croissance illimitée du stockage.
+
+
+## Sauvegarde du profil de dock LEOS
+
+Le Centre de contrôle peut créer des points de restauration dédiés au fichier de préférences `desktop-layout.json`. Ils couvrent uniquement le profil de dock LEOS (activation, position, alignement, masquage automatique et widgets LEOS). Ils sont séparés des points de restauration des préférences générales LEOS et des sauvegardes du fichier de disposition KDE Plasma.
+
+Chaque point de restauration possède un identifiant aléatoire, un manifeste et une empreinte SHA-256. Les fichiers sont conservés avec des permissions privées, leur taille et leur schéma sont contrôlés avant restauration et le nombre de sauvegardes est limité. Une restauration exige une confirmation explicite et crée automatiquement un point de récupération de l'état courant. Un fichier de disposition corrompu ou symbolique bloque la restauration au lieu d'être remplacé silencieusement. Ces sauvegardes ne contiennent ni fichiers personnels ni jeux et ne sont pas chiffrées.

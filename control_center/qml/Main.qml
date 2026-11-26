@@ -30,6 +30,8 @@ ApplicationWindow {
     property string plasmaDockNotice: ""
     property string settingsBackupNotice: ""
     property string selectedSettingsBackupId: ""
+    property string desktopLayoutBackupNotice: ""
+    property string selectedDesktopLayoutBackupId: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
     property string draftColorA: controlCenter.themeColorA
@@ -48,6 +50,15 @@ ApplicationWindow {
         } else {
             window.selectedSettingsBackupId = ""
             settingsBackupBox.currentIndex = -1
+        }
+
+        const layoutEntries = controlCenter.desktopLayoutBackupEntries
+        if (layoutEntries.length > 0) {
+            window.selectedDesktopLayoutBackupId = layoutEntries[0].backupId
+            desktopLayoutBackupBox.currentIndex = 0
+        } else {
+            window.selectedDesktopLayoutBackupId = ""
+            desktopLayoutBackupBox.currentIndex = -1
         }
     }
 
@@ -194,6 +205,22 @@ ApplicationWindow {
             padding: 12
         }
         onAccepted: window.settingsBackupNotice = controlCenter.restoreSettingsBackup(backupId)
+    }
+
+    Dialog {
+        id: desktopLayoutBackupRestoreDialog
+        property string backupId: ""
+        modal: true
+        title: "Restaurer le profil de dock LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer uniquement ses préférences de disposition (profil, position et comportement du dock, widgets LEOS). Avant cela, l'état courant sera conservé dans un nouveau point de récupération. Les fichiers personnels et la disposition des panneaux KDE Plasma ne sont pas concernés."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 460
+            padding: 12
+        }
+        onAccepted: window.desktopLayoutBackupNotice = controlCenter.restoreDesktopLayoutBackup(backupId)
     }
 
     Dialog {
@@ -1616,6 +1643,62 @@ ApplicationWindow {
                                         text: window.settingsBackupNotice.length > 0
                                             ? window.settingsBackupNotice
                                             : (controlCenter.hasSettingsBackup
+                                                ? "Les points valides sont conservés dans l'espace privé de ton compte."
+                                                : "Aucun point de restauration pour le moment.")
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 270
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "SAUVEGARDE DU PROFIL DE DOCK LEOS"
+                                        color: window.themeColors.accent_primary
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Protège la position, l'alignement, le masquage et les widgets LEOS. Chaque point possède une empreinte SHA-256 et reste distinct de la sauvegarde KDE Plasma."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Créer un point de restauration"
+                                        onClicked: window.desktopLayoutBackupNotice = controlCenter.createDesktopLayoutBackup()
+                                    }
+                                    ComboBox {
+                                        id: desktopLayoutBackupBox
+                                        Layout.fillWidth: true
+                                        model: controlCenter.desktopLayoutBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        onActivated: window.selectedDesktopLayoutBackupId = currentValue
+                                    }
+                                    Button {
+                                        text: "Restaurer le point sélectionné"
+                                        enabled: window.selectedDesktopLayoutBackupId.length > 0
+                                        onClicked: {
+                                            desktopLayoutBackupRestoreDialog.backupId = window.selectedDesktopLayoutBackupId
+                                            desktopLayoutBackupRestoreDialog.open()
+                                        }
+                                    }
+                                    Label {
+                                        text: window.desktopLayoutBackupNotice.length > 0
+                                            ? window.desktopLayoutBackupNotice
+                                            : (controlCenter.hasDesktopLayoutBackup
                                                 ? "Les points valides sont conservés dans l'espace privé de ton compte."
                                                 : "Aucun point de restauration pour le moment.")
                                         color: window.muted
