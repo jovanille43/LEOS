@@ -120,6 +120,55 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "booléen"):
                 load_catalog(path)
 
+    def test_recommended_entries_require_a_valid_boolean_and_reason(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.json"
+            item = valid_item()
+            item["recommended"] = True
+            item["recommendation_reason"] = "Useful for a common task."
+            path.write_text(json.dumps([item]), encoding="utf-8")
+            self.assertEqual(load_catalog(path)[0]["recommended"], True)
+            for invalid in (1, "true", None):
+                item["recommended"] = invalid
+                path.write_text(json.dumps([item]), encoding="utf-8")
+                with self.subTest(recommended=invalid):
+                    with self.assertRaisesRegex(ValueError, "recommended"):
+                        load_catalog(path)
+            item["recommended"] = True
+            item["recommendation_reason"] = " "
+            path.write_text(json.dumps([item]), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "motif de recommandation"):
+                load_catalog(path)
+            item.pop("recommendation_reason")
+            path.write_text(json.dumps([item]), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "motif de recommandation"):
+                load_catalog(path)
+            item.pop("recommended")
+            item["recommendation_reason"] = "Orphaned reason"
+            path.write_text(json.dumps([item]), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "exige recommended"):
+                load_catalog(path)
+
+    def test_shipped_recommendations_are_a_subset_of_real_catalogue_entries(self):
+        items = load_catalog(ROOT / "shop" / "catalog.json")
+        recommended = [item for item in items if item.get("recommended") is True]
+        self.assertEqual(
+            {item["id"] for item in recommended},
+            {"org.mozilla.firefox", "org.gimp.GIMP", "com.obsproject.Studio", "net.lutris.Lutris", "org.kde.krita"},
+        )
+        self.assertTrue(all(item["source"] == "Flathub" for item in recommended))
+        self.assertTrue(all(item["recommendation_reason"].strip() for item in recommended))
+
+    def test_store_exposes_recommendations_through_a_dedicated_filter(self):
+        model = (ROOT / "shop" / "catalog.py").read_text(encoding="utf-8")
+        qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn("RecommendedRole", model)
+        self.assertIn("RecommendationReasonRole", model)
+        self.assertIn('"Sélection LEOS"', qml)
+        self.assertIn("item.recommended !== true", qml)
+        self.assertIn("detailsPane.recommendationReason", qml)
+        self.assertIn("Sélection LEOS ·", qml)
+
     def test_rejects_symlinked_catalogue(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -189,7 +238,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn('@Property("QStringList")', model)
         self.assertIn("return catalog_categories(self._items)", model)
         qml = (ROOT / "shop" / "qml" / "Main.qml").read_text(encoding="utf-8")
-        self.assertIn('model: ["Toutes"].concat(catalogModel.availableCategories)', qml)
+        self.assertIn('model: ["Toutes", "Sélection LEOS"].concat(catalogModel.availableCategories)', qml)
         self.assertNotIn('["Toutes", "Gaming", "Émulation", "Multimedia"', qml)
 
     def test_store_shows_visible_result_count_and_recoverable_empty_state(self):
