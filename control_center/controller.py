@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, Signal, Slot
+from pathlib import Path
+
+from PySide6.QtCore import QObject, Property, QProcess, QRunnable, QThreadPool, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 
 from control_center.settings_modules import general_settings_command, settings_module_command, system_monitor_command
@@ -1000,6 +1002,45 @@ class ControlCenterController(QObject):
         self.settingsChanged.emit()
         message = f"Point de restauration du dock créé ({backup_id[:8]})."
         post_notification("Profil de dock LEOS sauvegardé", message, "success")
+        return message
+
+    @Slot(str, result=str)
+    def importDesktopLayoutBackup(self, manifest_url: str) -> str:
+        try:
+            url = QUrl(manifest_url)
+            if url.scheme() and not url.isLocalFile():
+                raise ValueError("Only local LEOS backup files can be imported")
+            manifest_path = url.toLocalFile() if url.isLocalFile() else manifest_url
+            if not Path(manifest_path).is_absolute():
+                raise ValueError("Select an absolute local backup manifest")
+            backup_id = self.desktopLayoutBackups.import_backup(manifest_path)
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Cette sauvegarde de dock n'a pas pu être importée : fichier, schéma ou empreinte invalide."
+            post_notification("Import du dock impossible", message, "error")
+            return message
+        self.settingsChanged.emit()
+        message = f"Point de restauration du dock importé ({backup_id[:8]})."
+        post_notification("Profil de dock importé", message, "success")
+        return message
+
+    @Slot(str, str, result=str)
+    def exportDesktopLayoutBackup(self, backup_id: str, directory_url: str) -> str:
+        try:
+            url = QUrl(directory_url)
+            if url.scheme() and not url.isLocalFile():
+                raise ValueError("Only local LEOS export folders are accepted")
+            directory = url.toLocalFile() if url.isLocalFile() else directory_url
+            if not Path(directory).is_absolute():
+                raise ValueError("Select an absolute local export folder")
+            backup_path, manifest_path = self.desktopLayoutBackups.export_backup(
+                backup_id, directory
+            )
+        except (OSError, ValueError, TypeError, KeyError, RuntimeError):
+            message = "Le profil de dock n'a pas pu être exporté. Aucun fichier existant n'a été remplacé."
+            post_notification("Export du dock impossible", message, "error")
+            return message
+        message = f"Sauvegarde du dock exportée : {manifest_path.name} et {backup_path.name}."
+        post_notification("Profil de dock exporté", message, "success")
         return message
 
     @Slot(str, result=str)
