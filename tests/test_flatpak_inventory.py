@@ -85,9 +85,9 @@ class FlatpakInventoryTests(unittest.TestCase):
         self.assertEqual(trusted_flathub_remote_url("flathub https://example.com/repo/"), "")
 
     def test_flatpak_info_origin_accepts_only_one_exact_flathub_name(self):
-        self.assertTrue(flatpak_info_origin_is_flathub("flathub\\n"))
-        self.assertTrue(flatpak_info_origin_is_flathub("  FlAtHuB  \\n"))
-        for output in ("", "other-remote\\n", "flathub\\nextra\\n", "flathub https://example.com"):
+        self.assertTrue(flatpak_info_origin_is_flathub("flathub"))
+        self.assertTrue(flatpak_info_origin_is_flathub("  FlAtHuB  "))
+        for output in ("", "other-remote", "flathub" + chr(10) + "extra", "flathub https://example.com"):
             with self.subTest(output=output):
                 self.assertFalse(flatpak_info_origin_is_flathub(output))
 
