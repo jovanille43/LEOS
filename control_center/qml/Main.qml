@@ -244,12 +244,55 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: systemUpdateLaunchDialog
+        modal: true
+        title: "Avant d'ouvrir Bazzite Updater"
+        width: Math.min(window.width - 48, 520)
+        standardButtons: Dialog.Cancel
+        anchors.centerIn: parent
+        contentItem: ColumnLayout {
+            spacing: 12
+            Label {
+                text: "LEOS ouvre ici l'outil officiel de Bazzite. Aucune installation n'est lancée depuis cette fenêtre."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: "Avant de confirmer dans Bazzite Updater : vérifie les notes de version, branche le secteur si nécessaire, ferme les applications importantes et assure-toi de disposer d'assez d'espace disque."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: "Une mise à jour d'image peut préparer un nouveau déploiement et nécessiter un redémarrage. Sauvegarde séparément tes fichiers personnels : le retour arrière OSTree ne restaure pas les données utilisateur."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                text: "OUVRIR BAZZITE UPDATER"
+                Layout.fillWidth: true
+                onClicked: {
+                    systemUpdateLaunchDialog.close()
+                    if (!controlCenter.openSystemUpdater())
+                        window.launchNotice = "Bazzite Updater est introuvable ou n'a pas pu être lancé."
+                    else
+                        window.launchNotice = ""
+                }
+            }
+        }
+    }
+
+    Dialog {
         id: recoveryGuideDialog
         modal: true
         title: "Guide de récupération LEOS"
         width: Math.min(window.width - 48, 680)
         height: Math.min(window.height - 48, 640)
         standardButtons: Dialog.Close
+
+        onOpened: controlCenter.refreshPendingSystemUpdate()
 
         contentItem: ScrollView {
             clip: true
@@ -266,6 +309,27 @@ ApplicationWindow {
                     color: window.themeColors.text
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: recoveryActionLabel.implicitHeight + 24
+                    radius: 10
+                    color: window.themeColors.surface_elevated
+                    border.color: window.themeColors.border
+                    Label {
+                        id: recoveryActionLabel
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        wrapMode: Text.WordWrap
+                        color: window.themeColors.text
+                        text: !controlCenter.deploymentSnapshot.available
+                            ? "Action recommandée : l'état OSTree n'est pas vérifiable. Ne lance aucun retour arrière sur la base d'une liste inconnue ; commence par un diagnostic système et protège tes données."
+                            : controlCenter.deploymentSnapshot.pendingCount > 0
+                                ? "Action recommandée : une nouvelle version est préparée. Termine ton travail, sauvegarde tes fichiers, puis redémarre lorsque tu es prêt pour l'appliquer. N'effectue pas de rollback si la session actuelle fonctionne normalement."
+                                : controlCenter.deploymentSnapshot.otherCount > 0
+                                    ? "Action recommandée : des déploiements antérieurs sont conservés. Leur présence ne garantit pas qu'ils soient démarrables. Si le système fonctionne, ne change rien ; en cas de panne, vérifie l'entrée de démarrage et l'état réel avant une intervention."
+                                    : "Aucun autre déploiement n'est actuellement confirmé. Le retour arrière peut donc ne pas être disponible ; privilégie d'abord le diagnostic et une sauvegarde externe."
+                    }
                 }
                 Label {
                     text: "1 · Contrôler les déploiements disponibles"
@@ -2203,12 +2267,8 @@ ApplicationWindow {
                                     Button {
                                         text: "OUVRIR BAZZITE UPDATER"
                                         enabled: controlCenter.systemUpdaterAvailable
-                                        onClicked: {
-                                            if (!controlCenter.openSystemUpdater())
-                                                window.launchNotice = "Bazzite Updater est introuvable ou n'a pas pu être lancé."
-                                            else
-                                                window.launchNotice = ""
-                                        }
+                                        Accessible.description: "Afficher les précautions de mise à jour avant d'ouvrir l'outil natif de Bazzite."
+                                        onClicked: systemUpdateLaunchDialog.open()
                                     }
                                     Label {
                                         text: controlCenter.systemUpdaterAvailable
