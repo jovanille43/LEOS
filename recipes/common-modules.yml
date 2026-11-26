@@ -78,9 +78,43 @@ modules:
     src: leos_core
     dest: /usr/share/leos/leos_core/
 
+  # Only runtime branding assets enter the immutable image.
+  # Original photos and visual references remain source material in the repository.
   - type: copy
-    src: branding
+    src: branding/desktop-logo.png
     dest: /usr/share/leos/branding/
+
+  - type: copy
+    src: branding/gaming-logo.png
+    dest: /usr/share/leos/branding/
+
+  - type: copy
+    src: branding/desktop-wallpaper-logo.png
+    dest: /usr/share/leos/branding/
+
+  - type: copy
+    src: branding/gaming-wallpaper-logo.png
+    dest: /usr/share/leos/branding/
+
+  - type: copy
+    src: branding/animations/desktop-intro.mov
+    dest: /usr/share/leos/branding/animations/
+
+  - type: copy
+    src: branding/animations/gaming-intro.mp4
+    dest: /usr/share/leos/branding/animations/
+
+  - type: copy
+    src: branding/wallpapers/desktop-leos.svg
+    dest: /usr/share/leos/branding/wallpapers/
+
+  - type: copy
+    src: branding/wallpapers/gaming-leos.svg
+    dest: /usr/share/leos/branding/wallpapers/
+
+  - type: copy
+    src: branding/qml/ParticleBackdrop.qml
+    dest: /usr/share/leos/branding/qml/
 
   - type: copy
     src: branding/sddm/leos

@@ -28,6 +28,8 @@ ApplicationWindow {
     property string kdeThemeNotice: ""
     property string plasmaStyleNotice: ""
     property string plasmaDockNotice: ""
+    property string settingsBackupNotice: ""
+    property string selectedSettingsBackupId: ""
     property string wallpaperNotice: ""
     property string diagnosticReportNotice: ""
     property string draftColorA: controlCenter.themeColorA
@@ -37,6 +39,17 @@ ApplicationWindow {
     property bool draftColorsDirty: false
     property string themeColorNotice: ""
     property string appearanceNotice: ""
+
+    function refreshSettingsBackupSelection() {
+        const entries = controlCenter.settingsBackupEntries
+        if (entries.length > 0) {
+            window.selectedSettingsBackupId = entries[0].backupId
+            settingsBackupBox.currentIndex = 0
+        } else {
+            window.selectedSettingsBackupId = ""
+            settingsBackupBox.currentIndex = -1
+        }
+    }
 
     function colorToHex(color) {
         function part(value) {
@@ -100,8 +113,11 @@ ApplicationWindow {
             notificationDurationBox.currentIndex = Math.max(0, durations.indexOf(controlCenter.notificationDuration))
             const priorities = ["all", "important", "critical"]
             notificationPriorityBox.currentIndex = Math.max(0, priorities.indexOf(controlCenter.notificationMinimumPriority))
+            window.refreshSettingsBackupSelection()
         }
     }
+
+    Component.onCompleted: window.refreshSettingsBackupSelection()
 
     Dialog {
         id: kdeThemeConfirmation
@@ -162,6 +178,22 @@ ApplicationWindow {
             padding: 12
         }
         onAccepted: window.plasmaDockNotice = controlCenter.applyPlasmaLayout(true)
+    }
+
+    Dialog {
+        id: settingsBackupRestoreDialog
+        property string backupId: ""
+        modal: true
+        title: "Restaurer les préférences LEOS ?"
+        standardButtons: Dialog.Yes | Dialog.No
+        contentItem: Label {
+            text: "LEOS va remplacer les préférences actuelles par le point sélectionné. Avant cela, l'état courant sera sauvegardé automatiquement dans un nouveau point de récupération. Cette opération ne restaure pas les fichiers personnels, les jeux ni les paramètres propres à KDE Plasma."
+            color: window.themeColors.text
+            wrapMode: Text.WordWrap
+            width: 460
+            padding: 12
+        }
+        onAccepted: window.settingsBackupNotice = controlCenter.restoreSettingsBackup(backupId)
     }
 
     Dialog {
@@ -1530,6 +1562,62 @@ ApplicationWindow {
                                     Label {
                                         id: plasmaBackupNotice
                                         text: controlCenter.hasPlasmaBackup ? "Une sauvegarde LEOS existe déjà." : "Aucune sauvegarde LEOS pour le moment."
+                                        color: window.muted
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 272
+                                radius: 15
+                                color: window.themeColors.surface
+                                border.color: window.themeColors.border
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 20
+                                    spacing: 10
+                                    Label {
+                                        text: "SAUVEGARDE DES PRÉFÉRENCES LEOS"
+                                        color: window.cyan
+                                        font.pixelSize: 11
+                                        font.letterSpacing: 2
+                                    }
+                                    Label {
+                                        text: "Points de restauration privés pour les couleurs A/B, l'apparence et les réglages LEOS. Chaque sauvegarde est contrôlée par empreinte SHA-256."
+                                        color: window.muted
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        Layout.fillWidth: true
+                                    }
+                                    Button {
+                                        text: "Créer un point de restauration"
+                                        onClicked: window.settingsBackupNotice = controlCenter.createSettingsBackup()
+                                    }
+                                    ComboBox {
+                                        id: settingsBackupBox
+                                        Layout.fillWidth: true
+                                        model: controlCenter.settingsBackupEntries
+                                        textRole: "label"
+                                        valueRole: "backupId"
+                                        onActivated: window.selectedSettingsBackupId = currentValue
+                                    }
+                                    Button {
+                                        text: "Restaurer le point sélectionné"
+                                        enabled: window.selectedSettingsBackupId.length > 0
+                                        onClicked: {
+                                            settingsBackupRestoreDialog.backupId = window.selectedSettingsBackupId
+                                            settingsBackupRestoreDialog.open()
+                                        }
+                                    }
+                                    Label {
+                                        text: window.settingsBackupNotice.length > 0
+                                            ? window.settingsBackupNotice
+                                            : (controlCenter.hasSettingsBackup
+                                                ? "Les points valides sont conservés dans l'espace privé de ton compte."
+                                                : "Aucun point de restauration pour le moment.")
                                         color: window.muted
                                         font.pixelSize: 10
                                         wrapMode: Text.WordWrap

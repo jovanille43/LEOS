@@ -1,14 +1,10 @@
-# SHA-256 des fichiers réellement présents dans branding/ sur GitHub.
-# Les JPEG sources correspondent aux originaux reçus ; les PNG transparents sont des variantes dérivées. Les vidéos sont documentées dans ASSET_MANIFEST.md.
-7f36eca76b54641741384d614e39739a00c549eaf10ea7dceb752b66d9528548  branding/desktop-logo.jpeg
-512f0b07cd6d028b25640eba50807b4d1e54d296c2197cfa5f6b2ebc523a8cbb  branding/gaming-logo.jpeg
+# SHA-256 des ressources LEOS réellement embarquées dans l'image.
+# Les sources JPEG, la comparaison graphique et la vidéo secondaire restent hors du système installé.
 4a1571afcb1057512e8a4ee95f39457be4eb0fff56ea66c15fcecea458255953  branding/desktop-logo.png
 22359cfd473dd63976237bce9047295ae3b2d946005ec257bc393b8051effe81  branding/gaming-logo.png
 5e9d6d05fa92da79b92fedec4f8f500d8227ac5bac1993a20e0117332ced2e73  branding/desktop-wallpaper-logo.png
 bb7393bf456409723441a648c98aa15ccff7a97aae9d416aac7bd2953dfd6c3b  branding/gaming-wallpaper-logo.png
-eda3513c029385ca60c70d92fa8780adf97c31c4985e00bd1465d543ac0eb8f9  branding/reference-comparison.jpeg
 889b03f58d568bbd7e672b21fb22dd4b7ebe5cb90d12f92d698d9002e45e9d27  branding/animations/desktop-intro.mov
-afbf3a4fe6e66c22df0cceee46435da3279a9170466aee79de0e0a44e0231bad  branding/animations/gaming-intro.mp4
-ab16d8b332434102757a18c45ce113bd3493e42722f7ebe44b00b4571f374688  branding/animations/gaming-roar-reference.mp4
+afbf3a4fe6e66c22df0cceee46435da3279a9170466ae79de0e0a44e0231bad  branding/animations/gaming-intro.mp4
 03b4327be94d15b7d1d36079a0799d10214522e1a8bd9a9cf8e8fdfcbcabb63f  branding/wallpapers/desktop-leos.svg
 0392f73fb29399845cfeade92b1583add45ce2e820655118b7fb37237a35adb8  branding/wallpapers/gaming-leos.svg

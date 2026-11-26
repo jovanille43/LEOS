@@ -33,7 +33,7 @@ Ce dossier contient les ressources visuelles officielles utilisées par LEOS.
 
 Les pistes audio intégrées aux vidéos sont lues avec Qt Multimedia. Le réglage LEOS des sons permet de les couper sans désactiver les animations ; aucun dossier `sounds/` séparé n'est requis.
 
-La recette BlueBuild copie ce dossier dans `/usr/share/leos/branding/`. Les chemins et l'état de vérification sont détaillés dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
+La recette BlueBuild copie uniquement les PNG transparents, les deux introductions actives, les fonds SVG et le composant QML partagé dans `/usr/share/leos/branding/`. Les JPEG sources, la comparaison et la vidéo secondaire restent des références du dépôt et ne sont pas installés dans l'image. Les chemins et l'état de vérification sont détaillés dans [ASSET_MANIFEST.md](ASSET_MANIFEST.md).
 
 ## Règles
 

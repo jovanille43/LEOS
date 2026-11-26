@@ -109,3 +109,10 @@ Tant que ces essais physiques ne sont pas terminés, la récupération est docum
 ## Référence Bazzite
 
 La procédure suit le guide officiel [Bazzite — Rollbacks](https://docs.bazzite.gg/Installing_and_Managing_Software/Updates_Rollbacks_and_Rebasing/rolling_back_system_updates/), qui décrit le choix du déploiement de secours dans GRUB, le retour arrière depuis une session démarrée et le pinning des déploiements. Les intitulés du menu et les options disponibles peuvent varier selon l'image et la version.
+
+
+## Sauvegarde des préférences LEOS
+
+Le Centre de contrôle peut créer des points de restauration privés pour le fichier de préférences LEOS. Chaque point contient une copie versionnée des paramètres, un manifeste avec sa taille et son empreinte SHA-256. Les fichiers sont stockés dans l'espace d'état de l'utilisateur avec des permissions restrictives ; les sauvegardes ne sont pas chiffrées et ne remplacent pas une sauvegarde externe des données personnelles.
+
+Avant une restauration, LEOS vérifie l'intégrité et le schéma du point choisi, exige une confirmation explicite, puis conserve automatiquement l'état courant sous forme d'un point de récupération. La restauration ne porte que sur les préférences LEOS : elle ne restaure ni les fichiers personnels, ni les jeux, ni les paramètres de KDE Plasma. Le nombre de points valides est limité afin d'éviter une croissance illimitée du stockage.

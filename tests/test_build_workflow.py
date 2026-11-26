@@ -70,16 +70,12 @@ class BuildWorkflowTests(unittest.TestCase):
             source.index("Check signing prerequisites"),
         )
         expected = (
-            "branding/desktop-logo.jpeg",
-            "branding/gaming-logo.jpeg",
             "branding/desktop-logo.png",
             "branding/gaming-logo.png",
             "branding/desktop-wallpaper-logo.png",
             "branding/gaming-wallpaper-logo.png",
-            "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
-            "branding/animations/gaming-roar-reference.mp4",
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         )
@@ -108,20 +104,16 @@ class BuildWorkflowTests(unittest.TestCase):
         block_end = source.index(")", block_start)
         listed = re.findall(r"branding/[A-Za-z0-9_./-]+", source[block_start:block_end])
         self.assertEqual(set(listed), {
-            "branding/desktop-logo.jpeg",
-            "branding/gaming-logo.jpeg",
             "branding/desktop-logo.png",
             "branding/gaming-logo.png",
             "branding/desktop-wallpaper-logo.png",
             "branding/gaming-wallpaper-logo.png",
-            "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
-            "branding/animations/gaming-roar-reference.mp4",
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         })
-        self.assertEqual(len(listed), 12)
+        self.assertEqual(len(listed), 8)
 
     def test_image_workflow_validates_wallpaper_geometry_and_emblem_links(self):
         source = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -150,7 +142,7 @@ class BuildWorkflowTests(unittest.TestCase):
             line for line in deployed.splitlines()
             if line and not line.startswith("#")
         ]
-        self.assertEqual(len(entries), 12)
+        self.assertEqual(len(entries), 8)
         for line in entries:
             self.assertRegex(line, r"^[0-9a-f]{64}  branding/.+")
 
@@ -166,16 +158,12 @@ class BuildWorkflowTests(unittest.TestCase):
             if line and not line.startswith("#")
         }
         expected = {
-            "branding/desktop-logo.jpeg",
-            "branding/gaming-logo.jpeg",
             "branding/desktop-logo.png",
             "branding/gaming-logo.png",
             "branding/desktop-wallpaper-logo.png",
             "branding/gaming-wallpaper-logo.png",
-            "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
-            "branding/animations/gaming-roar-reference.mp4",
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         }
@@ -523,16 +511,12 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("Report deployed branding SHA-256 fingerprints", source)
         self.assertIn("sha256sum", source)
         expected = (
-            "branding/desktop-logo.jpeg",
-            "branding/gaming-logo.jpeg",
             "branding/desktop-logo.png",
             "branding/gaming-logo.png",
             "branding/desktop-wallpaper-logo.png",
             "branding/gaming-wallpaper-logo.png",
-            "branding/reference-comparison.jpeg",
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
-            "branding/animations/gaming-roar-reference.mp4",
             "branding/wallpapers/desktop-leos.svg",
             "branding/wallpapers/gaming-leos.svg",
         )
@@ -561,7 +545,6 @@ class BuildWorkflowTests(unittest.TestCase):
         for path in (
             "branding/animations/desktop-intro.mov",
             "branding/animations/gaming-intro.mp4",
-            "branding/animations/gaming-roar-reference.mp4",
         ):
             with self.subTest(path=path):
                 self.assertIn(path, source)
@@ -590,3 +573,29 @@ class BuildWorkflowTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_recipe_only_installs_runtime_branding_assets(self):
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        self.assertNotIn("src: branding\n", recipe)
+        for path in (
+            "branding/desktop-logo.png",
+            "branding/gaming-logo.png",
+            "branding/desktop-wallpaper-logo.png",
+            "branding/gaming-wallpaper-logo.png",
+            "branding/animations/desktop-intro.mov",
+            "branding/animations/gaming-intro.mp4",
+            "branding/wallpapers/desktop-leos.svg",
+            "branding/wallpapers/gaming-leos.svg",
+            "branding/qml/ParticleBackdrop.qml",
+        ):
+            with self.subTest(path=path):
+                self.assertIn(f"src: {path}", recipe)
+        for path in (
+            "branding/desktop-logo.jpeg",
+            "branding/gaming-logo.jpeg",
+            "branding/reference-comparison.jpeg",
+            "branding/animations/gaming-roar-reference.mp4",
+        ):
+            with self.subTest(path=path):
+                self.assertNotIn(f"src: {path}", recipe)
