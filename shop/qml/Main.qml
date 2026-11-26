@@ -6,8 +6,8 @@ ApplicationWindow {
     id: window
     width: 1180
     height: 790
-    minimumWidth: 980
-    minimumHeight: 660
+    minimumWidth: 900
+    minimumHeight: 640
     visible: true
     title: "LEOS — Boutique"
     property var themeColors: leosTheme.themePalette
@@ -29,14 +29,64 @@ ApplicationWindow {
             .trim()
     }
 
-    function matchesSearch(name, appId, category, description, source) {
+    function matchesSearch(name, appId, category, description, source, compatibility, operationNote) {
         const query = normalizedSearchText(searchField.text)
         if (!query)
             return true
         const searchable = normalizedSearchText(
-            [name, appId, category, description, source].join(" ")
+            [name, appId, category, description, source, compatibility, operationNote].join(" ")
         )
         return searchable.includes(query)
+    }
+
+    function visibleApplicationCount() {
+        let visibleCount = 0
+        for (let row = 0; row < catalogModel.rowCount(); row++) {
+            const item = store.catalogItem(row)
+            if (!item)
+                continue
+            if (categoryFilter.currentText !== "Toutes" && item.category !== categoryFilter.currentText)
+                continue
+            if (matchesSearch(item.name, item.id, item.category, item.description,
+                              item.source, item.compatibility, item.operation_note))
+                visibleCount++
+        }
+        return visibleCount
+    }
+
+    function clearFilters() {
+        searchField.clear()
+        categoryFilter.currentIndex = 0
+        clearSelection()
+        searchField.forceActiveFocus()
+    }
+
+    function clearSelection() {
+        selectedRow = -1
+        detailsPane.appId = ""
+        detailsPane.appName = "Choisis une application"
+        detailsPane.appCategory = ""
+        detailsPane.appDescription = "Sélectionne une application pour consulter sa fiche et ses options."
+        detailsPane.appSource = ""
+        detailsPane.appCompatibility = ""
+        detailsPane.operationNote = ""
+        detailsPane.isInstalled = false
+        detailsPane.installedScope = ""
+        detailsPane.bundled = false
+    }
+
+    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled) {
+        selectedRow = row
+        detailsPane.appId = id
+        detailsPane.appName = name
+        detailsPane.appCategory = category
+        detailsPane.appDescription = description
+        detailsPane.appSource = source
+        detailsPane.appCompatibility = compatibility
+        detailsPane.operationNote = note
+        detailsPane.isInstalled = installed
+        detailsPane.installedScope = scope
+        detailsPane.bundled = bundled
     }
 
     Rectangle {
@@ -50,8 +100,8 @@ ApplicationWindow {
             radius: width / 2
             x: parent.width - width * 0.58
             y: -height * 0.68
-            color: window.accentA
-            opacity: 0.045
+            color: window.themeColors.accent_primary
+            opacity: 0.05
         }
         Rectangle {
             width: 410
@@ -59,13 +109,13 @@ ApplicationWindow {
             radius: width / 2
             x: -width * 0.55
             y: parent.height * 0.68
-            color: window.accentB
-            opacity: 0.035
+            color: window.themeColors.accent_secondary
+            opacity: 0.04
         }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 26
+            anchors.margins: window.width < 1080 ? 18 : 30
             spacing: 15
 
             RowLayout {
@@ -102,9 +152,10 @@ ApplicationWindow {
                         font.letterSpacing: 2.4
                     }
                     Label {
-                        text: "Tes outils, réunis au même endroit."
+                        text: "DÉCOUVRIR · INSTALLER · GÉRER"
                         color: window.muted
-                        font.pixelSize: 11
+                        font.pixelSize: 9
+                        font.letterSpacing: 0.8
                     }
                 }
 
@@ -209,6 +260,9 @@ ApplicationWindow {
                             placeholderTextColor: window.muted
                             selectByMouse: true
                             enabled: !store.busy
+                            Accessible.name: "Rechercher dans la Boutique LEOS"
+                            Accessible.description: "Recherche dans les noms, descriptions, catégories, identifiants et métadonnées des applications."
+                            onTextChanged: window.clearSelection()
                             background: Rectangle { color: "transparent" }
                         }
                         Label {
@@ -224,8 +278,10 @@ ApplicationWindow {
                     id: categoryFilter
                     Layout.preferredWidth: 190
                     Layout.preferredHeight: 48
-                    model: ["Toutes", "Gaming", "Émulation", "Multimedia", "Internet", "Productivité", "Création"]
+                    model: ["Toutes"].concat(catalogModel.availableCategories)
                     enabled: !store.busy
+                    Accessible.name: "Filtrer par catégorie"
+                    onCurrentTextChanged: window.clearSelection()
                     background: Rectangle {
                         radius: 12
                         color: window.themeColors.surface
@@ -251,6 +307,34 @@ ApplicationWindow {
                 }
             }
 
+                Button {
+                    id: clearFiltersButton
+                    text: "EFFACER"
+                    visible: searchField.text.length > 0 || categoryFilter.currentText !== "Toutes"
+                    enabled: visible && !store.busy
+                    Accessible.name: "Effacer la recherche et le filtre de catégorie"
+                    onClicked: window.clearFilters()
+                    background: Rectangle {
+                        radius: 10
+                        color: clearFiltersButton.activeFocus || clearFiltersButton.hovered
+                               ? window.themeColors.surface_elevated : "transparent"
+                        border.width: clearFiltersButton.activeFocus ? 2 : 1
+                        border.color: clearFiltersButton.activeFocus ? window.themeColors.text
+                                       : clearFiltersButton.hovered ? window.accentA : window.themeColors.border
+                    }
+                    contentItem: Label {
+                        text: clearFiltersButton.text
+                        color: clearFiltersButton.enabled ? window.themeColors.text : window.muted
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: 10
+                        rightPadding: 10
+                    }
+                }
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -259,7 +343,7 @@ ApplicationWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumWidth: 500
+                    Layout.minimumWidth: 0
                     radius: 17
                     color: window.themeColors.surface
                     border.color: window.themeColors.border
@@ -280,7 +364,7 @@ ApplicationWindow {
                             }
                             Item { Layout.fillWidth: true }
                             Label {
-                                text: "SÉLECTIONNE UNE APPLICATION"
+                                text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"
                                 color: window.themeColors.muted_text
                                 font.pixelSize: 8
                                 font.letterSpacing: 0.8
@@ -295,6 +379,11 @@ ApplicationWindow {
                             spacing: 7
                             model: catalogModel
                             enabled: !store.busy
+                            currentIndex: window.selectedRow
+                            Accessible.role: Accessible.List
+                            Accessible.name: "Catalogue d'applications LEOS"
+                            Accessible.description: "Sélectionne une application pour afficher sa fiche et l'action disponible."
+                            keyNavigationEnabled: true
                             boundsBehavior: Flickable.StopAtBounds
                             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
@@ -314,14 +403,15 @@ ApplicationWindow {
                                 width: ListView.view.width
                                 height: visible ? 84 : 0
                                 visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
-                                    && window.matchesSearch(name, appId, category, description, source)
+                                    && window.matchesSearch(name, appId, category, description, source,
+                                                               compatibility, operationNote)
                                 radius: 12
                                 gradient: Gradient {
                                     GradientStop {
                                         position: 0.0
                                         color: window.selectedRow === index
                                             ? Qt.rgba(window.accentA.r, window.accentA.g, window.accentA.b, 0.13)
-                                            : rowMouse.containsMouse
+                                            : appRowButton.hovered || appRowButton.activeFocus
                                                 ? window.themeColors.surface_elevated
                                                 : window.themeColors.surface
                                     }
@@ -329,7 +419,8 @@ ApplicationWindow {
                                 }
                                 border.width: window.selectedRow === index ? 1.5 : 1
                                 border.color: window.selectedRow === index ? window.accentA
-                                              : rowMouse.containsMouse ? window.themeColors.muted_text
+                                              : appRowButton.activeFocus ? window.themeColors.text
+                                              : appRowButton.hovered ? window.themeColors.muted_text
                                               : window.themeColors.border
                                 Behavior on border.color { ColorAnimation { duration: 130 } }
 
@@ -416,32 +507,31 @@ ApplicationWindow {
                                     }
                                 }
 
-                                MouseArea {
-                                    id: rowMouse
+                                Button {
+                                    id: appRowButton
                                     anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        window.selectedRow = index
-                                        detailsPane.appId = appId
-                                        detailsPane.appName = name
-                                        detailsPane.appCategory = category
-                                        detailsPane.appDescription = description
-                                        detailsPane.appSource = source
-                                        detailsPane.appCompatibility = compatibility
-                                        detailsPane.operationNote = operationNote
-                                        detailsPane.isInstalled = installed
-                                        detailsPane.installedScope = installedScope
-                                        detailsPane.bundled = bundled
-                                    }
+                                    activeFocusOnTab: true
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: name + (installed ? ", installée" : ", disponible")
+                                    Accessible.description: category + ". Source " + source + ". Activer pour ouvrir la fiche."
+                                    Accessible.selected: window.selectedRow === index
+                                    background: Item { }
+                                    contentItem: Item { }
+                                    onClicked: window.selectApp(index, appId, name, category, description, source,
+                                                                compatibility, operationNote, installed,
+                                                                installedScope, bundled)
                                 }
                             }
 
                             Label {
                                 anchors.centerIn: parent
-                                visible: appList.count === 0
+                                visible: window.visibleApplicationCount() === 0
+                                width: parent.width - 44
+                                horizontalAlignment: Text.AlignHCenter
                                 text: store.busy ? "Chargement du catalogue…"
-                                      : "Aucune application dans le catalogue."
+                                      : catalogModel.rowCount() === 0
+                                          ? "Le catalogue LEOS n'est pas disponible."
+                                          : "Aucun résultat pour ces filtres. Efface la recherche ou choisis une autre catégorie."
                                 color: window.muted
                                 font.pixelSize: 12
                             }
@@ -461,8 +551,8 @@ ApplicationWindow {
                     property bool isInstalled: false
                     property string installedScope: ""
                     property bool bundled: false
-                    Layout.preferredWidth: 350
-                    Layout.minimumWidth: 320
+                    Layout.preferredWidth: window.width < 1080 ? 300 : 360
+                    Layout.minimumWidth: 280
                     Layout.fillHeight: true
                     radius: 17
                     color: window.themeColors.surface
@@ -548,6 +638,25 @@ ApplicationWindow {
                             color: window.themeColors.border
                         }
 
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: window.themeColors.border
+                        }
+                        Label {
+                            text: "IDENTIFIANT"
+                            color: window.cyan
+                            font.pixelSize: 8
+                            font.weight: Font.Bold
+                            font.letterSpacing: 1.3
+                        }
+                        Label {
+                            text: detailsPane.appId || "—"
+                            color: window.themeColors.muted_text
+                            font.pixelSize: 10
+                            wrapMode: Text.WrapAnywhere
+                            Layout.fillWidth: true
+                        }
                         Label {
                             text: "COMPATIBILITÉ"
                             color: window.cyan
@@ -598,6 +707,8 @@ ApplicationWindow {
                             implicitHeight: 48
                             enabled: detailsPane.appId.length > 0 && !store.busy
                             text: detailsPane.isInstalled ? "DÉSINSTALLER" : "INSTALLER"
+                            Accessible.name: detailsPane.isInstalled ? "Désinstaller " + detailsPane.appName : "Installer " + detailsPane.appName
+                            Accessible.description: "Une confirmation sera demandée avant toute modification."
                             onClicked: operationDialog.open()
                             background: Rectangle {
                                 radius: 12
@@ -615,8 +726,9 @@ ApplicationWindow {
                                             : window.themeColors.surface
                                     }
                                 }
-                                border.width: 1
-                                border.color: detailsPane.isInstalled ? window.themeColors.border : window.accentA
+                                border.width: installRemoveButton.activeFocus ? 2 : 1
+                                border.color: installRemoveButton.activeFocus ? window.themeColors.text
+                                              : detailsPane.isInstalled ? window.themeColors.border : window.accentA
                             }
                             contentItem: Label {
                                 text: installRemoveButton.text
