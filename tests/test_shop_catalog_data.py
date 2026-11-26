@@ -167,7 +167,7 @@ class StoreCatalogueLoaderTests(unittest.TestCase):
         self.assertIn('"Sélection LEOS"', qml)
         self.assertIn("item.recommended !== true", qml)
         self.assertIn("detailsPane.recommendationReason", qml)
-        self.assertIn("Sélection LEOS ·", qml)
+        self.assertIn("SÉLECTION LEOS ·", qml)
 
     def test_rejects_symlinked_catalogue(self):
         with tempfile.TemporaryDirectory() as directory:
