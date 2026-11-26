@@ -17,7 +17,8 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn('"gaming-logo.png"', assets)
         self.assertIn("visible: status === Image.Ready", source)
         self.assertEqual(source.count("asynchronous: true"), 2)
-        self.assertEqual(source.count("smooth: true"), 2)
+        # The two selector logos and the Gaming handoff cover are all smoothed.
+        self.assertEqual(source.count("smooth: true"), 3)
 
     def test_particle_backdrop_is_shared_by_selector_and_gaming_and_respects_motion_preference(self):
         component = ROOT / "branding" / "qml" / "ParticleBackdrop.qml"
