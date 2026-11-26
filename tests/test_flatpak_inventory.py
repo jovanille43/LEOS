@@ -94,11 +94,11 @@ class FlatpakInventoryTests(unittest.TestCase):
     def test_targeted_update_arguments_are_scoped_to_one_application(self):
         self.assertEqual(
             flatpak_update_args("org.example.App", "user"),
-            ["update", "--user", "--assumeyes", "--app", "org.example.App"],
+            ["update", "--user", "--noninteractive", "--no-deps", "--no-related", "--app", "org.example.App"],
         )
         self.assertEqual(
             flatpak_update_args("org.example.App", "system"),
-            ["update", "--system", "--assumeyes", "--app", "org.example.App"],
+            ["update", "--system", "--noninteractive", "--no-deps", "--no-related", "--app", "org.example.App"],
         )
 
     def test_targeted_update_arguments_reject_invalid_ids_and_scopes(self):
