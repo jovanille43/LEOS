@@ -1,19 +1,17 @@
 # Installation de LEOS
 
-## État actuel — 20 novembre 2026
+## État actuel — 27 novembre 2026
 
-La première **ISO installateur LEOS standard** a été générée avec succès par GitHub Actions après vérification de la signature de l'image publiée.
+La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #75 fusionnée). Cette version inclut notamment la finition graphite/argent, la préservation des accents A/B personnalisables, l'harmonisation typographique et l'ajustement de la densité des particules.
 
-- Artefact GitHub Actions : `LEOS-installer-standard-latest`.
-- Fichier ISO attendu dans l'archive : `LEOS-standard-latest.iso`.
-- Historique des générations : [workflow Generate LEOS installer ISO](https://github.com/jovanille43/LEOS/actions/workflows/iso.yml).
-- N'utiliser qu'un artefact provenant d'une exécution qui a terminé avec succès l'étape **Validate ISO boot structure, checksum, and source digest**.
-- Les trois images conteneur (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées et signées dans GHCR.
-- À ce stade, seule la variante ISO **standard** a été générée. Les variantes ISO NVIDIA restent à produire.
-- L'ISO du run [#44729268412](https://github.com/jovanille43/LEOS/actions/runs/44729268412), construite depuis le commit `3c97827f5c658ed246a7b96ed4a5e8e1fbb2f317`, a ensuite été installée avec succès dans une VM QEMU/KVM : création du compte Anaconda, fin d'installation, redémarrage et ouverture du bureau KDE confirmés le 20 novembre 2026.
-- Le statut `rpm-ostree` de cette VM a confirmé la source signée `ghcr.io/jovanille43/leos:latest`. La sortie `/etc/os-release` peut afficher Bazzite, ce qui reflète la base conservée ; voir le [résultat documenté de la VM](virtual-machine-validation.md).
-- Les changements fusionnés après ce build (import de dossiers console, détection de manettes et améliorations d'accessibilité Gaming) ne sont pas encore dans cette ISO. Ils doivent être publiés dans une nouvelle image conteneur puis reconstruits en ISO avant d'être testés.
-- L'ISO reste un artefact de validation, pas une version stable certifiée. Les contrôles structurels automatisés ne remplacent pas un démarrage et une installation testés dans une machine virtuelle, puis des essais matériels.
+- Contrôles Python : 1 169 tests exécutés, 1 ignoré, aucun échec.
+- Contrôles BlueBuild : réussis, y compris le lint QML, les tests, les scripts de première session, les ressources de branding et la recette.
+- Images publiées et signées : AMD/Intel, NVIDIA legacy et NVIDIA moderne ; les trois builds ont réussi dans le run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222).
+- Génération ISO : elle est déclenchée automatiquement après le succès du workflow Build LEOS. Les ISO propres au commit `29ac036` doivent encore être vérifiées et téléchargées ; ne pas utiliser un ancien artefact pour valider cette version graphique.
+- Le précédent workflow ISO [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147) est basé sur `dc1faf7`, avant la PR #75. Son artefact standard n'est donc pas l'ISO de la version actuelle ; la variante NVIDIA legacy de ce run a échoué pendant l'installation de Cosign (erreur HTTP 403 au téléchargement), et la variante NVIDIA moderne était encore en génération lors du dernier contrôle.
+- Le dernier lot complet dont les trois ISO sont prouvées reste le run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), basé sur `dcd8966). Les trois variantes y ont passé les contrôles de structure, checksum, digest, provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI.
+- La dernière installation interactive confirmée dans une VM date du 20 novembre 2026 et portait sur le commit antérieur `3c97827`. Elle ne valide pas le commit courant `29ac036`.
+- Un démarrage QEMU jusqu'à Anaconda WebUI ne constitue pas une installation complète. LEOS ne doit pas être présenté comme prêt à distribuer avant l'installation de la nouvelle ISO en VM, le contrôle de la première session et la validation de Desktop/Gaming après redémarrage.
 
 Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
 
