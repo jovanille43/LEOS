@@ -4,8 +4,9 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 ## État au 27 novembre 2026
 
-La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #75 fusionnée). Les contrôles Python ont exécuté 1 169 tests (1 ignoré, aucun échec) ; les contrôles BlueBuild ont réussi. Le build des trois images AMD/Intel, NVIDIA legacy et NVIDIA moderne est réussi dans le run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222). La génération ISO est déclenchée par le succès de ce build ; les trois artefacts correspondant à `29ac036` ne sont pas encore validés dans ce document. Le dernier lot ISO complet disponible comme preuve reste le run #45855325068 sur `dcd8966`, antérieur à la finition graphique #75. L'installation interactive en VM et le contrôle visuel réel de Plasma restent à effectuer sur le commit courant.
+La branche `main` est au commit `9fbd20506d727f05c632b6c31ee48f5adc73c44c` (PR #77 fusionnée après #75). La PR #77 synchronise les six couleurs de `files/config/desktop-defaults.json` avec la palette graphite de `desktop/themes.py` et ajoute un test de non-régression. Sur le commit candidat exact de cette PR : 1 170 tests Python exécutés (1 ignoré, aucun échec), lint QML et recette BlueBuild réussis, précontrôle réussi et build de prévisualisation AMD/Intel réussi.
 
+Le build précédent `29ac036` a réussi pour les trois variantes AMD/Intel, NVIDIA legacy et NVIDIA moderne (run #45988546222). La fusion de `9fbd205` déclenche un nouveau build complet et la génération ISO qui suit ; ces exécutions et leurs artefacts doivent encore être confirmés. Le précédent lot ISO #45983444147, issu de `dc1faf7`, n'a réussi que pour la variante standard ; NVIDIA moderne a échoué au démarrage UEFI/QEMU et NVIDIA legacy lors du téléchargement de Cosign (HTTP 403). Le dernier lot de trois ISO entièrement validé demeure #45855325068, sur `dcd8966`, antérieur aux finitions #75/#77. L'installation interactive en VM et le contrôle visuel réel de Plasma restent à effectuer sur le commit courant.
 ## Ordre de travail
 
 ### 1. Installation et première expérience
@@ -70,8 +71,8 @@ La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #
 
 - [x] CI Python, lint QML, contrôles BlueBuild et vérification de signature.
 - [x] Génération des trois variantes ISO avec vérification de structure, checksum, digest source, manifeste de provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI (commit `dcd8966`, run #45855325068).
-- [x] Reconstruire, publier et signer les trois images après la finition graphique #75 (`29ac036`) — build [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222), AMD/Intel, NVIDIA legacy et NVIDIA moderne réussis.
-- [ ] Générer et vérifier les trois ISO de `29ac036` après le build #45988546222 ; vérifier structure, checksum, digest, provenance et démarrage UEFI/QEMU, puis réaliser une installation interactive.
+- [x] Reconstruire, publier et signer les trois images après la finition graphique #75 (`29ac036`) — build [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222), trois variantes réussies.
+- [ ] Reconstruire les trois images et générer/vérifier les trois ISO du commit courant `9fbd205` après #77 ; vérifier structure, checksum, digest, provenance et démarrage UEFI/QEMU, puis réaliser une installation interactive.
 - [x] Ajouter un manifeste de provenance par ISO : variante, commit source, tag et digest d'image, SHA-256 et périmètre exact du test UEFI/QEMU.
 - [ ] Répéter ces contrôles sur le commit exact de livraison et conserver les artefacts correspondants.
 - [ ] Installer l'ISO du commit de livraison dans une VM UEFI dédiée et documenter les résultats : création de compte, session, identité A/B, profil Desktop, Gaming, transitions, réseau/audio, second démarrage.
