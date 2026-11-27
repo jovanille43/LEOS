@@ -57,3 +57,8 @@ Noto Sans est la famille commune des interfaces de connexion, de démarrage et d
 ## Écran de verrouillage
 
 Le profil Desktop applique aussi le fond d'écran LEOS A/B à l'écran de verrouillage natif de KDE via `kscreenlockerrc`, y compris son aperçu. Les deux valeurs précédentes sont sauvegardées avec le reste de l'identité visuelle et restaurées uniquement si elles n'ont pas été modifiées manuellement. LEOS ne remplace pas le dialogue natif d'authentification.
+
+
+## En-tête d'identité partagé
+
+`qml/ModeIdentity.qml` est le composant QML commun aux interfaces Desktop et Gaming. Il reçoit l'emblème spécifique au mode et les couleurs A/B du profil utilisateur. Son installation est déclarée dans `recipes/common-modules.yml`.
