@@ -2,7 +2,7 @@
 
 **LEOS** est une distribution Linux personnalisée basée sur **Bazzite KDE**. Son objectif est de réunir une expérience de bureau élégante et un environnement gaming immersif au sein d'un seul système.
 
-> **État au 27 novembre 2026 :** la PR #73 est fusionnée dans `main` (`dc1faf7`). Les contrôles Python et BlueBuild de ce commit sont réussis ; la reconstruction des trois images est encore en cours et aucune ISO issue de ce commit n'est donc déclarée disponible à ce stade. Le dernier lot complet prouvé est le run ISO [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), basé sur `dcd8966` : les trois ISO (standard, NVIDIA legacy et NVIDIA open) ont été générées, vérifiées (checksum/digest/provenance) et démarrées jusqu'à l'accueil Anaconda WebUI sous UEFI/QEMU. Ce smoke test ne réalise pas une installation complète. La dernière installation interactive confirmée en VM remonte au 20 novembre et concernait un commit antérieur (`3c97827`). LEOS reste donc en validation : il faut réinstaller l'ISO du commit courant et contrôler le parcours Desktop/Gaming avant toute diffusion.
+> **État au 27 novembre 2026 :** la PR #73 est fusionnée dans `main` (`dc1faf7`). Les contrôles Python et BlueBuild de ce commit sont réussis, et les trois images ont été reconstruites, publiées et signées. Le workflow ISO [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147) est en file d'attente ; aucun artefact ISO issu de ce commit n'est disponible à ce stade. Le dernier lot complet prouvé est le run ISO [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), basé sur `dcd8966` : les trois ISO (standard, NVIDIA legacy et NVIDIA open) ont été générées, vérifiées (checksum/digest/provenance) et démarrées jusqu'à l'accueil Anaconda WebUI sous UEFI/QEMU. Ce smoke test ne réalise pas une installation complète. La dernière installation interactive confirmée en VM remonte au 20 novembre et concernait un commit antérieur (`3c97827`). LEOS reste donc en validation : il faut réinstaller l'ISO du commit courant et contrôler le parcours Desktop/Gaming avant toute diffusion.
 
 ## Vision
 
@@ -39,7 +39,7 @@ LEOS conserve les mécanismes natifs de Bazzite, KDE et Linux. Les composants sp
 
 ### Compatibilité matérielle
 
-LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois variantes matérielles du même système ont été construites, publiées et signées : `leos` (AMD/Intel), `leos-nvidia` (NVIDIA Maxwell/Pascal/Volta) et `leos-nvidia-open` (NVIDIA Turing et plus récent). Les trois ISO correspondantes ont été générées dans le run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), sur le commit `dcd8966`, et ont passé le smoke test UEFI/QEMU jusqu'à l'accueil Anaconda. Les ISO du commit courant `dc1faf7` doivent encore être reconstruites puis testées ; les GPU réels restent à valider sur matériel adapté. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
+LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration CPU/GPU imposée. La compatibilité Gaming dépend notamment de Vulkan, des pilotes et des périphériques. La base Bazzite publie comme référence un quadricœur 2 GHz, 8 Go de RAM, un GPU Vulkan 1.3+ et 50 Go libres sur SSD interne (120 Go recommandés). Trois variantes matérielles du même système ont été construites, publiées et signées : `leos` (AMD/Intel), `leos-nvidia` (NVIDIA Maxwell/Pascal/Volta) et `leos-nvidia-open` (NVIDIA Turing et plus récent). Les trois ISO correspondantes ont été générées dans le run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), sur le commit `dcd8966`, et ont passé le smoke test UEFI/QEMU jusqu'à l'accueil Anaconda. Le workflow [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147) doit encore produire les ISO du commit `dc1faf7` ; les GPU réels restent à valider sur matériel adapté. Voir [la politique de compatibilité matérielle](docs/hardware-compatibility.md) et le [guide d'installation](docs/installation.md).
 
 ### Composants source présents dans le dépôt
 
@@ -56,7 +56,7 @@ LEOS vise un large éventail de PC x86_64 démarrant en UEFI, sans configuration
   Détails : [guide du premier démarrage](docs/first-run.md).
 - **Validation continue** : workflows GitHub Actions pour compiler les sources Python, exécuter les tests et contrôler la recette BlueBuild.
 
-Les composants du commit `dcd8966` sont intégrés aux trois images et aux trois ISO du run #45855325068. Les améliorations de la PR #73 sont présentes dans les sources `main` (`dc1faf7`) mais attendent la fin de la reconstruction des images et une nouvelle génération ISO. Les tests automatisés et le smoke test UEFI/QEMU ne remplacent pas une installation interactive, la validation des interfaces dans Plasma ni les essais sur PC physique.
+Les composants du commit `dcd8966` sont intégrés aux trois images et aux trois ISO du run #45855325068. Les améliorations de la PR #73 sont présentes dans les sources `main` (`dc1faf7`) et dans les trois images publiées ; leur génération ISO automatique est en attente dans le workflow #45983444147. Les tests automatisés et le smoke test UEFI/QEMU ne remplacent pas une installation interactive, la validation des interfaces dans Plasma ni les essais sur PC physique.
 
 ## Gaming Mode
 
@@ -145,7 +145,7 @@ LEOS/
 
 ## Prochaines étapes
 
-1. **Installer l'ISO issue de `dc1faf7` en VM UEFI** — après publication du nouveau lot, vérifier SHA-256 et digest, installer uniquement sur un disque QCOW2 dédié, créer le compte et contrôler l'ouverture de session.
+1. **Installer l'ISO issue de `dc1faf7` en VM UEFI** — lorsque le workflow #45983444147 est terminé et les artefacts disponibles, vérifier SHA-256 et digest, installer uniquement sur un disque QCOW2 dédié, créer le compte et contrôler l'ouverture de session.
 2. **Valider l'expérience de première session** — vérifier le choix A/B, l'activation du profil Desktop, le fond, le dock, le menu, le Centre de contrôle, Gaming plein écran, les deux transitions et la persistance après redémarrage.
 3. **Corriger les anomalies d'installation ou de session** — traiter les blocages réels et relancer les contrôles automatiques.
 4. **Valider sur matériel adapté** — tester les variantes GPU AMD/Intel et NVIDIA, puis réseau, audio, Bluetooth, manettes, veille, écrans et rollback.
@@ -166,13 +166,14 @@ LEOS/
 - [ ] Valider les installations, mises à jour et lancements Flatpak sur Bazzite réel, les assistants, les supports externes et la reconnexion après retrait.
 - [x] Construire, publier et signer les trois images conteneur Bazzite : standard, NVIDIA legacy et NVIDIA open.
 - [x] Générer les trois ISO (standard, NVIDIA legacy et NVIDIA open) avec checksum, digest source, manifeste de provenance et smoke test UEFI/QEMU jusqu'à Anaconda WebUI — run #45855325068, commit `dcd8966`.
-- [ ] Répéter la construction des trois images et des trois ISO après la fusion de la PR #73 (`dc1faf7`) ; le build d'images est en cours à la date de cet état.
+- [x] Reconstruire, publier et signer les trois images après la fusion de la PR #73 (`dc1faf7`) — run Build [#45982477894](https://github.com/jovanille43/LEOS/actions/runs/45982477894).
+- [ ] Générer et vérifier les trois ISO correspondant à `dc1faf7` — workflow [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147) en file d'attente.
 - [x] Ajouter `cosign.pub` et configurer les secrets GitHub `SIGNING_SECRET` et `COSIGN_PASSWORD` pour la signature chiffrée.
 - [x] Construire, publier et signer les images conteneur LEOS avec Cosign.
 - [x] Vérifier le démarrage UEFI/QEMU de l'installateur et l'apparition de l'accueil Anaconda WebUI ; ce contrôle n'effectue pas l'installation sur disque.
 - [ ] Installer l'ISO issue du commit courant en VM, valider le parcours post-installation et tester ensuite sur matériel physique.
 
-**État de livraison :** les trois ISO du commit `dcd8966` sont disponibles comme artefacts du run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068). Les sources plus récentes de `dc1faf7` contiennent les améliorations de la PR #73, mais leur nouvelle chaîne de build/ISO doit se terminer avant de fournir un artefact correspondant. Aucune version taguée ni GitHub Release n'a été publiée. La validation interactive en VM et la validation matérielle restent requises. Voir [le guide de validation en machine virtuelle](docs/virtual-machine-validation.md) et [la checklist matérielle](docs/hardware-validation.md).
+**État de livraison :** les trois ISO du commit `dcd8966` sont disponibles comme artefacts du run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068). Les trois images de `dc1faf7` sont publiées ; le workflow ISO #45983444147 doit se terminer avant de fournir un artefact correspondant. Aucune version taguée ni GitHub Release n'a été publiée. La validation interactive en VM et la validation matérielle restent requises. Voir [le guide de validation en machine virtuelle](docs/virtual-machine-validation.md) et [la checklist matérielle](docs/hardware-validation.md).
 
 ## Contribuer, licences et publications
 
