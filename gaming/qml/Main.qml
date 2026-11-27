@@ -1860,8 +1860,8 @@ ApplicationWindow {
                                     Item { Layout.fillWidth: true }
                                     Label {
                                         text: window.selectedInstallStatus || "—"
-                                        color: window.selectedInstallStatus === "Installé" ? window.cyan :
-                                               window.selectedInstallStatus === "Fichiers absents" ? "#d5a45d" : window.themeColors.text
+                                        color: window.selectedInstallStatus === "Installé" ? window.themeColors.semantic_healthy :
+                                               window.selectedInstallStatus === "Fichiers absents" ? window.themeColors.semantic_warning : window.themeColors.text
                                         font.pixelSize: window.fontCaption
                                         font.weight: Font.DemiBold
                                     }
@@ -1878,7 +1878,7 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     visible: window.selectedDuplicateCount > 1
                                     text: "DOUBLON POTENTIEL · " + window.selectedDuplicateCount + " entrées (" + window.selectedDuplicateSources + ")"
-                                    color: "#d5a45d"
+                                    color: window.themeColors.semantic_warning
                                     font.pixelSize: window.fontMicro
                                     wrapMode: Text.WordWrap
                                 }
