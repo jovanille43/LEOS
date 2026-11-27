@@ -30,6 +30,19 @@ class DynamicThemeTests(unittest.TestCase):
                 self.assertEqual(palette["accent_primary"], "#E58A3A")
                 self.assertEqual(palette["accent_secondary"], "#4F75D5")
 
+    def test_desktop_defaults_match_shared_graphite_dark_palette(self):
+        root = Path(__file__).resolve().parents[1]
+        defaults = json.loads(
+            (root / "files" / "config" / "desktop-defaults.json").read_text(encoding="utf-8")
+        )
+        appearance = defaults["appearance"]
+        palette = palette_for_colors(
+            appearance=appearance["color_scheme"],
+        )
+        for token in ("background", "surface", "surface_elevated", "border", "text", "muted_text"):
+            with self.subTest(token=token):
+                self.assertEqual(appearance[token], palette[token])
+
     def test_particle_backdrop_uses_neutral_fallbacks_and_bounded_density(self):
         root = Path(__file__).resolve().parents[1]
         backdrop = (root / "branding" / "qml" / "ParticleBackdrop.qml").read_text(encoding="utf-8")
