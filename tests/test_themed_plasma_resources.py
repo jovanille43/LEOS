@@ -140,7 +140,7 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
         fills = [node.attrib["fill"] for node in style_svg.iter() if "fill" in node.attrib]
         strokes = [node.attrib["stroke"] for node in style_svg.iter() if "stroke" in node.attrib]
         self.assertEqual(fills, ["#FFFFFF", "#FFFFFF"])
-        self.assertEqual(strokes, ["#D3DCE7"])
+        self.assertEqual(strokes, ["#D0D0D0"])
 
         icon_svg = ET.parse(icon_root / "scalable" / "apps" / "demo.svg").getroot()
         icon_strokes = [node.attrib["stroke"] for node in icon_svg.iter() if "stroke" in node.attrib]
