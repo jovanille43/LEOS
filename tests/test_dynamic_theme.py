@@ -30,6 +30,62 @@ class DynamicThemeTests(unittest.TestCase):
                 self.assertEqual(palette["accent_primary"], "#E58A3A")
                 self.assertEqual(palette["accent_secondary"], "#4F75D5")
 
+    def test_semantic_status_colors_are_shared_contrast_safe_and_independent_from_ab(self):
+        palettes = {}
+        for appearance in ("dark", "light"):
+            with self.subTest(appearance=appearance):
+                first = palette_for_colors("#FF4400", "#0055CC", appearance=appearance)
+                second = palette_for_colors("#22AA44", "#9B40D0", appearance=appearance)
+                status_tokens = ("semantic_critical", "semantic_warning", "semantic_healthy")
+                for token in status_tokens:
+                    self.assertEqual(first[token], second[token], token)
+                self.assertEqual(first["semantic_critical"], "#F08C95" if appearance == "dark" else "#A8323E")
+                self.assertEqual(first["semantic_warning"], "#E6BD68" if appearance == "dark" else "#8A5B0A")
+                self.assertEqual(first["semantic_healthy"], "#83C89E" if appearance == "dark" else "#246B45")
+                for token in status_tokens:
+                    for surface in ("background", "surface", "surface_elevated"):
+                        with self.subTest(token=token, surface=surface):
+                            self.assertGreaterEqual(
+                                self._contrast_ratio(first[token], first[surface]),
+                                4.5,
+                            )
+                palettes[appearance] = first
+        for token in ("semantic_critical", "semantic_warning", "semantic_healthy"):
+            self.assertNotEqual(palettes["dark"][token], palettes["light"][token])
+
+    @staticmethod
+    def _contrast_ratio(first, second):
+        def luminance(color):
+            channels = [int(color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
+            linear = [
+                value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+                for value in channels
+            ]
+            return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+        first_luminance = luminance(first)
+        second_luminance = luminance(second)
+        return (max(first_luminance, second_luminance) + 0.05) / (
+            min(first_luminance, second_luminance) + 0.05
+        )
+
+    def test_primary_qml_interfaces_use_shared_semantic_status_tokens(self):
+        root = Path(__file__).resolve().parents[1]
+        cases = {
+            "gaming/qml/Main.qml": ("semantic_healthy", "semantic_warning"),
+            "desktop/qml/Notifications.qml": ("semantic_critical", "semantic_warning", "semantic_healthy"),
+            "control_center/qml/Main.qml": ("themeColors.semantic_critical", "themeColors.semantic_warning", "themeColors.semantic_healthy"),
+            "controller_center/qml/Main.qml": ("semantic_warning", "semantic_healthy"),
+            "shop/qml/Main.qml": ("semantic_healthy",),
+        }
+        old_status_colors = ("#d5a45d", "#FF5577", "#FFB84D", "#78C99B", "#8bd8a8", "#79B99A")
+        for relative, tokens in cases.items():
+            content = (root / relative).read_text(encoding="utf-8")
+            with self.subTest(interface=relative):
+                for token in tokens:
+                    self.assertIn(token, content)
+                for color in old_status_colors:
+                    self.assertNotIn(color.lower(), content.lower())
+
     def test_desktop_defaults_match_shared_graphite_dark_palette(self):
         root = Path(__file__).resolve().parents[1]
         defaults = json.loads(

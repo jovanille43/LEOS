@@ -181,7 +181,7 @@ ApplicationWindow {
                             width: 7
                             height: 7
                             radius: 4
-                            color: store.busy ? window.accentA : "#79B99A"
+                            color: store.busy ? window.accentA : window.themeColors.semantic_healthy
                         }
                         Label {
                             id: storeBusyLabel

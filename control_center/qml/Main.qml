@@ -19,10 +19,10 @@ ApplicationWindow {
     property color accentA: themeColors.accent_primary
     property color accentB: themeColors.accent_secondary
     property color muted: themeColors.muted_text
-    // Semantic states stay independent from the user-selected A/B brand accents.
-    property color semanticCritical: controlCenter.effectiveAppearance === "light" ? "#A8323E" : "#F08C95"
-    property color semanticWarning: controlCenter.effectiveAppearance === "light" ? "#8A5B0A" : "#E6BD68"
-    property color semanticHealthy: controlCenter.effectiveAppearance === "light" ? "#246B45" : "#83C89E"
+    // Shared semantic status tokens stay independent from the user-selected A/B accents.
+    property color semanticCritical: themeColors.semantic_critical
+    property color semanticWarning: themeColors.semantic_warning
+    property color semanticHealthy: themeColors.semantic_healthy
     property int selectedPage: 0
     property string launchNotice: ""
     property string kdeThemeNotice: ""
@@ -502,7 +502,7 @@ ApplicationWindow {
                             Layout.preferredWidth: 7
                             Layout.preferredHeight: 7
                             radius: 4
-                            color: systemMonitor.available ? "#78C99B" : window.muted
+                            color: systemMonitor.available ? window.semanticHealthy : window.muted
                         }
                         Label {
                             Layout.fillWidth: true

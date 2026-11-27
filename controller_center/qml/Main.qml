@@ -20,6 +20,9 @@ ApplicationWindow {
     property color muted: themeColors.muted_text
     property color panel: themeColors.surface
     property color line: themeColors.border
+    property color semanticCritical: themeColors.semantic_critical
+    property color semanticWarning: themeColors.semantic_warning
+    property color semanticHealthy: themeColors.semantic_healthy
 
     Rectangle {
         anchors.fill: parent
@@ -83,7 +86,7 @@ ApplicationWindow {
                             Layout.preferredWidth: 7
                             Layout.preferredHeight: 7
                             radius: 4
-                            color: controllerCenter.selectedIndex >= 0 ? "#78C99B" : window.muted
+                            color: controllerCenter.selectedIndex >= 0 ? window.semanticHealthy : window.muted
                         }
                         Label {
                             Layout.fillWidth: true
@@ -224,7 +227,7 @@ ApplicationWindow {
                                 text: controllerCenter.backendAvailable
                                     ? "Détection Linux active"
                                     : "Backend evdev non installé"
-                                color: controllerCenter.backendAvailable ? "#8bd8a8" : window.magenta
+                                color: controllerCenter.backendAvailable ? window.semanticHealthy : window.semanticWarning
                                 font.pixelSize: 13
                             }
                         }
