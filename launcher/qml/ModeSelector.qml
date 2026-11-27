@@ -795,7 +795,7 @@ ApplicationWindow {
                                         font.letterSpacing: 1.1
                                     }
                                     Item { Layout.fillWidth: true }
-                                    Label { text: "ACCÉDER"; color: window.muted; font.pixelSize: 8; font.weight: Font.DemiBold; font.letterSpacing: 1 }
+                                    Label { text: "ACCÉDER"; color: window.muted; font.pixelSize: 10; font.weight: Font.DemiBold; font.letterSpacing: 1 }
                                     Label { text: "→"; color: window.colorAText; font.pixelSize: 18; font.weight: Font.DemiBold }
                                 }
                             }
@@ -1089,7 +1089,7 @@ ApplicationWindow {
                                         font.letterSpacing: 1.1
                                     }
                                     Item { Layout.fillWidth: true }
-                                    Label { text: "JOUER"; color: window.muted; font.pixelSize: 8; font.weight: Font.DemiBold; font.letterSpacing: 1 }
+                                    Label { text: "JOUER"; color: window.muted; font.pixelSize: 10; font.weight: Font.DemiBold; font.letterSpacing: 1 }
                                     Label { text: "→"; color: window.colorBText; font.pixelSize: 18; font.weight: Font.DemiBold }
                                 }
                             }
