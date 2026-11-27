@@ -188,6 +188,13 @@ class GameLibraryModel(QAbstractListModel):
             data_home=xdg_data_home(),
         )
 
+    def emulatorFrontendCommand(self, app_id: str) -> list[str]:
+        """Open only a known emulator that is already deployed on this host."""
+        return build_emulator_frontend_command(
+            app_id,
+            data_home=xdg_data_home(),
+        )
+
     def _steam_roots(self) -> list[Path]:
         home = Path.home()
         candidates = [

@@ -19,6 +19,24 @@ def flatpak_uninstall_args(app_id: str, scope: str) -> list[str]:
     return ["uninstall", scope_flag, "--assumeyes", app_id]
 
 
+def flatpak_info_origin_is_flathub(output: str) -> bool:
+    """Accept only an unambiguous Flathub origin from flatpak info --show-origin."""
+    if not isinstance(output, str):
+        return False
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    return len(lines) == 1 and lines[0].casefold() == "flathub"
+
+
+def flatpak_update_args(app_id: str, scope: str) -> list[str]:
+    """Build a scoped update command for one application, never all refs."""
+    if not APP_ID_RE.fullmatch(app_id):
+        raise ValueError("Invalid Flatpak application ID")
+    if scope not in {"user", "system"}:
+        raise ValueError("Unsupported Flatpak installation scope")
+    scope_flag = "--user" if scope == "user" else "--system"
+    return ["update", scope_flag, "--noninteractive", "--no-deps", "--no-related", "--app", app_id]
+
+
 def parse_flatpak_inventory(output: str) -> tuple[set[str], set[str]]:
     """Return separate user and system app IDs from --columns output.
 

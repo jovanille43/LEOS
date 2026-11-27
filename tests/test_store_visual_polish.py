@@ -32,6 +32,11 @@ class StoreVisualPolishTests(unittest.TestCase):
         self.assertIn("window.accentB.r, window.accentB.g, window.accentB.b", self.qml)
         self.assertIn("font.weight: Font.Bold", self.qml)
 
+    def test_installed_apps_show_a_separate_update_action(self):
+        self.assertIn('visible: detailsPane.isInstalled && !detailsPane.bundled', self.qml)
+        self.assertIn('VÉRIFIER LES MISES À JOUR', self.qml)
+        self.assertIn('Accessible.name: "Vérifier les mises à jour de " + detailsPane.appName', self.qml)
+
     def test_store_operations_and_flathub_verification_flow_remain_intact(self):
         for token in (
             "store.refreshInstalled()",

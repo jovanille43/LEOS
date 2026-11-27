@@ -20,6 +20,8 @@ class CatalogModel(QAbstractListModel):
     InstalledRole = AppIdRole + 7
     InstalledScopeRole = AppIdRole + 8
     BundledRole = AppIdRole + 9
+    RecommendedRole = AppIdRole + 10
+    RecommendationReasonRole = AppIdRole + 11
 
     ROLE_NAMES = {
         AppIdRole: QByteArray(b"appId"),
@@ -32,6 +34,8 @@ class CatalogModel(QAbstractListModel):
         InstalledRole: QByteArray(b"installed"),
         InstalledScopeRole: QByteArray(b"installedScope"),
         BundledRole: QByteArray(b"bundled"),
+        RecommendedRole: QByteArray(b"recommended"),
+        RecommendationReasonRole: QByteArray(b"recommendationReason"),
     }
 
     def __init__(self, parent=None) -> None:
@@ -79,6 +83,8 @@ class CatalogModel(QAbstractListModel):
             self.CompatibilityRole: item["compatibility"],
             self.OperationNoteRole: item["operation_note"],
             self.BundledRole: bool(item.get("bundled", False)),
+            self.RecommendedRole: bool(item.get("recommended", False)),
+            self.RecommendationReasonRole: str(item.get("recommendation_reason", "")),
         }
         return values.get(role)
 

@@ -272,6 +272,37 @@ class GamingController(QObject):
         self.messageChanged.emit(self._message)
         return opened
 
+    @Slot(str, result=bool)
+    def openEmulatorSetup(self, app_id: str) -> bool:
+        """Open a curated, already-installed emulator without accepting shell commands."""
+        setup_names = {
+            "net.pcsx2.PCSX2": "PCSX2",
+            "net.kuribo64.melonDS": "melonDS",
+            "net.rpcs3.RPCS3": "RPCS3",
+        }
+        name = setup_names.get(app_id)
+        if name is None:
+            self._message = "Émulateur non reconnu par l'assistant LEOS."
+            self.messageChanged.emit(self._message)
+            return False
+        command = self.library.emulatorFrontendCommand(app_id)
+        if not command:
+            self._message = f"{name} n'est pas installé sur cet hôte. Tu peux l'ajouter depuis la Boutique LEOS."
+            self.messageChanged.emit(self._message)
+            return False
+        try:
+            result = QProcess.startDetached(command[0], command[1:], str(Path.home()))
+            opened = bool(result[0] if isinstance(result, tuple) else result)
+        except (OSError, RuntimeError):
+            opened = False
+        self._message = (
+            f"{name} est ouvert. Termine sa configuration avec tes propres fichiers, puis actualise les prérequis LEOS."
+            if opened
+            else f"Impossible d'ouvrir {name} sur cet hôte."
+        )
+        self.messageChanged.emit(self._message)
+        return opened
+
     @Slot()
     def refreshLauncherStatuses(self) -> None:
         statuses = self.library.launcherStatuses()

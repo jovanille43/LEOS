@@ -26,7 +26,9 @@
     "description": "Navigateur web Firefox.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation.",
+    "recommended": true,
+    "recommendation_reason": "Navigation web ; alternative à l'application navigateur incluse."
   },
   {
     "id": "org.libreoffice.LibreOffice",
@@ -45,7 +47,9 @@
     "description": "Éditeur d'images et de photos.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation.",
+    "recommended": true,
+    "recommendation_reason": "Retouche et composition d'images pour les usages créatifs."
   },
   {
     "id": "com.obsproject.Studio",
@@ -54,7 +58,9 @@
     "description": "Enregistrement vidéo et diffusion en direct.",
     "source": "Flathub",
     "compatibility": "L'accès à certains périphériques et à l'accélération matérielle dépend de la configuration du système.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation.",
+    "recommended": true,
+    "recommendation_reason": "Capture vidéo et diffusion en direct ; accélération selon le matériel."
   },
   {
     "id": "com.heroicgameslauncher.hgl",
@@ -73,7 +79,9 @@
     "description": "Gestionnaire de jeux et de lanceurs compatibles Linux.",
     "source": "Flathub",
     "compatibility": "La prise en charge de chaque lanceur et jeu varie ; certains composants supplémentaires peuvent être requis.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation.",
+    "recommended": true,
+    "recommendation_reason": "Centraliser des jeux et lanceurs compatibles dans une seule interface."
   },
   {
     "id": "org.kde.krita",
@@ -82,7 +90,9 @@
     "description": "Peinture numérique et illustration.",
     "source": "Flathub",
     "compatibility": "Application Flatpak pour Linux.",
-    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation."
+    "operation_note": "Flatpak peut installer les runtimes nécessaires après confirmation.",
+    "recommended": true,
+    "recommendation_reason": "Illustration et peinture numérique."
   },
   {
     "id": "org.libretro.RetroArch",

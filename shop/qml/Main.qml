@@ -45,7 +45,10 @@ ApplicationWindow {
             const item = store.catalogItem(row)
             if (!item)
                 continue
-            if (categoryFilter.currentText !== "Toutes" && item.category !== categoryFilter.currentText)
+            if (categoryFilter.currentText === "Sélection LEOS" && item.recommended !== true)
+                continue
+            if (categoryFilter.currentText !== "Toutes" && categoryFilter.currentText !== "Sélection LEOS"
+                && item.category !== categoryFilter.currentText)
                 continue
             if (matchesSearch(item.name, item.id, item.category, item.description,
                               item.source, item.compatibility, item.operation_note))
@@ -73,9 +76,11 @@ ApplicationWindow {
         detailsPane.isInstalled = false
         detailsPane.installedScope = ""
         detailsPane.bundled = false
+        detailsPane.recommended = false
+        detailsPane.recommendationReason = ""
     }
 
-    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled) {
+    function selectApp(row, id, name, category, description, source, compatibility, note, installed, scope, bundled, recommended, recommendationReason) {
         selectedRow = row
         detailsPane.appId = id
         detailsPane.appName = name
@@ -87,6 +92,8 @@ ApplicationWindow {
         detailsPane.isInstalled = installed
         detailsPane.installedScope = scope
         detailsPane.bundled = bundled
+        detailsPane.recommended = recommended
+        detailsPane.recommendationReason = recommendationReason
     }
 
     Rectangle {
@@ -278,7 +285,7 @@ ApplicationWindow {
                     id: categoryFilter
                     Layout.preferredWidth: 190
                     Layout.preferredHeight: 48
-                    model: ["Toutes"].concat(catalogModel.availableCategories)
+                    model: ["Toutes", "Sélection LEOS"].concat(catalogModel.availableCategories)
                     enabled: !store.busy
                     Accessible.name: "Filtrer par catégorie"
                     onCurrentTextChanged: window.clearSelection()
@@ -396,11 +403,15 @@ ApplicationWindow {
                                 required property bool installed
                                 required property string installedScope
                                 required property bool bundled
+                                required property bool recommended
+                                required property string recommendationReason
                                 required property int index
 
                                 width: ListView.view.width
                                 height: visible ? 84 : 0
-                                visible: (categoryFilter.currentText === "Toutes" || category === categoryFilter.currentText)
+                                visible: (categoryFilter.currentText === "Toutes"
+                                    || (categoryFilter.currentText === "Sélection LEOS" && recommended)
+                                    || category === categoryFilter.currentText)
                                     && window.matchesSearch(name, appId, category, description, source, compatibility, operationNote)
                                 radius: 12
                                 gradient: Gradient {
@@ -516,7 +527,7 @@ ApplicationWindow {
                                     contentItem: Item { }
                                     onClicked: window.selectApp(index, appId, name, category, description, source,
                                                                 compatibility, operationNote, installed,
-                                                                installedScope, bundled)
+                                                                installedScope, bundled, recommended, recommendationReason)
                                 }
                             }
 
@@ -548,6 +559,8 @@ ApplicationWindow {
                     property bool isInstalled: false
                     property string installedScope: ""
                     property bool bundled: false
+                    property bool recommended: false
+                    property string recommendationReason: ""
                     Layout.preferredWidth: window.width < 1080 ? 300 : 360
                     Layout.minimumWidth: 280
                     Layout.fillHeight: true
@@ -619,6 +632,15 @@ ApplicationWindow {
                             font.pixelSize: 10
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
+                        }
+                        Label {
+                            visible: detailsPane.recommended
+                            text: "SÉLECTION LEOS · " + detailsPane.recommendationReason
+                            color: window.accentB
+                            font.pixelSize: 10
+                            font.weight: Font.DemiBold
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
                         }
                         Label {
                             text: detailsPane.appDescription
@@ -697,6 +719,36 @@ ApplicationWindow {
                         }
 
                         Item { Layout.fillHeight: true }
+
+                        Button {
+                            id: updateButton
+                            visible: detailsPane.isInstalled && !detailsPane.bundled
+                            Layout.fillWidth: true
+                            implicitHeight: 42
+                            enabled: detailsPane.appId.length > 0 && !store.busy
+                            text: "VÉRIFIER LES MISES À JOUR"
+                            Accessible.name: "Vérifier les mises à jour de " + detailsPane.appName
+                            Accessible.description: "Vérifie l'origine de cette installation. Une seconde confirmation sera demandée avant la mise à jour ciblée."
+                            onClicked: store.requestUpdate(window.selectedRow)
+                            background: Rectangle {
+                                radius: 11
+                                color: updateButton.down
+                                    ? window.themeColors.surface_elevated
+                                    : window.themeColors.surface
+                                border.width: updateButton.activeFocus ? 2 : 1
+                                border.color: updateButton.activeFocus
+                                    ? window.themeColors.text : window.themeColors.border
+                            }
+                            contentItem: Label {
+                                text: updateButton.text
+                                color: updateButton.enabled ? window.themeColors.text : window.muted
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                                letterSpacing: 0.8
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
 
                         Button {
                             id: installRemoveButton
@@ -818,9 +870,14 @@ ApplicationWindow {
     Connections {
         target: store
         function onOperationFinished(success, message) {
-            if (!success || !message.includes("disponible sur Flathub"))
+            if (!success)
                 return
-            verifyDialog.open()
+            if (message.includes("mise à jour ciblée est possible")) {
+                updateVerifyDialog.open()
+                return
+            }
+            if (message.includes("disponible sur Flathub"))
+                verifyDialog.open()
         }
         function onCatalogUpdated() {
             if (window.selectedRow < 0)
@@ -866,6 +923,53 @@ ApplicationWindow {
                 onClicked: {
                     verifyDialog.close()
                     store.confirmInstall(window.selectedRow)
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: updateVerifyDialog
+        title: "Mise à jour vérifiée"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Cancel
+        width: 480
+        background: Rectangle {
+            radius: 16
+            color: window.themeColors.surface
+            border.color: window.themeColors.border
+        }
+        ColumnLayout {
+            width: parent.width
+            spacing: 12
+            Label {
+                text: "LEOS a confirmé que " + detailsPane.appName
+                    + " provient du dépôt Flathub configuré pour son installation."
+                color: window.themeColors.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: store.verificationDetails
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Label {
+                text: "Seule cette application sera ciblée. Les dépendances et extensions ne seront pas mises à jour implicitement ; elles pourront nécessiter une opération séparée. Une installation système peut demander une autorisation administrateur."
+                color: window.muted
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Button {
+                text: "METTRE À JOUR CETTE APPLICATION"
+                Layout.fillWidth: true
+                implicitHeight: 44
+                enabled: !store.busy
+                onClicked: {
+                    updateVerifyDialog.close()
+                    store.confirmUpdate(window.selectedRow)
                 }
             }
         }

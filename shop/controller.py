@@ -14,6 +14,8 @@ from PySide6.QtCore import QObject, Property, Signal, Slot, QProcess, QTimer
 from shop.catalog import CatalogModel
 from shop.flatpak_inventory import (
     flatpak_uninstall_args,
+    flatpak_update_args,
+    flatpak_info_origin_is_flathub,
     trusted_flathub_remote_url,
     parse_flatpak_inventory,
 )
@@ -28,9 +30,25 @@ OPERATION_TIMEOUTS_MS = {
     "verify-remote": 30_000,
     "verify-install": 90_000,
     "recheck-remote": 30_000,
+    "verify-update-origin": 30_000,
+    "verify-update-remote": 30_000,
+    "recheck-update-origin": 30_000,
+    "recheck-update-remote": 30_000,
     "install": 30 * 60 * 1000,
     "uninstall": 30 * 60 * 1000,
+    "update": 30 * 60 * 1000,
 }
+
+
+VERIFICATION_ACTIONS = frozenset({
+    "verify-remote",
+    "verify-install",
+    "recheck-remote",
+    "verify-update-origin",
+    "verify-update-remote",
+    "recheck-update-origin",
+    "recheck-update-remote",
+})
 
 
 APP_ID_RE = re.compile(r"^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+$")
@@ -68,6 +86,9 @@ class StoreController(QObject):
         self._action = ""
         self._target = ""
         self._verified_source_url = ""
+        self._verified_update_id = ""
+        self._verified_update_scope = ""
+        self._pending_update_scope = ""
         self._stdout = bytearray()
         self._stderr = bytearray()
         self._output_overflowed = False
@@ -99,6 +120,11 @@ class StoreController(QObject):
             self._busy = value
             self.busyChanged.emit(value)
 
+    def _clear_update_verification(self) -> None:
+        self._verified_update_id = ""
+        self._verified_update_scope = ""
+        self._pending_update_scope = ""
+
     def _release_flatpak_lock(self) -> None:
         descriptor = self._flatpak_lock_fd
         self._flatpak_lock_fd = None
@@ -111,14 +137,14 @@ class StoreController(QObject):
 
     def _start(self, action: str, target: str, program: str, args: list[str]) -> None:
         if self._busy:
-            if action in {"verify-remote", "verify-install", "recheck-remote"}:
+            if action in VERIFICATION_ACTIONS:
                 self._set_verification_details("Une autre opération Flatpak est déjà en cours ; la vérification est annulée.")
             self._set_status("Une opération est déjà en cours.")
             return
         executable = shutil.which(program)
         if not executable:
             self._release_flatpak_lock()
-            if action in {"verify-remote", "verify-install", "recheck-remote"}:
+            if action in VERIFICATION_ACTIONS:
                 self._set_verification_details("Flatpak n'est pas disponible : la source et les dépendances n'ont pas pu être vérifiées.")
             self._set_status(f"{program} n'est pas disponible sur ce système.")
             post_notification("Opération impossible", self._status, "error")
@@ -130,7 +156,7 @@ class StoreController(QObject):
             except OSError as error:
                 message = f"Le verrou Flatpak LEOS n'est pas disponible en sécurité : {error}"
                 self._set_status(message)
-                if action in {"verify-remote", "verify-install", "recheck-remote"}:
+                if action in VERIFICATION_ACTIONS:
                     self._set_verification_details(message)
                 self.operationFinished.emit(False, message)
                 return
@@ -140,7 +166,7 @@ class StoreController(QObject):
                     self._inventory_retry_attempts += 1
                     self._inventory_retry_timer.start()
                 self._set_status(message)
-                if action in {"verify-remote", "verify-install", "recheck-remote"}:
+                if action in VERIFICATION_ACTIONS:
                     self._set_verification_details(message)
                 self.operationFinished.emit(False, message)
                 return
@@ -228,6 +254,57 @@ class StoreController(QObject):
             ["remotes", "--user", "--columns=name,url"],
         )
 
+    @Slot(int)
+    def requestUpdate(self, row: int) -> None:
+        """Offer a scoped update only for an installed app from verified Flathub."""
+        item = self.catalog.itemAt(row)
+        if (
+            not item
+            or not APP_ID_RE.fullmatch(item["id"])
+            or item.get("installed_scope") not in {"user", "system"}
+            or item.get("bundled") is True
+        ):
+            self._set_status("Cette application ne possède pas une installation Flatpak gérable.")
+            return
+        self._verified_source_url = ""
+        self._clear_update_verification()
+        self._pending_update_scope = item["installed_scope"]
+        self._set_verification_details(
+            "Vérification de l'origine réelle de l'application et du dépôt associé…"
+        )
+        scope_flag = "--user" if self._pending_update_scope == "user" else "--system"
+        self._start(
+            "verify-update-origin",
+            item["id"],
+            "flatpak",
+            ["info", scope_flag, "--show-origin", item["id"]],
+        )
+
+    @Slot(int)
+    def confirmUpdate(self, row: int) -> None:
+        """Revalidate app identity and origin after explicit user confirmation."""
+        item = self.catalog.itemAt(row)
+        if (
+            not item
+            or item["id"] != self._verified_update_id
+            or item.get("installed_scope") != self._verified_update_scope
+            or self._action != "update-verified"
+        ):
+            self._set_status(
+                "L'installation a changé depuis la vérification. Relance la vérification avant de mettre à jour."
+            )
+            self._clear_update_verification()
+            self._verified_source_url = ""
+            self._action = ""
+            return
+        scope_flag = "--user" if self._verified_update_scope == "user" else "--system"
+        self._start(
+            "recheck-update-origin",
+            item["id"],
+            "flatpak",
+            ["info", scope_flag, "--show-origin", item["id"]],
+        )
+
     @Slot()
     def refreshCatalogue(self) -> None:
         self.refreshInstalled()
@@ -253,6 +330,7 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
+            self._clear_update_verification()
             self._set_status("La sortie Flatpak dépasse la limite ; le résultat n'est pas vérifiable. Vérifie l'état de l'application avant de réessayer.")
             self.operationFinished.emit(False, self._status)
             post_notification("Sortie Flatpak trop volumineuse", self._status, "warning")
@@ -324,6 +402,110 @@ class StoreController(QObject):
                 self.operationFinished.emit(False, self._status)
             return
 
+        if action == "verify-update-origin":
+            scope = self._pending_update_scope
+            if exit_code == 0 and scope in {"user", "system"} and flatpak_info_origin_is_flathub(stdout):
+                scope_flag = "--user" if scope == "user" else "--system"
+                self._start(
+                    "verify-update-remote",
+                    target,
+                    "flatpak",
+                    ["remotes", scope_flag, "--columns=name,url"],
+                )
+            else:
+                self._release_flatpak_lock()
+                self._action = ""
+                self._verified_source_url = ""
+                self._clear_update_verification()
+                self._set_verification_details(
+                    "La fiche installée ne confirme pas une origine Flathub. Aucune mise à jour n'a été lancée."
+                )
+                self._set_status("Mise à jour bloquée : l'application n'est pas identifiée comme issue de Flathub.")
+                post_notification("Origine non vérifiée", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
+        if action == "verify-update-remote":
+            remote_url = trusted_flathub_remote_url(stdout) if exit_code == 0 else ""
+            if remote_url and self._pending_update_scope in {"user", "system"}:
+                self._verified_source_url = remote_url
+                self._verified_update_id = target
+                self._verified_update_scope = self._pending_update_scope
+                self._release_flatpak_lock()
+                self._action = "update-verified"
+                self._set_verification_details(
+                    f"Origine Flathub confirmée : {remote_url}\n"
+                    f"Installation : {self._verified_update_scope}. "
+                    "La mise à jour sera limitée à cette application."
+                )
+                self._set_status(
+                    f"{target} est installée depuis Flathub. Une mise à jour ciblée est possible après confirmation."
+                )
+                self.operationFinished.emit(True, self._status)
+            else:
+                self._release_flatpak_lock()
+                self._action = ""
+                self._verified_source_url = ""
+                self._clear_update_verification()
+                self._set_verification_details(
+                    "Le dépôt Flathub associé n'est pas vérifiable. Aucune mise à jour n'a été lancée."
+                )
+                self._set_status("Mise à jour bloquée : dépôt d'origine absent ou non fiable.")
+                post_notification("Dépôt non vérifié", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
+        if action == "recheck-update-origin":
+            scope = self._verified_update_scope
+            if exit_code == 0 and scope in {"user", "system"} and flatpak_info_origin_is_flathub(stdout):
+                scope_flag = "--user" if scope == "user" else "--system"
+                self._start(
+                    "recheck-update-remote",
+                    target,
+                    "flatpak",
+                    ["remotes", scope_flag, "--columns=name,url"],
+                )
+            else:
+                self._release_flatpak_lock()
+                self._action = ""
+                self._verified_source_url = ""
+                self._clear_update_verification()
+                self._set_verification_details(
+                    "L'origine de l'application a changé ou n'est plus vérifiable. Aucune mise à jour n'a été lancée."
+                )
+                self._set_status("Mise à jour annulée : l'origine Flathub n'est plus confirmée.")
+                post_notification("Origine modifiée", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
+        if action == "recheck-update-remote":
+            remote_url = trusted_flathub_remote_url(stdout) if exit_code == 0 else ""
+            scope = self._verified_update_scope
+            if (
+                remote_url
+                and remote_url == self._verified_source_url
+                and target == self._verified_update_id
+                and scope in {"user", "system"}
+            ):
+                self._start(
+                    "update",
+                    target,
+                    "flatpak",
+                    flatpak_update_args(target, scope),
+                )
+            else:
+                self._release_flatpak_lock()
+                self._action = ""
+                self._verified_source_url = ""
+                self._clear_update_verification()
+                self._set_verification_details(
+                    "Le dépôt Flathub a changé depuis la confirmation. Aucune mise à jour n'a été lancée."
+                )
+                self._set_status("Mise à jour annulée : le dépôt d'origine ne correspond plus à la vérification.")
+                post_notification("Dépôt modifié", self._status, "warning")
+                self.operationFinished.emit(False, self._status)
+            return
+
         if action == "verify-install":
             if exit_code == 0:
                 self._release_flatpak_lock()
@@ -349,8 +531,19 @@ class StoreController(QObject):
 
         if exit_code == 0:
             self._release_flatpak_lock()
-            verb = "installée" if action == "install" else "désinstallée"
-            message = f"{target} a été {verb}."
+            if action == "install":
+                message = f"{target} a été installée."
+            elif action == "uninstall":
+                message = f"{target} a été désinstallée."
+            elif action == "update":
+                message = (
+                    f"La commande de mise à jour ciblée de {target} s'est terminée sans erreur. "
+                    "L'inventaire est actualisé ; Flatpak peut n'avoir trouvé aucune nouvelle version."
+                )
+            else:
+                message = "L'opération Flatpak s'est terminée sans erreur."
+            self._verified_source_url = ""
+            self._clear_update_verification()
             self._set_status(message)
             post_notification("Boutique LEOS", message, "success")
             self.operationFinished.emit(True, message)
@@ -359,6 +552,8 @@ class StoreController(QObject):
             self._release_flatpak_lock()
             lines = stderr.strip().splitlines()
             reason = lines[-1] if lines else "Flatpak a signalé une erreur."
+            self._verified_source_url = ""
+            self._clear_update_verification()
             self._set_status(f"Opération non terminée : {reason}")
             post_notification("Échec d’une opération Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
@@ -374,13 +569,15 @@ class StoreController(QObject):
         self._target = ""
         self._verified_source_url = ""
         self._process.kill()
-        if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
-            self._set_verification_details("Le délai de vérification Flatpak est dépassé. La source n'est pas considérée comme vérifiée.")
-        if failed_action in {"install", "uninstall"}:
+        if failed_action in VERIFICATION_ACTIONS:
+            self._set_verification_details("Le délai de vérification Flatpak est dépassé. L'origine de l'application n'est pas considérée comme vérifiée.")
+        if failed_action in {"install", "uninstall", "update"}:
+            self._clear_update_verification()
             self._set_status(
                 f"L'opération sur {target} dépasse le délai prévu. Son état doit être vérifié dans l'inventaire avant toute nouvelle tentative."
             )
         else:
+            self._clear_update_verification()
             self._set_status("La vérification Flatpak a dépassé le délai prévu. Réessaie après avoir vérifié la connexion.")
         post_notification("Délai Flatpak dépassé", self._status, "warning")
         self.operationFinished.emit(False, self._status)
@@ -393,14 +590,15 @@ class StoreController(QObject):
             self._action = ""
             self._target = ""
             self._verified_source_url = ""
+            self._clear_update_verification()
             # Read/write errors may occur while the child still runs. Keep the
             # shared lock until QProcess confirms that the process has exited.
             if self._process.state() == QProcess.ProcessState.NotRunning:
                 self._release_flatpak_lock()
             else:
                 self._process.kill()
-            if failed_action in {"verify-remote", "verify-install", "recheck-remote"}:
-                self._set_verification_details("Erreur pendant la vérification de la source ou des métadonnées Flathub.")
+            if failed_action in VERIFICATION_ACTIONS:
+                self._set_verification_details("Erreur pendant la vérification de l'origine ou du dépôt Flathub.")
             self._set_status("Erreur pendant l'exécution de Flatpak.")
             post_notification("Erreur Flatpak", self._status, "error")
             self.operationFinished.emit(False, self._status)
