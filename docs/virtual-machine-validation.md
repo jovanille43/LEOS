@@ -14,6 +14,12 @@ L'ISO utilisée provenait de l'exécution [Generate LEOS installer ISO #44729268
 
 Cette validation confirme l'installation complète et l'accès au premier bureau KDE dans la VM. Elle ne valide pas encore les transitions Desktop/Gaming, le réseau, l'audio, les services après plusieurs redémarrages, les périphériques physiques ni les performances de jeux. Les commits ultérieurs de `main` ne sont pas inclus dans l'ISO utilisée pour ce test tant qu'une nouvelle image et une nouvelle ISO n'ont pas été générées.
 
+## État de la livraison courante — 27 novembre 2026
+
+Le commit `dc1faf711670e558ae456ef02cc6f5bcf606c976` inclut la PR #73. Les contrôles Python ([run #45982477898](https://github.com/jovanille43/LEOS/actions/runs/45982477898)) et BlueBuild/QML ([run #45982478002](https://github.com/jovanille43/LEOS/actions/runs/45982478002)) sont réussis. La construction et la publication des trois images (AMD/Intel, NVIDIA legacy, NVIDIA modern) sont réussies ([run #45982477894](https://github.com/jovanille43/LEOS/actions/runs/45982477894)). La génération des trois ISO a été déclenchée automatiquement ([run #45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147)) ; elle était encore en file d'attente lors de la rédaction de cet état.
+
+Le dernier jeu d'ISO entièrement vérifié reste celui du commit précédent `dcd89660fdc45e6d77a030bd01426208459eaafc` ([run #45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068)). Ne pas utiliser ces anciennes ISO pour valider les changements de la PR #73. Dès que le run #45983444147 est terminé, choisir l'artefact standard correspondant exactement à `dc1faf7`, vérifier les fichiers de checksum, digest source et manifeste, puis effectuer l'installation interactive dans la VM dédiée décrite ci-dessous.
+
 ## Objectif et limites
 
 Cette étape sert à vérifier que l'ISO démarre, que l'installation aboutit sur un disque virtuel et que les premiers écrans LEOS sont utilisables. Elle ne certifie pas les pilotes GPU, le Wi-Fi, le Bluetooth, la veille, les manettes ni les performances d'un PC physique.
