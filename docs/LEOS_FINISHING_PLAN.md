@@ -11,7 +11,7 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Vérifier que le sélecteur, son QML et les ressources de bureau sont présents dans l'image publiée.
 - [x] Mettre le choix d'activation du profil LEOS au premier plan pour le clavier et la manette.
 - [ ] Valider l'ensemble du parcours après une installation complète de l'ISO courante dans une VM : création de compte, ouverture de session, identité A/B, activation Desktop, Gaming et retour Desktop.
-- [ ] Ajouter une vue d'état du premier démarrage qui indique les étapes terminées et celles laissées volontairement de côté.
+- [x] Afficher l'état du premier démarrage en trois étapes (identité A/B, guide de bienvenue, profil Desktop appliqué ou volontairement ignoré) dans le sélecteur LEOS ; la vérification après installation reste à faire.
 
 ### 2. Identité visuelle cohérente
 
@@ -28,7 +28,7 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Détection en lecture seule des sept émulateurs, profils de manettes et assistant de configuration Eden (clés/firmware locaux, prérequis et ouverture de l'émulateur installé).
 - [x] Imports et commandes de lancement depuis les dossiers choisis par l'utilisateur pour Dolphin, PCSX2, PPSSPP, melonDS, Eden et RPCS3 ; aucune recherche globale de ROM.
 - [x] Import des playlists RetroArch avec le cœur indiqué par l'entrée ou le cœur par défaut de la playlist lorsqu'il est disponible.
-- [ ] Ajouter des assistants de configuration BIOS/firmware guidés pour les autres émulateurs et clarifier les cœurs RetroArch manquants sans les installer implicitement.
+- [x] Ajouter les indications de configuration guidée pour Eden, PCSX2, melonDS et RPCS3, ainsi que l'aide au choix des cœurs RetroArch sans installer implicitement des fichiers système ou des contenus protégés.
 - [ ] Valider installations et lancements réels sur Bazzite, notamment Eden et RPCS3, ainsi que stockage externe, veille/reprise, écrans multiples et GPU hybrides.
 
 ### 4. Centre de contrôle intelligent
@@ -36,7 +36,7 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Inventaires matériel, réseau, stockage et télémétrie disponible.
 - [x] Diagnostic système et rapports de support expurgés.
 - [x] Ajouter un résumé de santé système à la vue d'ensemble, avec accès direct au diagnostic détaillé.
-- [ ] Clarifier les actions recommandées, les risques et les redémarrages nécessaires avant confirmation.
+- [x] Présenter l'état du déploiement OSTree, les risques et les conséquences des actions de récupération ; afficher une pré-vérification avant d'ouvrir le gestionnaire natif de mises à jour Bazzite.
 
 ### 5. Boutique LEOS
 
@@ -44,14 +44,16 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Contrôles de compatibilité et respect du modèle immuable de Bazzite.
 - [x] Alimenter les catégories directement depuis le catalogue validé, afficher le nombre de résultats filtrés et proposer un état vide récupérable.
 - [x] Étendre la recherche aux informations de compatibilité et aux notes d'opération.
-- [ ] Ajouter des recommandations réellement installables et tester mise à jour, dépendances, annulation, échec réseau et désinstallation.
+- [x] Ajouter des recommandations issues du catalogue réellement installable et des mises à jour Flatpak ciblées avec vérification de l'origine Flathub, double contrôle avant opération et confirmation explicite.
+- [ ] Tester sur Bazzite réel l'installation et la mise à jour ciblées, les dépendances/runtime, l'annulation, les échecs réseau et la désinstallation.
 
 ### 6. Sécurité, sauvegarde et récupération
 
 - [x] Appui sur les déploiements OSTree/Bazzite et documentation du rollback.
 - [x] Inventaire en lecture seule du déploiement démarré, des autres entrées, des préparations et des entrées épinglées ; aucune suppression ni transaction automatique.
 - [x] Sauvegarde avant modification du profil Plasma.
-- [ ] Transformer l'inventaire en parcours de récupération guidé : expliquer les options sûres, les prérequis et les conséquences avant de demander une confirmation.
+- [x] Transformer l'inventaire en guide de récupération contextualisé selon le déploiement démarré ; expliquer les options sûres, les prérequis et les conséquences avant de renvoyer vers les outils natifs.
+- [ ] Tester réellement la mise à jour, le redémarrage, le choix d'un ancien déploiement, le rollback et la conservation des données dans une VM.
 - [ ] Tester réellement mise à jour, ancien déploiement, rollback et conservation des données dans une VM.
 
 ### 7. Expérience Desktop complète
@@ -64,10 +66,11 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 ### 8. Validation et livraison
 
 - [x] CI Python, lint QML, contrôles BlueBuild et vérification de signature.
-- [x] Génération ISO avec vérification de structure, checksum et démarrage UEFI/QEMU.
+- [x] Génération des trois variantes ISO avec vérification de structure, checksum, digest source, manifeste de provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI (commit `dcd8966`, run #45855325068).
+- [ ] Répéter le build des trois images et la génération des trois ISO après les améliorations de la PR #73 (`dc1faf7`) ; puis tester l'installation interactive de l'ISO issue de ce commit.
 - [x] Ajouter un manifeste de provenance par ISO : variante, commit source, tag et digest d'image, SHA-256 et périmètre exact du test UEFI/QEMU.
 - [ ] Répéter ces contrôles sur le commit exact de livraison et conserver les artefacts correspondants.
-- [ ] Installer cette ISO dans une VM et documenter les captures/résultats du parcours post-installation.
+- [ ] Installer l'ISO du commit de livraison dans une VM UEFI dédiée et documenter les résultats : création de compte, session, identité A/B, profil Desktop, Gaming, transitions, réseau/audio, second démarrage.
 - [ ] Tester les trois variantes graphiques sur du matériel adapté avant d'annoncer une compatibilité certifiée.
 
 ## Règle de livraison
