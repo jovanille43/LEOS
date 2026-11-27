@@ -29,6 +29,14 @@ class GamingQuickPanelGamepadTests(unittest.TestCase):
         self.assertIn("CONFIGURER MANETTE", self.qml)
         self.assertIn("quickPanel.visible = false", self.qml)
 
+    def test_launcher_statuses_render_as_compact_accessible_chips(self):
+        self.assertIn("id: launcherStatusFlow", self.qml)
+        self.assertIn("model: leos.launcherStatuses", self.qml)
+        self.assertIn("property bool available: modelData.indexOf(\"DISPONIBLE\") >= 0", self.qml)
+        self.assertIn("Accessible.name: modelData", self.qml)
+        self.assertIn("text: modelData", self.qml)
+        self.assertIn("Layout.preferredHeight: 92", self.qml)
+
     def test_power_profile_confirmation_is_gamepad_operable(self):
         self.assertIn("if (powerProfileDialog.visible)", self.qml)
         self.assertIn("powerProfileDialog.close()", self.qml)
