@@ -117,6 +117,10 @@ modules:
     dest: /usr/share/leos/branding/qml/
 
   - type: copy
+    src: branding/qml/ModeIdentity.qml
+    dest: /usr/share/leos/branding/qml/
+
+  - type: copy
     src: branding/sddm/leos
     dest: /usr/share/sddm/themes/leos/
 
