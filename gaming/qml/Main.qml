@@ -609,7 +609,7 @@ ApplicationWindow {
             z: 0
             colorA: window.accentA
             colorB: window.accentB
-            particleOpacity: 0.36
+            particleOpacity: 0.30
             motionEnabled: leos.animationsEnabled
         }
 
@@ -671,7 +671,7 @@ ApplicationWindow {
             opacity: 0.045
         }
         Repeater {
-            model: 28
+            model: 16
             delegate: Rectangle {
                 id: particle
                 required property int index
@@ -684,10 +684,11 @@ ApplicationWindow {
                     Math.min(baseX, gamingContent.width - width - baseX)))
                 property real driftY: Math.max(0, Math.min(5 + (index % 3) * 2,
                     Math.min(baseY, gamingContent.height - height - baseY)))
-                property real baseOpacity: index % 7 === 0 ? 0.22 : 0.10
+                property real baseOpacity: index % 6 === 0 ? 0.18 : 0.08
                 x: baseX
                 y: baseY
-                color: index % 2 === 0 ? window.accentA : window.themeColors.text
+                color: index % 3 === 0 ? window.accentA
+                     : index % 3 === 1 ? window.accentB : window.themeColors.text
                 opacity: baseOpacity
 
                 ParallelAnimation {
