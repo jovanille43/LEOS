@@ -2,6 +2,12 @@
 
 Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les fonctions présentes dans les sources, celles qui restent à intégrer et les validations qui doivent encore être réalisées sur une installation réelle. Un test automatisé réussi ne vaut pas certification matérielle.
 
+
+
+## État au 27 novembre 2026
+
+La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #75 fusionnée). Les contrôles Python ont exécuté 1 169 tests (1 ignoré, aucun échec) ; les contrôles BlueBuild ont réussi. Le build des trois images AMD/Intel, NVIDIA legacy et NVIDIA moderne est réussi dans le run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222). La génération ISO est déclenchée par le succès de ce build ; les trois artefacts correspondant à `29ac036` ne sont pas encore validés dans ce document. Le dernier lot ISO complet disponible comme preuve reste le run #45855325068 sur `dcd8966`, antérieur à la finition graphique #75. L'installation interactive en VM et le contrôle visuel réel de Plasma restent à effectuer sur le commit courant.
+
 ## Ordre de travail
 
 ### 1. Installation et première expérience
@@ -15,7 +21,7 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 ### 2. Identité visuelle cohérente
 
-- [x] Unifier la direction graphite/métal et les accents A/B.
+- [x] Unifier la direction graphite/métal et les accents A/B ; conserver des surfaces neutres et ne jamais imposer de combinaison d'accents.
 - [x] Prévoir les modes sombre, clair et automatique.
 - [x] Séparer visuellement les états système (critique, attention, normal) des accents de marque A/B.
 - [x] Ajouter un contrat de cohérence A/B partagé entre les interfaces LEOS.
@@ -66,8 +72,8 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 - [x] CI Python, lint QML, contrôles BlueBuild et vérification de signature.
 - [x] Génération des trois variantes ISO avec vérification de structure, checksum, digest source, manifeste de provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI (commit `dcd8966`, run #45855325068).
-- [x] Reconstruire, publier et signer les trois images après les améliorations de la PR #73 (`dc1faf7`) — run #45982477894.
-- [ ] Générer les trois ISO de ce commit — workflow #45983444147 en file d'attente, puis tester l'installation interactive.
+- [x] Reconstruire, publier et signer les trois images après la finition graphique #75 (`29ac036`) — build [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222), AMD/Intel, NVIDIA legacy et NVIDIA moderne réussis.
+- [ ] Générer et vérifier les trois ISO de `29ac036` après le build #45988546222 ; vérifier structure, checksum, digest, provenance et démarrage UEFI/QEMU, puis réaliser une installation interactive.
 - [x] Ajouter un manifeste de provenance par ISO : variante, commit source, tag et digest d'image, SHA-256 et périmètre exact du test UEFI/QEMU.
 - [ ] Répéter ces contrôles sur le commit exact de livraison et conserver les artefacts correspondants.
 - [ ] Installer l'ISO du commit de livraison dans une VM UEFI dédiée et documenter les résultats : création de compte, session, identité A/B, profil Desktop, Gaming, transitions, réseau/audio, second démarrage.
