@@ -1287,7 +1287,7 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: window.themeColors.background
                                                 clip: true
                                                 Image {
                                                     id: desktopWallpaperPreview
@@ -1301,7 +1301,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: desktopWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU DESKTOP"
-                                                    color: "#a9bacb"
+                                                    color: window.themeColors.muted_text
                                                     font.pixelSize: 12
                                                 }
                                             }
@@ -1322,7 +1322,7 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 112
                                                 radius: 8
-                                                color: "#05070b"
+                                                color: window.themeColors.background
                                                 clip: true
                                                 Image {
                                                     id: gamingWallpaperPreview
@@ -1336,7 +1336,7 @@ ApplicationWindow {
                                                     anchors.centerIn: parent
                                                     visible: gamingWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU GAMING"
-                                                    color: "#a9bacb"
+                                                    color: window.themeColors.muted_text
                                                     font.pixelSize: 12
                                                 }
                                             }
