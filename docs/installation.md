@@ -2,15 +2,14 @@
 
 ## État actuel — 27 novembre 2026
 
-La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #75 fusionnée). Cette version inclut notamment la finition graphite/argent, la préservation des accents A/B personnalisables, l'harmonisation typographique et l'ajustement de la densité des particules.
+La branche `main` est au commit `9fbd20506d727f05c632b6c31ee48f5adc73c44c` (PR #77 fusionnée après la finition graphique #75). La dernière correction synchronise le profil Desktop livré avec la palette graphite/argent partagée et ajoute un test qui protège cette cohérence.
 
-- Contrôles Python : 1 169 tests exécutés, 1 ignoré, aucun échec.
-- Contrôles BlueBuild : réussis, y compris le lint QML, les tests, les scripts de première session, les ressources de branding et la recette.
-- Images publiées et signées : AMD/Intel, NVIDIA legacy et NVIDIA moderne ; les trois builds ont réussi dans le run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222).
-- Génération ISO : elle est déclenchée automatiquement après le succès du workflow Build LEOS. Les ISO propres au commit `29ac036` doivent encore être vérifiées et téléchargées ; ne pas utiliser un ancien artefact pour valider cette version graphique.
-- Le précédent workflow ISO [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147) est basé sur `dc1faf7`, avant la PR #75. Son artefact standard n'est donc pas l'ISO de la version actuelle ; la variante NVIDIA legacy de ce run a échoué pendant l'installation de Cosign (erreur HTTP 403 au téléchargement), et la variante NVIDIA moderne était encore en génération lors du dernier contrôle.
-- Le dernier lot complet dont les trois ISO sont prouvées reste le run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), basé sur `dcd8966`. Les trois variantes y ont passé les contrôles de structure, checksum, digest, provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI.
-- La dernière installation interactive confirmée dans une VM date du 20 novembre 2026 et portait sur le commit antérieur `3c97827`. Elle ne valide pas le commit courant `29ac036`.
+- Validation de la PR #77 : 1 170 tests Python exécutés, 1 ignoré, aucun échec ; lint QML, BlueBuild, précontrôle et build de prévisualisation AMD/Intel réussis sur le commit candidat.
+- Le build des trois images du commit précédent `29ac036` a réussi : AMD/Intel, NVIDIA legacy et NVIDIA moderne (run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222)).
+- Le commit `9fbd205` a été fusionné ensuite. La reconstruction complète des trois images et la génération des ISO correspondantes doivent encore être vérifiées. Ne pas utiliser un ancien artefact pour valider la version graphique actuelle.
+- Le workflow ISO [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147), issu de `dc1faf7`, a terminé avec l'ISO standard réussie ; NVIDIA moderne a échoué à l'étape de démarrage UEFI/QEMU et NVIDIA legacy a échoué dès l'installation de Cosign (téléchargement HTTP 403). Ce lot précède les PR #75 et #77.
+- Le dernier lot de trois ISO entièrement validé reste le run [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068), basé sur `dcd8966). Les trois variantes y ont passé les contrôles de structure, checksum, digest, provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI.
+- La dernière installation interactive confirmée dans une VM date du 20 novembre 2026 et portait sur le commit antérieur `3c97827`. Elle ne valide pas le commit courant `9fbd205`.
 - Un démarrage QEMU jusqu'à Anaconda WebUI ne constitue pas une installation complète. LEOS ne doit pas être présenté comme prêt à distribuer avant l'installation de la nouvelle ISO en VM, le contrôle de la première session et la validation de Desktop/Gaming après redémarrage.
 
 Commencer par une machine virtuelle et ne jamais sélectionner le disque du PC hôte. La validation matérielle réelle viendra après les essais VM.
