@@ -84,7 +84,7 @@ class KdeColorSchemeTests(unittest.TestCase):
         parser.read_string(content)
         self.assertEqual(parser["General"]["ColorScheme"], "LEOS-00FFFF-FF8800-LIGHT")
         self.assertEqual(parser["General"]["AccentColor"], "0,255,255")
-        self.assertEqual(parser["Colors:Window"]["BackgroundNormal"], "244,246,250")
+        self.assertEqual(parser["Colors:Window"]["BackgroundNormal"], "242,242,242")
         self.assertEqual(parser["Colors:Selection"]["BackgroundNormal"], "0,255,255")
         self.assertEqual(parser["Colors:Selection"]["DecorationHover"], "255,136,0")
         self.assertEqual(parser["LEOS"]["ThemeId"], "custom-light")

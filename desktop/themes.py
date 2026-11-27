@@ -21,21 +21,22 @@ AUTO_LIGHT_START_HOUR = 7
 AUTO_DARK_START_HOUR = 19
 
 _BASE_PALETTE: dict[str, str] = {
-    "background": "#090B10",
-    "surface": "#121720",
-    "surface_elevated": "#182732",
-    "border": "#293342",
-    "text": "#F4F7FB",
-    "muted_text": "#909AAC",
+    # Neutral graphite ladder: depth comes from luminance, never a fixed hue.
+    "background": "#0D0D0D",
+    "surface": "#171717",
+    "surface_elevated": "#242424",
+    "border": "#3A3A3A",
+    "text": "#F1F1F1",
+    "muted_text": "#A5A5A5",
 }
 
 _LIGHT_BASE_PALETTE: dict[str, str] = {
-    "background": "#F4F6FA",
+    "background": "#F2F2F2",
     "surface": "#FFFFFF",
-    "surface_elevated": "#E9EEF4",
-    "border": "#D3DCE7",
-    "text": "#1C2430",
-    "muted_text": "#596575",
+    "surface_elevated": "#E9E9E9",
+    "border": "#D0D0D0",
+    "text": "#1B1B1B",
+    "muted_text": "#5D5D5D",
 }
 
 

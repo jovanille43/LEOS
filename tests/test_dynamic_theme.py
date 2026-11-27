@@ -19,6 +19,51 @@ class DynamicThemeTests(unittest.TestCase):
             self.assertEqual(color[1:3], color[3:5])
             self.assertEqual(color[3:5], color[5:7])
 
+    def test_dark_and_light_material_surfaces_are_neutral_grayscale(self):
+        for appearance in ("dark", "light"):
+            with self.subTest(appearance=appearance):
+                palette = palette_for_colors("#E58A3A", "#4F75D5", appearance=appearance)
+                for token in ("background", "surface", "surface_elevated", "border", "text", "muted_text"):
+                    color = palette[token]
+                    self.assertEqual(color[1:3], color[3:5], f"{appearance} {token} red/green differ")
+                    self.assertEqual(color[3:5], color[5:7], f"{appearance} {token} green/blue differ")
+                self.assertEqual(palette["accent_primary"], "#E58A3A")
+                self.assertEqual(palette["accent_secondary"], "#4F75D5")
+
+    def test_particle_backdrop_uses_neutral_fallbacks_and_bounded_density(self):
+        root = Path(__file__).resolve().parents[1]
+        backdrop = (root / "branding" / "qml" / "ParticleBackdrop.qml").read_text(encoding="utf-8")
+        gaming = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
+        self.assertIn('property color colorA: "#A0A0A0"', backdrop)
+        self.assertIn('property color colorB: "#D0D0D0"', backdrop)
+        self.assertIn("property int particleCount: 42", backdrop)
+        self.assertIn("particleOpacity: 0.30", gaming)
+        self.assertIn("model: 16", gaming)
+        self.assertIn("window.accentB", gaming)
+
+    def test_primary_interfaces_do_not_use_microtext_below_ten_pixels(self):
+        root = Path(__file__).resolve().parents[1]
+        qml_paths = (
+            "control_center/qml/Main.qml",
+            "controller_center/qml/Main.qml",
+            "launcher/qml/ModeSelector.qml",
+            "desktop/qml/Menu.qml",
+            "desktop/qml/Notifications.qml",
+            "shop/qml/Main.qml",
+        )
+        for relative in qml_paths:
+            with self.subTest(interface=relative):
+                content = (root / relative).read_text(encoding="utf-8")
+                sizes = [
+                    int(value)
+                    for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", content)
+                ]
+                self.assertTrue(sizes, f"{relative} has no statically sized text")
+                self.assertFalse(
+                    [size for size in sizes if size < 10],
+                    f"{relative} still contains text smaller than 10 px",
+                )
+
     def test_gaming_uses_selected_accents_and_shared_neutral_surfaces(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")

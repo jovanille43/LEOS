@@ -140,7 +140,7 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
         fills = [node.attrib["fill"] for node in style_svg.iter() if "fill" in node.attrib]
         strokes = [node.attrib["stroke"] for node in style_svg.iter() if "stroke" in node.attrib]
         self.assertEqual(fills, ["#FFFFFF", "#FFFFFF"])
-        self.assertEqual(strokes, ["#D3DCE7"])
+        self.assertEqual(strokes, ["#D0D0D0"])
 
         icon_svg = ET.parse(icon_root / "scalable" / "apps" / "demo.svg").getroot()
         icon_strokes = [node.attrib["stroke"] for node in icon_svg.iter() if "stroke" in node.attrib]
@@ -149,6 +149,17 @@ class ThemedPlasmaResourceTests(unittest.TestCase):
         aurorae_svg = ET.parse(aurorae_root / "decoration.svg").getroot()
         aurorae_fills = [node.attrib["fill"] for node in aurorae_svg.iter() if "fill" in node.attrib]
         self.assertEqual(aurorae_fills, ["#FFFFFF", "#FFFFFF"])
+
+    def test_light_surface_transform_targets_are_neutral_grayscale(self):
+        from desktop.themed_plasma_resources import _LIGHT_SURFACE_COLORS
+
+        self.assertTrue(_LIGHT_SURFACE_COLORS)
+        for source, target in _LIGHT_SURFACE_COLORS.items():
+            with self.subTest(source=source):
+                self.assertEqual(target[1:3], target[3:5])
+                self.assertEqual(target[3:5], target[5:7])
+        self.assertNotIn("#00D9FF", _LIGHT_SURFACE_COLORS.values())
+        self.assertNotIn("#E33BFF", _LIGHT_SURFACE_COLORS.values())
 
     def test_dark_and_light_variants_have_distinct_installation_ids(self):
         dark = self.build(appearance="dark")

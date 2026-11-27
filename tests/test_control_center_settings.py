@@ -88,7 +88,12 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertEqual(qml.count("fillMode: Image.PreserveAspectFit"), 2)
         wallpaper_start = qml.index("FONDS D")
         wallpaper_end = qml.index("THÈME KDE PLASMA", wallpaper_start)
-        self.assertNotIn("Image.PreserveAspectCrop", qml[wallpaper_start:wallpaper_end])
+        wallpaper_section = qml[wallpaper_start:wallpaper_end]
+        self.assertEqual(wallpaper_section.count("color: window.themeColors.background"), 2)
+        self.assertEqual(wallpaper_section.count("color: window.themeColors.muted_text"), 2)
+        self.assertNotIn("#05070b", wallpaper_section.lower())
+        self.assertNotIn("#a9bacb", wallpaper_section.lower())
+        self.assertNotIn("Image.PreserveAspectCrop", wallpaper_section)
         self.assertIn('controlCenter.openSettingsModule("wallpaper")', qml)
         modules = (root / "control_center/settings_modules.py").read_text(encoding="utf-8")
         self.assertIn('"wallpaper": "kcm_wallpaper"', modules)
@@ -112,6 +117,15 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn('self.settings.set("sounds_enabled", enabled)', controller)
         self.assertIn('"animations_enabled": True', settings)
         self.assertIn('"sounds_enabled": True', settings)
+
+    def test_control_center_typography_has_no_microtext_below_ten_pixels(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        pixel_sizes = [int(value) for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", qml)]
+        self.assertTrue(pixel_sizes)
+        self.assertFalse(
+            [size for size in pixel_sizes if size < 10],
+            "Control Center still contains text smaller than 10 px",
+        )
 
     def test_settings_navigation_button_content_uses_explicit_id(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")

@@ -63,7 +63,7 @@ ApplicationWindow {
                     Label {
                         text: "CENTRE DES MANETTES"
                         color: window.cyan
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.letterSpacing: 3
                     }
                 }
@@ -89,7 +89,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: controllerCenter.selectedIndex >= 0 ? "MANETTE CONNECTÉE" : "EN ATTENTE"
                             color: window.muted
-                            font.pixelSize: 9
+                            font.pixelSize: 11
                             font.letterSpacing: 1.1
                             elide: Text.ElideRight
                         }
@@ -151,7 +151,7 @@ ApplicationWindow {
                         Label {
                             text: controllerCenter.statusText
                             color: window.muted
-                            font.pixelSize: 12
+                            font.pixelSize: 14
                             wrapMode: Text.WordWrap
                         }
                     }
@@ -210,7 +210,7 @@ ApplicationWindow {
                             Label {
                                 text: "MANETTE"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 2
                             }
                             ComboBox {
@@ -225,7 +225,7 @@ ApplicationWindow {
                                     ? "Détection Linux active"
                                     : "Backend evdev non installé"
                                 color: controllerCenter.backendAvailable ? "#8bd8a8" : window.magenta
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                             }
                         }
                     }
@@ -253,7 +253,7 @@ ApplicationWindow {
                             Label {
                                 text: "PROFIL LEOS"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 2
                             }
                             ComboBox {
@@ -270,13 +270,13 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 text: controllerCenter.profileHint
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }
                             Label {
                                 text: "Zone morte des sticks"
                                 color: window.themeColors.text
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                             }
                             Slider {
                                 id: deadzoneSlider
@@ -331,7 +331,7 @@ ApplicationWindow {
                             Label {
                                 text: "TEST DES COMMANDES"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 2
                             }
                             Rectangle {
@@ -347,7 +347,7 @@ ApplicationWindow {
                                     Label {
                                         text: "DERNIÈRE ENTRÉE"
                                         color: window.muted
-                                        font.pixelSize: 9
+                                        font.pixelSize: 11
                                         font.letterSpacing: 2
                                     }
                                     Label {
@@ -365,14 +365,14 @@ ApplicationWindow {
                                 Label {
                                     text: "STICKS ANALOGIQUES"
                                     color: window.muted
-                                    font.pixelSize: 10
+                                    font.pixelSize: 12
                                     font.letterSpacing: 1.5
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label {
                                     text: controllerCenter.hasLeftStick || controllerCenter.hasRightStick ? "EN DIRECT" : "NON DÉTECTÉS"
                                     color: controllerCenter.hasLeftStick || controllerCenter.hasRightStick ? window.cyan : window.muted
-                                    font.pixelSize: 9
+                                    font.pixelSize: 11
                                     font.letterSpacing: 1
                                 }
                             }
@@ -395,7 +395,7 @@ ApplicationWindow {
                                             Layout.fillWidth: true
                                             text: "GAUCHE"
                                             color: window.cyan
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                             horizontalAlignment: Text.AlignHCenter
                                         }
@@ -450,7 +450,7 @@ ApplicationWindow {
                                             Layout.fillWidth: true
                                             text: "DROIT"
                                             color: window.accentB
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.letterSpacing: 1.4
                                             horizontalAlignment: Text.AlignHCenter
                                         }
@@ -494,7 +494,7 @@ ApplicationWindow {
                             Label {
                                 text: "BOUTONS MAINTENUS"
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 font.letterSpacing: 2
                             }
                             Label {
@@ -512,14 +512,14 @@ ApplicationWindow {
                             Label {
                                 text: "AXES ANALOGIQUES"
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 font.letterSpacing: 2
                             }
                             Label {
                                 Layout.fillWidth: true
                                 text: controllerCenter.axesText
                                 color: window.themeColors.text
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                             }
                             Item { Layout.fillHeight: true }
@@ -527,7 +527,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 text: "Les profils et calibrages sont enregistrés dans ton compte Linux. Ils ne remappent pas encore les commandes dans les jeux : Steam et les lanceurs conservent leur configuration."
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                             }
                         }
@@ -539,7 +539,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 text: "LEOS · Les périphériques sont surveillés en lecture seule ; aucune règle système ni commande de jeu n'est modifiée."
                 color: window.themeColors.muted_text
-                font.pixelSize: 10
+                font.pixelSize: 12
                 horizontalAlignment: Text.AlignHCenter
             }
         }

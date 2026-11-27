@@ -51,7 +51,7 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: window.themeColors.text; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 12; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -77,7 +77,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         text: notificationModel.unreadCount + " NON LUES"
                         color: window.themeColors.text
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.65
                     }
@@ -103,7 +103,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: markAllReadButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -124,7 +124,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: clearAllButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -146,7 +146,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: refreshNotificationsButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -226,14 +226,14 @@ ApplicationWindow {
                                         anchors.centerIn: parent
                                         text: "NON LUE"
                                         color: window.themeColors.text
-                                        font.pixelSize: 8
+                                        font.pixelSize: 10
                                         font.weight: Font.Bold
                                         font.letterSpacing: 0.6
                                     }
                                 }
                             }
-                            Label { text: body; color: window.muted; font.pixelSize: 11; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
-                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                            Label { text: body; color: window.muted; font.pixelSize: 13; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
+                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 11; Layout.fillWidth: true; elide: Text.ElideMiddle }
                         }
                         ColumnLayout {
                             ToolButton {
@@ -317,7 +317,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         text: "Aucune notification LEOS pour le moment."
                         color: window.muted
-                        font.pixelSize: 11
+                        font.pixelSize: 13
                         wrapMode: Text.WordWrap
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -328,7 +328,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             text: "Les notifications système KDE restent gérées par Plasma. Cet espace conserve les événements émis par les composants LEOS."
             color: window.themeColors.muted_text
-            font.pixelSize: 10
+            font.pixelSize: 12
             wrapMode: Text.WordWrap
         }
     }

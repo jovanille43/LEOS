@@ -154,14 +154,14 @@ ApplicationWindow {
                     Label {
                         text: "BOUTIQUE D’APPLICATIONS"
                         color: window.cyan
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.weight: Font.Bold
                         font.letterSpacing: 2.4
                     }
                     Label {
                         text: "DÉCOUVRIR · INSTALLER · GÉRER"
                         color: window.muted
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         font.letterSpacing: 0.8
                     }
                 }
@@ -187,7 +187,7 @@ ApplicationWindow {
                             id: storeBusyLabel
                             text: store.busy ? "ACTUALISATION EN COURS" : "CATALOGUE PRÊT"
                             color: store.busy ? window.cyan : window.muted
-                            font.pixelSize: 9
+                            font.pixelSize: 11
                             font.weight: Font.DemiBold
                             font.letterSpacing: 1
                         }
@@ -211,7 +211,7 @@ ApplicationWindow {
                     contentItem: Label {
                         text: refreshButton.text
                         color: refreshButton.enabled ? window.themeColors.text : window.muted
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.weight: Font.DemiBold
                         letterSpacing: 0.8
                         horizontalAlignment: Text.AlignHCenter
@@ -275,7 +275,7 @@ ApplicationWindow {
                         Label {
                             text: "RECHERCHE"
                             color: window.muted
-                            font.pixelSize: 8
+                            font.pixelSize: 10
                             font.letterSpacing: 1
                         }
                     }
@@ -300,7 +300,7 @@ ApplicationWindow {
                         rightPadding: 30
                         text: categoryFilter.displayText
                         color: window.themeColors.text
-                        font.pixelSize: 12
+                        font.pixelSize: 14
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                     }
@@ -330,7 +330,7 @@ ApplicationWindow {
                     contentItem: Label {
                         text: clearFiltersButton.text
                         color: clearFiltersButton.enabled ? window.themeColors.text : window.muted
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -363,7 +363,7 @@ ApplicationWindow {
                             Label {
                                 text: "EXPLORER LE CATALOGUE"
                                 color: window.muted
-                                font.pixelSize: 9
+                                font.pixelSize: 11
                                 font.weight: Font.Bold
                                 font.letterSpacing: 1.8
                             }
@@ -371,7 +371,7 @@ ApplicationWindow {
                             Label {
                                 text: window.visibleApplicationCount() + " / " + catalogModel.rowCount() + " APPLICATIONS"
                                 color: window.themeColors.muted_text
-                                font.pixelSize: 8
+                                font.pixelSize: 10
                                 font.letterSpacing: 0.8
                             }
                         }
@@ -485,7 +485,7 @@ ApplicationWindow {
                                         Label {
                                             text: category + "  ·  " + source
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight
                                         }
@@ -508,7 +508,7 @@ ApplicationWindow {
                                             text: installedScope === "system" ? (bundled ? "INCLUSE LEOS" : "SYSTÈME")
                                                   : installed ? "INSTALLÉE" : "DISPONIBLE"
                                             color: installed ? window.cyan : window.muted
-                                            font.pixelSize: 8
+                                            font.pixelSize: 10
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.5
                                         }
@@ -541,7 +541,7 @@ ApplicationWindow {
                                           ? "Le catalogue LEOS n'est pas disponible."
                                           : "Aucun résultat pour ces filtres. Efface la recherche ou choisis une autre catégorie."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                             }
                         }
                     }
@@ -578,7 +578,7 @@ ApplicationWindow {
                             Label {
                                 text: "FICHE APPLICATION"
                                 color: window.cyan
-                                font.pixelSize: 9
+                                font.pixelSize: 11
                                 font.weight: Font.Bold
                                 font.letterSpacing: 1.7
                             }
@@ -586,7 +586,7 @@ ApplicationWindow {
                             Label {
                                 text: detailsPane.appId.length > 0 ? "DÉTAILS" : "EN ATTENTE"
                                 color: window.muted
-                                font.pixelSize: 8
+                                font.pixelSize: 10
                                 font.letterSpacing: 1
                             }
                         }
@@ -629,7 +629,7 @@ ApplicationWindow {
                                   ? detailsPane.appCategory + "  ·  " + detailsPane.appSource
                                   : "Sélectionne une application dans le catalogue"
                             color: window.muted
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                         }
@@ -637,7 +637,7 @@ ApplicationWindow {
                             visible: detailsPane.recommended
                             text: "SÉLECTION LEOS · " + detailsPane.recommendationReason
                             color: window.accentB
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             font.weight: Font.DemiBold
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
@@ -646,7 +646,7 @@ ApplicationWindow {
                             text: detailsPane.appDescription
                             color: window.themeColors.text
                             opacity: 0.86
-                            font.pixelSize: 12
+                            font.pixelSize: 14
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
@@ -665,21 +665,21 @@ ApplicationWindow {
                         Label {
                             text: "IDENTIFIANT"
                             color: window.cyan
-                            font.pixelSize: 8
+                            font.pixelSize: 10
                             font.weight: Font.Bold
                             font.letterSpacing: 1.3
                         }
                         Label {
                             text: detailsPane.appId || "—"
                             color: window.themeColors.muted_text
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             wrapMode: Text.WrapAnywhere
                             Layout.fillWidth: true
                         }
                         Label {
                             text: "COMPATIBILITÉ"
                             color: window.cyan
-                            font.pixelSize: 8
+                            font.pixelSize: 10
                             font.weight: Font.Bold
                             font.letterSpacing: 1.3
                         }
@@ -687,14 +687,14 @@ ApplicationWindow {
                             text: detailsPane.appCompatibility.length > 0
                                   ? detailsPane.appCompatibility : "Les informations de compatibilité s’afficheront avec la sélection."
                             color: window.muted
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
                         Label {
                             text: detailsPane.operationNote
                             color: window.muted
-                            font.pixelSize: 9
+                            font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                             visible: detailsPane.operationNote.length > 0
@@ -712,7 +712,7 @@ ApplicationWindow {
                                 anchors.margins: 10
                                 text: "Installée pour tout le système. Sa désinstallation peut demander une autorisation administrateur."
                                 color: window.cyan
-                                font.pixelSize: 9
+                                font.pixelSize: 11
                                 wrapMode: Text.WordWrap
                                 verticalAlignment: Text.AlignVCenter
                             }
@@ -742,7 +742,7 @@ ApplicationWindow {
                             contentItem: Label {
                                 text: updateButton.text
                                 color: updateButton.enabled ? window.themeColors.text : window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 font.weight: Font.DemiBold
                                 letterSpacing: 0.8
                                 horizontalAlignment: Text.AlignHCenter
@@ -782,7 +782,7 @@ ApplicationWindow {
                             contentItem: Label {
                                 text: installRemoveButton.text
                                 color: installRemoveButton.enabled ? window.themeColors.text : window.muted
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.weight: Font.Bold
                                 letterSpacing: 1
                                 horizontalAlignment: Text.AlignHCenter
@@ -799,7 +799,7 @@ ApplicationWindow {
                 Label {
                     text: store.status
                     color: window.muted
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     maximumLineCount: 2
