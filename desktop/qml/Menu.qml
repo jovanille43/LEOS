@@ -344,7 +344,7 @@ ApplicationWindow {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 12
-                    Label { text: "CATÉGORIES"; color: window.muted; font.pixelSize: 10; font.letterSpacing: 2 }
+                    Label { text: "CATÉGORIES"; color: window.muted; font.pixelSize: 12; font.letterSpacing: 2 }
                     Repeater {
                         model: applicationCatalog.availableCategories
                         delegate: Button {
@@ -400,7 +400,7 @@ ApplicationWindow {
                         }
                     }
                     Item { Layout.fillHeight: true }
-                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: window.themeColors.muted_text; font.pixelSize: 8; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    Label { text: "UNE EXPÉRIENCE. DEUX MODES."; color: window.themeColors.muted_text; font.pixelSize: 10; wrapMode: Text.WordWrap; Layout.fillWidth: true }
                 }
             }
 
@@ -571,7 +571,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, -1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveUpButton.text; color: favouriteMoveUpButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 14; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle {
                                                 radius: 6
                                                 color: favouriteMoveUpButton.hovered || favouriteMoveUpButton.activeFocus
@@ -590,7 +590,7 @@ ApplicationWindow {
                                                 if (!applicationCatalog.moveFavourite(desktopId, 1))
                                                     status.text = "Impossible de réordonner les favoris."
                                             }
-                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 12; horizontalAlignment: Text.AlignHCenter }
+                                            contentItem: Label { text: favouriteMoveDownButton.text; color: favouriteMoveDownButton.enabled ? window.cyan : window.themeColors.muted_text; font.pixelSize: 14; horizontalAlignment: Text.AlignHCenter }
                                             background: Rectangle {
                                                 radius: 6
                                                 color: favouriteMoveDownButton.hovered || favouriteMoveDownButton.activeFocus
@@ -623,7 +623,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Label { text: name; color: window.themeColors.text; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { text: category; color: window.muted; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { text: category; color: window.muted; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
                             }
                         }
                         Label {
@@ -636,7 +636,7 @@ ApplicationWindow {
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
-                    Label { id: status; Layout.fillWidth: true; color: window.magenta; font.pixelSize: 10; elide: Text.ElideRight }
+                    Label { id: status; Layout.fillWidth: true; color: window.magenta; font.pixelSize: 12; elide: Text.ElideRight }
                 }
             }
         }
