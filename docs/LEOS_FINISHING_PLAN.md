@@ -2,8 +2,6 @@
 
 Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les fonctions présentes dans les sources, celles qui restent à intégrer et les validations qui doivent encore être réalisées sur une installation réelle. Un test automatisé réussi ne vaut pas certification matérielle.
 
-
-
 ## État au 27 novembre 2026
 
 La branche `main` est au commit `29ac036683f444296a97daebea3f8eb398c5a6f8` (PR #75 fusionnée). Les contrôles Python ont exécuté 1 169 tests (1 ignoré, aucun échec) ; les contrôles BlueBuild ont réussi. Le build des trois images AMD/Intel, NVIDIA legacy et NVIDIA moderne est réussi dans le run [#45988546222](https://github.com/jovanille43/LEOS/actions/runs/45988546222). La génération ISO est déclenchée par le succès de ce build ; les trois artefacts correspondant à `29ac036` ne sont pas encore validés dans ce document. Le dernier lot ISO complet disponible comme preuve reste le run #45855325068 sur `dcd8966`, antérieur à la finition graphique #75. L'installation interactive en VM et le contrôle visuel réel de Plasma restent à effectuer sur le commit courant.
