@@ -49,11 +49,34 @@ class SessionFlowTests(unittest.TestCase):
         self.assertIn("8 Gio de mémoire au minimum", qml)
         self.assertIn("16 Gio recommandés", qml)
 
-    def test_gaming_header_uses_official_gaming_emblem_with_text_fallback(self):
+    def test_gaming_header_uses_official_gaming_emblem_through_shared_identity(self):
         qml = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
-        self.assertIn("leosTheme.gamingLogoUrl", qml)
-        self.assertIn("asynchronous: true", qml)
-        self.assertIn("visible: gamingHeaderLogo.status !== Image.Ready", qml)
+        identity = (ROOT / "branding/qml/ModeIdentity.qml").read_text(encoding="utf-8")
+        self.assertIn("Branding.ModeIdentity", qml)
+        self.assertIn("logoSource: leosTheme.gamingLogoUrl", qml)
+        self.assertIn('modeLabel: "GAMING MODE"', qml)
+        self.assertIn("asynchronous: true", identity)
+        self.assertIn("visible: status === Image.Ready", identity)
+        self.assertIn("visible: emblem.status !== Image.Ready", identity)
+
+    def test_desktop_and_gaming_share_the_same_brand_identity_header(self):
+        identity = (ROOT / "branding/qml/ModeIdentity.qml").read_text(encoding="utf-8")
+        desktop = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        recipe = (ROOT / "recipes/common-modules.yml").read_text(encoding="utf-8")
+        for source, label in ((desktop, "DESKTOP MODE"), (gaming, "GAMING MODE")):
+            self.assertIn("Branding.ModeIdentity", source)
+            self.assertIn(f'modeLabel: "{label}"', source)
+            self.assertIn("accentA: window.accentA", source)
+            self.assertIn("accentB: window.accentB", source)
+        self.assertIn("GradientStop { position: 0.0; color: root.accentA }", identity)
+        self.assertIn("GradientStop { position: 1.0; color: root.accentB }", identity)
+        self.assertIn("src: branding/qml/ModeIdentity.qml", recipe)
+
+    def test_desktop_exposes_a_clear_switch_to_gaming(self):
+        desktop = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        self.assertIn('text: window.width < 900 ? "MODES" : "CHANGER DE MODE"', desktop)
+        self.assertIn('window.launchApplication("leos-mode-selector.desktop"', desktop)
 
     def test_mode_selector_plays_the_mode_specific_intro_with_fallback(self):
         qml = (ROOT / "launcher/qml/ModeSelector.qml").read_text(encoding="utf-8")
