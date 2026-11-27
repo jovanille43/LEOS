@@ -355,7 +355,7 @@ ApplicationWindow {
                 Label {
                     text: "CHOISISSEZ VOTRE EXPÉRIENCE"
                     color: window.muted
-                    font.pixelSize: 11
+                    font.pixelSize: 13
                     font.letterSpacing: 3
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -378,7 +378,7 @@ ApplicationWindow {
                     text: "DERNIÈRE SESSION : " +
                           (modeManager.lastMode === "gaming" ? "GAMING MODE" : "DESKTOP MODE")
                     color: modeManager.lastMode === "gaming" ? window.colorBText : window.colorAText
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.letterSpacing: 1.5
                     Layout.alignment: Qt.AlignHCenter
                     topPadding: 4
@@ -405,7 +405,7 @@ ApplicationWindow {
                         Label {
                             text: "BIENVENUE DANS LEOS"
                             color: window.colorAText
-                            font.pixelSize: 11
+                            font.pixelSize: 13
                             font.weight: Font.Bold
                             font.letterSpacing: 1.5
                         }
@@ -419,7 +419,7 @@ ApplicationWindow {
                         Label {
                             text: "Tes applications restent ouvertes. Aucun réglage KDE ni logiciel facultatif n'est modifié sans ton accord."
                             color: window.muted
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
@@ -437,7 +437,7 @@ ApplicationWindow {
                         contentItem: Label {
                             text: "COMPRIS"
                             color: window.themeColors.text
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -466,7 +466,7 @@ ApplicationWindow {
                         Label {
                             text: "ÉTAT DU PREMIER DÉMARRAGE"
                             color: window.themeColors.text
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             font.weight: Font.Bold
                             font.letterSpacing: 1.1
                         }
@@ -474,7 +474,7 @@ ApplicationWindow {
                         Label {
                             text: window.firstRunCompletedCount + "/3 ÉTAPES"
                             color: window.colorAText
-                            font.pixelSize: 9
+                            font.pixelSize: 11
                             font.weight: Font.Bold
                             font.letterSpacing: 0.8
                         }
@@ -506,7 +506,7 @@ ApplicationWindow {
                                     Label {
                                         text: modelData.name
                                         color: window.muted
-                                        font.pixelSize: 8
+                                        font.pixelSize: 10
                                         font.weight: Font.DemiBold
                                         font.letterSpacing: 0.4
                                         Layout.fillWidth: true
@@ -516,7 +516,7 @@ ApplicationWindow {
                                         text: modelData.detail
                                         color: modelData.complete
                                             ? window.colorAText : window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.Bold
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
@@ -617,7 +617,7 @@ ApplicationWindow {
                                         anchors.centerIn: parent
                                         text: "01"
                                         color: window.colorAText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.Bold
                                         font.letterSpacing: 0.8
                                     }
@@ -627,14 +627,14 @@ ApplicationWindow {
                                     Label {
                                         text: "MODE 01 · QUOTIDIEN"
                                         color: window.colorAText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.DemiBold
                                         font.letterSpacing: 1.35
                                     }
                                     Label {
                                         text: "ESPACE DE TRAVAIL"
                                         color: window.muted
-                                        font.pixelSize: 8
+                                        font.pixelSize: 10
                                         font.letterSpacing: 1.5
                                     }
                                 }
@@ -642,7 +642,7 @@ ApplicationWindow {
                                 Label {
                                     text: "DESKTOP"
                                     color: window.muted
-                                    font.pixelSize: 9
+                                    font.pixelSize: 11
                                     font.weight: Font.DemiBold
                                     font.letterSpacing: 1.2
                                 }
@@ -689,7 +689,7 @@ ApplicationWindow {
                                         Label {
                                             text: "PERSONNALISATION KDE"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -702,7 +702,7 @@ ApplicationWindow {
                                         Label {
                                             text: "MULTITÂCHE & FENÊTRES"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -715,7 +715,7 @@ ApplicationWindow {
                                         Label {
                                             text: "CRÉATION & QUOTIDIEN"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -790,7 +790,7 @@ ApplicationWindow {
                                     Label {
                                         text: "OUVRIR DESKTOP"
                                         color: window.colorAText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.Bold
                                         font.letterSpacing: 1.1
                                     }
@@ -886,7 +886,7 @@ ApplicationWindow {
                                         anchors.centerIn: parent
                                         text: "02"
                                         color: window.colorBText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.Bold
                                         font.letterSpacing: 0.8
                                     }
@@ -896,14 +896,14 @@ ApplicationWindow {
                                     Label {
                                         text: "MODE 02 · JEUX"
                                         color: window.colorBText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.DemiBold
                                         font.letterSpacing: 1.35
                                     }
                                     Label {
                                         text: "EXPÉRIENCE IMMERSIVE"
                                         color: window.muted
-                                        font.pixelSize: 8
+                                        font.pixelSize: 10
                                         font.letterSpacing: 1.5
                                     }
                                 }
@@ -911,7 +911,7 @@ ApplicationWindow {
                                 Label {
                                     text: "GAMING"
                                     color: window.muted
-                                    font.pixelSize: 9
+                                    font.pixelSize: 11
                                     font.weight: Font.DemiBold
                                     font.letterSpacing: 1.2
                                 }
@@ -967,7 +967,7 @@ ApplicationWindow {
                                         Label {
                                             text: "JEUX PC & LANCEURS"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -983,7 +983,7 @@ ApplicationWindow {
                                         Label {
                                             text: "ÉMULATION CENTRALISÉE"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -999,7 +999,7 @@ ApplicationWindow {
                                         Label {
                                             text: "NAVIGATION À LA MANETTE"
                                             color: window.themeColors.text
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 0.6
                                             Layout.fillWidth: true
@@ -1084,7 +1084,7 @@ ApplicationWindow {
                                     Label {
                                         text: "OUVRIR GAMING"
                                         color: window.colorBText
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.Bold
                                         font.letterSpacing: 1.1
                                     }
@@ -1101,19 +1101,19 @@ ApplicationWindow {
             Label {
                 text: modeManager.status
                 color: window.colorBText
-                font.pixelSize: 12
+                font.pixelSize: 14
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
                 text: "LEOS · Une seule session Desktop/Gaming · Aucune application ne sera fermée automatiquement"
                 color: window.themeColors.muted_text
-                font.pixelSize: 10
+                font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
             Label {
                 text: modeSelectorController.gamepadStatus
                 color: window.themeColors.muted_text
-                font.pixelSize: 9
+                font.pixelSize: 11
                 Layout.alignment: Qt.AlignHCenter
             }
         }
@@ -1256,7 +1256,7 @@ ApplicationWindow {
                 Label {
                     text: "PRÉPARATION DE VOTRE ESPACE DE JEU"
                     color: window.muted
-                    font.pixelSize: 12
+                    font.pixelSize: 14
                     font.letterSpacing: 2
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -1438,7 +1438,7 @@ ApplicationWindow {
                       ? "L'aperçu initial reste métallique et neutre. Choisis librement A et B : aucune paire de couleurs n'est imposée."
                       : "Dégradé personnalisé LEOS · A vers B"
                 color: window.muted
-                font.pixelSize: 10
+                font.pixelSize: 12
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -1455,7 +1455,7 @@ ApplicationWindow {
             Label {
                 text: "Conseillé : active le profil LEOS pour retrouver dès cette session le fond graphite, le style et le dock de la distribution. Le choix alternatif conserve volontairement ton bureau KDE actuel."
                 color: window.colorAText
-                font.pixelSize: 11
+                font.pixelSize: 13
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
