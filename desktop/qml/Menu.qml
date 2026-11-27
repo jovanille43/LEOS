@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../../branding/qml" as Branding
 
 ApplicationWindow {
     id: window
@@ -61,35 +62,19 @@ ApplicationWindow {
 
         RowLayout {
             Layout.fillWidth: true
-            RowLayout {
-                spacing: window.width < 900 ? 7 : 10
-                Image {
-                    id: desktopMenuLogo
-                    source: leosTheme.desktopLogoUrl
-                    asynchronous: true
-                    smooth: true
-                    fillMode: Image.PreserveAspectFit
-                    Layout.preferredWidth: window.width < 900 ? 70 : 92
-                    Layout.preferredHeight: window.width < 900 ? 42 : 52
-                    visible: status === Image.Ready
-                }
-                ColumnLayout {
-                    spacing: 2
-                    Label {
-                        text: "LEOS"
-                        color: window.themeColors.text
-                        font.pixelSize: window.width < 900 ? 23 : 27
-                        font.weight: Font.Black
-                        font.letterSpacing: window.width < 900 ? 3 : 5
-                        visible: desktopMenuLogo.status !== Image.Ready
-                    }
-                    Label {
-                        text: "APPLICATIONS"
-                        color: window.cyan
-                        font.pixelSize: 12
-                        font.letterSpacing: 3
-                    }
-                }
+            Branding.ModeIdentity {
+                logoSource: leosTheme.desktopLogoUrl
+                modeLabel: "DESKTOP MODE"
+                titleColor: window.themeColors.text
+                labelColor: window.cyan
+                accentA: window.accentA
+                accentB: window.accentB
+                logoWidth: window.width < 900 ? 70 : 92
+                logoHeight: window.width < 900 ? 42 : 52
+                titlePixelSize: window.width < 900 ? 23 : 27
+                labelPixelSize: 12
+                titleLetterSpacing: window.width < 900 ? 3 : 5
+                labelLetterSpacing: 3
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -125,7 +110,8 @@ ApplicationWindow {
             }
             Button {
                 id: modesButton
-                text: "MODES"
+                text: window.width < 900 ? "MODES" : "CHANGER DE MODE"
+                Accessible.name: "Basculer entre LEOS Desktop et LEOS Gaming"
                 onClicked: {
                     window.launchApplication("leos-mode-selector.desktop", "le sélecteur de modes")
                 }
@@ -136,6 +122,19 @@ ApplicationWindow {
                     border.width: modesButton.activeFocus ? 2 : 1
                     border.color: modesButton.activeFocus ? window.cyan
                                   : modesButton.hovered ? window.accentB : window.themeColors.border
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 1
+                        width: 3
+                        radius: 2
+                        gradient: Gradient {
+                            orientation: Gradient.Vertical
+                            GradientStop { position: 0.0; color: window.accentA }
+                            GradientStop { position: 1.0; color: window.accentB }
+                        }
+                    }
                 }
                 contentItem: Label {
                     text: modesButton.text
