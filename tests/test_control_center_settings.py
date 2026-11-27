@@ -113,6 +113,15 @@ class SettingsModuleCommandTests(unittest.TestCase):
         self.assertIn('"animations_enabled": True', settings)
         self.assertIn('"sounds_enabled": True', settings)
 
+    def test_control_center_typography_has_no_microtext_below_ten_pixels(self):
+        qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
+        pixel_sizes = [int(value) for value in re.findall(r"font\\.pixelSize\\s*:\\s*(\\d+)", qml)]
+        self.assertTrue(pixel_sizes)
+        self.assertFalse(
+            [size for size in pixel_sizes if size < 10],
+            "Control Center still contains text smaller than 10 px",
+        )
+
     def test_settings_navigation_button_content_uses_explicit_id(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn("id: settingsNavigationButton", qml)
