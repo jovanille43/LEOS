@@ -574,6 +574,26 @@ ApplicationWindow {
         return value < 0 ? "—" : Math.round(value) + suffix
     }
 
+    function emptyStateTitle() {
+        if (searchField.text.length > 0)
+            return "AUCUN RÉSULTAT"
+        if (selectedCategory === "Favoris")
+            return "TES FAVORIS T'ATTENDENT"
+        if (selectedCategory === "Récemment joués")
+            return "TON HISTORIQUE EST VIDE"
+        return "TA BIBLIOTHÈQUE T'ATTEND"
+    }
+
+    function emptyStateDescription() {
+        if (searchField.text.length > 0)
+            return "Essaie un autre titre ou une autre plateforme."
+        if (selectedCategory === "Favoris")
+            return "Ajoute des jeux à tes favoris depuis leur fiche."
+        if (selectedCategory === "Récemment joués")
+            return "Lance un jeu pour le retrouver ici."
+        return "Installe un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
+    }
+
     function emptyStatePrimaryLabel() {
         if (searchField.text.length > 0)
             return "EFFACER LA RECHERCHE"
@@ -1660,13 +1680,72 @@ ApplicationWindow {
                                 }
                             }
 
-                            ColumnLayout {
+                            Rectangle {
+                                id: emptyStateSurface
+                                width: Math.max(220, Math.min(parent.width - 28, 680))
+                                height: Math.max(260, Math.min(parent.height - 28, 430))
                                 anchors.centerIn: parent
-                                width: parent.width - 50
+                                radius: 22
+                                color: window.themeColors.surface
+                                opacity: 0.72
+                                border.width: 1
+                                border.color: window.themeColors.border
                                 visible: gameGrid.count === 0
-                                spacing: 14
+                                Accessible.ignored: true
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    height: 2
+                                    radius: 1
+                                    gradient: Gradient {
+                                        orientation: Gradient.Horizontal
+                                        GradientStop { position: 0.0; color: window.accentA }
+                                        GradientStop { position: 1.0; color: window.accentB }
+                                    }
+                                    opacity: 0.82
+                                }
+                            }
+
+                            ColumnLayout {
+                                id: emptyStateContent
+                                anchors.centerIn: emptyStateSurface
+                                width: emptyStateSurface.width - 56
+                                visible: gameGrid.count === 0
+                                spacing: 12
                                 Accessible.role: Accessible.Grouping
                                 Accessible.name: "Bibliothèque vide ou sans résultat"
+
+                                Image {
+                                    id: emptyStateEmblem
+                                    source: leosTheme.gamingLogoUrl
+                                    asynchronous: true
+                                    smooth: true
+                                    fillMode: Image.PreserveAspectFit
+                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.preferredWidth: window.width < 1180 ? 116 : 138
+                                    Layout.preferredHeight: window.width < 1180 ? 98 : 116
+                                    visible: status === Image.Ready
+                                    opacity: status === Image.Ready ? 0.94 : 0
+                                    Behavior on opacity {
+                                        enabled: leos.animationsEnabled
+                                        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                                    }
+                                    Accessible.ignored: true
+                                }
+
+                                Rectangle {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.preferredWidth: 72
+                                    Layout.preferredHeight: 2
+                                    radius: 1
+                                    gradient: Gradient {
+                                        orientation: Gradient.Horizontal
+                                        GradientStop { position: 0.0; color: window.accentA }
+                                        GradientStop { position: 1.0; color: window.accentB }
+                                    }
+                                }
 
                                 Label {
                                     Layout.fillWidth: true
@@ -1674,27 +1753,38 @@ ApplicationWindow {
                                     Accessible.name: text
                                     horizontalAlignment: Text.AlignHCenter
                                     wrapMode: Text.WordWrap
-                                    text: searchField.text.length > 0
-                                        ? "Aucun résultat pour « " + searchField.text + " »."
-                                        : window.selectedCategory === "Favoris"
-                                            ? "Aucun favori pour le moment."
-                                            : window.selectedCategory === "Récemment joués"
-                                                ? "Aucun jeu lancé récemment."
-                                                : "Aucun jeu détecté dans cette catégorie. Installe un jeu dans Steam, Heroic ou Lutris, puis sélectionne ACTUALISER. Tu peux aussi ajouter un jeu manuellement."
+                                    text: window.emptyStateTitle()
+                                    color: window.themeColors.text
+                                    font.pixelSize: window.fontTitle
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 0.8
+                                }
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    Layout.maximumWidth: 540
+                                    Layout.alignment: Qt.AlignHCenter
+                                    Accessible.role: Accessible.StaticText
+                                    Accessible.name: text
+                                    horizontalAlignment: Text.AlignHCenter
+                                    wrapMode: Text.WordWrap
+                                    text: window.emptyStateDescription()
                                     color: window.muted
-                                    font.pixelSize: window.fontBody
+                                    font.pixelSize: window.fontCaption
                                 }
 
                                 Button {
                                     id: emptyStatePrimaryButton
                                     Layout.fillWidth: true
+                                    Layout.maximumWidth: 410
+                                    Layout.alignment: Qt.AlignHCenter
                                     text: window.emptyStatePrimaryLabel()
                                     Accessible.role: Accessible.Button
                                     Accessible.name: text
                                     Accessible.description: "Action proposée pour retrouver des jeux dans cette vue."
                                     onClicked: window.activateEmptyStatePrimaryAction()
                                     background: Rectangle {
-                                        radius: 9
+                                        radius: 10
                                         color: window.themeColors.surface_elevated
                                         border.width: emptyStatePrimaryButton.activeFocus ? 2 : 1
                                         border.color: emptyStatePrimaryButton.activeFocus ? window.focusColor : window.accentA
@@ -1712,6 +1802,8 @@ ApplicationWindow {
                                 Button {
                                     id: emptyStateAddButton
                                     Layout.fillWidth: true
+                                    Layout.maximumWidth: 410
+                                    Layout.alignment: Qt.AlignHCenter
                                     visible: searchField.text.length === 0
                                         && window.selectedCategory !== "Favoris"
                                         && window.selectedCategory !== "Récemment joués"
@@ -1724,7 +1816,7 @@ ApplicationWindow {
                                         addDialog.open()
                                     }
                                     background: Rectangle {
-                                        radius: 9
+                                        radius: 10
                                         color: window.themeColors.surface
                                         border.width: emptyStateAddButton.activeFocus ? 2 : 1
                                         border.color: emptyStateAddButton.activeFocus ? window.focusColor : window.themeColors.border
