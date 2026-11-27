@@ -199,7 +199,10 @@ ApplicationWindow {
                             Layout.preferredWidth: 3
                             Layout.fillHeight: true
                             radius: 2
-                            color: level === "error" ? "#FF5577" : level === "warning" ? "#FFB84D" : level === "success" ? window.accentA : window.accentB
+                            color: level === "error" ? window.themeColors.semantic_critical
+                                 : level === "warning" ? window.themeColors.semantic_warning
+                                 : level === "success" ? window.themeColors.semantic_healthy
+                                 : window.accentB
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
