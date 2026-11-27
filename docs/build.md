@@ -2,7 +2,7 @@
 
 ## État
 
-Au 27 novembre 2026, `main` est au commit `dc1faf7` (fusion de la PR #73). Les contrôles Python et BlueBuild de ce commit ont réussi ; la reconstruction des trois variantes conteneur est encore en cours à la date de cet état. Le dernier lot entièrement construit et signé est basé sur `dcd8966` : run Build [#45853796496](https://github.com/jovanille43/LEOS/actions/runs/45853796496), suivi du run ISO [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068). Ce dernier a généré les trois ISO (standard, NVIDIA legacy et NVIDIA open), avec checksum, digest source, manifeste de provenance et smoke test UEFI/QEMU jusqu'à l'accueil Anaconda WebUI. Le smoke test ne réalise pas d'installation sur disque. Les ISO issues de `dc1faf7` devront être produites après la fin du build courant, puis l'une d'elles devra être installée complètement en VM avant validation de livraison.
+Au 27 novembre 2026, `main` est au commit `dc1faf7` (fusion de la PR #73). Les contrôles Python et BlueBuild de ce commit ont réussi, et les trois variantes conteneur ont été reconstruites, publiées et signées par le run Build [#45982477894](https://github.com/jovanille43/LEOS/actions/runs/45982477894). Le workflow ISO [#45983444147](https://github.com/jovanille43/LEOS/actions/runs/45983444147), automatiquement déclenché après ce succès, est en file d'attente. Le dernier lot entièrement construit et signé est basé sur `dcd8966` : run Build [#45853796496](https://github.com/jovanille43/LEOS/actions/runs/45853796496), suivi du run ISO [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068). Ce dernier a généré les trois ISO (standard, NVIDIA legacy et NVIDIA open), avec checksum, digest source, manifeste de provenance et smoke test UEFI/QEMU jusqu'à l'accueil Anaconda WebUI. Le smoke test ne réalise pas d'installation sur disque. Les ISO issues de `dc1faf7` devront être produites après la fin du build courant, puis l'une d'elles devra être installée complètement en VM avant validation de livraison.
 
 ## Base retenue
 
@@ -40,7 +40,8 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 - [x] Vérification de présence des ressources officielles, décodage des flux audio/vidéo et contrôle des huit empreintes déployées.
 - [x] Contrôle cryptographique de la paire Cosign et vérification des prérequis de signature par GitHub Actions. Les valeurs des secrets restent privées et ne sont pas affichées.
 - [x] Publication et signature des trois images conteneur dans GHCR et génération des trois ISO depuis les images publiées (run #45855325068, commit `dcd8966`).
-- [ ] Répéter le build et la génération ISO pour `dc1faf7`, qui inclut les améliorations de la PR #73.
+- [x] Reconstruire, publier et signer les trois images pour `dc1faf7` (run #45982477894).
+- [ ] Générer les trois ISO à partir de ces images (workflow #45983444147 en file d'attente).
 
 La validation BlueBuild de la recette et la génération des Containerfiles ont réussi. Le run #45855325068 confirme le démarrage UEFI/QEMU des trois ISO jusqu'à Anaconda WebUI ; il ne confirme pas l'installation sur disque. L'étape suivante est l'installation interactive de l'ISO correspondant au commit courant dans une VM UEFI avec un disque virtuel dédié, puis les essais sur matériel physique. Ne jamais effectuer le premier essai d'installation sur le seul poste de travail principal.
 
@@ -56,7 +57,8 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - [ ] Vérifier les transitions Desktop/Gaming, le profil Plasma LEOS, les services, la vidéo et l'audio après installation et second redémarrage.
 - [ ] Valider le Bluetooth, les manettes, les GPU réels, la veille et les écrans sur PC physique de test.
 - [x] Générer les ISO standard, NVIDIA legacy et NVIDIA open sur `dcd8966` et les démarrer sous UEFI/QEMU jusqu'à Anaconda WebUI.
-- [ ] Répéter le build et la génération ISO pour `dc1faf7` après le build d'image en cours.
+- [x] Build des trois variantes image pour `dc1faf7` réussi (run #45982477894).
+- [ ] Génération ISO des trois variantes pour `dc1faf7` (run #45983444147 en file d'attente).
 
 Le workflow `.github/workflows/build.yml` est déclenché manuellement et automatiquement sur `main` lorsque ses chemins de sources/recettes changent. Après la réussite de **Build LEOS**, le workflow `.github/workflows/iso.yml` est déclenché automatiquement et génère séquentiellement les trois variantes (`standard`, `nvidia-legacy`, `nvidia-modern`). Pour chaque image, il vérifie le digest, la signature Cosign et le tag avant génération ; l'artefact comprend l'ISO, le SHA-256, le digest source et le manifeste de provenance.
 
@@ -66,7 +68,7 @@ La checklist détaillée du premier démarrage, des transitions, du Bluetooth, d
 
 ## Construction ISO
 
-Le workflow `.github/workflows/iso.yml` génère une ISO depuis une image publiée dans GHCR. Il peut être lancé manuellement avec la variante et le tag souhaités ; après un build `main` réussi, il est aussi déclenché automatiquement et construit les trois variantes une par une afin de limiter la pression sur les runners et le stockage. Pour chaque variante, il résout le digest, vérifie la signature Cosign avec la clé publique LEOS, vérifie que le tag pointe toujours vers le même digest puis génère l'ISO. L'artefact inclut l'ISO, son SHA-256, le digest de l'image et le manifeste de provenance, conservés 14 jours. Le run #45855325068 a généré les trois ISO sur le commit `dcd8966` ; la répétition sur le commit `dc1faf7` est en attente de la fin du build des images.
+Le workflow `.github/workflows/iso.yml` génère une ISO depuis une image publiée dans GHCR. Il peut être lancé manuellement avec la variante et le tag souhaités ; après un build `main` réussi, il est aussi déclenché automatiquement et construit les trois variantes une par une afin de limiter la pression sur les runners et le stockage. Pour chaque variante, il résout le digest, vérifie la signature Cosign avec la clé publique LEOS, vérifie que le tag pointe toujours vers le même digest puis génère l'ISO. L'artefact inclut l'ISO, son SHA-256, le digest de l'image et le manifeste de provenance, conservés 14 jours. Le run #45855325068 a généré les trois ISO sur le commit `dcd8966` ; la génération sur le commit `dc1faf7` est déclenchée et en file d'attente dans le run #45983444147.
 
 **Correction du chemin d'installation :** l'exécution du run 44257827294 utilisait `WEB_UI=false`, donc l'interface Anaconda GTK historique. Fedora 45 a basculé les médias Atomic Desktop vers Anaconda WebUI. Le workflow LEOS active maintenant explicitement l'option BlueBuild `--web-ui`, disponible dans la CLI v0.9.42, afin d'inclure `anaconda-webui` dans le média généré. C'est un alignement avec le chemin Fedora 45 ; ce changement n'établit pas encore la cause racine de l'échec observé sur matériel et doit être validé avec une nouvelle ISO.
 
