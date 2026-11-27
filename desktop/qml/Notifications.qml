@@ -51,7 +51,7 @@ ApplicationWindow {
             ColumnLayout {
                 spacing: 3
                 Label { text: "LEOS"; color: window.themeColors.text; font.pixelSize: 26; font.weight: Font.Black; font.letterSpacing: 5 }
-                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 2 }
+                Label { text: "CENTRE DE NOTIFICATIONS"; color: window.cyan; font.pixelSize: 12; font.letterSpacing: 2 }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
@@ -232,8 +232,8 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                            Label { text: body; color: window.muted; font.pixelSize: 11; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
-                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 9; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                            Label { text: body; color: window.muted; font.pixelSize: 13; Layout.fillWidth: true; wrapMode: Text.Wrap; visible: body.length > 0 }
+                            Label { text: createdAt; color: window.themeColors.muted_text; font.pixelSize: 11; Layout.fillWidth: true; elide: Text.ElideMiddle }
                         }
                         ColumnLayout {
                             ToolButton {
