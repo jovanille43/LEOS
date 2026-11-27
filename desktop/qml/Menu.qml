@@ -86,7 +86,7 @@ ApplicationWindow {
                     Label {
                         text: "APPLICATIONS"
                         color: window.cyan
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.letterSpacing: 3
                     }
                 }
@@ -116,7 +116,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         text: applicationCatalog.applicationCount() + " APPLICATIONS"
                         color: window.themeColors.text
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.7
                         elide: Text.ElideRight
@@ -140,7 +140,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: modesButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -163,7 +163,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: controlCenterButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -189,7 +189,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: notificationsButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -211,7 +211,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: filesButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -233,7 +233,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: settingsButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -255,7 +255,7 @@ ApplicationWindow {
                 contentItem: Label {
                     text: refreshButton.text
                     color: window.themeColors.text
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -384,7 +384,7 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     text: categoryMenuButton.text
                                     color: window.themeColors.text
-                                    font.pixelSize: 12
+                                    font.pixelSize: 14
                                     font.weight: categoryMenuButton.categorySelected ? Font.DemiBold : Font.Normal
                                     leftPadding: 10
                                     verticalAlignment: Text.AlignVCenter
@@ -431,7 +431,7 @@ ApplicationWindow {
                             Label {
                                 text: appGrid.count + (appGrid.count > 1 ? " applications disponibles" : " application disponible")
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 font.letterSpacing: 0.25
                             }
                         }
