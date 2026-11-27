@@ -2374,7 +2374,7 @@ ApplicationWindow {
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         Label { text: "Notifications système"; color: window.themeColors.text; font.weight: Font.DemiBold }
-                                        Label { text: "Autoriser les fenêtres natives du bureau"; color: window.muted; font.pixelSize: 11 }
+                                        Label { text: "Autoriser les fenêtres natives du bureau"; color: window.muted; font.pixelSize: 13 }
                                     }
                                     Switch {
                                         checked: controlCenter.notificationsEnabled
@@ -2391,7 +2391,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "DURÉE D’AFFICHAGE"; color: window.cyan; font.pixelSize: 13; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationDurationBox
                                         Layout.fillWidth: true
@@ -2410,7 +2410,7 @@ ApplicationWindow {
                                 ColumnLayout {
                                     anchors.fill: parent
                                     anchors.margins: 18
-                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.cyan; font.pixelSize: 11; font.letterSpacing: 1.5 }
+                                    Label { text: "NIVEAU DE PRIORITÉ"; color: window.cyan; font.pixelSize: 13; font.letterSpacing: 1.5 }
                                     ComboBox {
                                         id: notificationPriorityBox
                                         Layout.fillWidth: true
@@ -2432,7 +2432,7 @@ ApplicationWindow {
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         Label { text: "Sons de notification"; color: window.themeColors.text; font.weight: Font.DemiBold }
-                                        Label { text: "Utilise le son configuré par KDE lorsqu’il est pris en charge"; color: window.muted; font.pixelSize: 11; wrapMode: Text.WordWrap }
+                                        Label { text: "Utilise le son configuré par KDE lorsqu’il est pris en charge"; color: window.muted; font.pixelSize: 13; wrapMode: Text.WordWrap }
                                     }
                                     Switch {
                                         checked: controlCenter.notificationSoundsEnabled
@@ -2452,7 +2452,7 @@ ApplicationWindow {
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         Label { text: "Mode silencieux en Gaming Mode"; color: window.themeColors.text; font.weight: Font.DemiBold }
-                                        Label { text: "Conserve les événements dans l’historique sans interrompre le jeu"; color: window.muted; font.pixelSize: 11; wrapMode: Text.WordWrap }
+                                        Label { text: "Conserve les événements dans l’historique sans interrompre le jeu"; color: window.muted; font.pixelSize: 13; wrapMode: Text.WordWrap }
                                     }
                                     Switch {
                                         checked: controlCenter.silentNotificationsInGaming
@@ -2564,7 +2564,7 @@ ApplicationWindow {
                                             anchors.fill: parent
                                             anchors.margins: 14
                                             spacing: 6
-                                            Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1 }
+                                            Label { text: modelData.title; color: window.cyan; font.pixelSize: 12; font.letterSpacing: 1 }
                                             Label {
                                                 text: modelData.value || "Indisponible"
                                                 color: window.themeColors.text
@@ -2689,14 +2689,14 @@ ApplicationWindow {
                                     anchors.margins: 18
                                     ColumnLayout {
                                         Layout.fillWidth: true
-                                        Label { text: "ESPACE REPÉRÉ"; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.5 }
+                                        Label { text: "ESPACE REPÉRÉ"; color: window.cyan; font.pixelSize: 12; font.letterSpacing: 1.5 }
                                         Label {
                                             text: controlCenter.cleanupPreview.totalSize || "Analyse en cours…"
                                             color: window.themeColors.text
                                             font.pixelSize: 22
                                             font.weight: Font.Bold
                                         }
-                                        Label { text: "Sur les deux emplacements inspectés"; color: window.muted; font.pixelSize: 10 }
+                                        Label { text: "Sur les deux emplacements inspectés"; color: window.muted; font.pixelSize: 12 }
                                     }
                                     Button {
                                         text: "ANALYSER"
@@ -2728,7 +2728,7 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         anchors.margins: 16
                                         spacing: 7
-                                        Label { text: modelData.title; color: window.cyan; font.pixelSize: 10; font.letterSpacing: 1.2 }
+                                        Label { text: modelData.title; color: window.cyan; font.pixelSize: 12; font.letterSpacing: 1.2 }
                                         Label {
                                             text: modelData.data.size || "Non disponible"
                                             color: window.themeColors.text
