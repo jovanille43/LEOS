@@ -54,7 +54,6 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 - [x] Sauvegarde avant modification du profil Plasma.
 - [x] Transformer l'inventaire en guide de récupération contextualisé selon le déploiement démarré ; expliquer les options sûres, les prérequis et les conséquences avant de renvoyer vers les outils natifs.
 - [ ] Tester réellement la mise à jour, le redémarrage, le choix d'un ancien déploiement, le rollback et la conservation des données dans une VM.
-- [ ] Tester réellement mise à jour, ancien déploiement, rollback et conservation des données dans une VM.
 
 ### 7. Expérience Desktop complète
 
@@ -67,7 +66,8 @@ Ce document fixe les huit axes de finition validés pour LEOS. Il distingue les 
 
 - [x] CI Python, lint QML, contrôles BlueBuild et vérification de signature.
 - [x] Génération des trois variantes ISO avec vérification de structure, checksum, digest source, manifeste de provenance et démarrage UEFI/QEMU jusqu'à Anaconda WebUI (commit `dcd8966`, run #45855325068).
-- [ ] Répéter le build des trois images et la génération des trois ISO après les améliorations de la PR #73 (`dc1faf7`) ; puis tester l'installation interactive de l'ISO issue de ce commit.
+- [x] Reconstruire, publier et signer les trois images après les améliorations de la PR #73 (`dc1faf7`) — run #45982477894.
+- [ ] Générer les trois ISO de ce commit — workflow #45983444147 en file d'attente, puis tester l'installation interactive.
 - [x] Ajouter un manifeste de provenance par ISO : variante, commit source, tag et digest d'image, SHA-256 et périmètre exact du test UEFI/QEMU.
 - [ ] Répéter ces contrôles sur le commit exact de livraison et conserver les artefacts correspondants.
 - [ ] Installer l'ISO du commit de livraison dans une VM UEFI dédiée et documenter les résultats : création de compte, session, identité A/B, profil Desktop, Gaming, transitions, réseau/audio, second démarrage.
