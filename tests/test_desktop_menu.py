@@ -236,9 +236,13 @@ class DesktopMenuTests(unittest.TestCase):
 
     def test_desktop_menu_header_uses_official_emblem_with_text_fallback(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
-        self.assertIn("source: leosTheme.desktopLogoUrl", qml)
-        self.assertIn("asynchronous: true", qml)
-        self.assertIn("visible: desktopMenuLogo.status !== Image.Ready", qml)
+        identity = (ROOT / "branding/qml/ModeIdentity.qml").read_text(encoding="utf-8")
+        self.assertIn("Branding.ModeIdentity", qml)
+        self.assertIn("logoSource: leosTheme.desktopLogoUrl", qml)
+        self.assertIn('modeLabel: "DESKTOP MODE"', qml)
+        self.assertIn("asynchronous: true", identity)
+        self.assertIn("visible: status === Image.Ready", identity)
+        self.assertIn("visible: emblem.status !== Image.Ready", identity)
 
     def test_menu_button_content_uses_explicit_button_ids(self):
         qml = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")

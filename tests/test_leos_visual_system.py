@@ -17,6 +17,17 @@ class LeosVisualSystemTests(unittest.TestCase):
             self.assertIn("GradientStop { position: 0; color: window.accentA }", source)
             self.assertIn("GradientStop { position: 1; color: window.accentB }", source)
 
+    def test_shared_mode_identity_keeps_one_desktop_gaming_visual_language(self):
+        identity = (ROOT / "branding/qml/ModeIdentity.qml").read_text(encoding="utf-8")
+        desktop = (ROOT / "desktop/qml/Menu.qml").read_text(encoding="utf-8")
+        gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        for source in (desktop, gaming):
+            self.assertIn("Branding.ModeIdentity", source)
+            self.assertIn("accentA: window.accentA", source)
+            self.assertIn("accentB: window.accentB", source)
+        self.assertIn("root.accentA", identity)
+        self.assertIn("root.accentB", identity)
+
     def test_gaming_particle_twinkle_respects_reduced_motion(self):
         gaming = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         atmosphere = gaming.split("id: gamingContent", 1)[1].split("ColumnLayout {", 1)[0]

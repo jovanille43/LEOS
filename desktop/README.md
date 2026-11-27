@@ -10,7 +10,7 @@ Desktop Mode conserve **KDE Plasma** comme moteur de bureau, mais fournit une ex
 
 ## Direction visuelle Desktop
 
-- Emblème officiel du lion seul disponible dans `branding/desktop-logo.jpeg` et empaqueté sous `/usr/share/leos/branding/`. Il est déjà réutilisé dans `branding/wallpapers/desktop-leos.svg` ; son intégration comme élément permanent du bureau reste à finaliser.
+- Emblème officiel du lion seul disponible dans `branding/desktop-logo.png` et réutilisé par le fond d'écran LEOS ainsi que l'en-tête partagé `branding/qml/ModeIdentity.qml`. Le même composant affiche l'emblème avec manette en Gaming Mode ; seul le libellé et l'emblème changent.
 - Fond d'écran 4K officiel disponible dans `branding/wallpapers/desktop-leos.svg`. Au premier choix de Desktop, le parcours LEOS peut l'appliquer avec le profil couleur, le Plasma Style, le thème d'icônes et le dock après consentement explicite et sauvegarde de la disposition KDE.
 - Fond sombre LEOS, deux accents A/B librement choisis, surfaces sobres et contrastes lisibles.
 - Dock inférieur centré, personnalisable et désactivable.
