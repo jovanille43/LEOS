@@ -45,6 +45,7 @@ class DynamicThemeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         qml_paths = (
             "control_center/qml/Main.qml",
+            "controller_center/qml/Main.qml",
             "launcher/qml/ModeSelector.qml",
             "desktop/qml/Menu.qml",
             "desktop/qml/Notifications.qml",
