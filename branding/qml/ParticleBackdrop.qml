@@ -3,11 +3,11 @@ import QtQuick
 Item {
     id: root
 
-    property color colorA: "#6FB6E8"
-    property color colorB: "#A58AD8"
-    property real particleOpacity: 0.78
+    property color colorA: "#A0A0A0"
+    property color colorB: "#D0D0D0"
+    property real particleOpacity: 0.58
     property bool motionEnabled: true
-    property int particleCount: 54
+    property int particleCount: 42
     property var particles: []
     property real phase: 0
 
