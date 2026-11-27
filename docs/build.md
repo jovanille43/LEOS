@@ -2,7 +2,7 @@
 
 ## État
 
-La recette BlueBuild `recipes/recipe.yml` décrit l'image basée sur Bazzite KDE Desktop. Au 18 novembre 2026, les trois variantes de l'image (standard AMD/Intel, NVIDIA legacy et NVIDIA open) ont été construites, publiées dans GHCR et signées avec Cosign. Le workflow manuel de build a réussi (run 44193417485). L'ISO installateur standard a ensuite été générée avec succès (run 44257827294) après vérification de la signature et du digest de l'image. Les workflows CI ont également validé les sources Python, les interfaces QML, les vidéos, les empreintes des ressources et les recettes BlueBuild. **La construction est acquise ; la validation en exécution ne l'est pas encore** : l'ISO standard doit être testée en machine virtuelle, puis les fonctions matérielles sur PC de test. Les ISO NVIDIA restent à générer.
+Au 27 novembre 2026, `main` est au commit `dc1faf7` (fusion de la PR #73). Les contrôles Python et BlueBuild de ce commit ont réussi ; la reconstruction des trois variantes conteneur est encore en cours à la date de cet état. Le dernier lot entièrement construit et signé est basé sur `dcd8966` : run Build [#45853796496](https://github.com/jovanille43/LEOS/actions/runs/45853796496), suivi du run ISO [#45855325068](https://github.com/jovanille43/LEOS/actions/runs/45855325068). Ce dernier a généré les trois ISO (standard, NVIDIA legacy et NVIDIA open), avec checksum, digest source, manifeste de provenance et smoke test UEFI/QEMU jusqu'à l'accueil Anaconda WebUI. Le smoke test ne réalise pas d'installation sur disque. Les ISO issues de `dc1faf7` devront être produites après la fin du build courant, puis l'une d'elles devra être installée complètement en VM avant validation de livraison.
 
 ## Base retenue
 
@@ -39,9 +39,10 @@ Le module BlueBuild `signing` est présent dans la recette afin de configurer le
 - [x] Validation des trois recettes BlueBuild et génération des Containerfiles par GitHub Actions.
 - [x] Vérification de présence des ressources officielles, décodage des flux audio/vidéo et contrôle des huit empreintes déployées.
 - [x] Contrôle cryptographique de la paire Cosign et vérification des prérequis de signature par GitHub Actions. Les valeurs des secrets restent privées et ne sont pas affichées.
-- [x] Publication et signature des trois images conteneur dans GHCR ; génération de l'ISO standard depuis l'image publiée.
+- [x] Publication et signature des trois images conteneur dans GHCR et génération des trois ISO depuis les images publiées (run #45855325068, commit `dcd8966`).
+- [ ] Répéter le build et la génération ISO pour `dc1faf7`, qui inclut les améliorations de la PR #73.
 
-La validation BlueBuild de la recette et la génération des Containerfiles ont réussi. L'étape suivante est la validation en exécution de l'ISO dans une VM UEFI avec un disque virtuel dédié, puis sur du matériel physique de test. Ne jamais effectuer le premier essai d'installation sur le seul poste de travail principal.
+La validation BlueBuild de la recette et la génération des Containerfiles ont réussi. Le run #45855325068 confirme le démarrage UEFI/QEMU des trois ISO jusqu'à Anaconda WebUI ; il ne confirme pas l'installation sur disque. L'étape suivante est l'installation interactive de l'ISO correspondant au commit courant dans une VM UEFI avec un disque virtuel dédié, puis les essais sur matériel physique. Ne jamais effectuer le premier essai d'installation sur le seul poste de travail principal.
 
 Références techniques : [format de recette BlueBuild](https://blue-build.org/reference/recipe/), [module systemd](https://blue-build.org/reference/modules/systemd/), [module copy](https://blue-build.org/reference/modules/copy/), [module DNF](https://blue-build.org/reference/modules/dnf/) et [FAQ Bazzite sur les variantes Desktop/Deck](https://docs.bazzite.gg/General/FAQ/).
 
@@ -51,12 +52,13 @@ Références techniques : [format de recette BlueBuild](https://blue-build.org/r
 - [x] La paire Cosign a passé le contrôle cryptographique GitHub Actions ; les secrets n'ont pas été exposés.
 - [x] Le workflow de build vérifie la présence des deux secrets et la correspondance cryptographique avec `cosign.pub` avant publication.
 - [x] Les ressources déployées sont présentes et leurs empreintes sont contrôlées. Le rendu des fonds, la restitution vidéo/audio et les transitions restent à valider en session Bazzite réelle.
-- [ ] Valider le démarrage et l'installation de l'ISO standard dans une VM UEFI, sur un disque virtuel dédié.
-- [ ] Vérifier les transitions Desktop/Gaming, le premier démarrage, les services, la vidéo et l'audio dans cette VM.
+- [ ] Installer l'ISO du commit `dc1faf7` dans une VM UEFI, sur un disque virtuel dédié, puis vérifier la création du compte et le premier démarrage.
+- [ ] Vérifier les transitions Desktop/Gaming, le profil Plasma LEOS, les services, la vidéo et l'audio après installation et second redémarrage.
 - [ ] Valider le Bluetooth, les manettes, les GPU réels, la veille et les écrans sur PC physique de test.
-- [ ] Générer puis tester les ISO NVIDIA legacy et NVIDIA open.
+- [x] Générer les ISO standard, NVIDIA legacy et NVIDIA open sur `dcd8966` et les démarrer sous UEFI/QEMU jusqu'à Anaconda WebUI.
+- [ ] Répéter le build et la génération ISO pour `dc1faf7` après le build d'image en cours.
 
-Le workflow `.github/workflows/build.yml` reste manuel. Il n'est pas nécessaire de reconstruire les trois images pour tester l'ISO standard : celle-ci est générée à partir de l'image déjà publiée et de son digest vérifié. Pour toute nouvelle version, le workflow vérifie les ressources et leurs empreintes, les vidéos et les recettes, puis contrôle les secrets `SIGNING_SECRET` et `COSIGN_PASSWORD` ainsi que `cosign.pub` avant publication.
+Le workflow `.github/workflows/build.yml` est déclenché manuellement et automatiquement sur `main` lorsque ses chemins de sources/recettes changent. Après la réussite de **Build LEOS**, le workflow `.github/workflows/iso.yml` est déclenché automatiquement et génère séquentiellement les trois variantes (`standard`, `nvidia-legacy`, `nvidia-modern`). Pour chaque image, il vérifie le digest, la signature Cosign et le tag avant génération ; l'artefact comprend l'ISO, le SHA-256, le digest source et le manifeste de provenance.
 
 ## Validation sur matériel réel
 
@@ -64,7 +66,7 @@ La checklist détaillée du premier démarrage, des transitions, du Bluetooth, d
 
 ## Construction ISO
 
-Le workflow `.github/workflows/iso.yml` génère une ISO à partir d'une image déjà publiée dans GHCR. Il peut être lancé manuellement avec la variante matérielle et le tag souhaités ; lorsqu'il est déclenché par une modification de ce workflow sur `main`, il génère automatiquement l'ISO standard avec le tag `latest`. Dans les deux cas, il résout le digest, vérifie la signature Cosign avec la clé publique LEOS, puis génère l'ISO depuis l'image distante. L'artefact comprend l'ISO, son fichier SHA-256 et le digest source, conservés pendant 14 jours. La première génération standard a réussi dans le run 44257827294 ; les deux variantes NVIDIA restent à produire.
+Le workflow `.github/workflows/iso.yml` génère une ISO depuis une image publiée dans GHCR. Il peut être lancé manuellement avec la variante et le tag souhaités ; après un build `main` réussi, il est aussi déclenché automatiquement et construit les trois variantes une par une afin de limiter la pression sur les runners et le stockage. Pour chaque variante, il résout le digest, vérifie la signature Cosign avec la clé publique LEOS, vérifie que le tag pointe toujours vers le même digest puis génère l'ISO. L'artefact inclut l'ISO, son SHA-256, le digest de l'image et le manifeste de provenance, conservés 14 jours. Le run #45855325068 a généré les trois ISO sur le commit `dcd8966` ; la répétition sur le commit `dc1faf7` est en attente de la fin du build des images.
 
 **Correction du chemin d'installation :** l'exécution du run 44257827294 utilisait `WEB_UI=false`, donc l'interface Anaconda GTK historique. Fedora 45 a basculé les médias Atomic Desktop vers Anaconda WebUI. Le workflow LEOS active maintenant explicitement l'option BlueBuild `--web-ui`, disponible dans la CLI v0.9.42, afin d'inclure `anaconda-webui` dans le média généré. C'est un alignement avec le chemin Fedora 45 ; ce changement n'établit pas encore la cause racine de l'échec observé sur matériel et doit être validé avec une nouvelle ISO.
 
