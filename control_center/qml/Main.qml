@@ -480,7 +480,7 @@ ApplicationWindow {
                     Label {
                         text: "CENTRE DE CONTRÔLE"
                         color: window.cyan
-                        font.pixelSize: 10
+                        font.pixelSize: 12
                         font.letterSpacing: 3
                     }
                 }
@@ -510,7 +510,7 @@ ApplicationWindow {
                                 ? (systemMonitor.available ? "EN LIGNE" : "INACTIF")
                                 : (systemMonitor.available ? "SURVEILLANCE ACTIVE" : "MESURES INDISPONIBLES")
                             color: systemMonitor.available ? window.themeColors.text : window.muted
-                            font.pixelSize: 8
+                            font.pixelSize: 10
                             font.letterSpacing: 0.6
                             elide: Text.ElideRight
                         }
@@ -521,7 +521,7 @@ ApplicationWindow {
                     Label {
                         text: controlCenter.themeColorsConfigured ? "PALETTE A/B ACTIVE" : "PERSONNALISER A/B"
                         color: window.muted
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         font.letterSpacing: 1.4
                     }
                     Rectangle {
@@ -623,7 +623,7 @@ ApplicationWindow {
                                         anchors.centerIn: parent
                                         text: ("0" + (modelData.page + 1)).slice(-2)
                                         color: window.selectedPage === modelData.page ? window.cyan : window.muted
-                                        font.pixelSize: 9
+                                        font.pixelSize: 11
                                         font.weight: Font.Bold
                                         font.letterSpacing: 0.5
                                     }
@@ -632,7 +632,7 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     text: settingsNavigationButton.text
                                     color: window.themeColors.text
-                                    font.pixelSize: 12
+                                    font.pixelSize: 14
                                     font.weight: window.selectedPage === modelData.page ? Font.DemiBold : Font.Normal
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
@@ -651,7 +651,7 @@ ApplicationWindow {
                         Label {
                             text: "LEOS • BUILD EN DÉVELOPPEMENT"
                             color: window.themeColors.muted_text
-                            font.pixelSize: 9
+                            font.pixelSize: 11
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
@@ -679,7 +679,7 @@ ApplicationWindow {
                             Label {
                                 text: "État en direct des ressources détectées sur cet appareil."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 Layout.fillWidth: true
                             }
 
@@ -714,14 +714,14 @@ ApplicationWindow {
                                                  : controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning
                                                  : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy
                                                  : window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             font.weight: Font.DemiBold
                                             font.letterSpacing: 1
                                         }
                                         Label {
                                             text: controlCenter.diagnosticsSnapshot.summary || "Analyse en cours…"
                                             color: window.themeColors.text
-                                            font.pixelSize: 11
+                                            font.pixelSize: 13
                                             wrapMode: Text.WordWrap
                                             maximumLineCount: 2
                                             elide: Text.ElideRight
@@ -731,7 +731,7 @@ ApplicationWindow {
                                             text: (controlCenter.diagnosticsSnapshot.findings || []).length
                                                   + " point(s) à examiner"
                                             color: window.muted
-                                            font.pixelSize: 9
+                                            font.pixelSize: 11
                                         }
                                     }
                                     Button {
@@ -771,7 +771,7 @@ ApplicationWindow {
                                         Label {
                                             text: "UTILISATION CPU"
                                             color: window.cyan
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             font.letterSpacing: 1
                                         }
                                         Label {
@@ -785,7 +785,7 @@ ApplicationWindow {
                                         Label {
                                             text: "Processeur"
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                         }
                                         Rectangle {
                                             visible: systemMonitor.cpuUsage >= 0
@@ -832,7 +832,7 @@ ApplicationWindow {
                                         Label {
                                             text: "MÉMOIRE"
                                             color: window.cyan
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             font.letterSpacing: 1
                                         }
                                         Label {
@@ -846,7 +846,7 @@ ApplicationWindow {
                                         Label {
                                             text: "RAM utilisée"
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                         }
                                         Rectangle {
                                             visible: systemMonitor.memoryUsage >= 0
@@ -893,7 +893,7 @@ ApplicationWindow {
                                         Label {
                                             text: "TEMPÉRATURE CPU"
                                             color: window.cyan
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             font.letterSpacing: 1
                                         }
                                         Label {
@@ -907,7 +907,7 @@ ApplicationWindow {
                                         Label {
                                             text: "Selon les capteurs Linux"
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             wrapMode: Text.WordWrap
                                             Layout.fillWidth: true
                                         }
@@ -928,7 +928,7 @@ ApplicationWindow {
                                     Label {
                                         text: "STOCKAGE SYSTÈME"
                                         color: window.cyan
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.letterSpacing: 1
                                     }
                                     Label {
@@ -942,7 +942,7 @@ ApplicationWindow {
                                     Label {
                                         text: "Occupation de la racine /"
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                     }
                                     Rectangle {
                                         visible: systemMonitor.diskUsage >= 0
@@ -979,7 +979,7 @@ ApplicationWindow {
                                     Label {
                                         text: "RÉSEAU"
                                         color: window.cyan
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.letterSpacing: 1
                                     }
                                     Label {
@@ -994,7 +994,7 @@ ApplicationWindow {
                                     Label {
                                         text: "Débits agrégés des interfaces"
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                     }
                                 }
                             }
@@ -1012,7 +1012,7 @@ ApplicationWindow {
                                     Label {
                                         text: "SURVEILLANCE LEOS"
                                         color: window.cyan
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.letterSpacing: 1
                                     }
                                     Label {
@@ -1020,7 +1020,7 @@ ApplicationWindow {
                                             ? "Actualisation automatique toutes les deux secondes. Les valeurs non exposées par le matériel restent indisponibles."
                                             : "Le module de mesure système n'est pas disponible sur cette installation."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1049,13 +1049,13 @@ ApplicationWindow {
                                     Label {
                                         text: "APPARENCE"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Choisis une apparence claire, sombre ou une bascule automatique. Les couleurs A et B restent identiques dans les trois cas."
                                         color: window.muted
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1079,7 +1079,7 @@ ApplicationWindow {
                                             contentItem: Label {
                                                 text: appearanceDarkButton.text
                                                 color: window.themeColors.text
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 font.weight: Font.Bold
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
@@ -1102,7 +1102,7 @@ ApplicationWindow {
                                             contentItem: Label {
                                                 text: appearanceLightButton.text
                                                 color: window.themeColors.text
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 font.weight: Font.Bold
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
@@ -1125,7 +1125,7 @@ ApplicationWindow {
                                             contentItem: Label {
                                                 text: appearanceAutoButton.text
                                                 color: window.themeColors.text
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 font.weight: Font.Bold
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
@@ -1137,13 +1137,13 @@ ApplicationWindow {
                                             ? "AUTOMATIQUE · " + (controlCenter.effectiveAppearance === "light" ? "MODE CLAIR ACTIF" : "MODE SOMBRE ACTIF")
                                             : (controlCenter.effectiveAppearance === "light" ? "MODE CLAIR ACTIF" : "MODE SOMBRE ACTIF")
                                         color: window.themeColors.text
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         font.weight: Font.DemiBold
                                     }
                                     Label {
                                         text: "En automatique : clair de 07:00 à 18:59, sombre de 19:00 à 06:59 (heure locale). Les interfaces LEOS suivent le changement ; l’application aux applications KDE et au style Plasma reste disponible dans les réglages ci-dessous."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1151,7 +1151,7 @@ ApplicationWindow {
                                         text: window.appearanceNotice
                                         visible: text.length > 0
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                     }
                                 }
                             }
@@ -1169,18 +1169,18 @@ ApplicationWindow {
                                     Label {
                                         text: "THÈME LEOS"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Personnalise librement les deux extrémités A et B du dégradé LEOS. Enregistre la paire pour l'appliquer partout."
                                         color: window.muted
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                     }
                                     Label {
                                         text: "Le dégradé personnalisé A/B est la palette principale. Les anciennes palettes prédéfinies ne sont pas imposées."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1235,7 +1235,7 @@ ApplicationWindow {
                                         text: window.themeColorNotice
                                         visible: text.length > 0
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1244,7 +1244,7 @@ ApplicationWindow {
                                                  || window.themeColors.accent_secondary_text !== window.themeColors.accent_secondary
                                         text: "Contraste faible : le texte est adapté sans modifier les couleurs A/B choisies."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1266,13 +1266,13 @@ ApplicationWindow {
                                     Label {
                                         text: "FONDS D'ÉCRAN LEOS"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Deux fonds 4K assortis à chaque mode. Les aperçus utilisent les emblèmes officiels ; rien n'est appliqué sans ton choix dans KDE."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1302,13 +1302,13 @@ ApplicationWindow {
                                                     visible: desktopWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU DESKTOP"
                                                     color: "#a9bacb"
-                                                    font.pixelSize: 10
+                                                    font.pixelSize: 12
                                                 }
                                             }
                                             Label {
                                                 text: "DESKTOP · LION SEUL"
                                                 color: window.themeColors.text
-                                                font.pixelSize: 9
+                                                font.pixelSize: 11
                                                 font.weight: Font.DemiBold
                                                 horizontalAlignment: Text.AlignHCenter
                                                 Layout.fillWidth: true
@@ -1337,13 +1337,13 @@ ApplicationWindow {
                                                     visible: gamingWallpaperPreview.status !== Image.Ready
                                                     text: "APERÇU GAMING"
                                                     color: "#a9bacb"
-                                                    font.pixelSize: 10
+                                                    font.pixelSize: 12
                                                 }
                                             }
                                             Label {
                                                 text: "GAMING · LION + MANETTE"
                                                 color: window.themeColors.text
-                                                font.pixelSize: 9
+                                                font.pixelSize: 11
                                                 font.weight: Font.DemiBold
                                                 horizontalAlignment: Text.AlignHCenter
                                                 Layout.fillWidth: true
@@ -1366,7 +1366,7 @@ ApplicationWindow {
                                     Label {
                                         text: window.wallpaperNotice
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1386,20 +1386,20 @@ ApplicationWindow {
                                     Label {
                                         text: "THÈME KDE PLASMA"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Transfère la palette LEOS vers les applications KDE et les éléments Plasma compatibles. L'application demande toujours une confirmation."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
                                     Label {
                                         text: "Schéma KDE actif : " + controlCenter.activeKdeColorScheme
                                         color: window.themeColors.text
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1428,7 +1428,7 @@ ApplicationWindow {
                                             ? "Outil plasma-apply-colorscheme indisponible sur cette session."
                                             : window.kdeThemeNotice
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1448,20 +1448,20 @@ ApplicationWindow {
                                     Label {
                                         text: "STYLE DE BUREAU LEOS"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Habillage Plasma : panneaux, widgets et fenêtres contextuelles. Les éléments non personnalisés conservent le style Breeze."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
                                     Label {
                                         text: "Style actif : " + controlCenter.activePlasmaStyle
                                         color: window.themeColors.text
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1496,7 +1496,7 @@ ApplicationWindow {
                                                     ? "Outil plasma-changeicons indisponible."
                                                     : window.plasmaStyleNotice
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1516,7 +1516,7 @@ ApplicationWindow {
                                     Label {
                                         text: "EXPÉRIENCE"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     RowLayout {
@@ -1551,13 +1551,13 @@ ApplicationWindow {
                                     Label {
                                         text: "BUREAU & DOCK"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Choisis un profil et prépare la disposition de ton bureau."
                                         color: window.muted
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1636,7 +1636,7 @@ ApplicationWindow {
                                     Label {
                                         text: "Préférences enregistrées localement. KDE Plasma ne sera pas modifié tant que l’application du profil avec sauvegarde/restauration n’est pas prête."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1655,13 +1655,13 @@ ApplicationWindow {
                                     Label {
                                         text: "SAUVEGARDE PLASMA"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Crée une copie privée de la disposition actuelle avant toute future personnalisation du bureau."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1674,7 +1674,7 @@ ApplicationWindow {
                                         id: plasmaBackupNotice
                                         text: controlCenter.hasPlasmaBackup ? "Une sauvegarde LEOS existe déjà." : "Aucune sauvegarde LEOS pour le moment."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1693,13 +1693,13 @@ ApplicationWindow {
                                     Label {
                                         text: "SAUVEGARDE DES PRÉFÉRENCES LEOS"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Points de restauration privés pour les couleurs A/B, l'apparence et les réglages LEOS. Chaque sauvegarde est contrôlée par empreinte SHA-256."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1730,7 +1730,7 @@ ApplicationWindow {
                                                 ? "Les points valides sont conservés dans l'espace privé de ton compte."
                                                 : "Aucun point de restauration pour le moment.")
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1749,13 +1749,13 @@ ApplicationWindow {
                                     Label {
                                         text: "SAUVEGARDE DU PROFIL DE DOCK LEOS"
                                         color: window.themeColors.accent_primary
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Protège la position, l'alignement, le masquage et les widgets LEOS. Chaque point possède une empreinte SHA-256 et reste distinct de la sauvegarde KDE Plasma."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1796,7 +1796,7 @@ ApplicationWindow {
                                     Label {
                                         text: "L’import ajoute un point vérifié sans l’appliquer. L’export copie le manifeste et son fichier de données."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1807,7 +1807,7 @@ ApplicationWindow {
                                                 ? "Les points valides sont conservés dans l'espace privé de ton compte."
                                                 : "Aucun point de restauration pour le moment.")
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1826,13 +1826,13 @@ ApplicationWindow {
                                     Label {
                                         text: "INSPECTION DU BUREAU KDE"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Analyse les panneaux et les composants Plasma existants. Cette opération est strictement en lecture seule."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1851,7 +1851,7 @@ ApplicationWindow {
                                         id: plasmaDockNotice
                                         text: window.plasmaDockNotice
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1859,7 +1859,7 @@ ApplicationWindow {
                                         id: plasmaInspectionReport
                                         text: "Aucune analyse effectuée. LEOS ne modifiera pas ton bureau pendant cette inspection."
                                         color: window.themeColors.text
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -1883,7 +1883,7 @@ ApplicationWindow {
                             Label {
                                 text: "Inventaire réel du matériel et des périphériques connectés. Les détections sont en lecture seule ; les réglages avancés restent accessibles dans KDE."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -1924,7 +1924,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.description
                                                 color: window.muted
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                                 Layout.fillHeight: true
@@ -1951,7 +1951,7 @@ ApplicationWindow {
                                 Label {
                                     text: "Actualisation automatique · 10 s"
                                     color: window.muted
-                                    font.pixelSize: 10
+                                    font.pixelSize: 12
                                 }
                             }
 
@@ -1995,7 +1995,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.title
                                                 color: window.cyan
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 font.letterSpacing: 1
                                             }
                                             Label {
@@ -2009,7 +2009,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.detail || ""
                                                 color: window.muted
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                             }
@@ -2053,7 +2053,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.description
                                                 color: window.muted
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                                 Layout.fillHeight: true
@@ -2074,7 +2074,7 @@ ApplicationWindow {
                                 text: window.launchNotice
                                 visible: text.length > 0
                                 color: window.magenta
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2100,13 +2100,13 @@ ApplicationWindow {
                                     Label {
                                         text: "PROFIL DE PERFORMANCES"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Le choix est enregistré localement. L'application réelle des profils CPU/GPU reste à intégrer et à valider sur le matériel."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -2160,7 +2160,7 @@ ApplicationWindow {
                         Label {
                             text: "Les paramètres avancés restent ceux de KDE et de Bazzite. LEOS ne remplace pas les outils natifs du système."
                             color: window.muted
-                            font.pixelSize: 12
+                            font.pixelSize: 14
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
@@ -2176,7 +2176,7 @@ ApplicationWindow {
                             text: window.launchNotice
                             visible: text.length > 0
                             color: window.magenta
-                            font.pixelSize: 11
+                            font.pixelSize: 13
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
@@ -2197,7 +2197,7 @@ ApplicationWindow {
                             Label {
                                 text: "LEOS suit les déploiements préparés par Bazzite et vérifie leur état localement, sans lancer de téléchargement ni d’installation."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2214,7 +2214,7 @@ ApplicationWindow {
                                     Label {
                                         text: "ÉTAT DU SYSTÈME"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
@@ -2254,13 +2254,13 @@ ApplicationWindow {
                                     Label {
                                         text: "INSTALLATION MANUELLE"
                                         color: window.magenta
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
                                         text: "Lorsqu'une mise à jour est disponible, Bazzite Updater permet de consulter les détails, les changements et les options de retour arrière. L'installation reste une action volontaire dans cet outil."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -2275,7 +2275,7 @@ ApplicationWindow {
                                               ? "Bazzite Updater est disponible."
                                               : "Bazzite Updater n'est pas détecté sur cette image."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -2294,7 +2294,7 @@ ApplicationWindow {
                                     Label {
                                         text: "ÉTAT DES DÉPLOIEMENTS OSTREE"
                                         color: window.cyan
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         font.letterSpacing: 2
                                     }
                                     Label {
@@ -2303,7 +2303,7 @@ ApplicationWindow {
                                                 + " · SHA-256 " + controlCenter.deploymentSnapshot.bootedChecksum
                                             : "Informations des déploiements indisponibles sur cette session."
                                         color: window.themeColors.text
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -2314,14 +2314,14 @@ ApplicationWindow {
                                                 + " · épinglées : " + controlCenter.deploymentSnapshot.pinnedCount
                                             : "LEOS ne peut pas confirmer l'état du déploiement actif ou des anciennes entrées."
                                         color: window.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: 13
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
                                     Label {
                                         text: "Cet inventaire est informatif : une ancienne entrée n'est pas une garantie de démarrage ou de retour arrière. LEOS ne lance aucun rollback, nettoyage ni pinning. Vérifie toujours rpm-ostree status avant toute intervention."
                                         color: window.muted
-                                        font.pixelSize: 10
+                                        font.pixelSize: 12
                                         wrapMode: Text.WordWrap
                                         Layout.fillWidth: true
                                     }
@@ -2336,7 +2336,7 @@ ApplicationWindow {
                             Label {
                                 text: "Bazzite effectue ses vérifications automatiques selon la politique native de l’image. LEOS observe périodiquement les déploiements préparés avec rpm-ostree, sans démarrer de transaction. L’application d’une version préparée se fait au redémarrage."
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2358,7 +2358,7 @@ ApplicationWindow {
                             Label {
                                 text: "Choisis comment LEOS te prévient. Les événements restent dans l’historique même si les fenêtres contextuelles sont désactivées ou filtrées."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2478,7 +2478,7 @@ ApplicationWindow {
                             Label {
                                 text: "Contrôles de santé en lecture seule. LEOS signale les anomalies détectables sans réparer, redémarrer ou modifier les services."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2496,13 +2496,13 @@ ApplicationWindow {
                                         Label {
                                             text: "ÉTAT GÉNÉRAL · " + (controlCenter.diagnosticsSnapshot.severity || "Inconnu").toUpperCase()
                                             color: controlCenter.diagnosticsSnapshot.severity === "Critique" ? window.semanticCritical : (controlCenter.diagnosticsSnapshot.severity === "Attention" ? window.semanticWarning : controlCenter.diagnosticsSnapshot.severity === "OK" ? window.semanticHealthy : window.muted)
-                                            font.pixelSize: 11
+                                            font.pixelSize: 13
                                             font.letterSpacing: 1.4
                                         }
                                         Label {
                                             text: controlCenter.diagnosticsSnapshot.summary || "Analyse en cours…"
                                             color: window.themeColors.text
-                                            font.pixelSize: 12
+                                            font.pixelSize: 14
                                             wrapMode: Text.WordWrap
                                             Layout.fillWidth: true
                                         }
@@ -2533,7 +2533,7 @@ ApplicationWindow {
                                     text: window.diagnosticReportNotice
                                     visible: text.length > 0
                                     color: window.muted
-                                    font.pixelSize: 10
+                                    font.pixelSize: 12
                                     wrapMode: Text.WordWrap
                                     Layout.fillWidth: true
                                 }
@@ -2568,7 +2568,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.value || "Indisponible"
                                                 color: window.themeColors.text
-                                                font.pixelSize: 12
+                                                font.pixelSize: 14
                                                 font.weight: Font.DemiBold
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
@@ -2576,7 +2576,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.detail
                                                 color: window.muted
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                                 wrapMode: Text.WordWrap
                                                 Layout.fillWidth: true
                                             }
@@ -2587,7 +2587,7 @@ ApplicationWindow {
                             Label {
                                 text: "POINTS À VÉRIFIER"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 1.4
                             }
                             Repeater {
@@ -2605,7 +2605,7 @@ ApplicationWindow {
                                         anchors.margins: 14
                                         text: modelData
                                         color: window.themeColors.text
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                         wrapMode: Text.WordWrap
                                         verticalAlignment: Text.AlignVCenter
                                     }
@@ -2614,7 +2614,7 @@ ApplicationWindow {
                             Label {
                                 text: "PROCESSUS LES PLUS ACTIFS"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 1.4
                             }
                             Repeater {
@@ -2635,7 +2635,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.name + " · PID " + modelData.pid
                                                 color: window.themeColors.text
-                                                font.pixelSize: 12
+                                                font.pixelSize: 14
                                                 font.weight: Font.DemiBold
                                                 elide: Text.ElideRight
                                                 Layout.fillWidth: true
@@ -2643,7 +2643,7 @@ ApplicationWindow {
                                             Label {
                                                 text: "CPU " + modelData.cpu + "  ·  RAM " + modelData.memory + "  ·  " + modelData.resident
                                                 color: window.muted
-                                                font.pixelSize: 10
+                                                font.pixelSize: 12
                                             }
                                         }
                                     }
@@ -2652,7 +2652,7 @@ ApplicationWindow {
                             Label {
                                 text: "Les journaux ne sont pas affichés dans LEOS : seule une quantité d’entrées d’erreur est indiquée. Les contrôles peuvent être incomplets si les outils ou permissions système ne sont pas disponibles."
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2674,7 +2674,7 @@ ApplicationWindow {
                             Label {
                                 text: "Prévisualise l’espace occupé par quelques éléments régénérables ou déjà placés dans ta corbeille. Cette analyse ne supprime et ne déplace aucun fichier."
                                 color: window.muted
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2738,7 +2738,7 @@ ApplicationWindow {
                                         Label {
                                             text: (modelData.data.files || 0) + " fichier(s) · " + modelData.detail
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                             wrapMode: Text.WordWrap
                                             Layout.fillWidth: true
                                         }
@@ -2748,14 +2748,14 @@ ApplicationWindow {
                             Label {
                                 text: controlCenter.cleanupPreview.note || ""
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
                             Label {
                                 text: "LEOS n’inspecte pas l’ensemble de ~/.cache, les données des applications, les fichiers personnels, les journaux système ni les composants Bazzite. Aucun nettoyage automatique n’est activé."
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -2816,7 +2816,7 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.title
                                                 color: window.cyan
-                                                font.pixelSize: 9
+                                                font.pixelSize: 11
                                                 font.letterSpacing: 1
                                             }
                                             Label {
@@ -2834,7 +2834,7 @@ ApplicationWindow {
                             Label {
                                 text: "INTERFACES DÉTECTÉES"
                                 color: window.cyan
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.letterSpacing: 1.4
                             }
                             Repeater {
@@ -2862,18 +2862,18 @@ ApplicationWindow {
                                             Label {
                                                 text: modelData.state + (modelData.isDefault === "true" ? " · PRINCIPALE" : "")
                                                 color: modelData.state === "Connectée" ? window.cyan : window.muted
-                                                font.pixelSize: 9
+                                                font.pixelSize: 11
                                             }
                                         }
                                         Label {
                                             text: modelData.addresses
                                             color: window.muted
-                                            font.pixelSize: 10
+                                            font.pixelSize: 12
                                         }
                                         Label {
                                             text: "↓ " + modelData.downloadRate + "     ↑ " + modelData.uploadRate
                                             color: window.themeColors.text
-                                            font.pixelSize: 12
+                                            font.pixelSize: 14
                                             font.weight: Font.DemiBold
                                         }
                                     }
@@ -2882,7 +2882,7 @@ ApplicationWindow {
                             Label {
                                 text: "Les débits sont calculés à partir des compteurs locaux du noyau entre deux relevés. LEOS ne lance aucun test de débit, aucune requête Internet et ne modifie pas la configuration réseau."
                                 color: window.muted
-                                font.pixelSize: 10
+                                font.pixelSize: 12
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
