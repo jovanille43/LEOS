@@ -40,6 +40,36 @@ _LIGHT_BASE_PALETTE: dict[str, str] = {
 }
 
 
+# Status colors communicate system state, not the user's brand accents.
+# Each value meets WCAG AA contrast against all three neutral surfaces.
+_DARK_SEMANTIC_STATUS_PALETTE: dict[str, str] = {
+    "semantic_critical": "#F08C95",
+    "semantic_warning": "#E6BD68",
+    "semantic_healthy": "#83C89E",
+}
+
+_LIGHT_SEMANTIC_STATUS_PALETTE: dict[str, str] = {
+    "semantic_critical": "#A8323E",
+    "semantic_warning": "#8A5B0A",
+    "semantic_healthy": "#246B45",
+}
+
+
+def _with_semantic_status_tokens(
+    palette: dict[str, str],
+    appearance: str,
+) -> dict[str, str]:
+    """Add contrast-safe status colors that remain independent from A/B accents."""
+    result = dict(palette)
+    status_palette = (
+        _LIGHT_SEMANTIC_STATUS_PALETTE
+        if appearance == "light"
+        else _DARK_SEMANTIC_STATUS_PALETTE
+    )
+    result.update(status_palette)
+    return result
+
+
 def resolve_appearance_mode(mode: str = DEFAULT_APPEARANCE, now: datetime | None = None) -> str:
     """Resolve dark/light/auto; automatic mode is light 07:00–18:59 local time."""
     if mode not in APPEARANCE_MODES:
@@ -109,7 +139,10 @@ _LEGACY_THEME_PALETTES: dict[str, dict[str, str]] = {
 }
 
 THEME_PALETTES: dict[str, dict[str, str]] = {
-    name: _with_accent_text_tokens(palette)
+    name: _with_semantic_status_tokens(
+        _with_accent_text_tokens(palette),
+        "light" if name == "light" else "dark",
+    )
     for name, palette in _LEGACY_THEME_PALETTES.items()
 }
 
@@ -117,6 +150,7 @@ REQUIRED_TOKENS = frozenset({
     "background", "surface", "surface_elevated", "border",
     "text", "muted_text", "accent_primary", "accent_secondary",
     "accent_primary_text", "accent_secondary_text",
+    "semantic_critical", "semantic_warning", "semantic_healthy",
 })
 _COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
@@ -141,7 +175,10 @@ def palette_for_colors(
         "accent_primary": normalize_color(color_a),
         "accent_secondary": normalize_color(color_b),
     }
-    return _with_accent_text_tokens(palette)
+    return _with_semantic_status_tokens(
+        _with_accent_text_tokens(palette),
+        resolved_appearance,
+    )
 
 
 def palette_for_theme(theme: str) -> dict[str, str]:
