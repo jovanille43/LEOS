@@ -19,6 +19,17 @@ class DynamicThemeTests(unittest.TestCase):
             self.assertEqual(color[1:3], color[3:5])
             self.assertEqual(color[3:5], color[5:7])
 
+    def test_dark_and_light_material_surfaces_are_neutral_grayscale(self):
+        for appearance in ("dark", "light"):
+            with self.subTest(appearance=appearance):
+                palette = palette_for_colors("#E58A3A", "#4F75D5", appearance=appearance)
+                for token in ("background", "surface", "surface_elevated", "border", "text", "muted_text"):
+                    color = palette[token]
+                    self.assertEqual(color[1:3], color[3:5], f"{appearance} {token} red/green differ")
+                    self.assertEqual(color[3:5], color[5:7], f"{appearance} {token} green/blue differ")
+                self.assertEqual(palette["accent_primary"], "#E58A3A")
+                self.assertEqual(palette["accent_secondary"], "#4F75D5")
+
     def test_gaming_uses_selected_accents_and_shared_neutral_surfaces(self):
         root = Path(__file__).resolve().parents[1]
         qml = (root / "gaming" / "qml" / "Main.qml").read_text(encoding="utf-8")
