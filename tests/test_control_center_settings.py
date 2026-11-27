@@ -115,7 +115,7 @@ class SettingsModuleCommandTests(unittest.TestCase):
 
     def test_control_center_typography_has_no_microtext_below_ten_pixels(self):
         qml = (Path(__file__).resolve().parents[1] / "control_center/qml/Main.qml").read_text(encoding="utf-8")
-        pixel_sizes = [int(value) for value in re.findall(r"font\\.pixelSize\\s*:\\s*(\\d+)", qml)]
+        pixel_sizes = [int(value) for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", qml)]
         self.assertTrue(pixel_sizes)
         self.assertFalse(
             [size for size in pixel_sizes if size < 10],
