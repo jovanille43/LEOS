@@ -59,11 +59,13 @@ class NotificationCentreIntegrationTests(unittest.TestCase):
         self.assertIn("except (OSError, ValueError, TypeError):", silent)
         self.assertIn("Impossible d'enregistrer le réglage des notifications.", silent)
 
-    def test_notification_cards_use_the_configured_primary_and_secondary_accents(self):
+    def test_notification_cards_keep_brand_accents_and_use_semantic_status_colors(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
         self.assertIn("border.color: isRead ? window.themeColors.border : window.accentA", qml)
-        self.assertIn('level === "success" ? window.accentA', qml)
-        self.assertIn(' : window.accentB', qml)
+        self.assertIn('level === "error" ? window.themeColors.semantic_critical', qml)
+        self.assertIn('level === "warning" ? window.themeColors.semantic_warning', qml)
+        self.assertIn('level === "success" ? window.themeColors.semantic_healthy', qml)
+        self.assertIn("window.accentB", qml)
 
     def test_notification_actions_are_accessible_and_have_theme_aware_focus_states(self):
         qml = (ROOT / "desktop/qml/Notifications.qml").read_text(encoding="utf-8")
