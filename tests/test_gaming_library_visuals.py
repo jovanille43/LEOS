@@ -38,6 +38,16 @@ class GamingLibraryVisualTests(unittest.TestCase):
         self.assertIn("ajouter un jeu manuellement", source)
         self.assertNotIn("Steam sera analysé automatiquement", source)
 
+    def test_empty_state_uses_official_gaming_emblem_and_editorial_layout(self):
+        source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
+        self.assertIn("id: emptyStateSurface", source)
+        self.assertIn("id: emptyStateEmblem", source)
+        self.assertIn("source: leosTheme.gamingLogoUrl", source)
+        self.assertIn("function emptyStateTitle()", source)
+        self.assertIn("function emptyStateDescription()", source)
+        self.assertIn("text: window.emptyStateTitle()", source)
+        self.assertIn("Layout.maximumWidth: 410", source)
+
     def test_library_shows_filtered_game_count(self):
         source = (ROOT / "gaming/qml/Main.qml").read_text(encoding="utf-8")
         self.assertIn('text: gameGrid.count + (gameGrid.count > 1 ? " JEUX" : " JEU")', source)
