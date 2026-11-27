@@ -1085,13 +1085,48 @@ ApplicationWindow {
                             wrapMode: Text.WordWrap
                             Layout.maximumWidth: 190
                         }
-                        Repeater {
-                            model: leos.launcherStatuses
-                            delegate: Label {
-                                required property string modelData
-                                text: modelData
-                                color: modelData.indexOf("DISPONIBLE") >= 0 ? window.cyan : window.muted
-                                font.pixelSize: window.fontMicro
+                        Flow {
+                            id: launcherStatusFlow
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: window.width < 1180 ? 202 : 220
+                            Layout.preferredHeight: 92
+                            spacing: 4
+
+                            Repeater {
+                                model: leos.launcherStatuses
+                                delegate: Rectangle {
+                                    required property string modelData
+                                    property bool available: modelData.indexOf("DISPONIBLE") >= 0
+                                    width: window.width < 1180 ? 96 : 104
+                                    height: 20
+                                    radius: 6
+                                    color: window.themeColors.surface
+                                    border.width: 1
+                                    border.color: available ? window.accentA : window.themeColors.border
+                                    Accessible.role: Accessible.Grouping
+                                    Accessible.name: modelData
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 6
+                                        anchors.rightMargin: 5
+                                        spacing: 5
+
+                                        Rectangle {
+                                            Layout.preferredWidth: 5
+                                            Layout.preferredHeight: 5
+                                            radius: 3
+                                            color: available ? window.accentA : window.muted
+                                        }
+                                        Label {
+                                            Layout.fillWidth: true
+                                            text: modelData
+                                            color: available ? window.themeColors.text : window.muted
+                                            font.pixelSize: window.fontMicro
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
