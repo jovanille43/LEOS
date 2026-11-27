@@ -55,7 +55,7 @@ class DynamicThemeTests(unittest.TestCase):
                 content = (root / relative).read_text(encoding="utf-8")
                 sizes = [
                     int(value)
-                    for value in re.findall(r"font\\.pixelSize\\s*:\\s*(\\d+)", content)
+                    for value in re.findall(r"font\.pixelSize\s*:\s*(\d+)", content)
                 ]
                 self.assertTrue(sizes, f"{relative} has no statically sized text")
                 self.assertFalse(
