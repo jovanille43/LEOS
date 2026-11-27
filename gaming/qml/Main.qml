@@ -783,34 +783,20 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 spacing: window.width < 1180 ? 7 : window.width < 1360 ? 10 : 18
 
-                ColumnLayout {
-                    spacing: 1
-                    Image {
-                        id: gamingHeaderLogo
-                        source: leosTheme.gamingLogoUrl
-                        asynchronous: true
-                        smooth: true
-                        fillMode: Image.PreserveAspectFit
-                        Layout.preferredWidth: 118
-                        Layout.preferredHeight: 58
-                        visible: status === Image.Ready
-                    }
-                    Label {
-                        text: "LEOS"
-                        color: window.themeColors.text
-                        font.pixelSize: window.fontDisplay
-                        font.weight: Font.Black
-                        font.letterSpacing: 5
-                        visible: gamingHeaderLogo.status !== Image.Ready
-                    }
-                    Label {
-                        text: "GAMING MODE"
-                        color: window.cyan
-                        font.pixelSize: window.fontCaption
-                        font.letterSpacing: 3
-                    }
+                Branding.ModeIdentity {
+                    logoSource: leosTheme.gamingLogoUrl
+                    modeLabel: "GAMING MODE"
+                    titleColor: window.themeColors.text
+                    labelColor: window.cyan
+                    accentA: window.accentA
+                    accentB: window.accentB
+                    logoWidth: 118
+                    logoHeight: 58
+                    titlePixelSize: window.fontDisplay
+                    labelPixelSize: window.fontCaption
+                    titleLetterSpacing: 5
+                    labelLetterSpacing: 3
                 }
-
                 Item { Layout.fillWidth: true }
 
                 Rectangle {
